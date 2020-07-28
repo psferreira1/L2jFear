@@ -340,6 +340,11 @@ public class EnterWorld extends L2GameClientPacket
 		if (Config.ANNOUNCE_CASTLE_LORDS)
 			notifyCastleOwner(activeChar);
 		
+		if (Config.ANNOUNCE_HERO_LOGIN && activeChar.isHero())
+			{
+			       Announcements.getInstance().gameAnnounceToAll("O Heroi "+activeChar.getName()+" acabou de logar!");
+			}
+		
 		if (Olympiad.getInstance().playerInStadia(activeChar))
 		{
 			activeChar.teleToLocation(MapRegionTable.TeleportWhereType.Town);

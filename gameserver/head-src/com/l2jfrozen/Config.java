@@ -578,6 +578,7 @@ public final class Config
 	public static boolean ALLOW_AIO_USE_CM;
 	public static boolean ALLOW_AIO_IN_EVENTS;
 	public static boolean ANNOUNCE_CASTLE_LORDS;
+	public static boolean ANNOUNCE_HERO_LOGIN;
 	
 	/** Configuration to allow custom items to be given on character creation */
 	public static boolean CUSTOM_STARTER_ITEMS_ENABLED;
@@ -683,6 +684,7 @@ public final class Config
 			ALLOW_AIO_USE_CM = Boolean.parseBoolean(otherSettings.getProperty("AllowAioUseClassMaster", "False"));
 			ALLOW_AIO_IN_EVENTS = Boolean.parseBoolean(otherSettings.getProperty("AllowAioInEvents", "False"));
 			ANNOUNCE_CASTLE_LORDS = Boolean.parseBoolean(otherSettings.getProperty("AnnounceCastleLords", "False"));
+			ANNOUNCE_HERO_LOGIN = Boolean.parseBoolean(otherSettings.getProperty("AnnounceHeroLogin", "False"));
 			if (ENABLE_AIO_SYSTEM) // create map if system is enabled
 			{
 				final String[] AioSkillsSplit = otherSettings.getProperty("AioSkills", "").split(";");
