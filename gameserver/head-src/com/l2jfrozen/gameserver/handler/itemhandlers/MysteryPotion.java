@@ -1,23 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.handler.itemhandlers;
 
 import com.l2jfrozen.Config;
@@ -49,7 +29,9 @@ public class MysteryPotion implements IItemHandler
 	public void useItem(final L2PlayableInstance playable, final L2ItemInstance item)
 	{
 		if (!(playable instanceof L2PcInstance))
+		{
 			return;
+		}
 		
 		L2PcInstance activeChar = (L2PcInstance) playable;
 		// item.getItem().getEffects(item, activeChar);
@@ -79,11 +61,11 @@ public class MysteryPotion implements IItemHandler
 	
 	public class MysteryPotionStop implements Runnable
 	{
-		private final L2PlayableInstance _playable;
+		private final L2PlayableInstance playable;
 		
 		public MysteryPotionStop(final L2PlayableInstance playable)
 		{
-			_playable = playable;
+			this.playable = playable;
 		}
 		
 		@Override
@@ -91,15 +73,19 @@ public class MysteryPotion implements IItemHandler
 		{
 			try
 			{
-				if (!(_playable instanceof L2PcInstance))
+				if (!(playable instanceof L2PcInstance))
+				{
 					return;
+				}
 				
-				((L2PcInstance) _playable).stopAbnormalEffect(BIGHEAD_EFFECT);
+				((L2PcInstance) playable).stopAbnormalEffect(BIGHEAD_EFFECT);
 			}
 			catch (final Throwable t)
 			{
 				if (Config.ENABLE_ALL_EXCEPTIONS)
+				{
 					t.printStackTrace();
+				}
 			}
 		}
 	}

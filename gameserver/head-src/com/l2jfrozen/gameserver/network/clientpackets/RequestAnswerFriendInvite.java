@@ -1,23 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.network.clientpackets;
 
 import java.sql.Connection;
@@ -26,13 +6,11 @@ import java.sql.ResultSet;
 
 import org.apache.log4j.Logger;
 
-import com.l2jfrozen.Config;
 import com.l2jfrozen.gameserver.model.L2World;
 import com.l2jfrozen.gameserver.model.actor.instance.L2PcInstance;
 import com.l2jfrozen.gameserver.network.SystemMessageId;
 import com.l2jfrozen.gameserver.network.serverpackets.FriendList;
 import com.l2jfrozen.gameserver.network.serverpackets.SystemMessage;
-import com.l2jfrozen.util.CloseUtil;
 import com.l2jfrozen.util.database.DatabaseUtils;
 import com.l2jfrozen.util.database.L2DatabaseFactory;
 
@@ -42,13 +20,15 @@ import com.l2jfrozen.util.database.L2DatabaseFactory;
 public final class RequestAnswerFriendInvite extends L2GameClientPacket
 {
 	private static Logger LOGGER = Logger.getLogger(RequestAnswerFriendInvite.class);
+	private static final String INSERT_CHARACTER_FRIEND = "INSERT INTO character_friends (char_id, friend_id, friend_name, not_blocked) VALUES (?, ?, ?, ?), (?, ?, ?,?)";
+	private static final String SELECT_CHARACTER_FRIENDS = "SELECT friend_name FROM character_friends WHERE char_id=? AND not_blocked=1";
 	
-	private int _response;
+	private int response;
 	
 	@Override
 	protected void readImpl()
 	{
-		_response = readD();
+		response = readD();
 	}
 	
 	@Override
@@ -59,15 +39,15 @@ public final class RequestAnswerFriendInvite extends L2GameClientPacket
 		{
 			final L2PcInstance requestor = player.getActiveRequester();
 			if (requestor == null)
-				return;
-			
-			if (_response == 1)
 			{
-				Connection con = null;
-				try
+				return;
+			}
+			
+			if (response == 1)
+			{
+				try (Connection con = L2DatabaseFactory.getInstance().getConnection();
+					PreparedStatement statement = con.prepareStatement(INSERT_CHARACTER_FRIEND))
 				{
-					con = L2DatabaseFactory.getInstance().getConnection(false);
-					final PreparedStatement statement = con.prepareStatement("INSERT INTO character_friends (char_id, friend_id, friend_name, not_blocked) VALUES (?, ?, ?, ?), (?, ?, ?,?)");
 					statement.setInt(1, requestor.getObjectId());
 					statement.setInt(2, player.getObjectId());
 					statement.setString(3, player.getName());
@@ -76,7 +56,7 @@ public final class RequestAnswerFriendInvite extends L2GameClientPacket
 					statement.setInt(6, requestor.getObjectId());
 					statement.setString(7, requestor.getName());
 					statement.setInt(8, 1);
-					statement.execute();
+					statement.executeUpdate();
 					DatabaseUtils.close(statement);
 					SystemMessage msg = new SystemMessage(SystemMessageId.YOU_HAVE_SUCCEEDED_INVITING_FRIEND);
 					requestor.sendPacket(msg);
@@ -101,17 +81,9 @@ public final class RequestAnswerFriendInvite extends L2GameClientPacket
 					player.sendPacket(new FriendList(player));
 					requestor.sendPacket(new FriendList(requestor));
 				}
-				catch (final Exception e)
+				catch (Exception e)
 				{
-					if (Config.ENABLE_ALL_EXCEPTIONS)
-						e.printStackTrace();
-					
-					LOGGER.warn("could not add friend objectid: " + e);
-				}
-				finally
-				{
-					CloseUtil.close(con);
-					con = null;
+					LOGGER.error("RequestAnswerFriendInvite.runImpl : Could not add friend objectid", e);
 				}
 			}
 			else
@@ -127,42 +99,32 @@ public final class RequestAnswerFriendInvite extends L2GameClientPacket
 	
 	private void notifyFriends(final L2PcInstance cha)
 	{
-		Connection con = null;
-		
-		try
+		try (Connection con = L2DatabaseFactory.getInstance().getConnection();
+			PreparedStatement statement = con.prepareStatement(SELECT_CHARACTER_FRIENDS))
 		{
-			con = L2DatabaseFactory.getInstance().getConnection(false);
-			PreparedStatement statement;
-			statement = con.prepareStatement("SELECT friend_name FROM character_friends WHERE char_id=? AND not_blocked = 1 ");
 			statement.setInt(1, cha.getObjectId());
-			final ResultSet rset = statement.executeQuery();
-			L2PcInstance friend;
-			String friendName;
 			
-			while (rset.next())
+			try (ResultSet rset = statement.executeQuery())
 			{
-				friendName = rset.getString("friend_name");
-				friend = L2World.getInstance().getPlayer(friendName);
+				L2PcInstance friend;
+				String friendName;
 				
-				if (friend != null) // friend loggined.
+				while (rset.next())
 				{
-					friend.sendPacket(new FriendList(friend));
+					friendName = rset.getString("friend_name");
+					friend = L2World.getInstance().getPlayer(friendName);
+					
+					if (friend != null)
+					{
+						friend.sendPacket(new FriendList(friend));
+					}
 				}
 			}
-			
-			DatabaseUtils.close(rset);
-			DatabaseUtils.close(statement);
 		}
 		
-		catch (final Exception e)
+		catch (Exception e)
 		{
-			LOGGER.warn("could not restore friend data:" + e);
-		}
-		
-		finally
-		{
-			CloseUtil.close(con);
-			con = null;
+			LOGGER.error("RequestAnswerFriendInvite.notifyFriends : Could not restore friend data", e);
 		}
 	}
 	

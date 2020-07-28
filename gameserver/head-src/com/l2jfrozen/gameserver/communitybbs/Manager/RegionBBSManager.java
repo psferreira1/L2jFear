@@ -1,36 +1,16 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.communitybbs.Manager;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.StringTokenizer;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
-
-import javolution.text.TextBuilder;
-import javolution.util.FastList;
-import javolution.util.FastMap;
 
 import com.l2jfrozen.Config;
 import com.l2jfrozen.gameserver.GameServer;
@@ -43,9 +23,11 @@ import com.l2jfrozen.gameserver.network.serverpackets.CreatureSay;
 import com.l2jfrozen.gameserver.network.serverpackets.ShowBoard;
 import com.l2jfrozen.gameserver.network.serverpackets.SystemMessage;
 
+import javolution.text.TextBuilder;
+
 public class RegionBBSManager extends BaseBBSManager
 {
-	private static Logger _logChat = Logger.getLogger("chat");
+	private static Logger LOGGER = Logger.getLogger("chat");
 	
 	@Override
 	public void parsecmd(final String command, final L2PcInstance activeChar)
@@ -69,7 +51,9 @@ public class RegionBBSManager extends BaseBBSManager
 			catch (final NumberFormatException nfe)
 			{
 				if (Config.ENABLE_ALL_EXCEPTIONS)
+				{
 					nfe.printStackTrace();
+				}
 				
 			}
 			
@@ -103,13 +87,6 @@ public class RegionBBSManager extends BaseBBSManager
 		}
 	}
 	
-	private String version()
-	{
-		if (Config.SHOW_SERVER_VERSION)
-			return "L2JFrozen ";
-		return "";
-	}
-	
 	/**
 	 * @param activeChar
 	 * @param name
@@ -117,7 +94,7 @@ public class RegionBBSManager extends BaseBBSManager
 	private void showOldCommunityPI(final L2PcInstance activeChar, final String name)
 	{
 		TextBuilder htmlCode = new TextBuilder("<html><body><br>");
-		htmlCode.append("<table border=0><tr><td FIXWIDTH=15></td><td align=center>" + version() + "Community Board<img src=\"sek.cbui355\" width=610 height=1></td></tr><tr><td FIXWIDTH=15></td><td>");
+		htmlCode.append("<table border=0><tr><td FIXWIDTH=15></td><td align=center>Community Board<img src=\"sek.cbui355\" width=610 height=1></td></tr><tr><td FIXWIDTH=15></td><td>");
 		L2PcInstance player = L2World.getInstance().getPlayer(name);
 		
 		if (player != null)
@@ -212,12 +189,14 @@ public class RegionBBSManager extends BaseBBSManager
 	public void parsewrite(final String ar1, final String ar2, String ar3, final String ar4, final String ar5, final L2PcInstance activeChar)
 	{
 		if (activeChar == null)
+		{
 			return;
+		}
 		
 		if (ar1.equals("PM"))
 		{
 			TextBuilder htmlCode = new TextBuilder("<html><body><br>");
-			htmlCode.append("<table border=0><tr><td FIXWIDTH=15></td><td align=center>" + version() + "Community Board<img src=\"sek.cbui355\" width=610 height=1></td></tr><tr><td FIXWIDTH=15></td><td>");
+			htmlCode.append("<table border=0><tr><td FIXWIDTH=15></td><td align=center>Community Board<img src=\"sek.cbui355\" width=610 height=1></td></tr><tr><td FIXWIDTH=15></td><td>");
 			
 			try
 			{
@@ -264,7 +243,7 @@ public class RegionBBSManager extends BaseBBSManager
 						"TELL ",
 						"[" + activeChar.getName() + " to " + receiver.getName() + "]"
 					});
-					_logChat.log(record);
+					LOGGER.log(record);
 					record = null;
 				}
 				ar3 = ar3.replaceAll("\\\\n", "");
@@ -304,7 +283,9 @@ public class RegionBBSManager extends BaseBBSManager
 			catch (final StringIndexOutOfBoundsException e)
 			{
 				if (Config.ENABLE_ALL_EXCEPTIONS)
+				{
 					e.printStackTrace();
+				}
 				
 			}
 			
@@ -321,43 +302,36 @@ public class RegionBBSManager extends BaseBBSManager
 		
 	}
 	
-	private static RegionBBSManager _instance = null;
-	private int _onlineCount = 0;
-	private int _onlineCountGm = 0;
-	private static FastMap<Integer, FastList<L2PcInstance>> _onlinePlayers = new FastMap<Integer, FastList<L2PcInstance>>().shared();
-	private static FastMap<Integer, FastMap<String, String>> _communityPages = new FastMap<Integer, FastMap<String, String>>().shared();
+	private static RegionBBSManager instance = null;
+	private int onlineCount = 0;
+	private int onlineCountGm = 0;
+	private static Map<Integer, List<L2PcInstance>> onlinePlayers = new ConcurrentHashMap<>();
+	private static Map<Integer, Map<String, String>> communityPages = new ConcurrentHashMap<>();
 	
 	/**
 	 * @return
 	 */
 	public static RegionBBSManager getInstance()
 	{
-		if (_instance == null)
+		if (instance == null)
 		{
-			_instance = new RegionBBSManager();
+			instance = new RegionBBSManager();
 		}
-		return _instance;
+		return instance;
 	}
 	
 	public synchronized void changeCommunityBoard()
 	{
 		Collection<L2PcInstance> players = L2World.getInstance().getAllPlayers();
-		FastList<L2PcInstance> sortedPlayers = new FastList<>();
+		List<L2PcInstance> sortedPlayers = new ArrayList<>();
 		sortedPlayers.addAll(players);
 		players = null;
 		
-		Collections.sort(sortedPlayers, new Comparator<L2PcInstance>()
-		{
-			@Override
-			public int compare(final L2PcInstance p1, final L2PcInstance p2)
-			{
-				return p1.getName().compareToIgnoreCase(p2.getName());
-			}
-		});
+		Collections.sort(sortedPlayers, (p1, p2) -> p1.getName().compareToIgnoreCase(p2.getName()));
 		
-		_onlinePlayers.clear();
-		_onlineCount = 0;
-		_onlineCountGm = 0;
+		onlinePlayers.clear();
+		onlineCount = 0;
+		onlineCountGm = 0;
 		
 		for (final L2PcInstance player : sortedPlayers)
 		{
@@ -365,15 +339,15 @@ public class RegionBBSManager extends BaseBBSManager
 		}
 		
 		sortedPlayers = null;
-		_communityPages.clear();
+		communityPages.clear();
 		writeCommunityPages();
 	}
 	
-	private void addOnlinePlayer(final L2PcInstance player)
+	private void addOnlinePlayer(L2PcInstance player)
 	{
 		boolean added = false;
 		
-		for (final FastList<L2PcInstance> page : _onlinePlayers.values())
+		for (List<L2PcInstance> page : onlinePlayers.values())
 		{
 			if (page.size() < Config.NAME_PAGE_SIZE_COMMUNITYBOARD)
 			{
@@ -381,12 +355,12 @@ public class RegionBBSManager extends BaseBBSManager
 				{
 					page.add(player);
 					
-					if (!player.getAppearance().getInvisible())
+					if (!player.getAppearance().isInvisible())
 					{
-						_onlineCount++;
+						onlineCount++;
 					}
 					
-					_onlineCountGm++;
+					onlineCountGm++;
 				}
 				
 				added = true;
@@ -401,16 +375,16 @@ public class RegionBBSManager extends BaseBBSManager
 		
 		if (!added)
 		{
-			FastList<L2PcInstance> temp = new FastList<>();
-			final int page = _onlinePlayers.size() + 1;
+			List<L2PcInstance> temp = new ArrayList<>();
+			final int page = onlinePlayers.size() + 1;
 			if (temp.add(player))
 			{
-				_onlinePlayers.put(page, temp);
-				if (!player.getAppearance().getInvisible())
+				onlinePlayers.put(page, temp);
+				if (!player.getAppearance().isInvisible())
 				{
-					_onlineCount++;
+					onlineCount++;
 				}
-				_onlineCountGm++;
+				onlineCountGm++;
 			}
 			
 			temp = null;
@@ -419,9 +393,9 @@ public class RegionBBSManager extends BaseBBSManager
 	
 	private void writeCommunityPages()
 	{
-		for (final int page : _onlinePlayers.keySet())
+		for (final int page : onlinePlayers.keySet())
 		{
-			FastMap<String, String> communityPage = new FastMap<>();
+			Map<String, String> communityPage = new HashMap<>();
 			
 			TextBuilder htmlCode = new TextBuilder("<html><body><br>");
 			final String tdClose = "</td>";
@@ -621,7 +595,7 @@ public class RegionBBSManager extends BaseBBSManager
 			cell = 0;
 			for (final L2PcInstance player : getOnlinePlayers(page))
 			{
-				if (player == null || player.getAppearance().getInvisible())
+				if (player == null || player.getAppearance().isInvisible())
 				{
 					continue; // Go to next
 				}
@@ -706,28 +680,32 @@ public class RegionBBSManager extends BaseBBSManager
 			
 			communityPage.put("pl", htmlCode.toString());
 			
-			_communityPages.put(page, communityPage);
+			communityPages.put(page, communityPage);
 			communityPage = null;
 			htmlCode = null;
 		}
 	}
 	
-	private int getOnlineCount(final String type)
+	private int getOnlineCount(String type)
 	{
 		if (type.equalsIgnoreCase("gm"))
-			return _onlineCountGm;
-		return _onlineCount;
+		{
+			return onlineCountGm;
+		}
+		return onlineCount;
 	}
 	
-	private FastList<L2PcInstance> getOnlinePlayers(final int page)
+	private List<L2PcInstance> getOnlinePlayers(int page)
 	{
-		return _onlinePlayers.get(page);
+		return onlinePlayers.get(page);
 	}
 	
-	public String getCommunityPage(final int page, final String type)
+	public String getCommunityPage(int page, String type)
 	{
-		if (_communityPages.get(page) != null)
-			return _communityPages.get(page).get(type);
+		if (communityPages.get(page) != null)
+		{
+			return communityPages.get(page).get(type);
+		}
 		return null;
 	}
 }

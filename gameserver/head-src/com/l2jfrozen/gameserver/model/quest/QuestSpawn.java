@@ -1,23 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.model.quest;
 
 import org.apache.log4j.Logger;
@@ -51,25 +31,24 @@ public final class QuestSpawn
 	
 	public class DeSpawnScheduleTimerTask implements Runnable
 	{
-		L2NpcInstance _npc = null;
+		L2NpcInstance npc = null;
 		
 		public DeSpawnScheduleTimerTask(final L2NpcInstance npc)
 		{
-			_npc = npc;
+			this.npc = npc;
 		}
 		
 		@Override
 		public void run()
 		{
-			_npc.onDecay();
+			npc.onDecay();
 		}
 	}
 	
-	// Method - Public
 	/**
 	 * Add spawn for player instance Will despawn after the spawn length expires Uses player's coords and heading. Adds a little randomization in the x y coords Return object id of newly spawned npc
-	 * @param npcId
-	 * @param cha
+	 * @param  npcId
+	 * @param  cha
 	 * @return
 	 */
 	public L2NpcInstance addSpawn(final int npcId, final L2Character cha)
@@ -79,13 +58,13 @@ public final class QuestSpawn
 	
 	/**
 	 * Add spawn for player instance Return object id of newly spawned npc
-	 * @param npcId
-	 * @param x
-	 * @param y
-	 * @param z
-	 * @param heading
-	 * @param randomOffset
-	 * @param despawnDelay
+	 * @param  npcId
+	 * @param  x
+	 * @param  y
+	 * @param  z
+	 * @param  heading
+	 * @param  randomOffset
+	 * @param  despawnDelay
 	 * @return
 	 */
 	public L2NpcInstance addSpawn(final int npcId, int x, int y, final int z, final int heading, final boolean randomOffset, final int despawnDelay)
@@ -155,7 +134,9 @@ public final class QuestSpawn
 		catch (final Exception e1)
 		{
 			if (Config.ENABLE_ALL_EXCEPTIONS)
+			{
 				e1.printStackTrace();
+			}
 			
 			LOGGER.warn("Could not spawn Npc " + npcId);
 		}

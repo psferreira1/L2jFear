@@ -1,23 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.datatables.csv;
 
 import java.io.BufferedReader;
@@ -26,10 +6,9 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.LineNumberReader;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.StringTokenizer;
-
-import javolution.util.FastMap;
 
 import org.apache.log4j.Logger;
 
@@ -45,41 +24,35 @@ public class HennaTable
 {
 	private static Logger LOGGER = Logger.getLogger(HennaTable.class);
 	
-	private static HennaTable _instance;
+	private static HennaTable instance;
 	
-	private final Map<Integer, L2Henna> _henna;
-	private final boolean _initialized = true;
+	private final Map<Integer, L2Henna> henna;
+	private final boolean initialized = true;
 	
 	public static HennaTable getInstance()
 	{
-		if (_instance == null)
+		if (instance == null)
 		{
-			_instance = new HennaTable();
+			instance = new HennaTable();
 		}
 		
-		return _instance;
+		return instance;
 	}
 	
 	private HennaTable()
 	{
-		_henna = new FastMap<>();
+		henna = new HashMap<>();
 		restoreHennaData();
 	}
 	
 	private void restoreHennaData()
 	{
-		FileReader reader = null;
-		BufferedReader buff = null;
-		LineNumberReader lnr = null;
+		File fileData = new File(Config.DATAPACK_ROOT + "/data/csv/henna.csv");
 		
-		try
+		try (FileReader reader = new FileReader(fileData);
+			BufferedReader buff = new BufferedReader(reader);
+			LineNumberReader lnr = new LineNumberReader(buff))
 		{
-			final File fileData = new File(Config.DATAPACK_ROOT + "/data/csv/henna.csv");
-			
-			reader = new FileReader(fileData);
-			buff = new BufferedReader(reader);
-			lnr = new LineNumberReader(buff);
-			
 			String line = null;
 			
 			while ((line = lnr.readLine()) != null)
@@ -107,69 +80,31 @@ public class HennaTable
 				hennaDat.set("stat_WIT", Integer.parseInt(st.nextToken()));
 				
 				L2Henna template = new L2Henna(hennaDat);
-				_henna.put(id, template);
+				henna.put(id, template);
 				hennaDat = null;
 				template = null;
 			}
 			
-			LOGGER.info("HennaTable: Loaded " + _henna.size() + " Templates.");
+			LOGGER.info("HennaTable: Loaded " + henna.size() + " Templates.");
 		}
-		catch (final FileNotFoundException e)
+		catch (FileNotFoundException e)
 		{
-			if (Config.ENABLE_ALL_EXCEPTIONS)
-				e.printStackTrace();
-			
-			LOGGER.warn(Config.DATAPACK_ROOT + "/data/csv/henna.csv is missing in data folder");
+			LOGGER.error("HennaTable.restoreHennaData : " + Config.DATAPACK_ROOT + "/data/csv/henna.csv is missing in data folder. ");
 		}
-		catch (final IOException e0)
+		catch (IOException e)
 		{
-			if (Config.ENABLE_ALL_EXCEPTIONS)
-				e0.printStackTrace();
-			
-			LOGGER.warn("Error while creating table: " + e0.getMessage() + "\n" + e0);
-		}
-		finally
-		{
-			if (lnr != null)
-				try
-				{
-					lnr.close();
-				}
-				catch (final Exception e1)
-				{
-					e1.printStackTrace();
-				}
-			
-			if (buff != null)
-				try
-				{
-					buff.close();
-				}
-				catch (final Exception e1)
-				{
-					e1.printStackTrace();
-				}
-			
-			if (reader != null)
-				try
-				{
-					reader.close();
-				}
-				catch (final Exception e1)
-				{
-					e1.printStackTrace();
-				}
+			LOGGER.error("HennaTable.restoreHennaData : Error while creating table. ", e);
 		}
 	}
 	
 	public boolean isInitialized()
 	{
-		return _initialized;
+		return initialized;
 	}
 	
 	public L2Henna getTemplate(final int id)
 	{
-		return _henna.get(id);
+		return henna.get(id);
 	}
 	
 }

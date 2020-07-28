@@ -1,19 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any later
- * version.
- * 
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
- * 
- * You should have received a copy of the GNU General Public License along with
- * this program. If not, see <http://www.gnu.org/licenses/>.
- */
 package com.l2jfrozen.gameserver.network.serverpackets;
 
 import java.util.Calendar;
@@ -46,13 +30,12 @@ import com.l2jfrozen.gameserver.model.entity.siege.Fort;
  */
 public class FortressSiegeInfo extends L2GameServerPacket
 {
-	private static final String _S__C9_SIEGEINFO = "[S] c9 SiegeInfo";
 	private static Logger LOGGER = Logger.getLogger(FortressSiegeInfo.class);
-	private final Fort _fort;
+	private final Fort fortress;
 	
 	public FortressSiegeInfo(final Fort fort)
 	{
-		_fort = fort;
+		fortress = fort;
 	}
 	
 	@Override
@@ -60,15 +43,17 @@ public class FortressSiegeInfo extends L2GameServerPacket
 	{
 		final L2PcInstance activeChar = getClient().getActiveChar();
 		if (activeChar == null)
+		{
 			return;
+		}
 		
 		writeC(0xc9);
-		writeD(_fort.getFortId());
-		writeD(_fort.getOwnerId() == activeChar.getClanId() && activeChar.isClanLeader() ? 0x01 : 0x00);
-		writeD(_fort.getOwnerId());
-		if (_fort.getOwnerId() > 0)
+		writeD(fortress.getFortId());
+		writeD(fortress.getOwnerId() == activeChar.getClanId() && activeChar.isClanLeader() ? 0x01 : 0x00);
+		writeD(fortress.getOwnerId());
+		if (fortress.getOwnerId() > 0)
 		{
-			final L2Clan owner = ClanTable.getInstance().getClan(_fort.getOwnerId());
+			final L2Clan owner = ClanTable.getInstance().getClan(fortress.getOwnerId());
 			if (owner != null)
 			{
 				writeS(owner.getName()); // Clan Name
@@ -78,7 +63,7 @@ public class FortressSiegeInfo extends L2GameServerPacket
 			}
 			else
 			{
-				LOGGER.warn("Null owner for fort: " + _fort.getName());
+				LOGGER.warn("Null owner for fort: " + fortress.getName());
 			}
 		}
 		else
@@ -90,18 +75,14 @@ public class FortressSiegeInfo extends L2GameServerPacket
 		}
 		
 		writeD((int) (Calendar.getInstance().getTimeInMillis() / 1000));
-		writeD((int) (_fort.getSiege().getSiegeDate().getTimeInMillis() / 1000));
+		writeD((int) (fortress.getSiege().getSiegeDate().getTimeInMillis() / 1000));
 		writeD(0x00); // number of choices?
 	}
 	
-	/*
-	 * (non-Javadoc)
-	 * @see com.l2jfrozen.gameserver.serverpackets.ServerBasePacket#getType()
-	 */
 	@Override
 	public String getType()
 	{
-		return _S__C9_SIEGEINFO;
+		return "[S] c9 SiegeInfo";
 	}
 	
 }

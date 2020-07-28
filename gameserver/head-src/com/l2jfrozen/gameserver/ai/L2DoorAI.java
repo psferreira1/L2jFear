@@ -1,23 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.ai;
 
 import com.l2jfrozen.gameserver.model.L2Character;
@@ -30,7 +10,7 @@ import com.l2jfrozen.gameserver.model.actor.position.L2CharPosition;
 import com.l2jfrozen.gameserver.thread.ThreadPoolManager;
 
 /**
- * @author mkizub TODO To change the template for this generated type comment go to Window - Preferences - Java - Code Style - Code Templates
+ * @author mkizub
  */
 public class L2DoorAI extends L2CharacterAI
 {
@@ -104,7 +84,7 @@ public class L2DoorAI extends L2CharacterAI
 	@Override
 	protected void onEvtAttacked(final L2Character attacker)
 	{
-		L2DoorInstance me = (L2DoorInstance) _actor;
+		L2DoorInstance me = (L2DoorInstance) actor;
 		ThreadPoolManager.getInstance().executeTask(new onEventAttackedDoorTask(me, attacker));
 		me = null;
 	}
@@ -183,36 +163,32 @@ public class L2DoorAI extends L2CharacterAI
 	
 	private class onEventAttackedDoorTask implements Runnable
 	{
-		private final L2DoorInstance _door;
-		private final L2Character _attacker;
+		private final L2DoorInstance door;
+		private final L2Character attacker;
 		
 		public onEventAttackedDoorTask(final L2DoorInstance door, final L2Character attacker)
 		{
-			_door = door;
-			_attacker = attacker;
+			this.door = door;
+			this.attacker = attacker;
 		}
 		
-		/*
-		 * (non-Javadoc)
-		 * @see java.lang.Runnable#run()
-		 */
 		@Override
 		public void run()
 		{
-			_door.getKnownList().updateKnownObjects();
+			door.getKnownList().updateKnownObjects();
 			
-			for (final L2SiegeGuardInstance guard : _door.getKnownSiegeGuards())
+			for (final L2SiegeGuardInstance guard : door.getKnownSiegeGuards())
 			{
-				if (guard != null && guard.getAI() != null && _actor.isInsideRadius(guard, guard.getFactionRange(), false, true) && Math.abs(_attacker.getZ() - guard.getZ()) < 200)
+				if (guard != null && guard.getAI() != null && actor.isInsideRadius(guard, guard.getFactionRange(), false, true) && Math.abs(attacker.getZ() - guard.getZ()) < 200)
 				{
-					guard.getAI().notifyEvent(CtrlEvent.EVT_AGGRESSION, _attacker, 15);
+					guard.getAI().notifyEvent(CtrlEvent.EVT_AGGRESSION, attacker, 15);
 				}
 			}
-			for (final L2FortSiegeGuardInstance guard : _door.getKnownFortSiegeGuards())
+			for (final L2FortSiegeGuardInstance guard : door.getKnownFortSiegeGuards())
 			{
-				if (guard != null && guard.getAI() != null && _actor.isInsideRadius(guard, guard.getFactionRange(), false, true) && Math.abs(_attacker.getZ() - guard.getZ()) < 200)
+				if (guard != null && guard.getAI() != null && actor.isInsideRadius(guard, guard.getFactionRange(), false, true) && Math.abs(attacker.getZ() - guard.getZ()) < 200)
 				{
-					guard.getAI().notifyEvent(CtrlEvent.EVT_AGGRESSION, _attacker, 15);
+					guard.getAI().notifyEvent(CtrlEvent.EVT_AGGRESSION, attacker, 15);
 				}
 			}
 		}

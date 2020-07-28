@@ -1,22 +1,3 @@
-/* L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.network.clientpackets;
 
 import com.l2jfrozen.gameserver.managers.DuelManager;
@@ -30,17 +11,17 @@ import com.l2jfrozen.gameserver.network.serverpackets.SystemMessage;
  */
 public final class RequestDuelAnswerStart extends L2GameClientPacket
 {
-	private int _partyDuel;
+	private int partyDuel;
 	@SuppressWarnings("unused")
-	private int _unk1;
-	private int _response;
+	private int unk1;
+	private int response;
 	
 	@Override
 	protected void readImpl()
 	{
-		_partyDuel = readD();
-		_unk1 = readD();
-		_response = readD();
+		partyDuel = readD();
+		unk1 = readD();
+		response = readD();
 	}
 	
 	@Override
@@ -48,14 +29,18 @@ public final class RequestDuelAnswerStart extends L2GameClientPacket
 	{
 		final L2PcInstance player = getClient().getActiveChar();
 		if (player == null)
+		{
 			return;
+		}
 		
 		final L2PcInstance requestor = player.getActiveRequester();
 		
 		if (requestor == null)
+		{
 			return;
+		}
 		
-		if (_response == 1)
+		if (response == 1)
 		{
 			SystemMessage msg1 = null, msg2 = null;
 			if (requestor.isInDuel())
@@ -71,7 +56,7 @@ public final class RequestDuelAnswerStart extends L2GameClientPacket
 				return;
 			}
 			
-			if (_partyDuel == 1)
+			if (partyDuel == 1)
 			{
 				msg1 = new SystemMessage(SystemMessageId.YOU_HAVE_ACCEPTED_S1S_CHALLENGE_TO_A_PARTY_DUEL_THE_DUEL_WILL_BEGIN_IN_A_FEW_MOMENTS);
 				msg1.addString(requestor.getName());
@@ -91,12 +76,12 @@ public final class RequestDuelAnswerStart extends L2GameClientPacket
 			player.sendPacket(msg1);
 			requestor.sendPacket(msg2);
 			
-			DuelManager.getInstance().addDuel(requestor, player, _partyDuel);
+			DuelManager.getInstance().addDuel(requestor, player, partyDuel);
 		}
 		else
 		{
 			SystemMessage msg = null;
-			if (_partyDuel == 1)
+			if (partyDuel == 1)
 			{
 				msg = new SystemMessage(SystemMessageId.THE_OPPOSING_PARTY_HAS_DECLINED_YOUR_CHALLENGE_TO_A_DUEL);
 			}

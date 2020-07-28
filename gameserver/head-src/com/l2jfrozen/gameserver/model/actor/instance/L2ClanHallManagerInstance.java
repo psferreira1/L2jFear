@@ -1,23 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.model.actor.instance;
 
 import java.text.SimpleDateFormat;
@@ -65,8 +45,7 @@ public class L2ClanHallManagerInstance extends L2FolkInstance
 	/** The Constant COND_OWNER. */
 	protected static final int COND_OWNER = 3;
 	
-	/** The _clan hall id. */
-	private int _clanHallId = -1;
+	private int clanHallId = -1;
 	
 	/**
 	 * Instantiates a new l2 clan hall manager instance.
@@ -78,17 +57,15 @@ public class L2ClanHallManagerInstance extends L2FolkInstance
 		super(objectId, template);
 	}
 	
-	/*
-	 * (non-Javadoc)
-	 * @see com.l2jfrozen.gameserver.model.actor.instance.L2FolkInstance#onBypassFeedback(com.l2jfrozen.gameserver.model.actor.instance.L2PcInstance, java.lang.String)
-	 */
 	@Override
 	public void onBypassFeedback(final L2PcInstance player, final String command)
 	{
 		SimpleDateFormat format = new SimpleDateFormat("dd/MM/yyyy HH:mm");
 		final int condition = validateCondition(player);
 		if (condition <= COND_ALL_FALSE)
+		{
 			return;
+		}
 		else if (condition == COND_OWNER)
 		{
 			StringTokenizer st = new StringTokenizer(command, " ");
@@ -205,7 +182,9 @@ public class L2ClanHallManagerInstance extends L2FolkInstance
 						return;
 					}
 					if (st.countTokens() < 1)
+					{
 						return;
+					}
 					final int valbuy = Integer.parseInt(st.nextToken()) + getClanHall().getFunction(ClanHall.FUNC_ITEM_CREATE).getLvl() * 100000;
 					showBuyWindow(player, valbuy);
 				}
@@ -794,7 +773,9 @@ public class L2ClanHallManagerInstance extends L2FolkInstance
 				setTarget(player);
 				L2Skill skill;
 				if (val == "")
+				{
 					return;
+				}
 				
 				try
 				{
@@ -823,10 +804,14 @@ public class L2ClanHallManagerInstance extends L2FolkInstance
 							}
 						}
 						if (getClanHall().getFunction(ClanHall.FUNC_SUPPORT) == null)
+						{
 							return;
+						}
 						NpcHtmlMessage html = new NpcHtmlMessage(1);
 						if (getClanHall().getFunction(ClanHall.FUNC_SUPPORT).getLvl() == 0)
+						{
 							return;
+						}
 						html.setFile("data/html/clanHallManager/support" + getClanHall().getFunction(ClanHall.FUNC_SUPPORT).getLvl() + ".htm");
 						html.replace("%mp%", String.valueOf(getCurrentMp()));
 						sendHtmlMessage(player, html);
@@ -836,7 +821,9 @@ public class L2ClanHallManagerInstance extends L2FolkInstance
 					catch (final Exception e)
 					{
 						if (Config.ENABLE_ALL_EXCEPTIONS)
+						{
 							e.printStackTrace();
+						}
 						
 						player.sendMessage("Invalid skill level!");
 					}
@@ -844,7 +831,9 @@ public class L2ClanHallManagerInstance extends L2FolkInstance
 				catch (final Exception e)
 				{
 					if (Config.ENABLE_ALL_EXCEPTIONS)
+					{
 						e.printStackTrace();
+					}
 					
 					player.sendMessage("Invalid skill!");
 				}
@@ -874,7 +863,9 @@ public class L2ClanHallManagerInstance extends L2FolkInstance
 		player.setLastFolkNPC(this);
 		
 		if (!canTarget(player))
+		{
 			return;
+		}
 		
 		// Check if the L2PcInstance already target the L2NpcInstance
 		if (this != player.getTarget())
@@ -911,7 +902,7 @@ public class L2ClanHallManagerInstance extends L2FolkInstance
 	/**
 	 * Send html message.
 	 * @param player the player
-	 * @param html the html
+	 * @param html   the html
 	 */
 	private void sendHtmlMessage(final L2PcInstance player, NpcHtmlMessage html)
 	{
@@ -952,18 +943,22 @@ public class L2ClanHallManagerInstance extends L2FolkInstance
 	
 	/**
 	 * Validate condition.
-	 * @param player the player
-	 * @return the int
+	 * @param  player the player
+	 * @return        the int
 	 */
 	protected int validateCondition(final L2PcInstance player)
 	{
 		if (getClanHall() == null)
+		{
 			return COND_ALL_FALSE;
+		}
 		// if (player.isGM()) return COND_OWNER;
 		if (player.getClan() != null)
 		{
 			if (getClanHall().getOwnerId() == player.getClanId())
+			{
 				return COND_OWNER;
+			}
 			return COND_OWNER_FALSE;
 		}
 		return COND_ALL_FALSE;
@@ -975,20 +970,22 @@ public class L2ClanHallManagerInstance extends L2FolkInstance
 	 */
 	public final ClanHall getClanHall()
 	{
-		if (_clanHallId < 0)
+		if (clanHallId < 0)
 		{
 			ClanHall temp = ClanHallManager.getInstance().getNearbyClanHall(getX(), getY(), 500);
 			
 			if (temp != null)
 			{
-				_clanHallId = temp.getId();
+				clanHallId = temp.getId();
 				temp = null;
 			}
 			
-			if (_clanHallId < 0)
+			if (clanHallId < 0)
+			{
 				return null;
+			}
 		}
-		return ClanHallManager.getInstance().getClanHallById(_clanHallId);
+		return ClanHallManager.getInstance().getClanHallById(clanHallId);
 	}
 	
 	/**
@@ -1016,7 +1013,7 @@ public class L2ClanHallManagerInstance extends L2FolkInstance
 	/**
 	 * Do teleport.
 	 * @param player the player
-	 * @param val the val
+	 * @param val    the val
 	 */
 	private void doTeleport(final L2PcInstance player, final int val)
 	{
@@ -1053,7 +1050,7 @@ public class L2ClanHallManagerInstance extends L2FolkInstance
 	/**
 	 * Show buy window.
 	 * @param player the player
-	 * @param val the val
+	 * @param val    the val
 	 */
 	private void showBuyWindow(final L2PcInstance player, final int val)
 	{

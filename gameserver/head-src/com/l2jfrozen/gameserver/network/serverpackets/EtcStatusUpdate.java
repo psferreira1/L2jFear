@@ -1,22 +1,3 @@
-/* L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.network.serverpackets;
 
 import com.l2jfrozen.gameserver.model.L2Character;
@@ -31,15 +12,13 @@ import com.l2jfrozen.gameserver.skills.effects.EffectCharge;
  */
 public class EtcStatusUpdate extends L2GameServerPacket
 {
-	private static final String _S__F3_ETCSTATUSUPDATE = "[S] F3 EtcStatusUpdate";
-	
-	private final L2PcInstance _activeChar;
-	private final EffectCharge _effect;
+	private final L2PcInstance activeChar;
+	private final EffectCharge effect;
 	
 	public EtcStatusUpdate(final L2PcInstance activeChar)
 	{
-		_activeChar = activeChar;
-		_effect = (EffectCharge) _activeChar.getFirstEffect(L2Effect.EffectType.CHARGE);
+		this.activeChar = activeChar;
+		effect = (EffectCharge) this.activeChar.getFirstEffect(L2Effect.EffectType.CHARGE);
 	}
 	
 	/**
@@ -49,21 +28,21 @@ public class EtcStatusUpdate extends L2GameServerPacket
 	protected void writeImpl()
 	{
 		writeC(0xF3); // several icons to a separate line (0 = disabled)
-		if (_effect != null)
+		if (effect != null)
 		{
-			writeD(_effect.getLevel()); // 1-7 increase force, lvl
+			writeD(effect.getLevel()); // 1-7 increase force, lvl
 		}
 		else
 		{
 			writeD(0x00); // 1-7 increase force, lvl
 		}
-		writeD(_activeChar.getWeightPenalty()); // 1-4 weight penalty, lvl (1=50%, 2=66.6%, 3=80%, 4=100%)
-		writeD(_activeChar.getMessageRefusal() || _activeChar.isChatBanned() ? 1 : 0); // 1 = block all chat
+		writeD(activeChar.getWeightPenalty()); // 1-4 weight penalty, lvl (1=50%, 2=66.6%, 3=80%, 4=100%)
+		writeD(activeChar.getMessageRefusal() || activeChar.isChatBanned() ? 1 : 0); // 1 = block all chat
 		// writeD(0x00); // 1 = danger area
-		writeD(_activeChar.isInsideZone(L2Character.ZONE_DANGERAREA)/* || _activeChar.isInDangerArea() */? 1 : 0); // 1 = danger area
-		writeD(Math.min(_activeChar.getExpertisePenalty() + _activeChar.getMasteryPenalty() + _activeChar.getMasteryWeapPenalty(), 1)); // 1 = grade penalty
-		writeD(_activeChar.getCharmOfCourage() ? 1 : 0); // 1 = charm of courage (no xp loss in siege..)
-		writeD(_activeChar.getDeathPenaltyBuffLevel()); // 1-15 death penalty, lvl (combat ability decreased due to death)
+		writeD(activeChar.isInsideZone(L2Character.ZONE_DANGERAREA)/* || activeChar.isInDangerArea() */ ? 1 : 0); // 1 = danger area
+		writeD(Math.min(activeChar.getExpertisePenalty() + activeChar.getMasteryPenalty() + activeChar.getMasteryWeapPenalty(), 1)); // 1 = grade penalty
+		writeD(activeChar.getCharmOfCourage() ? 1 : 0); // 1 = charm of courage (no xp loss in siege..)
+		writeD(activeChar.getDeathPenaltyBuffLevel()); // 1-15 death penalty, lvl (combat ability decreased due to death)
 	}
 	
 	/**
@@ -72,6 +51,6 @@ public class EtcStatusUpdate extends L2GameServerPacket
 	@Override
 	public String getType()
 	{
-		return _S__F3_ETCSTATUSUPDATE;
+		return "[S] F3 EtcStatusUpdate";
 	}
 }

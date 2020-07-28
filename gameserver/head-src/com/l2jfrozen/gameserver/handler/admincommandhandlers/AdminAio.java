@@ -1,191 +1,114 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.handler.admincommandhandlers;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.StringTokenizer;
 
 import org.apache.log4j.Logger;
 
-import com.l2jfrozen.Config;
 import com.l2jfrozen.gameserver.datatables.GmListTable;
 import com.l2jfrozen.gameserver.handler.IAdminCommandHandler;
-import com.l2jfrozen.gameserver.model.L2World;
+import com.l2jfrozen.gameserver.model.L2Object;
 import com.l2jfrozen.gameserver.model.actor.instance.L2PcInstance;
+import com.l2jfrozen.gameserver.network.SystemMessageId;
 import com.l2jfrozen.gameserver.network.serverpackets.EtcStatusUpdate;
-import com.l2jfrozen.util.CloseUtil;
-import com.l2jfrozen.util.database.DatabaseUtils;
-import com.l2jfrozen.util.database.L2DatabaseFactory;
+import com.l2jfrozen.gameserver.network.serverpackets.SystemMessage;
 
 /**
- * Give / Take Status Aio to Player Changes name color and title color if enabled Uses: setaio [<player_name>] [<time_duration in days>] removeaio [<player_name>] If <player_name> is not specified, the current target player is used.
+ * Give / Take Status Aio to Player Changes name color and title color if enabled Uses: - setaio [<time_duration in days>] - removeaio
  * @author KhayrusS
  */
 public class AdminAio implements IAdminCommandHandler
 {
 	private final static Logger LOGGER = Logger.getLogger(AdminAio.class);
+	private static final SimpleDateFormat SDT = new SimpleDateFormat("dd-MM-yyyy HH:mm");
 	
-	private static String[] _adminCommands =
+	private static final String[] ADMIN_COMMANDS =
 	{
 		"admin_setaio",
 		"admin_removeaio"
 	};
 	
-	private enum CommandEnum
-	{
-		admin_setaio,
-		admin_removeaio
-	}
-	
 	@Override
-	public boolean useAdminCommand(final String command, final L2PcInstance activeChar)
+	public boolean useAdminCommand(String command, L2PcInstance activeChar)
 	{
-		/*
-		 * if(!AdminCommandAccessRights.getInstance().hasAccess(command, activeChar.getAccessLevel())){ return false; } if(Config.GMAUDIT) { Logger _logAudit = Logger.getLogger("gmaudit"); LogRecord record = new LogRecord(Level.INFO, command); record.setParameters(new Object[] { "GM: " +
-		 * activeChar.getName(), " to target [" + activeChar.getTarget() + "] " }); _logAudit.LOGGER(record); }
-		 */
+		StringTokenizer st = new StringTokenizer(command);
+		st.nextToken();
 		
-		final StringTokenizer st = new StringTokenizer(command);
-		
-		final CommandEnum comm = CommandEnum.valueOf(st.nextToken());
-		
-		if (comm == null)
-			return false;
-		
-		switch (comm)
+		if (command.startsWith("admin_setaio"))
 		{
-			case admin_setaio:
+			// Player MUST BE ONLINE to give AIO
+			L2Object target = activeChar.getTarget();
+			
+			if (target == null)
 			{
-				
-				boolean no_token = false;
-				
-				if (st.hasMoreTokens())
-				{ // char_name not specified
-				
-					final String char_name = st.nextToken();
-					
-					final L2PcInstance player = L2World.getInstance().getPlayer(char_name);
-					
-					if (player != null)
-					{
-						
-						if (st.hasMoreTokens()) // time
-						{
-							final String time = st.nextToken();
-							
-							try
-							{
-								final int value = Integer.parseInt(time);
-								
-								if (value > 0)
-								{
-									
-									doAio(activeChar, player, char_name, time);
-									
-									if (player.isAio())
-										return true;
-									
-								}
-								else
-								{
-									activeChar.sendMessage("Time must be bigger then 0!");
-									return false;
-								}
-								
-							}
-							catch (final NumberFormatException e)
-							{
-								activeChar.sendMessage("Time must be a number!");
-								return false;
-							}
-							
-						}
-						else
-						{
-							no_token = true;
-						}
-						
-					}
-					else
-					{
-						activeChar.sendMessage("Player must be online to set AIO status");
-						no_token = true;
-					}
-					
-				}
-				else
-				{
-					
-					no_token = true;
-					
-				}
-				
-				if (no_token)
-				{
-					activeChar.sendMessage("Usage: //setaio <char_name> [time](in days)");
-					return false;
-				}
-				
+				activeChar.sendPacket(new SystemMessage(SystemMessageId.CANT_SEE_TARGET));
+				AdminHelpPage.showHelpPage(activeChar, "mods_menu.htm");
+				return false;
 			}
-			case admin_removeaio:
+			else if (!target.isPlayer())
 			{
+				activeChar.sendPacket(new SystemMessage(SystemMessageId.INCORRECT_TARGET));
+				AdminHelpPage.showHelpPage(activeChar, "mods_menu.htm");
+				return false;
+			}
+			
+			if (!st.hasMoreTokens())
+			{
+				activeChar.sendMessage("Usage: //setaio [time (in days)]");
+				AdminHelpPage.showHelpPage(activeChar, "mods_menu.htm");
+				return false;
+			}
+			
+			int days = 0;
+			
+			try
+			{
+				days = Integer.parseInt(st.nextToken());
+			}
+			catch (NumberFormatException e)
+			{
+				activeChar.sendMessage("Usage: //setaio [NUMBER]");
+				AdminHelpPage.showHelpPage(activeChar, "mods_menu.htm");
+				return false;
+			}
+			
+			if (target.isPlayer())
+			{
+				L2PcInstance player = (L2PcInstance) target;
 				
-				boolean no_token = false;
-				
-				if (st.hasMoreTokens())
-				{ // char_name
-				
-					final String char_name = st.nextToken();
-					
-					final L2PcInstance player = L2World.getInstance().getPlayer(char_name);
-					
-					if (player != null)
-					{
-						
-						removeAio(activeChar, player, char_name);
-						
-						if (!player.isAio())
-							return true;
-						
-					}
-					else
-					{
-						
-						activeChar.sendMessage("Player must be online to remove AIO status");
-						no_token = true;
-					}
-					
-				}
-				else
+				if (player.isOnline())
 				{
-					no_token = true;
+					giveAio(activeChar, player, days);
 				}
+			}
+		}
+		else if (command.startsWith("admin_removeaio"))
+		{
+			// Player MUST BE ONLINE to remove AIO
+			L2Object target = activeChar.getTarget();
+			
+			if (target == null)
+			{
+				activeChar.sendPacket(new SystemMessage(SystemMessageId.CANT_SEE_TARGET));
+				AdminHelpPage.showHelpPage(activeChar, "mods_menu.htm");
+				return false;
+			}
+			else if (!target.isPlayer())
+			{
+				activeChar.sendPacket(new SystemMessage(SystemMessageId.INCORRECT_TARGET));
+				AdminHelpPage.showHelpPage(activeChar, "mods_menu.htm");
+				return false;
+			}
+			
+			if (target.isPlayer())
+			{
+				L2PcInstance player = (L2PcInstance) target;
 				
-				if (no_token)
+				if (player.isOnline())
 				{
-					activeChar.sendMessage("Usage: //removeaio <char_name>");
-					return false;
+					removeAio(activeChar, player);
 				}
-				
 			}
 		}
 		
@@ -193,107 +116,76 @@ public class AdminAio implements IAdminCommandHandler
 		
 	}
 	
-	public void doAio(final L2PcInstance activeChar, final L2PcInstance _player, final String _playername, final String _time)
+	public void giveAio(L2PcInstance activeChar, L2PcInstance player, int days)
 	{
-		final int days = Integer.parseInt(_time);
-		if (_player == null)
+		if (player == null)
 		{
-			activeChar.sendMessage("not found char" + _playername);
+			return;
+		}
+		
+		if (player.isAio())
+		{
+			activeChar.sendMessage(player.getName() + " is AIO already.");
+			AdminHelpPage.showHelpPage(activeChar, "mods_menu.htm");
 			return;
 		}
 		
 		if (days > 0)
 		{
-			_player.setAio(true);
-			_player.setEndTime("aio", days);
-			_player.getStat().addExp(_player.getStat().getExpForLevel(81));
+			long miliseconds = 86400000 * days;
+			long endDay = System.currentTimeMillis() + miliseconds;
+			player.setAio(true);
+			player.setAioEndDate(endDay);
+			player.getStat().addExp(player.getStat().getExpForLevel(81));
+			player.updateAIOColor();
+			player.giveAioSkills();
+			player.broadcastUserInfo();
+			player.sendPacket(new EtcStatusUpdate(player));
+			player.sendSkillList();
+			GmListTable.broadcastMessageToGMs("GM " + activeChar.getName() + " set AIO stat for player " + player.getName() + " for " + days + " day(s)");
+			LOGGER.info("GM " + activeChar.getName() + " gave to player " + player.getName() + " AIO status that will end at " + SDT.format(new Date(endDay)));
+			player.sendMessage("Congratulations you are AIO now.");
+			player.broadcastUserInfo();
 			
-			Connection connection = null;
-			try
-			{
-				connection = L2DatabaseFactory.getInstance().getConnection(false);
-				
-				final PreparedStatement statement = connection.prepareStatement("UPDATE characters SET aio=1, aio_end=? WHERE obj_id=?");
-				statement.setLong(1, _player.getAioEndTime());
-				statement.setInt(2, _player.getObjectId());
-				statement.execute();
-				DatabaseUtils.close(statement);
-				connection.close();
-				
-				if (Config.ALLOW_AIO_NCOLOR && activeChar.isAio())
-					_player.getAppearance().setNameColor(Config.AIO_NCOLOR);
-				
-				if (Config.ALLOW_AIO_TCOLOR && activeChar.isAio())
-					_player.getAppearance().setTitleColor(Config.AIO_TCOLOR);
-				
-				_player.rewardAioSkills();
-				_player.broadcastUserInfo();
-				_player.sendPacket(new EtcStatusUpdate(_player));
-				_player.sendSkillList();
-				GmListTable.broadcastMessageToGMs("GM " + activeChar.getName() + " set Aio stat for player " + _playername + " for " + _time + " day(s)");
-				_player.sendMessage("You are now an Aio, Congratulations!");
-				_player.broadcastUserInfo();
-			}
-			catch (final Exception e)
-			{
-				if (Config.DEBUG)
-					e.printStackTrace();
-				
-				LOGGER.warn("could not set Aio stats to char:", e);
-			}
-			finally
-			{
-				CloseUtil.close(connection);
-			}
+			player.setVariable(L2PcInstance.AIO_END, endDay, true);
 		}
-		else
-		{
-			removeAio(activeChar, _player, _playername);
-		}
+		
+		AdminHelpPage.showHelpPage(activeChar, "mods_menu.htm");
 	}
 	
-	public void removeAio(final L2PcInstance activeChar, final L2PcInstance _player, final String _playername)
+	public void removeAio(L2PcInstance activeChar, L2PcInstance player)
 	{
-		_player.setAio(false);
-		_player.setAioEndTime(0);
+		if (player == null)
+		{
+			return;
+		}
 		
-		Connection connection = null;
-		try
+		if (!player.isAio())
 		{
-			connection = L2DatabaseFactory.getInstance().getConnection(false);
-			
-			final PreparedStatement statement = connection.prepareStatement("UPDATE characters SET Aio=0, Aio_end=0 WHERE obj_id=?");
-			statement.setInt(1, _player.getObjectId());
-			statement.execute();
-			DatabaseUtils.close(statement);
-			connection.close();
-			
-			_player.lostAioSkills();
-			_player.getAppearance().setNameColor(0xFFFFFF);
-			_player.getAppearance().setTitleColor(0xFFFFFF);
-			_player.broadcastUserInfo();
-			_player.sendPacket(new EtcStatusUpdate(_player));
-			_player.sendSkillList();
-			GmListTable.broadcastMessageToGMs("GM " + activeChar.getName() + " remove Aio stat of player " + _playername);
-			_player.sendMessage("Now You are not an Aio..");
-			_player.broadcastUserInfo();
+			activeChar.sendMessage(player.getName() + " is not AIO.");
+			AdminHelpPage.showHelpPage(activeChar, "mods_menu.htm");
+			return;
 		}
-		catch (final Exception e)
-		{
-			if (Config.DEBUG)
-				e.printStackTrace();
-			
-			LOGGER.warn("could not remove Aio stats of char:", e);
-		}
-		finally
-		{
-			CloseUtil.close(connection);
-		}
+		
+		player.setAio(false);
+		player.removeAioSkills();
+		player.getAppearance().setNameColor(0xFFFFFF);
+		player.getAppearance().setTitleColor(0xFFFFFF);
+		player.broadcastUserInfo();
+		player.sendPacket(new EtcStatusUpdate(player));
+		player.sendSkillList();
+		GmListTable.broadcastMessageToGMs("GM " + activeChar.getName() + " remove Aio stat of player " + player.getName());
+		player.sendMessage("You lost AIO status.");
+		player.broadcastUserInfo();
+		
+		player.removeVariable(L2PcInstance.AIO_END, true);
+		
+		AdminHelpPage.showHelpPage(activeChar, "mods_menu.htm");
 	}
 	
 	@Override
 	public String[] getAdminCommandList()
 	{
-		return _adminCommands;
+		return ADMIN_COMMANDS;
 	}
 }

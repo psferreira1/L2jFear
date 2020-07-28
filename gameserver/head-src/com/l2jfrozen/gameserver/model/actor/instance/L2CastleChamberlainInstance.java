@@ -1,28 +1,7 @@
-/* L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.model.actor.instance;
 
 import java.util.NoSuchElementException;
 import java.util.StringTokenizer;
-
-import javolution.text.TextBuilder;
 
 import com.l2jfrozen.Config;
 import com.l2jfrozen.gameserver.ai.CtrlIntention;
@@ -49,6 +28,8 @@ import com.l2jfrozen.gameserver.network.serverpackets.ValidateLocation;
 import com.l2jfrozen.gameserver.templates.L2NpcTemplate;
 import com.l2jfrozen.gameserver.util.Util;
 
+import javolution.text.TextBuilder;
+
 /**
  * Castle Chamberlains implementation used for: - tax rate control - regional manor system control - castle treasure control - ...
  */
@@ -69,7 +50,9 @@ public class L2CastleChamberlainInstance extends L2FolkInstance
 	public void onAction(final L2PcInstance player)
 	{
 		if (!canTarget(player))
+		{
 			return;
+		}
 		
 		player.setLastFolkNPC(this);
 		
@@ -109,17 +92,23 @@ public class L2CastleChamberlainInstance extends L2FolkInstance
 	{
 		// BypassValidation Exploit plug.
 		if (player.getLastFolkNPC().getObjectId() != getObjectId())
+		{
 			return;
+		}
 		
 		StringTokenizer st = new StringTokenizer(command, " ");
 		String actualCommand = st.nextToken(); // Get actual command
 		
 		final int condition = validateCondition(player);
 		if (condition <= COND_ALL_FALSE)
+		{
 			return;
+		}
 		
 		if (condition == COND_BUSY_BECAUSE_OF_SIEGE)
+		{
 			return;
+		}
 		else if (condition == COND_OWNER)
 		{
 			String val = "";
@@ -248,7 +237,9 @@ public class L2CastleChamberlainInstance extends L2FolkInstance
 				if ((player.getClanPrivileges() & L2Clan.CP_CS_USE_FUNCTIONS) == L2Clan.CP_CS_USE_FUNCTIONS)
 				{
 					if (val == "")
+					{
 						return;
+					}
 					
 					player.tempInvetoryDisable();
 					
@@ -310,7 +301,9 @@ public class L2CastleChamberlainInstance extends L2FolkInstance
 						catch (final NoSuchElementException e)
 						{
 							if (Config.ENABLE_ALL_EXCEPTIONS)
+							{
 								e.printStackTrace();
+							}
 						}
 						if (amount > 0 && (long) getCastle().getTreasury() + amount < Integer.MAX_VALUE)
 						{
@@ -333,7 +326,9 @@ public class L2CastleChamberlainInstance extends L2FolkInstance
 						catch (final NoSuchElementException e)
 						{
 							if (Config.ENABLE_ALL_EXCEPTIONS)
+							{
 								e.printStackTrace();
+							}
 						}
 						if (amount > 0)
 						{
@@ -620,9 +615,13 @@ public class L2CastleChamberlainInstance extends L2FolkInstance
 			if (player.getClan() != null)
 			{
 				if (getCastle().getSiege().getIsInProgress())
+				{
 					return COND_BUSY_BECAUSE_OF_SIEGE; // Busy because of siege
-				else if (getCastle().getOwnerId() == player.getClanId()) // Clan owns castle
+				}
+				else if (getCastle().getOwnerId() == player.getClanId())
+				{
 					return COND_OWNER; // Owner
+				}
 			}
 		}
 		

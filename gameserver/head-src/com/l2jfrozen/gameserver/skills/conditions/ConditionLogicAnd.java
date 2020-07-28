@@ -1,23 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.skills.conditions;
 
 import com.l2jfrozen.gameserver.skills.Env;
@@ -27,9 +7,8 @@ import com.l2jfrozen.gameserver.skills.Env;
  */
 public class ConditionLogicAnd extends Condition
 {
-	
-	private static Condition[] _emptyConditions = new Condition[0];
-	public Condition[] conditions = _emptyConditions;
+	private static Condition[] emptyConditions = new Condition[0];
+	public Condition[] conditions = emptyConditions;
 	
 	public ConditionLogicAnd()
 	{
@@ -39,7 +18,9 @@ public class ConditionLogicAnd extends Condition
 	public void add(final Condition condition)
 	{
 		if (condition == null)
+		{
 			return;
+		}
 		if (getListener() != null)
 		{
 			condition.setListener(this);
@@ -77,7 +58,9 @@ public class ConditionLogicAnd extends Condition
 		for (final Condition c : conditions)
 		{
 			if (!c.test(env))
+			{
 				return false;
+			}
 		}
 		return true;
 	}

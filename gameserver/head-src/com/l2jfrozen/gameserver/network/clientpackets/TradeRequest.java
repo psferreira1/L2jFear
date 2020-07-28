@@ -1,23 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.network.clientpackets;
 
 import org.apache.log4j.Logger;
@@ -36,12 +16,12 @@ public final class TradeRequest extends L2GameClientPacket
 {
 	private static Logger LOGGER = Logger.getLogger(TradeRequest.class);
 	
-	private int _objectId;
+	private int objectId;
 	
 	@Override
 	protected void readImpl()
 	{
-		_objectId = readD();
+		objectId = readD();
 	}
 	
 	@Override
@@ -49,7 +29,9 @@ public final class TradeRequest extends L2GameClientPacket
 	{
 		final L2PcInstance player = getClient().getActiveChar();
 		if (player == null)
+		{
 			return;
+		}
 		
 		if (!player.getAccessLevel().allowTransaction())
 		{
@@ -58,7 +40,7 @@ public final class TradeRequest extends L2GameClientPacket
 			return;
 		}
 		
-		final L2Object target = L2World.getInstance().findObject(_objectId);
+		final L2Object target = L2World.getInstance().findObject(objectId);
 		if (target == null || !player.getKnownList().knowsObject(target) || !(target instanceof L2PcInstance) || target.getObjectId() == player.getObjectId())
 		{
 			player.sendPacket(new SystemMessage(SystemMessageId.TARGET_IS_INCORRECT));
@@ -237,7 +219,7 @@ public final class TradeRequest extends L2GameClientPacket
 			return;
 		}
 		
-		if (player.getPrivateStoreType() != 0 || partner.getPrivateStoreType() != 0)
+		if (player.isInStoreMode() || partner.isInStoreMode())
 		{
 			player.sendPacket(new SystemMessage(SystemMessageId.CANNOT_TRADE_DISCARD_DROP_ITEM_WHILE_IN_SHOPMODE));
 			player.sendPacket(ActionFailed.STATIC_PACKET);

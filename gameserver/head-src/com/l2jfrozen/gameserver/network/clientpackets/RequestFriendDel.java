@@ -1,23 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.network.clientpackets;
 
 import java.sql.Connection;
@@ -32,108 +12,106 @@ import com.l2jfrozen.gameserver.model.actor.instance.L2PcInstance;
 import com.l2jfrozen.gameserver.network.SystemMessageId;
 import com.l2jfrozen.gameserver.network.serverpackets.FriendList;
 import com.l2jfrozen.gameserver.network.serverpackets.SystemMessage;
-import com.l2jfrozen.util.CloseUtil;
-import com.l2jfrozen.util.database.DatabaseUtils;
 import com.l2jfrozen.util.database.L2DatabaseFactory;
 
 public final class RequestFriendDel extends L2GameClientPacket
 {
 	private static Logger LOGGER = Logger.getLogger(RequestFriendDel.class);
+	private static final String SELECT_FRIEND_ID = "SELECT friend_id FROM character_friends, characters WHERE char_id=? AND friend_id=obj_id AND char_name=? AND not_blocked=1";
+	private static final String DELETE_CHARACTER_FRIEND = "DELETE FROM character_friends WHERE (char_id=? AND friend_id=?) OR (char_id=? AND friend_id=?)";
 	
-	private String _name;
+	private String name;
 	
 	@Override
 	protected void readImpl()
 	{
 		try
 		{
-			_name = readS();
+			name = readS();
 		}
 		catch (final Exception e)
 		{
 			if (Config.ENABLE_ALL_EXCEPTIONS)
+			{
 				e.printStackTrace();
+			}
 			
-			_name = null;
+			name = null;
 		}
 	}
 	
 	@Override
 	protected void runImpl()
 	{
-		if (_name == null)
-			return;
-		
-		SystemMessage sm;
-		Connection con = null;
-		final L2PcInstance activeChar = getClient().getActiveChar();
-		if (activeChar == null)
-			return;
-		
-		if (!activeChar.getFriendList().contains(_name))
+		if (name == null)
 		{
-			sm = new SystemMessage(SystemMessageId.S1_NOT_ON_YOUR_FRIENDS_LIST);
-			sm.addString(_name);
+			return;
+		}
+		
+		L2PcInstance activeChar = getClient().getActiveChar();
+		if (activeChar == null)
+		{
+			return;
+		}
+		
+		if (!activeChar.getFriendList().contains(name))
+		{
+			SystemMessage sm = new SystemMessage(SystemMessageId.S1_NOT_ON_YOUR_FRIENDS_LIST);
+			sm.addString(name);
 			activeChar.sendPacket(sm);
 			return;
 		}
 		
-		try
+		try (Connection con = L2DatabaseFactory.getInstance().getConnection())
 		{
-			final L2PcInstance friend = L2World.getInstance().getPlayer(_name);
-			con = L2DatabaseFactory.getInstance().getConnection(false);
-			
-			PreparedStatement statement;
-			ResultSet rset;
+			L2PcInstance friend = L2World.getInstance().getPlayer(name);
 			
 			int objectId = -1;
 			
 			if (friend != null)
 			{
 				objectId = friend.getObjectId();
-				/*
-				 * statement = con.prepareStatement("SELECT friend_id FROM character_friends WHERE char_id=? and friend_id=?"); statement.setInt(1, activeChar.getObjectId()); statement.setInt(2, friend.getObjectId()); rset = statement.executeQuery(); if(!rset.next()) {
-				 * DatabaseUtils.close(statement); // Player is not in your friendlist sm = new SystemMessage(SystemMessageId.S1_NOT_ON_YOUR_FRIENDS_LIST); sm.addString(_name); activeChar.sendPacket(sm); CloseUtil.close(con); con = null; return; }
-				 */
 			}
 			else
 			{
-				statement = con.prepareStatement("SELECT friend_id FROM character_friends, characters WHERE char_id=? AND friend_id=obj_id AND char_name=? AND not_blocked = 1");
-				statement.setInt(1, activeChar.getObjectId());
-				statement.setString(2, _name);
-				rset = statement.executeQuery();
-				
-				if (!rset.next())
+				try (PreparedStatement statement = con.prepareStatement(SELECT_FRIEND_ID))
 				{
-					DatabaseUtils.close(statement);
-					DatabaseUtils.close(rset);
+					statement.setInt(1, activeChar.getObjectId());
+					statement.setString(2, name);
 					
-					// Player is not in your friendlist
-					sm = new SystemMessage(SystemMessageId.S1_NOT_ON_YOUR_FRIENDS_LIST);
-					sm.addString(_name);
-					activeChar.sendPacket(sm);
-					CloseUtil.close(con);
-					con = null;
-					return;
-					
+					try (ResultSet rset = statement.executeQuery())
+					{
+						if (rset.next())
+						{
+							objectId = rset.getInt("friend_id");
+							
+							try (PreparedStatement delStatement = con.prepareStatement(DELETE_CHARACTER_FRIEND))
+							{
+								delStatement.setInt(1, activeChar.getObjectId());
+								delStatement.setInt(2, objectId);
+								delStatement.setInt(3, objectId);
+								delStatement.setInt(4, activeChar.getObjectId());
+								delStatement.executeUpdate();
+							}
+						}
+						else
+						{
+							// Player is not in your friendlist
+							SystemMessage sm = new SystemMessage(SystemMessageId.S1_NOT_ON_YOUR_FRIENDS_LIST);
+							sm.addString(name);
+							activeChar.sendPacket(sm);
+							return;
+						}
+					}
 				}
-				objectId = rset.getInt("friend_id");
 			}
 			
-			statement = con.prepareStatement("DELETE FROM character_friends WHERE (char_id=? AND friend_id=?) OR (char_id=? AND friend_id=?)");
-			statement.setInt(1, activeChar.getObjectId());
-			statement.setInt(2, objectId);
-			statement.setInt(3, objectId);
-			statement.setInt(4, activeChar.getObjectId());
-			statement.execute();
 			// Player deleted from your friendlist
-			sm = new SystemMessage(SystemMessageId.S1_HAS_BEEN_DELETED_FROM_YOUR_FRIENDS_LIST);
-			sm.addString(_name);
+			SystemMessage sm = new SystemMessage(SystemMessageId.S1_HAS_BEEN_DELETED_FROM_YOUR_FRIENDS_LIST);
+			sm.addString(name);
 			activeChar.sendPacket(sm);
 			
-			DatabaseUtils.close(statement);
-			
-			activeChar.getFriendList().remove(_name);
+			activeChar.getFriendList().remove(name);
 			activeChar.sendPacket(new FriendList(activeChar));
 			
 			if (friend != null)
@@ -142,19 +120,10 @@ public final class RequestFriendDel extends L2GameClientPacket
 				friend.sendPacket(new FriendList(friend));
 			}
 		}
-		catch (final Exception e)
+		catch (Exception e)
 		{
-			if (Config.ENABLE_ALL_EXCEPTIONS)
-				e.printStackTrace();
-			
-			LOGGER.warn("could not del friend objectid: ", e);
+			LOGGER.error("RequestFriendDel : Could not delete friend for player" + activeChar.getName(), e);
 		}
-		finally
-		{
-			CloseUtil.close(con);
-			con = null;
-		}
-		
 	}
 	
 	@Override

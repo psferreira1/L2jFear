@@ -1,23 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.network.clientpackets;
 
 import com.l2jfrozen.gameserver.model.L2Clan;
@@ -32,16 +12,16 @@ import com.l2jfrozen.gameserver.network.serverpackets.SystemMessage;
  */
 public final class RequestPledgeSetAcademyMaster extends L2GameClientPacket
 {
-	private String _currPlayerName;
-	private int _set; // 1 set, 0 delete
-	private String _targetPlayerName;
+	private String currPlayerName;
+	private int set; // 1 set, 0 delete
+	private String targetPlayerName;
 	
 	@Override
 	protected void readImpl()
 	{
-		_set = readD();
-		_currPlayerName = readS();
-		_targetPlayerName = readS();
+		set = readD();
+		currPlayerName = readS();
+		targetPlayerName = readS();
 	}
 	
 	@Override
@@ -51,7 +31,9 @@ public final class RequestPledgeSetAcademyMaster extends L2GameClientPacket
 		final L2Clan clan = activeChar.getClan();
 		
 		if (clan == null)
+		{
 			return;
+		}
 		
 		if ((activeChar.getClanPrivileges() & L2Clan.CP_CL_MASTER_RIGHTS) != L2Clan.CP_CL_MASTER_RIGHTS)
 		{
@@ -59,11 +41,13 @@ public final class RequestPledgeSetAcademyMaster extends L2GameClientPacket
 			return;
 		}
 		
-		final L2ClanMember currentMember = clan.getClanMember(_currPlayerName);
-		final L2ClanMember targetMember = clan.getClanMember(_targetPlayerName);
+		final L2ClanMember currentMember = clan.getClanMember(currPlayerName);
+		final L2ClanMember targetMember = clan.getClanMember(targetPlayerName);
 		
 		if (currentMember == null || targetMember == null)
+		{
 			return;
+		}
 		
 		L2ClanMember apprenticeMember, sponsorMember;
 		
@@ -83,7 +67,7 @@ public final class RequestPledgeSetAcademyMaster extends L2GameClientPacket
 		
 		SystemMessage sm = null;
 		
-		if (_set == 0)
+		if (set == 0)
 		{
 			// test: do we get the current sponsor & apprentice from this packet or no?
 			if (apprentice != null)

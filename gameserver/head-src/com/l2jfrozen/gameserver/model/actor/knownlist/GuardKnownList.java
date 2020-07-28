@@ -1,22 +1,3 @@
-/* L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.model.actor.knownlist;
 
 import org.apache.log4j.Logger;
@@ -34,18 +15,11 @@ public class GuardKnownList extends AttackableKnownList
 {
 	private static Logger LOGGER = Logger.getLogger(GuardKnownList.class);
 	
-	// =========================================================
-	// Data Field
-	
-	// =========================================================
-	// Constructor
 	public GuardKnownList(final L2GuardInstance activeChar)
 	{
 		super(activeChar);
 	}
 	
-	// =========================================================
-	// Method - Public
 	@Override
 	public boolean addKnownObject(final L2Object object)
 	{
@@ -56,7 +30,9 @@ public class GuardKnownList extends AttackableKnownList
 	public boolean addKnownObject(final L2Object object, final L2Character dropper)
 	{
 		if (!super.addKnownObject(object, dropper))
+		{
 			return false;
+		}
 		
 		// Set home location of the L2GuardInstance (if not already done)
 		if (getActiveChar().getHomeX() == 0)
@@ -114,9 +90,11 @@ public class GuardKnownList extends AttackableKnownList
 	public boolean removeKnownObject(final L2Object object)
 	{
 		if (!super.removeKnownObject(object))
+		{
 			return false;
+		}
 		
-		// Check if the _aggroList of the L2GuardInstance is Empty
+		// Check if the aggroList of the L2GuardInstance is Empty
 		if (getActiveChar().noTarget())
 		{
 			// removeAllKnownObjects();
@@ -134,11 +112,6 @@ public class GuardKnownList extends AttackableKnownList
 		return true;
 	}
 	
-	// =========================================================
-	// Method - Private
-	
-	// =========================================================
-	// Property - Public
 	@Override
 	public final L2GuardInstance getActiveChar()
 	{

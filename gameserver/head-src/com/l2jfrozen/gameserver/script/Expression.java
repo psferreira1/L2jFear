@@ -1,23 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.script;
 
 import javax.script.ScriptContext;
@@ -26,10 +6,7 @@ import com.l2jfrozen.gameserver.scripting.L2ScriptEngineManager;
 
 public class Expression
 {
-	private final ScriptContext _context;
-	
-	// private final String _lang;
-	// private final String _code;
+	private final ScriptContext context;
 	
 	public static Object eval(final String lang, final String code)
 	{
@@ -72,16 +49,14 @@ public class Expression
 	
 	private Expression(final ScriptContext pContext/* , String pLang, String pCode */)
 	{
-		_context = pContext;
-		// _lang = pLang;
-		// _code = pCode;
+		context = pContext;
 	}
 	
 	public <T> void addDynamicVariable(final String name, final T value)
 	{
 		try
 		{
-			_context.setAttribute(name, value, ScriptContext.ENGINE_SCOPE);
+			context.setAttribute(name, value, ScriptContext.ENGINE_SCOPE);
 		}
 		catch (final Exception e)
 		{
@@ -93,7 +68,7 @@ public class Expression
 	{
 		try
 		{
-			_context.removeAttribute(name, ScriptContext.ENGINE_SCOPE);
+			context.removeAttribute(name, ScriptContext.ENGINE_SCOPE);
 		}
 		catch (final Exception e)
 		{

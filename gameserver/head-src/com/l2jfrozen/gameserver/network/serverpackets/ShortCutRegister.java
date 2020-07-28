@@ -1,23 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.network.serverpackets;
 
 import com.l2jfrozen.gameserver.model.L2ShortCut;
@@ -28,17 +8,11 @@ import com.l2jfrozen.gameserver.model.L2ShortCut;
  */
 public class ShortCutRegister extends L2GameServerPacket
 {
-	private static final String _S__56_SHORTCUTREGISTER = "[S] 44 ShortCutRegister";
+	private final L2ShortCut shortcut;
 	
-	private final L2ShortCut _shortcut;
-	
-	/**
-	 * Register new skill shortcut
-	 * @param shortcut
-	 */
 	public ShortCutRegister(final L2ShortCut shortcut)
 	{
-		_shortcut = shortcut;
+		this.shortcut = shortcut;
 	}
 	
 	@Override
@@ -46,41 +20,37 @@ public class ShortCutRegister extends L2GameServerPacket
 	{
 		writeC(0x44);
 		
-		writeD(_shortcut.getType());
-		writeD(_shortcut.getSlot() + _shortcut.getPage() * 12); // C4 Client
-		switch (_shortcut.getType())
+		writeD(shortcut.getType());
+		writeD(shortcut.getSlot() + shortcut.getPage() * 12); // C4 Client
+		switch (shortcut.getType())
 		{
 			case L2ShortCut.TYPE_ITEM: // 1
-				writeD(_shortcut.getId());
+				writeD(shortcut.getId());
 				break;
 			case L2ShortCut.TYPE_SKILL: // 2
-				writeD(_shortcut.getId());
-				writeD(_shortcut.getLevel());
+				writeD(shortcut.getId());
+				writeD(shortcut.getLevel());
 				writeC(0x00); // C5
 				break;
 			case L2ShortCut.TYPE_ACTION: // 3
-				writeD(_shortcut.getId());
+				writeD(shortcut.getId());
 				break;
 			case L2ShortCut.TYPE_MACRO: // 4
-				writeD(_shortcut.getId());
+				writeD(shortcut.getId());
 				break;
 			case L2ShortCut.TYPE_RECIPE: // 5
-				writeD(_shortcut.getId());
+				writeD(shortcut.getId());
 				break;
 			default:
-				writeD(_shortcut.getId());
+				writeD(shortcut.getId());
 		}
 		
 		writeD(1);// ??
 	}
 	
-	/*
-	 * (non-Javadoc)
-	 * @see com.l2jfrozen.gameserver.serverpackets.ServerBasePacket#getType()
-	 */
 	@Override
 	public String getType()
 	{
-		return _S__56_SHORTCUTREGISTER;
+		return "[S] 44 ShortCutRegister";
 	}
 }

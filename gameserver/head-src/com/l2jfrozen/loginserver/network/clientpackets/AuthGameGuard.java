@@ -1,23 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.loginserver.network.clientpackets;
 
 import com.l2jfrozen.loginserver.L2LoginClient.LoginClientState;
@@ -29,35 +9,35 @@ import com.l2jfrozen.loginserver.network.serverpackets.LoginFail.LoginFailReason
  */
 public class AuthGameGuard extends L2LoginClientPacket
 {
-	private int _sessionId;
-	private int _data1;
-	private int _data2;
-	private int _data3;
-	private int _data4;
+	private int sessionId;
+	private int data1;
+	private int data2;
+	private int data3;
+	private int data4;
 	
 	public int getSessionId()
 	{
-		return _sessionId;
+		return sessionId;
 	}
 	
 	public int getData1()
 	{
-		return _data1;
+		return data1;
 	}
 	
 	public int getData2()
 	{
-		return _data2;
+		return data2;
 	}
 	
 	public int getData3()
 	{
-		return _data3;
+		return data3;
 	}
 	
 	public int getData4()
 	{
-		return _data4;
+		return data4;
 	}
 	
 	/**
@@ -66,13 +46,13 @@ public class AuthGameGuard extends L2LoginClientPacket
 	@Override
 	protected boolean readImpl()
 	{
-		if (super._buf.remaining() >= 20)
+		if (super.buf.remaining() >= 20)
 		{
-			_sessionId = readD();
-			_data1 = readD();
-			_data2 = readD();
-			_data3 = readD();
-			_data4 = readD();
+			sessionId = readD();
+			data1 = readD();
+			data2 = readD();
+			data3 = readD();
+			data4 = readD();
 			return true;
 		}
 		return false;
@@ -81,7 +61,7 @@ public class AuthGameGuard extends L2LoginClientPacket
 	@Override
 	public void run()
 	{
-		if (_sessionId == getClient().getSessionId())
+		if (sessionId == getClient().getSessionId())
 		{
 			getClient().setState(LoginClientState.AUTHED_GG);
 			getClient().sendPacket(new GGAuth(getClient().getSessionId()));

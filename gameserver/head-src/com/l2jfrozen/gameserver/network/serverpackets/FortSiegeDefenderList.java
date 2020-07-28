@@ -1,19 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any later
- * version.
- * 
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
- * 
- * You should have received a copy of the GNU General Public License along with
- * this program. If not, see <http://www.gnu.org/licenses/>.
- */
 package com.l2jfrozen.gameserver.network.serverpackets;
 
 //import java.util.Calendar; //signed time related
@@ -52,24 +36,22 @@ import com.l2jfrozen.gameserver.model.entity.siege.Fort;
  */
 public final class FortSiegeDefenderList extends L2GameServerPacket
 {
-	private static final String _S__CA_SiegeDefenderList = "[S] cb SiegeDefenderList";
-	// private static Logger LOGGER = Logger.getLogger(SiegeDefenderList.class);
-	private final Fort _fort;
+	private final Fort fortress;
 	
 	public FortSiegeDefenderList(final Fort fort)
 	{
-		_fort = fort;
+		fortress = fort;
 	}
 	
 	@Override
 	protected final void writeImpl()
 	{
 		writeC(0xcb);
-		writeD(_fort.getFortId());
+		writeD(fortress.getFortId());
 		writeD(0x00); // 0
 		writeD(0x01); // 1
 		writeD(0x00); // 0
-		final int size = _fort.getSiege().getDefenderClans().size() + _fort.getSiege().getDefenderWaitingClans().size();
+		final int size = fortress.getSiege().getDefenderClans().size() + fortress.getSiege().getDefenderWaitingClans().size();
 		if (size > 0)
 		{
 			L2Clan clan;
@@ -77,7 +59,7 @@ public final class FortSiegeDefenderList extends L2GameServerPacket
 			writeD(size);
 			writeD(size);
 			// Listing the Lord and the approved clans
-			for (final L2SiegeClan siegeclan : _fort.getSiege().getDefenderClans())
+			for (final L2SiegeClan siegeclan : fortress.getSiege().getDefenderClans())
 			{
 				clan = ClanTable.getInstance().getClan(siegeclan.getClanId());
 				if (clan == null)
@@ -110,7 +92,7 @@ public final class FortSiegeDefenderList extends L2GameServerPacket
 				writeS(""); // AllyLeaderName
 				writeD(clan.getAllyCrestId());
 			}
-			for (final L2SiegeClan siegeclan : _fort.getSiege().getDefenderWaitingClans())
+			for (final L2SiegeClan siegeclan : fortress.getSiege().getDefenderWaitingClans())
 			{
 				clan = ClanTable.getInstance().getClan(siegeclan.getClanId());
 				writeD(clan.getClanId());
@@ -132,14 +114,10 @@ public final class FortSiegeDefenderList extends L2GameServerPacket
 		}
 	}
 	
-	/*
-	 * (non-Javadoc)
-	 * @see com.l2jfrozen.gameserver.serverpackets.ServerBasePacket#getType()
-	 */
 	@Override
 	public String getType()
 	{
-		return _S__CA_SiegeDefenderList;
+		return "[S] cb SiegeDefenderList";
 	}
 	
 }

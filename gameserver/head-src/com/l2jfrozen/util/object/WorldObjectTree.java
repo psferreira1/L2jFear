@@ -1,22 +1,3 @@
-/* L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.util.object;
 
 import java.util.Iterator;
@@ -28,14 +9,14 @@ import com.l2jfrozen.gameserver.model.L2Object;
 
 /**
  * @author dishkols
- * @param <T>
+ * @param  <T>
  */
 public class WorldObjectTree<T extends L2Object> extends L2ObjectMap<T>
 {
-	private final TreeMap<Integer, T> _objectMap = new TreeMap<>();
-	private final ReentrantReadWriteLock _rwl = new ReentrantReadWriteLock();
-	private final Lock _r = _rwl.readLock();
-	private final Lock _w = _rwl.writeLock();
+	private final TreeMap<Integer, T> objectMap = new TreeMap<>();
+	private final ReentrantReadWriteLock rwl = new ReentrantReadWriteLock();
+	private final Lock r = rwl.readLock();
+	private final Lock w = rwl.writeLock();
 	
 	/**
 	 * @see com.l2jfrozen.util.object.L2ObjectMap#size()
@@ -43,14 +24,14 @@ public class WorldObjectTree<T extends L2Object> extends L2ObjectMap<T>
 	@Override
 	public int size()
 	{
-		_r.lock();
+		r.lock();
 		try
 		{
-			return _objectMap.size();
+			return objectMap.size();
 		}
 		finally
 		{
-			_r.unlock();
+			r.unlock();
 		}
 	}
 	
@@ -60,14 +41,14 @@ public class WorldObjectTree<T extends L2Object> extends L2ObjectMap<T>
 	@Override
 	public boolean isEmpty()
 	{
-		_r.lock();
+		r.lock();
 		try
 		{
-			return _objectMap.isEmpty();
+			return objectMap.isEmpty();
 		}
 		finally
 		{
-			_r.unlock();
+			r.unlock();
 		}
 	}
 	
@@ -77,14 +58,14 @@ public class WorldObjectTree<T extends L2Object> extends L2ObjectMap<T>
 	@Override
 	public void clear()
 	{
-		_w.lock();
+		w.lock();
 		try
 		{
-			_objectMap.clear();
+			objectMap.clear();
 		}
 		finally
 		{
-			_w.unlock();
+			w.unlock();
 		}
 	}
 	
@@ -93,14 +74,14 @@ public class WorldObjectTree<T extends L2Object> extends L2ObjectMap<T>
 	{
 		if (obj != null)
 		{
-			_w.lock();
+			w.lock();
 			try
 			{
-				_objectMap.put(obj.getObjectId(), obj);
+				objectMap.put(obj.getObjectId(), obj);
 			}
 			finally
 			{
-				_w.unlock();
+				w.unlock();
 			}
 		}
 	}
@@ -110,14 +91,14 @@ public class WorldObjectTree<T extends L2Object> extends L2ObjectMap<T>
 	{
 		if (obj != null)
 		{
-			_w.lock();
+			w.lock();
 			try
 			{
-				_objectMap.remove(obj.getObjectId());
+				objectMap.remove(obj.getObjectId());
 			}
 			finally
 			{
-				_w.unlock();
+				w.unlock();
 			}
 		}
 	}
@@ -128,14 +109,14 @@ public class WorldObjectTree<T extends L2Object> extends L2ObjectMap<T>
 	@Override
 	public T get(final int id)
 	{
-		_r.lock();
+		r.lock();
 		try
 		{
-			return _objectMap.get(id);
+			return objectMap.get(id);
 		}
 		finally
 		{
-			_r.unlock();
+			r.unlock();
 		}
 	}
 	
@@ -143,15 +124,17 @@ public class WorldObjectTree<T extends L2Object> extends L2ObjectMap<T>
 	public boolean contains(final T obj)
 	{
 		if (obj == null)
+		{
 			return false;
-		_r.lock();
+		}
+		r.lock();
 		try
 		{
-			return _objectMap.containsValue(obj);
+			return objectMap.containsValue(obj);
 		}
 		finally
 		{
-			_r.unlock();
+			r.unlock();
 		}
 	}
 	
@@ -161,14 +144,14 @@ public class WorldObjectTree<T extends L2Object> extends L2ObjectMap<T>
 	@Override
 	public Iterator<T> iterator()
 	{
-		_r.lock();
+		r.lock();
 		try
 		{
-			return _objectMap.values().iterator();
+			return objectMap.values().iterator();
 		}
 		finally
 		{
-			_r.unlock();
+			r.unlock();
 		}
 	}
 	

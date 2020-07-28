@@ -1,22 +1,3 @@
-/* L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.network.clientpackets;
 
 import com.l2jfrozen.gameserver.model.L2World;
@@ -33,30 +14,32 @@ import com.l2jfrozen.gameserver.templates.L2Item;
  */
 public final class RequestConfirmGemStone extends L2GameClientPacket
 {
-	private int _targetItemObjId;
-	private int _refinerItemObjId;
-	private int _gemstoneItemObjId;
-	private int _gemstoneCount;
+	private int targetItemObjId;
+	private int refinerItemObjId;
+	private int gemstoneItemObjId;
+	private int gemstoneCount;
 	
 	@Override
 	protected void readImpl()
 	{
-		_targetItemObjId = readD();
-		_refinerItemObjId = readD();
-		_gemstoneItemObjId = readD();
-		_gemstoneCount = readD();
+		targetItemObjId = readD();
+		refinerItemObjId = readD();
+		gemstoneItemObjId = readD();
+		gemstoneCount = readD();
 	}
 	
 	@Override
 	protected void runImpl()
 	{
 		final L2PcInstance activeChar = getClient().getActiveChar();
-		final L2ItemInstance targetItem = (L2ItemInstance) L2World.getInstance().findObject(_targetItemObjId);
-		final L2ItemInstance refinerItem = (L2ItemInstance) L2World.getInstance().findObject(_refinerItemObjId);
-		final L2ItemInstance gemstoneItem = (L2ItemInstance) L2World.getInstance().findObject(_gemstoneItemObjId);
+		final L2ItemInstance targetItem = (L2ItemInstance) L2World.getInstance().findObject(targetItemObjId);
+		final L2ItemInstance refinerItem = (L2ItemInstance) L2World.getInstance().findObject(refinerItemObjId);
+		final L2ItemInstance gemstoneItem = (L2ItemInstance) L2World.getInstance().findObject(gemstoneItemObjId);
 		
 		if (targetItem == null || refinerItem == null || gemstoneItem == null)
+		{
 			return;
+		}
 		
 		// Make sure the item is a gemstone
 		final int gemstoneItemId = gemstoneItem.getItem().getItemId();
@@ -73,28 +56,28 @@ public final class RequestConfirmGemStone extends L2GameClientPacket
 		switch (itemGrade)
 		{
 			case L2Item.CRYSTAL_C:
-				if (_gemstoneCount != 20 || gemstoneItemId != 2130)
+				if (gemstoneCount != 20 || gemstoneItemId != 2130)
 				{
 					activeChar.sendPacket(new SystemMessage(SystemMessageId.GEMSTONE_QUANTITY_IS_INCORRECT));
 					return;
 				}
 				break;
 			case L2Item.CRYSTAL_B:
-				if (_gemstoneCount != 30 || gemstoneItemId != 2130)
+				if (gemstoneCount != 30 || gemstoneItemId != 2130)
 				{
 					activeChar.sendPacket(new SystemMessage(SystemMessageId.GEMSTONE_QUANTITY_IS_INCORRECT));
 					return;
 				}
 				break;
 			case L2Item.CRYSTAL_A:
-				if (_gemstoneCount != 20 || gemstoneItemId != 2131)
+				if (gemstoneCount != 20 || gemstoneItemId != 2131)
 				{
 					activeChar.sendPacket(new SystemMessage(SystemMessageId.GEMSTONE_QUANTITY_IS_INCORRECT));
 					return;
 				}
 				break;
 			case L2Item.CRYSTAL_S:
-				if (_gemstoneCount != 25 || gemstoneItemId != 2131)
+				if (gemstoneCount != 25 || gemstoneItemId != 2131)
 				{
 					activeChar.sendPacket(new SystemMessage(SystemMessageId.GEMSTONE_QUANTITY_IS_INCORRECT));
 					return;
@@ -102,7 +85,7 @@ public final class RequestConfirmGemStone extends L2GameClientPacket
 				break;
 		}
 		
-		activeChar.sendPacket(new ExConfirmVariationGemstone(_gemstoneItemObjId, _gemstoneCount));
+		activeChar.sendPacket(new ExConfirmVariationGemstone(gemstoneItemObjId, gemstoneCount));
 		activeChar.sendPacket(new SystemMessage(SystemMessageId.PRESS_THE_AUGMENT_BUTTON_TO_BEGIN));
 	}
 	

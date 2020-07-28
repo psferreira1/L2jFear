@@ -1,31 +1,10 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.script.faenor;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 import javax.script.ScriptContext;
-
-import javolution.util.FastList;
 
 import org.apache.log4j.Logger;
 
@@ -49,16 +28,15 @@ public class FaenorInterface implements EngineInterface
 	
 	public static FaenorInterface getInstance()
 	{
-		return SingletonHolder._instance;
+		return SingletonHolder.instance;
 	}
 	
-	private FaenorInterface()
+	public FaenorInterface()
 	{
 	}
 	
 	public List<?> getAllPlayers()
 	{
-		// TODO Auto-generated method stub
 		return null;
 	}
 	
@@ -87,14 +65,14 @@ public class FaenorInterface implements EngineInterface
 	
 	/**
 	 * Adds a new Drop to an NPC
-	 * @param npcID
-	 * @param itemID
-	 * @param min
-	 * @param max
-	 * @param sweep
-	 * @param chance
+	 * @param  npcID
+	 * @param  itemID
+	 * @param  min
+	 * @param  max
+	 * @param  sweep
+	 * @param  chance
 	 * @throws NullPointerException
-	 * @see com.l2jfrozen.gameserver.script.EngineInterface#addQuestDrop(int, int, int, int, int, String, String[])
+	 * @see                         com.l2jfrozen.gameserver.script.EngineInterface#addQuestDrop(int, int, int, int, int, String, String[])
 	 */
 	public void addDrop(final int npcID, final int itemID, final int min, final int max, final boolean sweep, final int chance) throws NullPointerException
 	{
@@ -160,15 +138,17 @@ public class FaenorInterface implements EngineInterface
 	}
 	
 	/**
-	 * @param npcID
-	 * @return Returns the _questDrops.
+	 * @param  npcID
+	 * @return       Returns the questDrops.
 	 */
 	public List<L2DropData> getQuestDrops(final int npcID)
 	{
 		final L2NpcTemplate npc = npcTable.getTemplate(npcID);
 		if (npc == null)
+		{
 			return null;
-		final List<L2DropData> questDrops = new FastList<>();
+		}
+		final List<L2DropData> questDrops = new ArrayList<>();
 		if (npc.getDropData() != null)
 		{
 			for (final L2DropCategory cat : npc.getDropData())
@@ -207,7 +187,7 @@ public class FaenorInterface implements EngineInterface
 			petData[level - 1].setPetID(petID);
 			petData[level - 1].setPetLevel(level);
 			
-			context.setAttribute("level", new Double(level), ScriptContext.ENGINE_SCOPE);
+			context.setAttribute("level", level, ScriptContext.ENGINE_SCOPE);
 			for (final String stat : stats.keySet())
 			{
 				value = ((Number) Expression.eval(context, "beanshell", stats.get(stat))).intValue();
@@ -217,9 +197,8 @@ public class FaenorInterface implements EngineInterface
 		}
 	}
 	
-	@SuppressWarnings("synthetic-access")
 	private static class SingletonHolder
 	{
-		protected static final FaenorInterface _instance = new FaenorInterface();
+		protected static final FaenorInterface instance = new FaenorInterface();
 	}
 }

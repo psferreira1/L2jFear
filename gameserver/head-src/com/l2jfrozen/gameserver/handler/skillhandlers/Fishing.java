@@ -1,24 +1,7 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.handler.skillhandlers;
+
+import java.util.Arrays;
+import java.util.List;
 
 import com.l2jfrozen.Config;
 import com.l2jfrozen.gameserver.geo.GeoData;
@@ -37,52 +20,61 @@ import com.l2jfrozen.gameserver.network.SystemMessageId;
 import com.l2jfrozen.gameserver.network.serverpackets.InventoryUpdate;
 import com.l2jfrozen.gameserver.network.serverpackets.SystemMessage;
 import com.l2jfrozen.gameserver.templates.L2Weapon;
-import com.l2jfrozen.gameserver.templates.L2WeaponType;
 import com.l2jfrozen.gameserver.util.Util;
 import com.l2jfrozen.util.random.Rnd;
 
 public class Fishing implements ISkillHandler
 {
 	// private static Logger LOGGER = Logger.getLogger(SiegeFlag.class);
-	// protected SkillType[] _skillIds = {SkillType.FISHING};
+	// protected SkillType[] skillIds = {SkillType.FISHING};
 	private static final SkillType[] SKILL_IDS =
 	{
 		SkillType.FISHING
 	};
 	
+	private static final List<Integer> FISHING_POLE_IDS = Arrays.asList(6529, // Baby Duck Rod - No grade
+		6530, // Albatross Rod - D grade
+		6531, // Pelican Rod - C grade
+		6532, // KingFisher Rod - B grade
+		6533, // Cygnus Pole - A grade
+		6534 // Triton Pole - S grade
+	);
+	
 	@Override
 	public void useSkill(final L2Character activeChar, final L2Skill skill, final L2Object[] targets)
 	{
 		if (activeChar == null || !(activeChar instanceof L2PcInstance))
-			return;
-		
-		final L2PcInstance player = (L2PcInstance) activeChar;
-		
-		/*
-		 * If fishing is disabled, there isn't much point in doing anything else, unless you are GM. so this got moved up here, before anything else.
-		 */
-		if (!Config.ALLOWFISHING && !player.isGM())
 		{
-			player.sendMessage("Fishing server is currently ofline");
+			return;
+		}
+		
+		L2PcInstance player = (L2PcInstance) activeChar;
+		
+		if (!Config.ALLOWFISHING)
+		{
+			player.sendMessage("Fishing system is disabled");
 			return;
 		}
 		
 		if (player.isFishing())
 		{
-			if (player.GetFishCombat() != null)
-				player.GetFishCombat().doDie(false);
+			if (player.getFishCombat() != null)
+			{
+				player.getFishCombat().doDie(false);
+			}
 			else
+			{
 				player.EndFishing(false);
+			}
 			// Cancels fishing
 			player.sendPacket(new SystemMessage(SystemMessageId.FISHING_ATTEMPT_CANCELLED));
 			return;
 		}
 		
 		L2Weapon weaponItem = player.getActiveWeaponItem();
-		if ((weaponItem == null || weaponItem.getItemType() != L2WeaponType.ROD))
+		if (weaponItem == null || !FISHING_POLE_IDS.contains(weaponItem.getItemId()))
 		{
-			// Fishing poles are not installed
-			// player.sendPacket(new SystemMessage(SystemMessageId.FISHING_POLE_NOT_EQUIPPED));
+			player.sendPacket(new SystemMessage(SystemMessageId.FISHING_POLE_NOT_EQUIPPED));
 			return;
 		}
 		weaponItem = null;
@@ -91,14 +83,11 @@ public class Fishing implements ISkillHandler
 		if (lure == null)
 		{
 			// Bait not equiped.
-			player.sendPacket(new SystemMessage(SystemMessageId.CANNOT_FISH_HERE));
-			final SystemMessage sm = new SystemMessage(SystemMessageId.S1_CANNOT_BE_USED);
-			sm.addString(skill.getName());
-			player.sendPacket(sm);
+			player.sendPacket(new SystemMessage(SystemMessageId.BAIT_ON_HOOK_BEFORE_FISHING));
 			return;
 		}
 		
-		player.SetLure(lure);
+		player.setLure(lure);
 		lure = null;
 		L2ItemInstance lure2 = player.getInventory().getPaperdollItem(Inventory.PAPERDOLL_LHAND);
 		
@@ -107,7 +96,6 @@ public class Fishing implements ISkillHandler
 			player.sendPacket(new SystemMessage(SystemMessageId.NOT_ENOUGH_BAIT));
 			return;
 		}
-		
 		if (player.isInBoat())
 		{
 			// You can't fish while you are on boat
@@ -147,14 +135,13 @@ public class Fishing implements ISkillHandler
 			// landing related coordinates. Uncoment if needed.
 		}
 		else if (aimingTo != null && water != null && GeoData.getInstance().canSeeTarget(player.getX(), player.getY(), player.getZ() + 50, x, y, water.getWaterZ() - 50))
+		{
 			z = aimingTo.getWaterZ() + 10;
+		}
 		else
 		{
 			// You can't fish here
-			player.sendPacket(new SystemMessage(SystemMessageId.BAIT_ON_HOOK_BEFORE_FISHING));
-			final SystemMessage sm = new SystemMessage(SystemMessageId.S1_CANNOT_BE_USED);
-			sm.addString(skill.getName());
-			player.sendPacket(sm);
+			player.sendPacket(new SystemMessage(SystemMessageId.CANNOT_FISH_HERE));
 			return;
 		}
 		

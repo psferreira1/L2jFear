@@ -1,23 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver;
 
 import java.io.File;
@@ -64,7 +44,6 @@ import com.l2jfrozen.gameserver.datatables.sql.ArmorSetsTable;
 import com.l2jfrozen.gameserver.datatables.sql.CharNameTable;
 import com.l2jfrozen.gameserver.datatables.sql.CharTemplateTable;
 import com.l2jfrozen.gameserver.datatables.sql.ClanTable;
-import com.l2jfrozen.gameserver.datatables.sql.CustomArmorSetsTable;
 import com.l2jfrozen.gameserver.datatables.sql.HelperBuffTable;
 import com.l2jfrozen.gameserver.datatables.sql.HennaTreeTable;
 import com.l2jfrozen.gameserver.datatables.sql.ItemTable;
@@ -77,6 +56,7 @@ import com.l2jfrozen.gameserver.datatables.sql.SpawnTable;
 import com.l2jfrozen.gameserver.datatables.sql.TeleportLocationTable;
 import com.l2jfrozen.gameserver.datatables.xml.AugmentationData;
 import com.l2jfrozen.gameserver.datatables.xml.ExperienceData;
+import com.l2jfrozen.gameserver.datatables.xml.L2BufferSkillsData;
 import com.l2jfrozen.gameserver.datatables.xml.ZoneData;
 import com.l2jfrozen.gameserver.geo.GeoData;
 import com.l2jfrozen.gameserver.geo.geoeditorcon.GeoEditorListener;
@@ -90,7 +70,6 @@ import com.l2jfrozen.gameserver.handler.UserCommandHandler;
 import com.l2jfrozen.gameserver.handler.VoicedCommandHandler;
 import com.l2jfrozen.gameserver.idfactory.IdFactory;
 import com.l2jfrozen.gameserver.managers.AuctionManager;
-import com.l2jfrozen.gameserver.managers.AutoSaveManager;
 import com.l2jfrozen.gameserver.managers.AwayManager;
 import com.l2jfrozen.gameserver.managers.BoatManager;
 import com.l2jfrozen.gameserver.managers.CastleManager;
@@ -107,13 +86,14 @@ import com.l2jfrozen.gameserver.managers.FortManager;
 import com.l2jfrozen.gameserver.managers.FortSiegeManager;
 import com.l2jfrozen.gameserver.managers.FourSepulchersManager;
 import com.l2jfrozen.gameserver.managers.GrandBossManager;
-import com.l2jfrozen.gameserver.managers.IrcManager;
 import com.l2jfrozen.gameserver.managers.ItemsOnGroundManager;
 import com.l2jfrozen.gameserver.managers.MercTicketManager;
 import com.l2jfrozen.gameserver.managers.PetitionManager;
 import com.l2jfrozen.gameserver.managers.QuestManager;
 import com.l2jfrozen.gameserver.managers.RaidBossPointsManager;
 import com.l2jfrozen.gameserver.managers.RaidBossSpawnManager;
+import com.l2jfrozen.gameserver.managers.SchemeBufferManager;
+import com.l2jfrozen.gameserver.managers.ServerVariables;
 import com.l2jfrozen.gameserver.managers.SiegeManager;
 import com.l2jfrozen.gameserver.model.L2Manor;
 import com.l2jfrozen.gameserver.model.L2World;
@@ -133,11 +113,11 @@ import com.l2jfrozen.gameserver.model.multisell.L2Multisell;
 import com.l2jfrozen.gameserver.model.spawn.AutoSpawn;
 import com.l2jfrozen.gameserver.network.L2GameClient;
 import com.l2jfrozen.gameserver.network.L2GamePacketHandler;
-import com.l2jfrozen.gameserver.powerpak.PowerPak;
 import com.l2jfrozen.gameserver.script.EventDroplist;
 import com.l2jfrozen.gameserver.script.faenor.FaenorScriptEngine;
 import com.l2jfrozen.gameserver.scripting.CompiledScriptCache;
 import com.l2jfrozen.gameserver.scripting.L2ScriptEngineManager;
+import com.l2jfrozen.gameserver.skills.HitConditionBonus;
 import com.l2jfrozen.gameserver.taskmanager.TaskManager;
 import com.l2jfrozen.gameserver.thread.LoginServerThread;
 import com.l2jfrozen.gameserver.thread.ThreadPoolManager;
@@ -145,11 +125,9 @@ import com.l2jfrozen.gameserver.thread.daemons.DeadlockDetector;
 import com.l2jfrozen.gameserver.thread.daemons.ItemsAutoDestroy;
 import com.l2jfrozen.gameserver.thread.daemons.PcPoint;
 import com.l2jfrozen.gameserver.util.DynamicExtension;
-import com.l2jfrozen.gameserver.util.sql.SQLQueue;
 import com.l2jfrozen.netcore.NetcoreConfig;
 import com.l2jfrozen.netcore.SelectorConfig;
 import com.l2jfrozen.netcore.SelectorThread;
-import com.l2jfrozen.status.Status;
 import com.l2jfrozen.util.IPv4Filter;
 import com.l2jfrozen.util.Memory;
 import com.l2jfrozen.util.Util;
@@ -157,11 +135,10 @@ import com.l2jfrozen.util.database.L2DatabaseFactory;
 
 public class GameServer
 {
-	private static Logger LOGGER = Logger.getLogger("Loader");
-	private static SelectorThread<L2GameClient> _selectorThread;
-	private static LoginServerThread _loginThread;
-	private static L2GamePacketHandler _gamePacketHandler;
-	private static Status _statusServer;
+	private static final Logger LOGGER = Logger.getLogger(GameServer.class);
+	private static SelectorThread<L2GameClient> selectorThread;
+	private static LoginServerThread loginThread;
+	private static L2GamePacketHandler gamePacketHandler;
 	
 	public static final Calendar dateTimeServerStarted = Calendar.getInstance();
 	
@@ -199,9 +176,7 @@ public class GameServer
 		
 		final long serverLoadStart = System.currentTimeMillis();
 		
-		Util.printSection("Team");
-		
-		// Print L2jfrozen's Logo
+		// Team info
 		L2Frozen.info();
 		
 		// Load GameServer Configs
@@ -209,7 +184,6 @@ public class GameServer
 		
 		Util.printSection("Database");
 		L2DatabaseFactory.getInstance();
-		LOGGER.info("L2DatabaseFactory: loaded.");
 		
 		Util.printSection("Threads");
 		ThreadPoolManager.getInstance();
@@ -222,13 +196,17 @@ public class GameServer
 		new File(Config.DATAPACK_ROOT, "data/pathnode").mkdirs();
 		new File(Config.DATAPACK_ROOT, "data/geodata").mkdirs();
 		
+		ServerVariables.getInstance().loadVariables();
+		
 		HtmCache.getInstance();
 		CrestCache.getInstance();
 		L2ScriptEngineManager.getInstance();
 		
 		nProtect.getInstance();
 		if (nProtect.isEnabled())
+		{
 			LOGGER.info("nProtect System Enabled");
+		}
 		
 		Util.printSection("World");
 		L2World.getInstance();
@@ -247,14 +225,12 @@ public class GameServer
 		GameTimeController.getInstance();
 		CharNameTable.getInstance();
 		ExperienceData.getInstance();
+		HitConditionBonus.getInstance();
 		DuelManager.getInstance();
 		
 		if (Config.ENABLE_CLASS_DAMAGES)
-			ClassDamageManager.loadConfig();
-		
-		if (Config.AUTOSAVE_DELAY_TIME > 0)
 		{
-			AutoSaveManager.getInstance().startAutoSaveManager();
+			ClassDamageManager.loadConfig();
 		}
 		
 		Util.printSection("Skills");
@@ -275,15 +251,14 @@ public class GameServer
 			LOGGER.info("Could not find the extraced files. Please Check Your Data.");
 			throw new Exception("Could not initialize the item table");
 		}
+		
 		ArmorSetsTable.getInstance();
-		if (Config.CUSTOM_ARMORSETS_TABLE)
-		{
-			CustomArmorSetsTable.getInstance();
-		}
 		ExtractableItemsData.getInstance();
 		SummonItemsData.getInstance();
 		if (Config.ALLOWFISHING)
-			FishTable.getInstance();
+		{
+			FishTable.getInstance().loadData();
+		}
 		
 		Util.printSection("Npc");
 		NpcWalkerRoutesTable.getInstance().load();
@@ -292,6 +267,9 @@ public class GameServer
 			LOGGER.info("Could not find the extraced files. Please Check Your Data.");
 			throw new Exception("Could not initialize the npc table");
 		}
+		
+		L2BufferSkillsData.getInstance();
+		SchemeBufferManager.getInstance();
 		
 		Util.printSection("Characters");
 		if (Config.COMMUNITY_TYPE.equals("full"))
@@ -327,7 +305,6 @@ public class GameServer
 		Util.printSection("Economy");
 		TradeController.getInstance();
 		L2Multisell.getInstance();
-		LOGGER.info("Multisell: loaded.");
 		
 		Util.printSection("Clan Halls");
 		ClanHallManager.getInstance();
@@ -340,6 +317,7 @@ public class GameServer
 		ZoneData.getInstance();
 		
 		Util.printSection("Spawnlist");
+		
 		if (!Config.ALT_DEV_NO_SPAWNS)
 		{
 			SpawnTable.getInstance();
@@ -348,6 +326,7 @@ public class GameServer
 		{
 			LOGGER.info("Spawn: disable load.");
 		}
+		
 		if (!Config.ALT_DEV_NO_RB)
 		{
 			RaidBossSpawnManager.getInstance();
@@ -358,6 +337,7 @@ public class GameServer
 		{
 			LOGGER.info("RaidBoss: disable load.");
 		}
+		
 		DayNightSpawnManager.getInstance().notifyChangeMode();
 		
 		Util.printSection("Dimensional Rift");
@@ -374,7 +354,6 @@ public class GameServer
 		CursedWeaponsManager.getInstance();
 		TaskManager.getInstance();
 		L2PetDataTable.getInstance().loadPetsData();
-		SQLQueue.getInstance();
 		if (Config.ACCEPT_GEOEDITOR_CONN)
 		{
 			GeoEditorListener.getInstance();
@@ -414,8 +393,9 @@ public class GameServer
 		AutoSpawn.getInstance();
 		AutoChatHandler.getInstance();
 		
-		Util.printSection("Olympiad System");
+		Util.printSection("Olympiads");
 		Olympiad.getInstance();
+		Util.printSection("Heroes");
 		Hero.getInstance();
 		
 		Util.printSection("Access Levels");
@@ -466,7 +446,9 @@ public class GameServer
 		{
 			LOGGER.info("There is errors in your Door.csv file. Update door.csv");
 			if (Config.ENABLE_ALL_EXCEPTIONS)
+			{
 				e.printStackTrace();
+			}
 		}
 		
 		Util.printSection("AI");
@@ -487,7 +469,9 @@ public class GameServer
 			
 			final CompiledScriptCache compiledScriptCache = L2ScriptEngineManager.getInstance().getCompiledScriptCache();
 			if (compiledScriptCache == null)
+			{
 				LOGGER.info("Compiled Scripts Cache is disabled.");
+			}
 			else
 			{
 				compiledScriptCache.purge();
@@ -497,7 +481,9 @@ public class GameServer
 					LOGGER.info("Compiled Scripts Cache was saved.");
 				}
 				else
+				{
 					LOGGER.info("Compiled Scripts Cache is up-to-date.");
+				}
 			}
 			FaenorScriptEngine.getInstance();
 		}
@@ -512,20 +498,17 @@ public class GameServer
 		{
 			
 			if (QuestManager.getInstance().getQuests().size() == 0)
+			{
 				QuestManager.getInstance().reloadAllQuests();
+			}
 			else
+			{
 				QuestManager.getInstance().report();
+			}
 			
-		}
-		else
-		{
-			QuestManager.getInstance().unloadAllQuests();
 		}
 		
 		Util.printSection("Game Server");
-		
-		if (Config.IRC_ENABLED)
-			IrcManager.getInstance().getConnection().sendChan(Config.IRC_MSG_START);
 		
 		LOGGER.info("IdFactory: Free ObjectID's remaining: " + IdFactory.getInstance().size());
 		try
@@ -535,125 +518,92 @@ public class GameServer
 		catch (final Exception ex)
 		{
 			if (Config.ENABLE_ALL_EXCEPTIONS)
+			{
 				ex.printStackTrace();
+			}
 			
 			LOGGER.info("DynamicExtension could not be loaded and initialized" + ex);
 		}
 		
 		Util.printSection("Custom Mods");
 		
-		if (Config.L2JMOD_ALLOW_WEDDING || Config.ALLOW_AWAY_STATUS || Config.PCB_ENABLE || Config.POWERPAK_ENABLED)
+		if (Config.L2JMOD_ALLOW_WEDDING || Config.ALLOW_AWAY_STATUS || Config.PCB_ENABLE)
 		{
 			if (Config.L2JMOD_ALLOW_WEDDING)
+			{
 				CoupleManager.getInstance();
+			}
 			
 			if (Config.ALLOW_AWAY_STATUS)
+			{
 				AwayManager.getInstance();
+			}
 			
 			if (Config.PCB_ENABLE)
+			{
 				ThreadPoolManager.getInstance().scheduleGeneralAtFixedRate(PcPoint.getInstance(), Config.PCB_INTERVAL * 1000, Config.PCB_INTERVAL * 1000);
-			
-			if (Config.POWERPAK_ENABLED)
-				PowerPak.getInstance();
+			}
 		}
 		else
+		{
 			LOGGER.info("All custom mods are Disabled.");
+		}
 		
 		Util.printSection("EventManager");
 		EventManager.getInstance().startEventRegistration();
 		
-		if (EventManager.TVT_EVENT_ENABLED || EventManager.CTF_EVENT_ENABLED || EventManager.DM_EVENT_ENABLED)
+		if (Config.TVT_EVENT_ENABLED)
 		{
-			if (EventManager.TVT_EVENT_ENABLED)
-				LOGGER.info("TVT Event is Enabled.");
-			if (EventManager.CTF_EVENT_ENABLED)
-				LOGGER.info("CTF Event is Enabled.");
-			if (EventManager.DM_EVENT_ENABLED)
-				LOGGER.info("DM Event is Enabled.");
+			LOGGER.info("TVT Event is Enabled.");
 		}
-		else
-			LOGGER.info("All events are Disabled.");
+		if (Config.CTF_EVENT_ENABLED)
+		{
+			LOGGER.info("CTF Event is Enabled.");
+		}
+		if (Config.DM_EVENT_ENABLED)
+		{
+			LOGGER.info("DM Event is Enabled.");
+		}
 		
 		if ((Config.OFFLINE_TRADE_ENABLE || Config.OFFLINE_CRAFT_ENABLE) && Config.RESTORE_OFFLINERS)
+		{
 			OfflineTradeTable.restoreOfflineTraders();
+		}
 		
-		Util.printSection("Protection");
-		
-		if (Config.CHECK_SKILLS_ON_ENTER)
-			LOGGER.info("Check skills on enter actived.");
-		
-		if (Config.CHECK_NAME_ON_LOGIN)
-			LOGGER.info("Check bad name on enter actived.");
-		
-		if (Config.PROTECTED_ENCHANT)
-			LOGGER.info("Check OverEnchant items on enter actived.");
-		
-		if (Config.BYPASS_VALIDATION)
-			LOGGER.info("Bypass Validation actived.");
-		
-		if (Config.L2WALKER_PROTEC)
-			LOGGER.info("L2Walker protection actived.");
-		
-		if (Config.BOT_PROTECTOR)
-			LOGGER.info("Bot Protection actived.");
-		
-		if (!NetcoreConfig.getInstance().DISABLE_FULL_PACKETS_FLOOD_PROTECTOR)
-			LOGGER.info("Full packets flood protector actived.");
-		
-		if (NetcoreConfig.ENABLE_CLIENT_FLOOD_PROTECTION)
-			LOGGER.info("Client flood protection actived.");
+		Util.printSection("Project info");
+		LOGGER.info("Revision: " + Config.VERSION);
+		LOGGER.info("Build date: " + Config.BUILD_DATE);
 		
 		Util.printSection("Info");
-		LOGGER.info("Operating System: " + Util.getOSName() + " " + Util.getOSVersion() + " " + Util.getOSArch());
+		LOGGER.info("Operating system: " + Util.getOSName() + " " + Util.getOSVersion() + " " + Util.getOSArch());
 		LOGGER.info("Available CPUs: " + Util.getAvailableProcessors());
-		LOGGER.info("Maximum Numbers of Connected Players: " + Config.MAXIMUM_ONLINE_USERS);
-		LOGGER.info("GameServer Started, free memory " + Memory.getFreeMemory() + " Mb of " + Memory.getTotalMemory() + " Mb");
+		LOGGER.info("Maximum numbers of Connected Players: " + Config.MAXIMUM_ONLINE_USERS);
+		LOGGER.info("Free memory " + Memory.getFreeMemory() + " Mb of " + Memory.getTotalMemory() + " Mb");
 		LOGGER.info("Used memory: " + Memory.getUsedMemory() + " MB");
 		
 		Util.printSection("Java specific");
 		LOGGER.info("JRE name: " + System.getProperty("java.vendor"));
-		LOGGER.info("JRE specification version: " + System.getProperty("java.specification.version"));
 		LOGGER.info("JRE version: " + System.getProperty("java.version"));
 		LOGGER.info("--- Detecting Java Virtual Machine (JVM)");
 		LOGGER.info("JVM installation directory: " + System.getProperty("java.home"));
-		LOGGER.info("JVM Avaible Memory(RAM): " + Runtime.getRuntime().maxMemory() / 1048576 + " MB");
-		LOGGER.info("JVM specification version: " + System.getProperty("java.vm.specification.version"));
-		LOGGER.info("JVM specification vendor: " + System.getProperty("java.vm.specification.vendor"));
-		LOGGER.info("JVM specification name: " + System.getProperty("java.vm.specification.name"));
-		LOGGER.info("JVM implementation version: " + System.getProperty("java.vm.version"));
-		LOGGER.info("JVM implementation vendor: " + System.getProperty("java.vm.vendor"));
-		LOGGER.info("JVM implementation name: " + System.getProperty("java.vm.name"));
 		
 		Util.printSection("Status");
-		System.gc();
 		LOGGER.info("Server Loaded in " + (System.currentTimeMillis() - serverLoadStart) / 1000 + " seconds");
 		ServerStatus.getInstance();
 		
-		// Load telnet status
-		Util.printSection("Telnet");
-		if (Config.IS_TELNET_ENABLED)
-		{
-			_statusServer = new Status(ServerType.serverMode);
-			_statusServer.start();
-		}
-		else
-		{
-			LOGGER.info("Telnet server is disabled.");
-		}
-		
 		Util.printSection("Login");
-		_loginThread = LoginServerThread.getInstance();
-		_loginThread.start();
-		
+		loginThread = LoginServerThread.getInstance();
+		loginThread.start();
+		javolution.testing.Logger.logMe();
 		final SelectorConfig sc = new SelectorConfig();
 		sc.setMaxReadPerPass(NetcoreConfig.getInstance().MMO_MAX_READ_PER_PASS);
 		sc.setMaxSendPerPass(NetcoreConfig.getInstance().MMO_MAX_SEND_PER_PASS);
 		sc.setSleepTime(NetcoreConfig.getInstance().MMO_SELECTOR_SLEEP_TIME);
 		sc.setHelperBufferCount(NetcoreConfig.getInstance().MMO_HELPER_BUFFER_COUNT);
 		
-		_gamePacketHandler = new L2GamePacketHandler();
+		gamePacketHandler = new L2GamePacketHandler();
 		
-		_selectorThread = new SelectorThread<>(sc, _gamePacketHandler, _gamePacketHandler, _gamePacketHandler, new IPv4Filter());
+		selectorThread = new SelectorThread<>(sc, gamePacketHandler, gamePacketHandler, gamePacketHandler, new IPv4Filter());
 		
 		InetAddress bindAddress = null;
 		if (!Config.GAMESERVER_HOSTNAME.equals("*"))
@@ -665,7 +615,9 @@ public class GameServer
 			catch (final UnknownHostException e1)
 			{
 				if (Config.ENABLE_ALL_EXCEPTIONS)
+				{
 					e1.printStackTrace();
+				}
 				
 				LOGGER.warn("The GameServer bind address is invalid, using all avaliable IPs. Reason: ", e1);
 			}
@@ -673,21 +625,23 @@ public class GameServer
 		
 		try
 		{
-			_selectorThread.openServerSocket(bindAddress, Config.PORT_GAME);
+			selectorThread.openServerSocket(bindAddress, Config.PORT_GAME);
 		}
 		catch (final IOException e)
 		{
 			if (Config.ENABLE_ALL_EXCEPTIONS)
+			{
 				e.printStackTrace();
+			}
 			
 			LOGGER.fatal("Failed to open server socket. Reason: ", e);
 			System.exit(1);
 		}
-		_selectorThread.start();
+		selectorThread.start();
 	}
 	
 	public static SelectorThread<L2GameClient> getSelectorThread()
 	{
-		return _selectorThread;
+		return selectorThread;
 	}
 }

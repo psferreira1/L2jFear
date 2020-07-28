@@ -1,23 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.model.entity;
 
 import java.lang.reflect.Constructor;
@@ -30,28 +10,28 @@ import com.l2jfrozen.util.random.Rnd;
 
 public class MonsterRace
 {
-	private final L2NpcInstance[] _monsters;
-	private static MonsterRace _instance;
-	private Constructor<?> _constructor;
-	private int[][] _speeds;
-	private final int[] _first, _second;
+	private final L2NpcInstance[] monsters;
+	private static MonsterRace instance;
+	private Constructor<?> constructor;
+	private int[][] speeds;
+	private final int[] first, second;
 	
 	private MonsterRace()
 	{
-		_monsters = new L2NpcInstance[8];
-		_speeds = new int[8][20];
-		_first = new int[2];
-		_second = new int[2];
+		monsters = new L2NpcInstance[8];
+		speeds = new int[8][20];
+		first = new int[2];
+		second = new int[2];
 	}
 	
 	public static MonsterRace getInstance()
 	{
-		if (_instance == null)
+		if (instance == null)
 		{
-			_instance = new MonsterRace();
+			instance = new MonsterRace();
 		}
 		
-		return _instance;
+		return instance;
 	}
 	
 	public void newRace()
@@ -66,7 +46,7 @@ public class MonsterRace
 			{
 				for (int j = i - 1; j >= 0; j--)
 				{
-					if (_monsters[j].getTemplate().npcId == id + random)
+					if (monsters[j].getTemplate().npcId == id + random)
 					{
 						random = Rnd.get(24);
 						continue;
@@ -77,9 +57,9 @@ public class MonsterRace
 			try
 			{
 				final L2NpcTemplate template = NpcTable.getInstance().getTemplate(id + random);
-				_constructor = Class.forName("com.l2jfrozen.gameserver.model.actor.instance." + template.type + "Instance").getConstructors()[0];
+				constructor = Class.forName("com.l2jfrozen.gameserver.model.actor.instance." + template.type + "Instance").getConstructors()[0];
 				final int objectId = IdFactory.getInstance().getNextId();
-				_monsters[i] = (L2NpcInstance) _constructor.newInstance(objectId, template);
+				monsters[i] = (L2NpcInstance) constructor.newInstance(objectId, template);
 			}
 			catch (final Exception e)
 			{
@@ -93,10 +73,10 @@ public class MonsterRace
 	
 	public void newSpeeds()
 	{
-		_speeds = new int[8][20];
+		speeds = new int[8][20];
 		int total = 0;
-		_first[1] = 0;
-		_second[1] = 0;
+		first[1] = 0;
+		second[1] = 0;
 		for (int i = 0; i < 8; i++)
 		{
 			total = 0;
@@ -104,26 +84,26 @@ public class MonsterRace
 			{
 				if (j == 19)
 				{
-					_speeds[i][j] = 100;
+					speeds[i][j] = 100;
 				}
 				else
 				{
-					_speeds[i][j] = Rnd.get(60) + 65;
+					speeds[i][j] = Rnd.get(60) + 65;
 				}
-				total += _speeds[i][j];
+				total += speeds[i][j];
 			}
 			
-			if (total >= _first[1])
+			if (total >= first[1])
 			{
-				_second[0] = _first[0];
-				_second[1] = _first[1];
-				_first[0] = 8 - i;
-				_first[1] = total;
+				second[0] = first[0];
+				second[1] = first[1];
+				first[0] = 8 - i;
+				first[1] = total;
 			}
-			else if (total >= _second[1])
+			else if (total >= second[1])
 			{
-				_second[0] = 8 - i;
-				_second[1] = total;
+				second[0] = 8 - i;
+				second[1] = total;
 			}
 		}
 	}
@@ -133,7 +113,7 @@ public class MonsterRace
 	 */
 	public L2NpcInstance[] getMonsters()
 	{
-		return _monsters;
+		return monsters;
 	}
 	
 	/**
@@ -141,16 +121,16 @@ public class MonsterRace
 	 */
 	public int[][] getSpeeds()
 	{
-		return _speeds;
+		return speeds;
 	}
 	
 	public int getFirstPlace()
 	{
-		return _first[0];
+		return first[0];
 	}
 	
 	public int getSecondPlace()
 	{
-		return _second[0];
+		return second[0];
 	}
 }

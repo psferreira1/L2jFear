@@ -1,28 +1,6 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.model.actor.instance;
 
 import java.util.StringTokenizer;
-
-import javolution.text.TextBuilder;
 
 import com.l2jfrozen.Config;
 import com.l2jfrozen.gameserver.controllers.TradeController;
@@ -39,6 +17,8 @@ import com.l2jfrozen.gameserver.network.serverpackets.NpcHtmlMessage;
 import com.l2jfrozen.gameserver.network.serverpackets.SellList;
 import com.l2jfrozen.gameserver.network.serverpackets.SystemMessage;
 import com.l2jfrozen.gameserver.templates.L2NpcTemplate;
+
+import javolution.text.TextBuilder;
 
 public class L2FishermanInstance extends L2FolkInstance
 {
@@ -84,6 +64,11 @@ public class L2FishermanInstance extends L2FolkInstance
 		
 		if (list != null && list.getNpcId().equals(String.valueOf(getNpcId())))
 		{
+			if (player.isGM())
+			{
+				player.sendMessage("FISHER BUYLIST SHOP ID: " + val);
+			}
+			
 			BuyList bl = new BuyList(list, player.getAdena(), taxRate);
 			player.sendPacket(bl);
 			list = null;
@@ -130,7 +115,9 @@ public class L2FishermanInstance extends L2FolkInstance
 		if (command2.equalsIgnoreCase("Buy"))
 		{
 			if (st.countTokens() < 1)
+			{
 				return;
+			}
 			
 			final int val = Integer.parseInt(st.nextToken());
 			showBuyWindow(player, val);

@@ -1,23 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.handler;
 
 import java.util.Map;
@@ -60,7 +40,6 @@ import com.l2jfrozen.gameserver.handler.skillhandlers.TakeCastle;
 import com.l2jfrozen.gameserver.handler.skillhandlers.Unlock;
 import com.l2jfrozen.gameserver.handler.skillhandlers.ZakenPlayer;
 import com.l2jfrozen.gameserver.handler.skillhandlers.ZakenSelf;
-import com.l2jfrozen.gameserver.model.L2Skill;
 import com.l2jfrozen.gameserver.model.L2Skill.SkillType;
 
 /**
@@ -71,23 +50,23 @@ public class SkillHandler
 {
 	private static final Logger LOGGER = Logger.getLogger(GameServer.class);
 	
-	private static SkillHandler _instance;
+	private static SkillHandler instance;
 	
-	private final Map<L2Skill.SkillType, ISkillHandler> _datatable;
+	private final Map<SkillType, ISkillHandler> dataTable;
 	
 	public static SkillHandler getInstance()
 	{
-		if (_instance == null)
+		if (instance == null)
 		{
-			_instance = new SkillHandler();
+			instance = new SkillHandler();
 		}
 		
-		return _instance;
+		return instance;
 	}
 	
 	private SkillHandler()
 	{
-		_datatable = new TreeMap<>();
+		dataTable = new TreeMap<>();
 		registerSkillHandler(new Blow());
 		registerSkillHandler(new Pdam());
 		registerSkillHandler(new Mdam());
@@ -122,7 +101,7 @@ public class SkillHandler
 		registerSkillHandler(new GetPlayer());
 		registerSkillHandler(new ZakenPlayer());
 		registerSkillHandler(new ZakenSelf());
-		LOGGER.info("SkillHandler: Loaded " + _datatable.size() + " handlers.");
+		LOGGER.info("SkillHandler: Loaded " + dataTable.size() + " handlers.");
 		
 	}
 	
@@ -132,14 +111,14 @@ public class SkillHandler
 		
 		for (final SkillType t : types)
 		{
-			_datatable.put(t, handler);
+			dataTable.put(t, handler);
 		}
 		types = null;
 	}
 	
 	public ISkillHandler getSkillHandler(final SkillType skillType)
 	{
-		return _datatable.get(skillType);
+		return dataTable.get(skillType);
 	}
 	
 	/**
@@ -147,6 +126,6 @@ public class SkillHandler
 	 */
 	public int size()
 	{
-		return _datatable.size();
+		return dataTable.size();
 	}
 }

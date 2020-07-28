@@ -1,23 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.model;
 
 /**
@@ -27,92 +7,94 @@ package com.l2jfrozen.gameserver.model;
 
 public final class Location
 {
-	public int _x;
-	public int _y;
-	public int _z;
-	public int _heading;
+	public int x;
+	public int y;
+	public int z;
+	public int heading;
 	
 	public Location(final int x, final int y, final int z)
 	{
-		_x = x;
-		_y = y;
-		_z = z;
+		this.x = x;
+		this.y = y;
+		this.z = z;
 	}
 	
 	public Location(final int x, final int y, final int z, final int heading)
 	{
-		_x = x;
-		_y = y;
-		_z = z;
-		_heading = heading;
+		this.x = x;
+		this.y = y;
+		this.z = z;
+		this.heading = heading;
 	}
 	
 	public Location(final L2Object obj)
 	{
-		_x = obj.getX();
-		_y = obj.getY();
-		_z = obj.getZ();
+		x = obj.getX();
+		y = obj.getY();
+		z = obj.getZ();
 	}
 	
 	public Location(final L2Character obj)
 	{
-		_x = obj.getX();
-		_y = obj.getY();
-		_z = obj.getZ();
-		_heading = obj.getHeading();
+		x = obj.getX();
+		y = obj.getY();
+		z = obj.getZ();
+		heading = obj.getHeading();
 	}
 	
 	public int getX()
 	{
-		return _x;
+		return x;
 	}
 	
 	public int getY()
 	{
-		return _y;
+		return y;
 	}
 	
 	public int getZ()
 	{
-		return _z;
+		return z;
 	}
 	
 	public int getHeading()
 	{
-		return _heading;
+		return heading;
 	}
 	
 	public void setX(final int x)
 	{
-		_x = x;
+		this.x = x;
 	}
 	
 	public void setY(final int y)
 	{
-		_y = y;
+		this.y = y;
 	}
 	
 	public void setZ(final int z)
 	{
-		_z = z;
+		this.z = z;
 	}
 	
 	public void setHeading(final int head)
 	{
-		_heading = head;
+		heading = head;
 	}
 	
 	public void setXYZ(final int x, final int y, final int z)
 	{
-		_x = x;
-		_y = y;
-		_z = z;
+		this.x = x;
+		this.y = y;
+		this.z = z;
 	}
 	
 	public boolean equals(final int x, final int y, final int z)
 	{
-		if (_x == x && _y == y && _z == z)
+		if (this.x == x && this.y == y && this.z == z)
+		{
 			return true;
+		}
 		return false;
 	}
 }

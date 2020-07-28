@@ -1,27 +1,7 @@
-/* L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.model;
 
+import java.util.ArrayList;
 import java.util.List;
-
-import javolution.util.FastList;
 
 import com.l2jfrozen.gameserver.ai.CtrlIntention;
 import com.l2jfrozen.gameserver.ai.L2ControllableMobAI;
@@ -38,17 +18,17 @@ import com.l2jfrozen.util.random.Rnd;
  */
 public final class MobGroup
 {
-	private final L2NpcTemplate _npcTemplate;
-	private final int _groupId;
-	private final int _maxMobCount;
+	private final L2NpcTemplate npcTemplate;
+	private final int groupId;
+	private final int maxMobCount;
 	
-	private List<L2ControllableMobInstance> _mobs;
+	private List<L2ControllableMobInstance> mobs;
 	
 	public MobGroup(final int groupId, final L2NpcTemplate npcTemplate, final int maxMobCount)
 	{
-		_groupId = groupId;
-		_npcTemplate = npcTemplate;
-		_maxMobCount = maxMobCount;
+		this.groupId = groupId;
+		this.npcTemplate = npcTemplate;
+		this.maxMobCount = maxMobCount;
 	}
 	
 	public int getActiveMobCount()
@@ -58,22 +38,22 @@ public final class MobGroup
 	
 	public int getGroupId()
 	{
-		return _groupId;
+		return groupId;
 	}
 	
 	public int getMaxMobCount()
 	{
-		return _maxMobCount;
+		return maxMobCount;
 	}
 	
 	public List<L2ControllableMobInstance> getMobs()
 	{
-		if (_mobs == null)
+		if (mobs == null)
 		{
-			_mobs = new FastList<>();
+			mobs = new ArrayList<>();
 		}
 		
-		return _mobs;
+		return mobs;
 	}
 	
 	public String getStatus()
@@ -106,7 +86,7 @@ public final class MobGroup
 	
 	public L2NpcTemplate getTemplate()
 	{
-		return _npcTemplate;
+		return npcTemplate;
 	}
 	
 	public boolean isGroupMember(final L2ControllableMobInstance mobInst)
@@ -119,7 +99,9 @@ public final class MobGroup
 			}
 			
 			if (groupMember.getObjectId() == mobInst.getObjectId())
+			{
 				return true;
+			}
 		}
 		
 		return false;
@@ -127,8 +109,10 @@ public final class MobGroup
 	
 	public void spawnGroup(final int x, final int y, final int z)
 	{
-		if (getActiveMobCount() > 0) // can't spawn mob if already done
+		if (getActiveMobCount() > 0)
+		{
 			return;
+		}
 		
 		try
 		{
@@ -195,7 +179,9 @@ public final class MobGroup
 		removeDead();
 		
 		if (getActiveMobCount() == 0)
+		{
 			return null;
+		}
 		
 		final int choice = Rnd.nextInt(getActiveMobCount());
 		
@@ -207,7 +193,9 @@ public final class MobGroup
 		removeDead();
 		
 		if (getActiveMobCount() == 0)
+		{
 			return;
+		}
 		
 		for (final L2ControllableMobInstance mobInst : getMobs())
 		{
@@ -376,13 +364,15 @@ public final class MobGroup
 	
 	protected void removeDead()
 	{
-		List<L2ControllableMobInstance> deadMobs = new FastList<>();
+		List<L2ControllableMobInstance> deadMobs = new ArrayList<>();
 		
-		for (final L2ControllableMobInstance mobInst : getMobs())
+		for (L2ControllableMobInstance mobInst : getMobs())
+		{
 			if (mobInst != null && mobInst.isDead())
 			{
 				deadMobs.add(mobInst);
 			}
+		}
 		
 		getMobs().removeAll(deadMobs);
 		deadMobs = null;
@@ -393,10 +383,12 @@ public final class MobGroup
 		removeDead();
 		
 		for (final L2ControllableMobInstance mobInst : getMobs())
+		{
 			if (mobInst != null)
 			{
 				mobInst.setInvul(invulState);
 			}
+		}
 	}
 	
 	public void setAttackGroup(final MobGroup otherGrp)

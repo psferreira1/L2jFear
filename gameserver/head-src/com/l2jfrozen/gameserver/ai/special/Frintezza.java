@@ -1,24 +1,7 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any later
- * version.
- * 
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
- * 
- * You should have received a copy of the GNU General Public License along with
- * this program. If not, see <http://www.gnu.org/licenses/>.
- */
 package com.l2jfrozen.gameserver.ai.special;
 
+import java.util.ArrayList;
 import java.util.List;
-
-import javolution.util.FastList;
 
 import com.l2jfrozen.Config;
 import com.l2jfrozen.gameserver.ai.CtrlIntention;
@@ -59,7 +42,7 @@ import com.l2jfrozen.util.random.Rnd;
  */
 public class Frintezza extends Quest implements Runnable
 {
-	private static final int[][] _invadeLoc =
+	private static final int[][] invadeLoc =
 	{
 		{
 			174102,
@@ -93,7 +76,7 @@ public class Frintezza extends Quest implements Runnable
 		}
 	};
 	
-	private static final int[][] _skill =
+	private static final int[][] skills =
 	{
 		{
 			5015,
@@ -152,7 +135,7 @@ public class Frintezza extends Quest implements Runnable
 		}
 	};
 	
-	private static final int[][] _mobLoc =
+	private static final int[][] mobLoc =
 	{
 		{
 			18328,
@@ -1093,35 +1076,35 @@ public class Frintezza extends Quest implements Runnable
 	private static final byte FIGHTING = 2; // Frintezza is engaged in battle, annihilating his foes. Entry is locked
 	private static final byte DEAD = 3; // Frintezza has been killed. Entry is locked
 	
-	private static long _LastAction = 0;
-	private static int _Angle = 0;
-	private static int _Heading = 0;
-	private static int _LocCycle = 0;
-	private static int _Bomber = 0;
-	private static int _CheckDie = 0;
-	private static int _OnCheck = 0;
-	private static int _OnSong = 0;
-	private static int _Abnormal = 0;
-	private static int _OnMorph = 0;
-	private static int _Scarlet_x = 0;
-	private static int _Scarlet_y = 0;
-	private static int _Scarlet_z = 0;
-	private static int _Scarlet_h = 0;
-	private static int _SecondMorph = 0;
-	private static int _ThirdMorph = 0;
-	private static int _KillHallAlarmDevice = 0;
-	private static int _KillDarkChoirPlayer = 0;
-	private static int _KillDarkChoirCaptain = 0;
+	private static long lastAction = 0;
+	private static int angle = 0;
+	private static int heading = 0;
+	private static int locCycle = 0;
+	private static int bomber = 0;
+	private static int checkDie = 0;
+	private static int onCheck = 0;
+	private static int onSong = 0;
+	private static int abnormal = 0;
+	private static int onMorph = 0;
+	private static int scarlet_x = 0;
+	private static int scarlet_y = 0;
+	private static int scarlet_z = 0;
+	private static int scarlet_h = 0;
+	private static int secondMorph = 0;
+	private static int thirdMorph = 0;
+	private static int killHallAlarmDevice = 0;
+	private static int killDarkChoirPlayer = 0;
+	private static int killDarkChoirCaptain = 0;
 	
-	private static L2BossZone _Zone;
+	private static L2BossZone zone;
 	@SuppressWarnings("unused")
 	private L2GrandBossInstance frintezza, weakScarlet, strongScarlet, activeScarlet;
 	private L2MonsterInstance demon1, demon2, demon3, demon4, portrait1, portrait2, portrait3, portrait4;
-	private L2NpcInstance _frintezzaDummy, _overheadDummy, _portraitDummy1, _portraitDummy3, _scarletDummy;
-	private final List<L2PcInstance> _PlayersInside = new FastList<>();
-	private final List<L2NpcInstance> _Room1Mobs = new FastList<>();
-	private final List<L2NpcInstance> _Room2Mobs = new FastList<>();
-	private final List<L2Attackable> Minions = new FastList<>();
+	private L2NpcInstance frintezzaDummy, overheadDummy, portraitDummy1, portraitDummy3, scarletDummy;
+	private final List<L2PcInstance> playersInside = new ArrayList<>();
+	private final List<L2NpcInstance> room1Mobs = new ArrayList<>();
+	private final List<L2NpcInstance> room2Mobs = new ArrayList<>();
+	private final List<L2Attackable> minions = new ArrayList<>();
 	
 	// Boss: Frintezza
 	public Frintezza(final int id, final String name, final String descr)
@@ -1149,7 +1132,7 @@ public class Frintezza extends Quest implements Runnable
 			29050,
 			29051
 		};
-		_Zone = GrandBossManager.getInstance().getZone(getXFix(174232), getYFix(-88020), getZFix(-5116));
+		zone = GrandBossManager.getInstance().getZone(getXFix(174232), getYFix(-88020), getZFix(-5116));
 		registerMobs(mob);
 		addStartNpc(GUIDE);
 		addTalkId(GUIDE);
@@ -1163,16 +1146,24 @@ public class Frintezza extends Quest implements Runnable
 		{
 			final long temp = (info.getLong("respawn_time") - System.currentTimeMillis());
 			if (temp > 0)
+			{
 				startQuestTimer("frintezza_unlock", temp, null, null);
+			}
 			else
+			{
 				GrandBossManager.getInstance().setBossStatus(FRINTEZZA, DORMANT);
+			}
 		}
 		else if (status != DORMANT)
+		{
 			GrandBossManager.getInstance().setBossStatus(FRINTEZZA, DORMANT);
+		}
 		
 		// tempfix for messed door cords
 		for (int i = 0; i < 8; i++)
+		{
 			DoorTable.getInstance().getDoor(25150051 + i).setRange(0, 0, 0, 0, 0, 0);
+		}
 	}
 	
 	@Override
@@ -1183,16 +1174,16 @@ public class Frintezza extends Quest implements Runnable
 		{
 			startQuestTimer("close", 27000, npc, null);
 			startQuestTimer("camera_1", 30000, npc, null);
-			_Zone.broadcastPacket(new Earthquake(getXFix(174232), getYFix(-88020), getZFix(-5116), 45, 27));
+			zone.broadcastPacket(new Earthquake(getXFix(174232), getYFix(-88020), getZFix(-5116), 45, 27));
 		}
 		else if (event.equalsIgnoreCase("room1_spawn"))
 		{
 			for (int i = 0; i <= 17; i++)
 			{
-				final L2NpcInstance mob = addSpawn(_mobLoc[i][0], _mobLoc[i][1], _mobLoc[i][2], _mobLoc[i][3], _mobLoc[i][4], false, 0);
-				synchronized (_Room1Mobs)
+				final L2NpcInstance mob = addSpawn(mobLoc[i][0], mobLoc[i][1], mobLoc[i][2], mobLoc[i][3], mobLoc[i][4], false, 0);
+				synchronized (room1Mobs)
 				{
-					_Room1Mobs.add(mob);
+					room1Mobs.add(mob);
 				}
 				
 			}
@@ -1201,10 +1192,10 @@ public class Frintezza extends Quest implements Runnable
 		{
 			for (int i = 18; i <= 26; i++)
 			{
-				final L2NpcInstance mob = addSpawn(_mobLoc[i][0], _mobLoc[i][1], _mobLoc[i][2], _mobLoc[i][3], _mobLoc[i][4], false, 0);
-				synchronized (_Room1Mobs)
+				final L2NpcInstance mob = addSpawn(mobLoc[i][0], mobLoc[i][1], mobLoc[i][2], mobLoc[i][3], mobLoc[i][4], false, 0);
+				synchronized (room1Mobs)
 				{
-					_Room1Mobs.add(mob);
+					room1Mobs.add(mob);
 				}
 				
 			}
@@ -1213,10 +1204,10 @@ public class Frintezza extends Quest implements Runnable
 		{
 			for (int i = 27; i <= 32; i++)
 			{
-				final L2NpcInstance mob = addSpawn(_mobLoc[i][0], _mobLoc[i][1], _mobLoc[i][2], _mobLoc[i][3], _mobLoc[i][4], false, 0);
-				synchronized (_Room1Mobs)
+				final L2NpcInstance mob = addSpawn(mobLoc[i][0], mobLoc[i][1], mobLoc[i][2], mobLoc[i][3], mobLoc[i][4], false, 0);
+				synchronized (room1Mobs)
 				{
-					_Room1Mobs.add(mob);
+					room1Mobs.add(mob);
 				}
 				
 			}
@@ -1225,10 +1216,10 @@ public class Frintezza extends Quest implements Runnable
 		{
 			for (int i = 33; i <= 40; i++)
 			{
-				final L2NpcInstance mob = addSpawn(_mobLoc[i][0], _mobLoc[i][1], _mobLoc[i][2], _mobLoc[i][3], _mobLoc[i][4], false, 0);
-				synchronized (_Room1Mobs)
+				final L2NpcInstance mob = addSpawn(mobLoc[i][0], mobLoc[i][1], mobLoc[i][2], mobLoc[i][3], mobLoc[i][4], false, 0);
+				synchronized (room1Mobs)
 				{
-					_Room1Mobs.add(mob);
+					room1Mobs.add(mob);
 				}
 				
 			}
@@ -1237,10 +1228,10 @@ public class Frintezza extends Quest implements Runnable
 		{
 			for (int i = 41; i <= 44; i++)
 			{
-				final L2NpcInstance mob = addSpawn(_mobLoc[i][0], _mobLoc[i][1], _mobLoc[i][2], _mobLoc[i][3], _mobLoc[i][4], false, 0);
-				synchronized (_Room2Mobs)
+				final L2NpcInstance mob = addSpawn(mobLoc[i][0], mobLoc[i][1], mobLoc[i][2], mobLoc[i][3], mobLoc[i][4], false, 0);
+				synchronized (room2Mobs)
 				{
-					_Room2Mobs.add(mob);
+					room2Mobs.add(mob);
 				}
 				
 			}
@@ -1249,64 +1240,90 @@ public class Frintezza extends Quest implements Runnable
 		{
 			for (int i = 45; i <= 131; i++)
 			{
-				final L2NpcInstance mob = addSpawn(_mobLoc[i][0], _mobLoc[i][1], _mobLoc[i][2], _mobLoc[i][3], _mobLoc[i][4], false, 0);
-				synchronized (_Room2Mobs)
+				final L2NpcInstance mob = addSpawn(mobLoc[i][0], mobLoc[i][1], mobLoc[i][2], mobLoc[i][3], mobLoc[i][4], false, 0);
+				synchronized (room2Mobs)
 				{
-					_Room2Mobs.add(mob);
+					room2Mobs.add(mob);
 				}
 				
 			}
 		}
 		else if (event.equalsIgnoreCase("room1_del"))
 		{
-			synchronized (_Room1Mobs)
+			synchronized (room1Mobs)
 			{
-				for (final L2NpcInstance mob : _Room1Mobs)
+				for (final L2NpcInstance mob : room1Mobs)
 				{
 					if (mob != null)
+					{
 						mob.deleteMe();
+					}
 				}
-				_Room1Mobs.clear();
+				room1Mobs.clear();
 			}
 			
 		}
 		else if (event.equalsIgnoreCase("room2_del"))
 		{
-			synchronized (_Room2Mobs)
+			synchronized (room2Mobs)
 			{
-				for (final L2NpcInstance mob : _Room2Mobs)
+				for (final L2NpcInstance mob : room2Mobs)
 				{
 					if (mob != null)
+					{
 						mob.deleteMe();
+					}
 				}
-				_Room2Mobs.clear();
+				room2Mobs.clear();
 			}
 			
 		}
 		else if (event.equalsIgnoreCase("room3_del"))
 		{
 			if (demon1 != null)
+			{
 				demon1.deleteMe();
+			}
 			if (demon2 != null)
+			{
 				demon2.deleteMe();
+			}
 			if (demon3 != null)
+			{
 				demon3.deleteMe();
+			}
 			if (demon4 != null)
+			{
 				demon4.deleteMe();
+			}
 			if (portrait1 != null)
+			{
 				portrait1.deleteMe();
+			}
 			if (portrait2 != null)
+			{
 				portrait2.deleteMe();
+			}
 			if (portrait3 != null)
+			{
 				portrait3.deleteMe();
+			}
 			if (portrait4 != null)
+			{
 				portrait4.deleteMe();
+			}
 			if (frintezza != null)
+			{
 				frintezza.deleteMe();
+			}
 			if (weakScarlet != null)
+			{
 				weakScarlet.deleteMe();
+			}
 			if (strongScarlet != null)
+			{
 				strongScarlet.deleteMe();
+			}
 			
 			demon1 = null;
 			demon2 = null;
@@ -1323,25 +1340,29 @@ public class Frintezza extends Quest implements Runnable
 		}
 		else if (event.equalsIgnoreCase("clean"))
 		{
-			_LastAction = 0;
-			_LocCycle = 0;
-			_CheckDie = 0;
-			_OnCheck = 0;
-			_Abnormal = 0;
-			_OnMorph = 0;
-			_SecondMorph = 0;
-			_ThirdMorph = 0;
-			_KillHallAlarmDevice = 0;
-			_KillDarkChoirPlayer = 0;
-			_KillDarkChoirCaptain = 0;
-			_PlayersInside.clear();
+			lastAction = 0;
+			locCycle = 0;
+			checkDie = 0;
+			onCheck = 0;
+			abnormal = 0;
+			onMorph = 0;
+			secondMorph = 0;
+			thirdMorph = 0;
+			killHallAlarmDevice = 0;
+			killDarkChoirPlayer = 0;
+			killDarkChoirCaptain = 0;
+			playersInside.clear();
 		}
 		else if (event.equalsIgnoreCase("close"))
 		{
 			for (int i = 25150051; i <= 25150058; i++)
+			{
 				DoorTable.getInstance().getDoor(i).closeMe();
+			}
 			for (int i = 25150061; i <= 25150070; i++)
+			{
 				DoorTable.getInstance().getDoor(i).closeMe();
+			}
 			
 			DoorTable.getInstance().getDoor(25150042).closeMe();
 			DoorTable.getInstance().getDoor(25150043).closeMe();
@@ -1349,212 +1370,220 @@ public class Frintezza extends Quest implements Runnable
 			DoorTable.getInstance().getDoor(25150046).closeMe();
 		}
 		/*
-		 * else if (event.equalsIgnoreCase("loc_check")) { Integer status = GrandBossManager.getInstance().getBossStatus(FRINTEZZA); if (status == FIGHTING) { if (!_Zone.isInsideZone(npc)) npc.teleToLocation(getXFix(174232),getYFix(-88020),getZFix(-5116)); if (npc.getX() < getXFix(171932) ||
-		 * npc.getX() > getXFix(176532) || npc.getY() < getYFix(-90320) || npc.getY() > getYFix(-85720) || npc.getZ() < getZFix(-5130)) npc.teleToLocation(getXFix(174232),getYFix(-88020),getZFix(-5116)); } }
+		 * else if (event.equalsIgnoreCase("loc_check")) { Integer status = GrandBossManager.getInstance().getBossStatus(FRINTEZZA); if (status == FIGHTING) { if (!_Zone.isInsideZone(npc)) npc.teleToLocation(getXFix(174232),getYFix(-88020),getZFix(-5116)); if (npc.getX() < getXFix(171932) || npc.getX() >
+		 * getXFix(176532) || npc.getY() < getYFix(-90320) || npc.getY() > getYFix(-85720) || npc.getZ() < getZFix(-5130)) npc.teleToLocation(getXFix(174232),getYFix(-88020),getZFix(-5116)); } }
 		 */
 		else if (event.equalsIgnoreCase("camera_1"))
 		{
 			GrandBossManager.getInstance().setBossStatus(FRINTEZZA, FIGHTING);
 			
-			_frintezzaDummy = addSpawn(29052, 174240, -89805, -5022, 16048, false, 0);
-			_frintezzaDummy.setIsInvul(true);
-			_frintezzaDummy.setIsImobilised(true);
+			frintezzaDummy = addSpawn(29052, 174240, -89805, -5022, 16048, false, 0);
+			frintezzaDummy.setIsInvul(true);
+			frintezzaDummy.setIsImobilised(true);
 			
-			_overheadDummy = addSpawn(29052, 174232, -88020, -5110, 16384, false, 0);
-			_overheadDummy.setIsInvul(true);
-			_overheadDummy.setIsImobilised(true);
-			_overheadDummy.setCollisionHeight(600);
-			_Zone.broadcastPacket(new NpcInfo(_overheadDummy, null));
+			overheadDummy = addSpawn(29052, 174232, -88020, -5110, 16384, false, 0);
+			overheadDummy.setIsInvul(true);
+			overheadDummy.setIsImobilised(true);
+			overheadDummy.setCollisionHeight(600);
+			zone.broadcastPacket(new NpcInfo(overheadDummy, null));
 			
-			_portraitDummy1 = addSpawn(29052, 172450, -87890, -5100, 16048, false, 0);
-			_portraitDummy1.setIsImobilised(true);
-			_portraitDummy1.setIsInvul(true);
+			portraitDummy1 = addSpawn(29052, 172450, -87890, -5100, 16048, false, 0);
+			portraitDummy1.setIsImobilised(true);
+			portraitDummy1.setIsInvul(true);
 			
-			_portraitDummy3 = addSpawn(29052, 176012, -87890, -5100, 16048, false, 0);
-			_portraitDummy3.setIsImobilised(true);
-			_portraitDummy3.setIsInvul(true);
+			portraitDummy3 = addSpawn(29052, 176012, -87890, -5100, 16048, false, 0);
+			portraitDummy3.setIsImobilised(true);
+			portraitDummy3.setIsInvul(true);
 			
-			_scarletDummy = addSpawn(29053, 174232, -88020, -5110, 16384, false, 0);
-			_scarletDummy.setIsInvul(true);
-			_scarletDummy.setIsImobilised(true);
+			scarletDummy = addSpawn(29053, 174232, -88020, -5110, 16384, false, 0);
+			scarletDummy.setIsInvul(true);
+			scarletDummy.setIsImobilised(true);
 			
 			startQuestTimer("stop_pc", 0, npc, null);
-			startQuestTimer("camera_2", 1000, _overheadDummy, null);
+			startQuestTimer("camera_2", 1000, overheadDummy, null);
 		}
 		else if (event.equalsIgnoreCase("camera_2"))
 		{
-			_Zone.broadcastPacket(new SpecialCamera(_overheadDummy.getObjectId(), 0, 75, -89, 0, 100));
-			startQuestTimer("camera_2b", 0, _overheadDummy, null);
+			zone.broadcastPacket(new SpecialCamera(overheadDummy.getObjectId(), 0, 75, -89, 0, 100));
+			startQuestTimer("camera_2b", 0, overheadDummy, null);
 		}
 		else if (event.equalsIgnoreCase("camera_2b"))
 		{
-			_Zone.broadcastPacket(new SpecialCamera(_overheadDummy.getObjectId(), 0, 75, -89, 0, 100));
-			startQuestTimer("camera_3", 0, _overheadDummy, null);
+			zone.broadcastPacket(new SpecialCamera(overheadDummy.getObjectId(), 0, 75, -89, 0, 100));
+			startQuestTimer("camera_3", 0, overheadDummy, null);
 		}
 		else if (event.equalsIgnoreCase("camera_3"))
 		{
-			_Zone.broadcastPacket(new SpecialCamera(_overheadDummy.getObjectId(), 300, 90, -10, 6500, 7000));
+			zone.broadcastPacket(new SpecialCamera(overheadDummy.getObjectId(), 300, 90, -10, 6500, 7000));
 			
 			frintezza = (L2GrandBossInstance) addSpawn(FRINTEZZA, 174240, -89805, -5022, 16048, false, 0);
 			GrandBossManager.getInstance().addBoss(frintezza);
 			frintezza.setIsImobilised(true);
 			frintezza.setIsInvul(true);
 			frintezza.disableAllSkills();
-			_Zone.updateKnownList(frintezza);
+			zone.updateKnownList(frintezza);
 			
 			demon2 = (L2MonsterInstance) addSpawn(29051, 175876, -88713, -5100, 28205, false, 0);
 			demon2.setIsImobilised(true);
 			demon2.disableAllSkills();
-			_Zone.updateKnownList(demon2);
+			zone.updateKnownList(demon2);
 			
 			demon3 = (L2MonsterInstance) addSpawn(29051, 172608, -88702, -5100, 64817, false, 0);
 			demon3.setIsImobilised(true);
 			demon3.disableAllSkills();
-			_Zone.updateKnownList(demon3);
+			zone.updateKnownList(demon3);
 			
 			demon1 = (L2MonsterInstance) addSpawn(29050, 175833, -87165, -5100, 35048, false, 0);
 			demon1.setIsImobilised(true);
 			demon1.disableAllSkills();
-			_Zone.updateKnownList(demon1);
+			zone.updateKnownList(demon1);
 			
 			demon4 = (L2MonsterInstance) addSpawn(29050, 172634, -87165, -5100, 57730, false, 0);
 			demon4.setIsImobilised(true);
 			demon4.disableAllSkills();
-			_Zone.updateKnownList(demon4);
+			zone.updateKnownList(demon4);
 			
-			startQuestTimer("camera_4", 6500, _overheadDummy, null);
+			startQuestTimer("camera_4", 6500, overheadDummy, null);
 		}
 		else if (event.equalsIgnoreCase("camera_4"))
 		{
-			_Zone.broadcastPacket(new SpecialCamera(_frintezzaDummy.getObjectId(), 1800, 90, 8, 6500, 7000));
-			startQuestTimer("camera_5", 900, _frintezzaDummy, null);
+			zone.broadcastPacket(new SpecialCamera(frintezzaDummy.getObjectId(), 1800, 90, 8, 6500, 7000));
+			startQuestTimer("camera_5", 900, frintezzaDummy, null);
 		}
 		else if (event.equalsIgnoreCase("camera_5"))
 		{
-			_Zone.broadcastPacket(new SpecialCamera(_frintezzaDummy.getObjectId(), 140, 90, 10, 2500, 4500));
-			startQuestTimer("camera_5b", 4000, _frintezzaDummy, null);
+			zone.broadcastPacket(new SpecialCamera(frintezzaDummy.getObjectId(), 140, 90, 10, 2500, 4500));
+			startQuestTimer("camera_5b", 4000, frintezzaDummy, null);
 		}
 		else if (event.equalsIgnoreCase("camera_5b"))
 		{
-			_Zone.broadcastPacket(new SpecialCamera(frintezza.getObjectId(), 40, 75, -10, 0, 1000));
+			zone.broadcastPacket(new SpecialCamera(frintezza.getObjectId(), 40, 75, -10, 0, 1000));
 			startQuestTimer("camera_6", 0, frintezza, null);
 		}
 		else if (event.equalsIgnoreCase("camera_6"))
 		{
-			_Zone.broadcastPacket(new SpecialCamera(frintezza.getObjectId(), 40, 75, -10, 0, 12000));
+			zone.broadcastPacket(new SpecialCamera(frintezza.getObjectId(), 40, 75, -10, 0, 12000));
 			startQuestTimer("camera_7", 1350, frintezza, null);
 		}
 		else if (event.equalsIgnoreCase("camera_7"))
 		{
-			_Zone.broadcastPacket(new SocialAction(frintezza.getObjectId(), 2));
+			zone.broadcastPacket(new SocialAction(frintezza.getObjectId(), 2));
 			startQuestTimer("camera_8", 7000, frintezza, null);
 		}
 		else if (event.equalsIgnoreCase("camera_8"))
 		{
 			startQuestTimer("camera_9", 1000, frintezza, null);
-			_frintezzaDummy.deleteMe();
-			_frintezzaDummy = null;
+			frintezzaDummy.deleteMe();
+			frintezzaDummy = null;
 		}
 		else if (event.equalsIgnoreCase("camera_9"))
 		{
-			_Zone.broadcastPacket(new SocialAction(demon2.getObjectId(), 1));
-			_Zone.broadcastPacket(new SocialAction(demon3.getObjectId(), 1));
+			zone.broadcastPacket(new SocialAction(demon2.getObjectId(), 1));
+			zone.broadcastPacket(new SocialAction(demon3.getObjectId(), 1));
 			startQuestTimer("camera_9b", 400, frintezza, null);
 		}
 		else if (event.equalsIgnoreCase("camera_9b"))
 		{
-			_Zone.broadcastPacket(new SocialAction(demon1.getObjectId(), 1));
-			_Zone.broadcastPacket(new SocialAction(demon4.getObjectId(), 1));
+			zone.broadcastPacket(new SocialAction(demon1.getObjectId(), 1));
+			zone.broadcastPacket(new SocialAction(demon4.getObjectId(), 1));
 			
-			for (final L2Character pc : _Zone.getCharactersInside().values())
+			for (final L2Character pc : zone.getCharactersInside().values())
 			{
 				if (pc instanceof L2PcInstance)
 				{
 					if (pc.getX() < getXFix(174232))
-						pc.broadcastPacket(new SpecialCamera(_portraitDummy1.getObjectId(), 1000, 118, 0, 0, 1000));
+					{
+						pc.broadcastPacket(new SpecialCamera(portraitDummy1.getObjectId(), 1000, 118, 0, 0, 1000));
+					}
 					else
-						pc.broadcastPacket(new SpecialCamera(_portraitDummy3.getObjectId(), 1000, 62, 0, 0, 1000));
+					{
+						pc.broadcastPacket(new SpecialCamera(portraitDummy3.getObjectId(), 1000, 62, 0, 0, 1000));
+					}
 				}
 			}
 			startQuestTimer("camera_9c", 0, frintezza, null);
 		}
 		else if (event.equalsIgnoreCase("camera_9c"))
 		{
-			for (final L2Character pc : _Zone.getCharactersInside().values())
+			for (final L2Character pc : zone.getCharactersInside().values())
 			{
 				if (pc instanceof L2PcInstance)
 				{
 					if (pc.getX() < getXFix(174232))
-						pc.broadcastPacket(new SpecialCamera(_portraitDummy1.getObjectId(), 1000, 118, 0, 0, 10000));
+					{
+						pc.broadcastPacket(new SpecialCamera(portraitDummy1.getObjectId(), 1000, 118, 0, 0, 10000));
+					}
 					else
-						pc.broadcastPacket(new SpecialCamera(_portraitDummy3.getObjectId(), 1000, 62, 0, 0, 10000));
+					{
+						pc.broadcastPacket(new SpecialCamera(portraitDummy3.getObjectId(), 1000, 62, 0, 0, 10000));
+					}
 				}
 			}
 			startQuestTimer("camera_10", 2000, frintezza, null);
 		}
 		else if (event.equalsIgnoreCase("camera_10"))
 		{
-			_Zone.broadcastPacket(new SpecialCamera(frintezza.getObjectId(), 240, 90, 0, 0, 1000));
+			zone.broadcastPacket(new SpecialCamera(frintezza.getObjectId(), 240, 90, 0, 0, 1000));
 			startQuestTimer("camera_11", 0, frintezza, null);
 		}
 		else if (event.equalsIgnoreCase("camera_11"))
 		{
-			_Zone.broadcastPacket(new SpecialCamera(frintezza.getObjectId(), 240, 90, 25, 5500, 10000));
-			_Zone.broadcastPacket(new SocialAction(frintezza.getObjectId(), 3));
-			_portraitDummy1.deleteMe();
-			_portraitDummy3.deleteMe();
-			_portraitDummy1 = null;
-			_portraitDummy3 = null;
+			zone.broadcastPacket(new SpecialCamera(frintezza.getObjectId(), 240, 90, 25, 5500, 10000));
+			zone.broadcastPacket(new SocialAction(frintezza.getObjectId(), 3));
+			portraitDummy1.deleteMe();
+			portraitDummy3.deleteMe();
+			portraitDummy1 = null;
+			portraitDummy3 = null;
 			
 			startQuestTimer("camera_12", 4500, frintezza, null);
 		}
 		else if (event.equalsIgnoreCase("camera_12"))
 		{
-			_Zone.broadcastPacket(new SpecialCamera(frintezza.getObjectId(), 100, 195, 35, 0, 10000));
+			zone.broadcastPacket(new SpecialCamera(frintezza.getObjectId(), 100, 195, 35, 0, 10000));
 			startQuestTimer("camera_13", 700, frintezza, null);
 		}
 		else if (event.equalsIgnoreCase("camera_13"))
 		{
-			_Zone.broadcastPacket(new SpecialCamera(frintezza.getObjectId(), 100, 195, 35, 0, 10000));
+			zone.broadcastPacket(new SpecialCamera(frintezza.getObjectId(), 100, 195, 35, 0, 10000));
 			startQuestTimer("camera_14", 1300, frintezza, null);
 		}
 		else if (event.equalsIgnoreCase("camera_14"))
 		{
-			_Zone.broadcastPacket(new SpecialCamera(frintezza.getObjectId(), 120, 180, 45, 1500, 10000));
-			_Zone.broadcastPacket(new MagicSkillUser(frintezza, frintezza, 5006, 1, 34000, 0));
+			zone.broadcastPacket(new SpecialCamera(frintezza.getObjectId(), 120, 180, 45, 1500, 10000));
+			zone.broadcastPacket(new MagicSkillUser(frintezza, frintezza, 5006, 1, 34000, 0));
 			startQuestTimer("camera_16", 1500, frintezza, null);
 		}
 		else if (event.equalsIgnoreCase("camera_16"))
 		{
-			_Zone.broadcastPacket(new SpecialCamera(frintezza.getObjectId(), 520, 135, 45, 8000, 10000));
+			zone.broadcastPacket(new SpecialCamera(frintezza.getObjectId(), 520, 135, 45, 8000, 10000));
 			startQuestTimer("camera_17", 7500, frintezza, null);
 		}
 		else if (event.equalsIgnoreCase("camera_17"))
 		{
-			_Zone.broadcastPacket(new SpecialCamera(frintezza.getObjectId(), 1500, 110, 25, 10000, 13000));
+			zone.broadcastPacket(new SpecialCamera(frintezza.getObjectId(), 1500, 110, 25, 10000, 13000));
 			startQuestTimer("camera_18", 9500, frintezza, null);
 		}
 		else if (event.equalsIgnoreCase("camera_18"))
 		{
-			_Zone.broadcastPacket(new SpecialCamera(_overheadDummy.getObjectId(), 930, 160, -20, 0, 1000));
-			startQuestTimer("camera_18b", 0, _overheadDummy, null);
+			zone.broadcastPacket(new SpecialCamera(overheadDummy.getObjectId(), 930, 160, -20, 0, 1000));
+			startQuestTimer("camera_18b", 0, overheadDummy, null);
 		}
 		else if (event.equalsIgnoreCase("camera_18b"))
 		{
-			_Zone.broadcastPacket(new SpecialCamera(_overheadDummy.getObjectId(), 600, 180, -25, 0, 10000));
-			_Zone.broadcastPacket(new MagicSkillUser(_scarletDummy, _overheadDummy, 5004, 1, 5800, 0));
+			zone.broadcastPacket(new SpecialCamera(overheadDummy.getObjectId(), 600, 180, -25, 0, 10000));
+			zone.broadcastPacket(new MagicSkillUser(scarletDummy, overheadDummy, 5004, 1, 5800, 0));
 			
 			weakScarlet = (L2GrandBossInstance) addSpawn(SCARLET1, 174232, -88020, -5110, 16384, false, 0);
 			weakScarlet.setIsInvul(true);
 			weakScarlet.setIsImobilised(true);
 			weakScarlet.disableAllSkills();
-			_Zone.updateKnownList(weakScarlet);
+			zone.updateKnownList(weakScarlet);
 			activeScarlet = weakScarlet;
 			
 			/*
-			 * startQuestTimer("camera_19", 2400, _scarletDummy, null); startQuestTimer("camera_19b", 5000, _scarletDummy, null);
+			 * startQuestTimer("camera_19", 2400, scarletDummy, null); startQuestTimer("camera_19b", 5000, scarletDummy, null);
 			 */
-			startQuestTimer("camera_19", 5500, _scarletDummy, null);
+			startQuestTimer("camera_19", 5500, scarletDummy, null);
 			startQuestTimer("camera_19b", 5400, weakScarlet, null);
 		}
 		else if (event.equalsIgnoreCase("camera_19"))
@@ -1563,17 +1592,17 @@ public class Frintezza extends Quest implements Runnable
 		}
 		else if (event.equalsIgnoreCase("camera_19b"))
 		{
-			_Zone.broadcastPacket(new SpecialCamera(_scarletDummy.getObjectId(), 800, 180, 10, 1000, 10000));
-			startQuestTimer("camera_20", 2100, _scarletDummy, null);
+			zone.broadcastPacket(new SpecialCamera(scarletDummy.getObjectId(), 800, 180, 10, 1000, 10000));
+			startQuestTimer("camera_20", 2100, scarletDummy, null);
 		}
 		else if (event.equalsIgnoreCase("camera_20"))
 		{
-			_Zone.broadcastPacket(new SpecialCamera(weakScarlet.getObjectId(), 300, 60, 8, 0, 10000));
+			zone.broadcastPacket(new SpecialCamera(weakScarlet.getObjectId(), 300, 60, 8, 0, 10000));
 			startQuestTimer("camera_21", 2000, weakScarlet, null);
 		}
 		else if (event.equalsIgnoreCase("camera_21"))
 		{
-			_Zone.broadcastPacket(new SpecialCamera(weakScarlet.getObjectId(), 500, 90, 10, 3000, 5000));
+			zone.broadcastPacket(new SpecialCamera(weakScarlet.getObjectId(), 500, 90, 10, 3000, 5000));
 			startQuestTimer("camera_22", 3000, weakScarlet, null);
 		}
 		else if (event.equalsIgnoreCase("camera_22"))
@@ -1581,27 +1610,27 @@ public class Frintezza extends Quest implements Runnable
 			portrait2 = (L2MonsterInstance) addSpawn(29049, 175876, -88713, -5000, 28205, false, 0);
 			portrait2.setIsImobilised(true);
 			portrait2.disableAllSkills();
-			_Zone.updateKnownList(portrait2);
+			zone.updateKnownList(portrait2);
 			
 			portrait3 = (L2MonsterInstance) addSpawn(29049, 172608, -88702, -5000, 64817, false, 0);
 			portrait3.setIsImobilised(true);
 			portrait3.disableAllSkills();
-			_Zone.updateKnownList(portrait3);
+			zone.updateKnownList(portrait3);
 			
 			portrait1 = (L2MonsterInstance) addSpawn(29048, 175833, -87165, -5000, 35048, false, 0);
 			portrait1.setIsImobilised(true);
 			portrait1.disableAllSkills();
-			_Zone.updateKnownList(portrait1);
+			zone.updateKnownList(portrait1);
 			
 			portrait4 = (L2MonsterInstance) addSpawn(29048, 172634, -87165, -5000, 57730, false, 0);
 			portrait4.setIsImobilised(true);
 			portrait4.disableAllSkills();
-			_Zone.updateKnownList(portrait4);
+			zone.updateKnownList(portrait4);
 			
-			_overheadDummy.deleteMe();
-			_scarletDummy.deleteMe();
-			_overheadDummy = null;
-			_scarletDummy = null;
+			overheadDummy.deleteMe();
+			scarletDummy.deleteMe();
+			overheadDummy = null;
+			scarletDummy = null;
 			
 			startQuestTimer("camera_23", 2000, weakScarlet, null);
 			startQuestTimer("start_pc", 2000, weakScarlet, null);
@@ -1639,7 +1668,7 @@ public class Frintezza extends Quest implements Runnable
 		}
 		else if (event.equalsIgnoreCase("stop_pc"))
 		{
-			for (final L2Character cha : _Zone.getCharactersInside().values())
+			for (final L2Character cha : zone.getCharactersInside().values())
 			{
 				cha.abortAttack();
 				cha.abortCast();
@@ -1652,15 +1681,19 @@ public class Frintezza extends Quest implements Runnable
 		}
 		else if (event.equalsIgnoreCase("stop_npc"))
 		{
-			_Heading = npc.getHeading();
-			if (_Heading < 32768)
-				_Angle = Math.abs(180 - (int) (_Heading / 182.044444444));
+			heading = npc.getHeading();
+			if (heading < 32768)
+			{
+				angle = Math.abs(180 - (int) (heading / 182.044444444));
+			}
 			else
-				_Angle = Math.abs(540 - (int) (_Heading / 182.044444444));
+			{
+				angle = Math.abs(540 - (int) (heading / 182.044444444));
+			}
 		}
 		else if (event.equalsIgnoreCase("start_pc"))
 		{
-			for (final L2Character cha : _Zone.getCharactersInside().values())
+			for (final L2Character cha : zone.getCharactersInside().values())
 			{
 				if (cha != frintezza)
 				{
@@ -1676,16 +1709,16 @@ public class Frintezza extends Quest implements Runnable
 		}
 		else if (event.equalsIgnoreCase("morph_end"))
 		{
-			_OnMorph = 0;
+			onMorph = 0;
 		}
 		else if (event.equalsIgnoreCase("morph_01"))
 		{
-			_Zone.broadcastPacket(new SpecialCamera(weakScarlet.getObjectId(), 250, _Angle, 12, 2000, 15000));
+			zone.broadcastPacket(new SpecialCamera(weakScarlet.getObjectId(), 250, angle, 12, 2000, 15000));
 			startQuestTimer("morph_02", 3000, weakScarlet, null);
 		}
 		else if (event.equalsIgnoreCase("morph_02"))
 		{
-			_Zone.broadcastPacket(new SocialAction(weakScarlet.getObjectId(), 1));
+			zone.broadcastPacket(new SocialAction(weakScarlet.getObjectId(), 1));
 			weakScarlet.setRHandId(7903);
 			startQuestTimer("morph_03", 4000, weakScarlet, null);
 		}
@@ -1695,10 +1728,12 @@ public class Frintezza extends Quest implements Runnable
 		}
 		else if (event.equalsIgnoreCase("morph_04"))
 		{
-			_Zone.broadcastPacket(new SocialAction(weakScarlet.getObjectId(), 4));
+			zone.broadcastPacket(new SocialAction(weakScarlet.getObjectId(), 4));
 			final L2Skill skill = SkillTable.getInstance().getInfo(5017, 1);
 			if (skill != null)
+			{
 				skill.getEffects(weakScarlet, weakScarlet, false, false, false);
+			}
 			
 			startQuestTimer("morph_end", 6000, weakScarlet, null);
 			startQuestTimer("start_pc", 3000, weakScarlet, null);
@@ -1708,60 +1743,60 @@ public class Frintezza extends Quest implements Runnable
 		}
 		else if (event.equalsIgnoreCase("morph_05a"))
 		{
-			_Zone.broadcastPacket(new SocialAction(frintezza.getObjectId(), 4));
+			zone.broadcastPacket(new SocialAction(frintezza.getObjectId(), 4));
 		}
 		else if (event.equalsIgnoreCase("morph_05"))
 		{
-			_Zone.broadcastPacket(new SpecialCamera(frintezza.getObjectId(), 250, 120, 15, 0, 1000));
+			zone.broadcastPacket(new SpecialCamera(frintezza.getObjectId(), 250, 120, 15, 0, 1000));
 			startQuestTimer("morph_06", 0, frintezza, null);
 		}
 		else if (event.equalsIgnoreCase("morph_06"))
 		{
-			_Zone.broadcastPacket(new SpecialCamera(frintezza.getObjectId(), 250, 120, 15, 0, 10000));
+			zone.broadcastPacket(new SpecialCamera(frintezza.getObjectId(), 250, 120, 15, 0, 10000));
 			
 			// cancelQuestTimer("loc_check");
 			
-			_Scarlet_x = weakScarlet.getX();
-			_Scarlet_y = weakScarlet.getY();
-			_Scarlet_z = weakScarlet.getZ();
-			_Scarlet_h = weakScarlet.getHeading();
+			scarlet_x = weakScarlet.getX();
+			scarlet_y = weakScarlet.getY();
+			scarlet_z = weakScarlet.getZ();
+			scarlet_h = weakScarlet.getHeading();
 			weakScarlet.deleteMe();
 			weakScarlet = null;
 			activeScarlet = null;
-			weakScarlet = (L2GrandBossInstance) addSpawn(SCARLET1, _Scarlet_x, _Scarlet_y, _Scarlet_z, _Scarlet_h, false, 0);
+			weakScarlet = (L2GrandBossInstance) addSpawn(SCARLET1, scarlet_x, scarlet_y, scarlet_z, scarlet_h, false, 0);
 			weakScarlet.setIsInvul(true);
 			weakScarlet.setIsImobilised(true);
 			weakScarlet.disableAllSkills();
 			weakScarlet.setRHandId(7903);
-			_Zone.updateKnownList(weakScarlet);
+			zone.updateKnownList(weakScarlet);
 			
 			startQuestTimer("morph_07", 7000, frintezza, null);
 		}
 		else if (event.equalsIgnoreCase("morph_07"))
 		{
-			_Zone.broadcastPacket(new MagicSkillUser(frintezza, frintezza, 5006, 1, 34000, 0));
-			_Zone.broadcastPacket(new SpecialCamera(frintezza.getObjectId(), 500, 70, 15, 3000, 10000));
+			zone.broadcastPacket(new MagicSkillUser(frintezza, frintezza, 5006, 1, 34000, 0));
+			zone.broadcastPacket(new SpecialCamera(frintezza.getObjectId(), 500, 70, 15, 3000, 10000));
 			startQuestTimer("morph_08", 3000, frintezza, null);
 		}
 		else if (event.equalsIgnoreCase("morph_08"))
 		{
-			_Zone.broadcastPacket(new SpecialCamera(frintezza.getObjectId(), 2500, 90, 12, 6000, 10000));
+			zone.broadcastPacket(new SpecialCamera(frintezza.getObjectId(), 2500, 90, 12, 6000, 10000));
 			startQuestTimer("morph_09", 3000, frintezza, null);
 		}
 		else if (event.equalsIgnoreCase("morph_09"))
 		{
-			_Zone.broadcastPacket(new SpecialCamera(weakScarlet.getObjectId(), 250, _Angle, 12, 0, 1000));
+			zone.broadcastPacket(new SpecialCamera(weakScarlet.getObjectId(), 250, angle, 12, 0, 1000));
 			startQuestTimer("morph_10", 0, weakScarlet, null);
 		}
 		else if (event.equalsIgnoreCase("morph_10"))
 		{
-			_Zone.broadcastPacket(new SpecialCamera(weakScarlet.getObjectId(), 250, _Angle, 12, 0, 10000));
+			zone.broadcastPacket(new SpecialCamera(weakScarlet.getObjectId(), 250, angle, 12, 0, 10000));
 			startQuestTimer("morph_11", 500, weakScarlet, null);
 		}
 		else if (event.equalsIgnoreCase("morph_11"))
 		{
 			weakScarlet.doDie(weakScarlet);
-			_Zone.broadcastPacket(new SpecialCamera(weakScarlet.getObjectId(), 450, _Angle, 14, 8000, 8000));
+			zone.broadcastPacket(new SpecialCamera(weakScarlet.getObjectId(), 450, angle, 14, 8000, 8000));
 			
 			startQuestTimer("morph_12", 6250, weakScarlet, null);
 			startQuestTimer("morph_13", 7200, weakScarlet, null);
@@ -1773,14 +1808,14 @@ public class Frintezza extends Quest implements Runnable
 		}
 		else if (event.equalsIgnoreCase("morph_13"))
 		{
-			strongScarlet = (L2GrandBossInstance) addSpawn(SCARLET2, reverseXFix(_Scarlet_x), reverseYFix(_Scarlet_y), reverseZFix(_Scarlet_z), _Scarlet_h, false, 0);
+			strongScarlet = (L2GrandBossInstance) addSpawn(SCARLET2, reverseXFix(scarlet_x), reverseYFix(scarlet_y), reverseZFix(scarlet_z), scarlet_h, false, 0);
 			strongScarlet.setIsInvul(true);
 			strongScarlet.setIsImobilised(true);
 			strongScarlet.disableAllSkills();
-			_Zone.updateKnownList(strongScarlet);
+			zone.updateKnownList(strongScarlet);
 			activeScarlet = strongScarlet;
 			
-			_Zone.broadcastPacket(new SpecialCamera(strongScarlet.getObjectId(), 450, _Angle, 12, 500, 14000));
+			zone.broadcastPacket(new SpecialCamera(strongScarlet.getObjectId(), 450, angle, 12, 500, 14000));
 			
 			startQuestTimer("morph_14", 3000, strongScarlet, null);
 			// startQuestTimer("loc_check", 60000, strongScarlet, null, true);
@@ -1791,10 +1826,12 @@ public class Frintezza extends Quest implements Runnable
 		}
 		else if (event.equalsIgnoreCase("morph_15"))
 		{
-			_Zone.broadcastPacket(new SocialAction(strongScarlet.getObjectId(), 2));
+			zone.broadcastPacket(new SocialAction(strongScarlet.getObjectId(), 2));
 			final L2Skill skill = SkillTable.getInstance().getInfo(5017, 1);
 			if (skill != null)
+			{
 				skill.getEffects(strongScarlet, strongScarlet, false, false, false);
+			}
 			
 			startQuestTimer("morph_end", 9000, strongScarlet, null);
 			startQuestTimer("start_pc", 6000, strongScarlet, null);
@@ -1804,12 +1841,12 @@ public class Frintezza extends Quest implements Runnable
 		}
 		else if (event.equalsIgnoreCase("morph_16"))
 		{
-			_Zone.broadcastPacket(new SpecialCamera(strongScarlet.getObjectId(), 300, _Angle - 180, 5, 0, 7000));
+			zone.broadcastPacket(new SpecialCamera(strongScarlet.getObjectId(), 300, angle - 180, 5, 0, 7000));
 			startQuestTimer("morph_17", 0, strongScarlet, null);
 		}
 		else if (event.equalsIgnoreCase("morph_17"))
 		{
-			_Zone.broadcastPacket(new SpecialCamera(strongScarlet.getObjectId(), 200, _Angle, 85, 4000, 10000));
+			zone.broadcastPacket(new SpecialCamera(strongScarlet.getObjectId(), 200, angle, 85, 4000, 10000));
 			startQuestTimer("morph_17b", 7400, frintezza, null);
 			startQuestTimer("morph_18", 7500, frintezza, null);
 		}
@@ -1819,34 +1856,34 @@ public class Frintezza extends Quest implements Runnable
 		}
 		else if (event.equalsIgnoreCase("morph_18"))
 		{
-			_Zone.broadcastPacket(new SpecialCamera(frintezza.getObjectId(), 100, 120, 5, 0, 7000));
+			zone.broadcastPacket(new SpecialCamera(frintezza.getObjectId(), 100, 120, 5, 0, 7000));
 			startQuestTimer("morph_19", 0, frintezza, null);
 		}
 		else if (event.equalsIgnoreCase("morph_19"))
 		{
-			_Zone.broadcastPacket(new SpecialCamera(frintezza.getObjectId(), 100, 90, 5, 5000, 15000));
+			zone.broadcastPacket(new SpecialCamera(frintezza.getObjectId(), 100, 90, 5, 5000, 15000));
 			startQuestTimer("morph_20", 7000, frintezza, null);
 			startQuestTimer("spawn_cubes", 7000, frintezza, null);
 		}
 		else if (event.equalsIgnoreCase("morph_20"))
 		{
-			_Zone.broadcastPacket(new SpecialCamera(frintezza.getObjectId(), 900, 90, 25, 7000, 10000));
+			zone.broadcastPacket(new SpecialCamera(frintezza.getObjectId(), 900, 90, 25, 7000, 10000));
 			startQuestTimer("start_pc", 7000, frintezza, null);
 		}
 		else if (event.equalsIgnoreCase("songs_play"))
 		{
-			if (frintezza != null && !frintezza.isDead() && _OnMorph == 0)
+			if (frintezza != null && !frintezza.isDead() && onMorph == 0)
 			{
-				_OnSong = Rnd.get(1, 5);
-				if (_OnSong == 3)
+				onSong = Rnd.get(1, 5);
+				if (onSong == 3)
 				{ // to fix skill exception
-					_OnSong = 2;
+					onSong = 2;
 				}
 				
 				String SongName = "";
 				
 				// Name of the songs are custom, named with client side description.
-				switch (_OnSong)
+				switch (onSong)
 				{
 					case 1:
 						SongName = "Frintezza's Healing Rhapsody";
@@ -1869,47 +1906,51 @@ public class Frintezza extends Quest implements Runnable
 				}
 				
 				// Like L2OFF the skill name is printed on screen
-				_Zone.broadcastPacket(new ExShowScreenMessage(SongName, 6000));
+				zone.broadcastPacket(new ExShowScreenMessage(SongName, 6000));
 				
-				if (_OnSong == 1 && _ThirdMorph == 1 && strongScarlet.getCurrentHp() < strongScarlet.getMaxHp() * 0.6 && Rnd.get(100) < 80)
+				if (onSong == 1 && thirdMorph == 1 && strongScarlet.getCurrentHp() < strongScarlet.getMaxHp() * 0.6 && Rnd.get(100) < 80)
 				{
-					_Zone.broadcastPacket(new MagicSkillUser(frintezza, frintezza, 5007, 1, 32000, 0));
+					zone.broadcastPacket(new MagicSkillUser(frintezza, frintezza, 5007, 1, 32000, 0));
 					startQuestTimer("songs_effect", 5000, frintezza, null);
 					startQuestTimer("songs_play", 32000 + Rnd.get(10000), frintezza, null);
 				}
-				else if (_OnSong == 2 || _OnSong == 3)
+				else if (onSong == 2 || onSong == 3)
 				{
-					_Zone.broadcastPacket(new MagicSkillUser(frintezza, frintezza, 5007, _OnSong, 32000, 0));
+					zone.broadcastPacket(new MagicSkillUser(frintezza, frintezza, 5007, onSong, 32000, 0));
 					startQuestTimer("songs_effect", 5000, frintezza, null);
 					startQuestTimer("songs_play", 32000 + Rnd.get(10000), frintezza, null);
 				}
-				else if (_OnSong == 4 && _SecondMorph == 1)
+				else if (onSong == 4 && secondMorph == 1)
 				{
-					_Zone.broadcastPacket(new MagicSkillUser(frintezza, frintezza, 5007, 4, 31000, 0));
+					zone.broadcastPacket(new MagicSkillUser(frintezza, frintezza, 5007, 4, 31000, 0));
 					startQuestTimer("songs_effect", 5000, frintezza, null);
 					startQuestTimer("songs_play", 31000 + Rnd.get(10000), frintezza, null);
 				}
-				else if (_OnSong == 5 && _ThirdMorph == 1 && _Abnormal == 0)
+				else if (onSong == 5 && thirdMorph == 1 && abnormal == 0)
 				{
-					_Abnormal = 1;
-					_Zone.broadcastPacket(new MagicSkillUser(frintezza, frintezza, 5007, 5, 35000, 0));
+					abnormal = 1;
+					zone.broadcastPacket(new MagicSkillUser(frintezza, frintezza, 5007, 5, 35000, 0));
 					startQuestTimer("songs_effect", 5000, frintezza, null);
 					startQuestTimer("songs_play", 35000 + Rnd.get(10000), frintezza, null);
 				}
 				else
+				{
 					startQuestTimer("songs_play", 5000 + Rnd.get(5000), frintezza, null);
+				}
 			}
 		}
 		else if (event.equalsIgnoreCase("songs_effect"))
 		{
-			final L2Skill skill = SkillTable.getInstance().getInfo(5008, _OnSong);
+			final L2Skill skill = SkillTable.getInstance().getInfo(5008, onSong);
 			if (skill == null)
+			{
 				return null;
+			}
 			
 			String SongName = "";
 			
 			// Name of the songs are custom, named with client side description.
-			switch (_OnSong)
+			switch (onSong)
 			{
 				case 1:
 					SongName = "Frintezza's Concert Hall Melody";
@@ -1932,17 +1973,17 @@ public class Frintezza extends Quest implements Runnable
 			}
 			
 			// Like L2OFF the skill name is printed on screen
-			_Zone.broadcastPacket(new ExShowScreenMessage(SongName, 6000));
+			zone.broadcastPacket(new ExShowScreenMessage(SongName, 6000));
 			
-			if (_OnSong == 1 || _OnSong == 2 || _OnSong == 3)
+			if (onSong == 1 || onSong == 2 || onSong == 3)
 			{
 				/*
 				 * TODO: Frintezza songs to be fixed like retail if (frintezza != null && !frintezza.isDead() && activeScarlet != null && !activeScarlet.isDead()) skill.getEffects(frintezza, activeScarlet, false, false, false);
 				 */
 			}
-			else if (_OnSong == 4)
+			else if (onSong == 4)
 			{
-				for (final L2Character cha : _Zone.getCharactersInside().values())
+				for (final L2Character cha : zone.getCharactersInside().values())
 				{
 					if (cha instanceof L2PcInstance && Rnd.get(100) < 80)
 					{
@@ -1951,9 +1992,9 @@ public class Frintezza extends Quest implements Runnable
 					}
 				}
 			}
-			else if (_OnSong == 5)
+			else if (onSong == 5)
 			{
-				for (final L2Character cha : _Zone.getCharactersInside().values())
+				for (final L2Character cha : zone.getCharactersInside().values())
 				{
 					if (cha instanceof L2PcInstance && Rnd.get(100) < 70)
 					{
@@ -1974,7 +2015,7 @@ public class Frintezza extends Quest implements Runnable
 		}
 		else if (event.equalsIgnoreCase("stop_effect"))
 		{
-			for (final L2Character cha : _Zone.getCharactersInside().values())
+			for (final L2Character cha : zone.getCharactersInside().values())
 			{
 				if (cha instanceof L2PcInstance)
 				{
@@ -1985,7 +2026,7 @@ public class Frintezza extends Quest implements Runnable
 					cha.setIsParalyzed(false);
 				}
 			}
-			_Abnormal = 0;
+			abnormal = 0;
 		}
 		else if (event.equalsIgnoreCase("attack_stop"))
 		{
@@ -1996,14 +2037,16 @@ public class Frintezza extends Quest implements Runnable
 			cancelQuestTimer("songs_effect", npc, null);
 			
 			if (frintezza != null)
-				_Zone.broadcastPacket(new MagicSkillCanceld(frintezza.getObjectId()));
+			{
+				zone.broadcastPacket(new MagicSkillCanceld(frintezza.getObjectId()));
+			}
 		}
 		else if (event.equalsIgnoreCase("check_hp"))
 		{
 			if (npc.isDead())
 			{
-				_OnMorph = 1;
-				_Zone.broadcastPacket(new PlaySound(1, "BS01_D", 1, npc.getObjectId(), npc.getX(), npc.getY(), npc.getZ()));
+				onMorph = 1;
+				zone.broadcastPacket(new PlaySound(1, "BS01_D", 1, npc.getObjectId(), npc.getX(), npc.getY(), npc.getZ()));
 				
 				startQuestTimer("attack_stop", 0, frintezza, null);
 				startQuestTimer("stop_pc", 0, npc, null);
@@ -2012,79 +2055,89 @@ public class Frintezza extends Quest implements Runnable
 			}
 			else
 			{
-				_CheckDie = _CheckDie + 10;
-				if (_CheckDie < 3000)
+				checkDie = checkDie + 10;
+				if (checkDie < 3000)
+				{
 					startQuestTimer("check_hp", 10, npc, null);
+				}
 				else
 				{
-					_OnCheck = 0;
-					_CheckDie = 0;
+					onCheck = 0;
+					checkDie = 0;
 				}
 			}
 		}
 		else if (event.equalsIgnoreCase("skill01"))
 		{
-			if (weakScarlet != null && !weakScarlet.isDead() && _SecondMorph == 0 && _ThirdMorph == 0 && _OnMorph == 0)
+			if (weakScarlet != null && !weakScarlet.isDead() && secondMorph == 0 && thirdMorph == 0 && onMorph == 0)
 			{
 				final int i = Rnd.get(0, 1);
-				final L2Skill skill = SkillTable.getInstance().getInfo(_skill[i][0], _skill[i][1]);
+				final L2Skill skill = SkillTable.getInstance().getInfo(skills[i][0], skills[i][1]);
 				if (skill != null)
 				{
 					weakScarlet.stopMove(null);
 					// weakScarlet.setIsCastingNow(true);
 					weakScarlet.doCast(skill);
 				}
-				startQuestTimer("skill01", _skill[i][2] + 5000 + Rnd.get(10000), npc, null);
+				startQuestTimer("skill01", skills[i][2] + 5000 + Rnd.get(10000), npc, null);
 			}
 		}
 		else if (event.equalsIgnoreCase("skill02"))
 		{
-			if (weakScarlet != null && !weakScarlet.isDead() && _SecondMorph == 1 && _ThirdMorph == 0 && _OnMorph == 0)
+			if (weakScarlet != null && !weakScarlet.isDead() && secondMorph == 1 && thirdMorph == 0 && onMorph == 0)
 			{
 				int i = 0;
-				if (_Abnormal == 0)
+				if (abnormal == 0)
+				{
 					i = Rnd.get(2, 5);
+				}
 				else
+				{
 					i = Rnd.get(2, 4);
+				}
 				
-				final L2Skill skill = SkillTable.getInstance().getInfo(_skill[i][0], _skill[i][1]);
+				final L2Skill skill = SkillTable.getInstance().getInfo(skills[i][0], skills[i][1]);
 				if (skill != null)
 				{
 					weakScarlet.stopMove(null);
 					// weakScarlet.setIsCastingNow(true);
 					weakScarlet.doCast(skill);
 				}
-				startQuestTimer("skill02", _skill[i][2] + 5000 + Rnd.get(10000), npc, null);
+				startQuestTimer("skill02", skills[i][2] + 5000 + Rnd.get(10000), npc, null);
 				
 				if (i == 5)
 				{
-					_Abnormal = 1;
+					abnormal = 1;
 					startQuestTimer("float_effect", 4000, weakScarlet, null);
 				}
 			}
 		}
 		else if (event.equalsIgnoreCase("skill03"))
 		{
-			if (strongScarlet != null && !strongScarlet.isDead() && _SecondMorph == 1 && _ThirdMorph == 1 && _OnMorph == 0)
+			if (strongScarlet != null && !strongScarlet.isDead() && secondMorph == 1 && thirdMorph == 1 && onMorph == 0)
 			{
 				int i = 0;
-				if (_Abnormal == 0)
+				if (abnormal == 0)
+				{
 					i = Rnd.get(6, 10);
+				}
 				else
+				{
 					i = Rnd.get(6, 9);
+				}
 				
-				final L2Skill skill = SkillTable.getInstance().getInfo(_skill[i][0], _skill[i][1]);
+				final L2Skill skill = SkillTable.getInstance().getInfo(skills[i][0], skills[i][1]);
 				if (skill != null)
 				{
 					strongScarlet.stopMove(null);
 					// strongScarlet.setIsCastingNow(true);
 					strongScarlet.doCast(skill);
 				}
-				startQuestTimer("skill03", _skill[i][2] + 5000 + Rnd.get(10000), npc, null);
+				startQuestTimer("skill03", skills[i][2] + 5000 + Rnd.get(10000), npc, null);
 				
 				if (i == 10)
 				{
-					_Abnormal = 1;
+					abnormal = 1;
 					startQuestTimer("float_effect", 3000, npc, null);
 				}
 			}
@@ -2097,7 +2150,7 @@ public class Frintezza extends Quest implements Runnable
 			}
 			else
 			{
-				for (final L2Character cha : _Zone.getCharactersInside().values())
+				for (final L2Character cha : zone.getCharactersInside().values())
 				{
 					if (cha instanceof L2PcInstance)
 					{
@@ -2119,16 +2172,16 @@ public class Frintezza extends Quest implements Runnable
 		}
 		else if (event.equalsIgnoreCase("action"))
 		{
-			_Zone.broadcastPacket(new SocialAction(npc.getObjectId(), 1));
+			zone.broadcastPacket(new SocialAction(npc.getObjectId(), 1));
 		}
 		else if (event.equalsIgnoreCase("bomber"))
 		{
-			_Bomber = 0;
+			bomber = 0;
 		}
 		else if (event.equalsIgnoreCase("room_final"))
 		{
-			_Zone.broadcastPacket(new CreatureSay(npc.getObjectId(), 1, npc.getName(), "Exceeded his time limit, challenge failed!"));
-			_Zone.oustAllPlayers();
+			zone.broadcastPacket(new CreatureSay(npc.getObjectId(), 1, npc.getName(), "Exceeded his time limit, challenge failed!"));
+			zone.oustAllPlayers();
 			
 			cancelQuestTimer("waiting", npc, null);
 			cancelQuestTimer("frintezza_despawn", null, null);
@@ -2141,10 +2194,10 @@ public class Frintezza extends Quest implements Runnable
 		}
 		else if (event.equalsIgnoreCase("frintezza_despawn"))
 		{
-			temp = (System.currentTimeMillis() - _LastAction);
+			temp = (System.currentTimeMillis() - lastAction);
 			if (temp > 900000)
 			{
-				_Zone.oustAllPlayers();
+				zone.oustAllPlayers();
 				
 				cancelQuestTimer("waiting", npc, null);
 				// cancelQuestTimer("loc_check");
@@ -2165,15 +2218,17 @@ public class Frintezza extends Quest implements Runnable
 		}
 		else if (event.equalsIgnoreCase("minions_despawn"))
 		{
-			synchronized (Minions)
+			synchronized (minions)
 			{
-				for (int i = 0; i < Minions.size(); i++)
+				for (int i = 0; i < minions.size(); i++)
 				{
-					final L2Attackable mob = Minions.get(i);
+					final L2Attackable mob = minions.get(i);
 					if (mob != null)
+					{
 						mob.decayMe();
+					}
 				}
-				Minions.clear();
+				minions.clear();
 			}
 			
 		}
@@ -2183,9 +2238,9 @@ public class Frintezza extends Quest implements Runnable
 			{
 				final L2NpcInstance mob = addSpawn(npc.getNpcId() + 2, npc.getX(), npc.getY(), npc.getZ(), npc.getHeading(), false, 0);
 				// mob.setIsRaidMinion(true);
-				synchronized (Minions)
+				synchronized (minions)
 				{
-					Minions.add((L2Attackable) mob);
+					minions.add((L2Attackable) mob);
 				}
 				
 				startQuestTimer("action", 200, mob, null);
@@ -2202,7 +2257,7 @@ public class Frintezza extends Quest implements Runnable
 		}
 		else if (event.equalsIgnoreCase("remove_players"))
 		{
-			_Zone.oustAllPlayers();
+			zone.oustAllPlayers();
 		}
 		
 		return super.onAdvEvent(event, npc, player);
@@ -2264,7 +2319,7 @@ public class Frintezza extends Quest implements Runnable
 					startQuestTimer("room_final", 2100000, null, null);
 					startQuestTimer("frintezza_despawn", 60000, null, null, true);
 					
-					_LastAction = System.currentTimeMillis();
+					lastAction = System.currentTimeMillis();
 					
 					if (Config.BYPASS_FRINTEZZA_PARTIES_CHECK)
 					{
@@ -2276,87 +2331,103 @@ public class Frintezza extends Quest implements Runnable
 							
 							if (CC != null)
 							{ // teleport all parties into CC
-							
+								
 								for (final L2Party party : CC.getPartys())
 								{
 									if (party == null)
+									{
 										continue;
+									}
 									
-									synchronized (_PlayersInside)
+									synchronized (playersInside)
 									{
 										
 										for (final L2PcInstance member : party.getPartyMembers())
 										{
 											if (member == null || member.getLevel() < 74)
+											{
 												continue;
+											}
 											if (!member.isInsideRadius(npc, 700, false, false))
+											{
 												continue;
-											if (_PlayersInside.size() > 45)
+											}
+											if (playersInside.size() > 45)
 											{
 												member.sendMessage("The number of challenges have been full, so can not enter.");
 												break;
 											}
-											_PlayersInside.add(member);
-											_Zone.allowPlayerEntry(member, 300);
-											member.teleToLocation(getXFix(_invadeLoc[_LocCycle][0]) + Rnd.get(50), getYFix(_invadeLoc[_LocCycle][1]) + Rnd.get(50), getZFix(_invadeLoc[_LocCycle][2]));
+											playersInside.add(member);
+											zone.allowPlayerEntry(member, 300);
+											member.teleToLocation(getXFix(invadeLoc[locCycle][0]) + Rnd.get(50), getYFix(invadeLoc[locCycle][1]) + Rnd.get(50), getZFix(invadeLoc[locCycle][2]));
 										}
-										if (_PlayersInside.size() > 45)
+										if (playersInside.size() > 45)
+										{
 											break;
+										}
 										
 									}
 									
-									_LocCycle++;
-									if (_LocCycle >= 6)
-										_LocCycle = 1;
+									locCycle++;
+									if (locCycle >= 6)
+									{
+										locCycle = 1;
+									}
 								}
 								
 							}
 							else
 							{ // teleport just actual party
-							
+								
 								final L2Party party = player.getParty();
 								
 								for (final L2PcInstance member : party.getPartyMembers())
 								{
 									if (member == null || member.getLevel() < 74)
-										continue;
-									if (!member.isInsideRadius(npc, 700, false, false))
-										continue;
-									
-									synchronized (_PlayersInside)
 									{
-										if (_PlayersInside.size() > 45)
+										continue;
+									}
+									if (!member.isInsideRadius(npc, 700, false, false))
+									{
+										continue;
+									}
+									
+									synchronized (playersInside)
+									{
+										if (playersInside.size() > 45)
 										{
 											member.sendMessage("The number of challenges have been full, so can not enter.");
 											break;
 										}
-										_PlayersInside.add(member);
+										playersInside.add(member);
 									}
 									
-									_Zone.allowPlayerEntry(member, 300);
-									member.teleToLocation(getXFix(_invadeLoc[_LocCycle][0]) + Rnd.get(50), getYFix(_invadeLoc[_LocCycle][1]) + Rnd.get(50), getZFix(_invadeLoc[_LocCycle][2]));
+									zone.allowPlayerEntry(member, 300);
+									member.teleToLocation(getXFix(invadeLoc[locCycle][0]) + Rnd.get(50), getYFix(invadeLoc[locCycle][1]) + Rnd.get(50), getZFix(invadeLoc[locCycle][2]));
 								}
 								
-								_LocCycle++;
-								if (_LocCycle >= 6)
-									_LocCycle = 1;
+								locCycle++;
+								if (locCycle >= 6)
+								{
+									locCycle = 1;
+								}
 								
 							}
 							
 						}
 						else
 						{ // teleport just player
-						
+							
 							if (player.isInsideRadius(npc, 700, false, false))
 							{
 								
-								synchronized (_PlayersInside)
+								synchronized (playersInside)
 								{
-									_PlayersInside.add(player);
+									playersInside.add(player);
 									
 								}
-								_Zone.allowPlayerEntry(player, 300);
-								player.teleToLocation(getXFix(_invadeLoc[_LocCycle][0]) + Rnd.get(50), getYFix(_invadeLoc[_LocCycle][1]) + Rnd.get(50), getZFix(_invadeLoc[_LocCycle][2]));
+								zone.allowPlayerEntry(player, 300);
+								player.teleToLocation(getXFix(invadeLoc[locCycle][0]) + Rnd.get(50), getYFix(invadeLoc[locCycle][1]) + Rnd.get(50), getZFix(invadeLoc[locCycle][2]));
 								
 							}
 							
@@ -2371,33 +2442,43 @@ public class Frintezza extends Quest implements Runnable
 						for (final L2Party party : CC.getPartys())
 						{
 							if (party == null)
+							{
 								continue;
+							}
 							
-							synchronized (_PlayersInside)
+							synchronized (playersInside)
 							{
 								for (final L2PcInstance member : party.getPartyMembers())
 								{
 									if (member == null || member.getLevel() < 74)
+									{
 										continue;
+									}
 									if (!member.isInsideRadius(npc, 700, false, false))
+									{
 										continue;
-									if (_PlayersInside.size() > 45)
+									}
+									if (playersInside.size() > 45)
 									{
 										member.sendMessage("The number of challenges have been full, so can not enter.");
 										break;
 									}
-									_PlayersInside.add(member);
-									_Zone.allowPlayerEntry(member, 300);
-									member.teleToLocation(getXFix(_invadeLoc[_LocCycle][0]) + Rnd.get(50), getYFix(_invadeLoc[_LocCycle][1]) + Rnd.get(50), getZFix(_invadeLoc[_LocCycle][2]));
+									playersInside.add(member);
+									zone.allowPlayerEntry(member, 300);
+									member.teleToLocation(getXFix(invadeLoc[locCycle][0]) + Rnd.get(50), getYFix(invadeLoc[locCycle][1]) + Rnd.get(50), getZFix(invadeLoc[locCycle][2]));
 								}
-								if (_PlayersInside.size() > 45)
+								if (playersInside.size() > 45)
+								{
 									break;
+								}
 								
 							}
 							
-							_LocCycle++;
-							if (_LocCycle >= 6)
-								_LocCycle = 1;
+							locCycle++;
+							if (locCycle >= 6)
+							{
+								locCycle = 1;
+							}
 						}
 						
 					}
@@ -2408,7 +2489,9 @@ public class Frintezza extends Quest implements Runnable
 			
 		}
 		else
+		{
 			htmltext = "<html><body>Someone else is already inside the Magic Force Field. Try again later.</body></html>";
+		}
 		
 		return htmltext;
 	}
@@ -2416,7 +2499,7 @@ public class Frintezza extends Quest implements Runnable
 	@Override
 	public String onAttack(final L2NpcInstance npc, final L2PcInstance attacker, final int damage, final boolean isPet)
 	{
-		_LastAction = System.currentTimeMillis();
+		lastAction = System.currentTimeMillis();
 		if (npc.getNpcId() == FRINTEZZA)
 		{
 			npc.setCurrentHpMp(npc.getMaxHp(), 0);
@@ -2425,41 +2508,41 @@ public class Frintezza extends Quest implements Runnable
 		
 		final Integer status = GrandBossManager.getInstance().getBossStatus(FRINTEZZA);
 		
-		if (npc.getNpcId() == SCARLET1 && _SecondMorph == 0 && _ThirdMorph == 0 && _OnMorph == 0 && npc.getCurrentHp() < npc.getMaxHp() * 0.75 && status == FIGHTING)
+		if (npc.getNpcId() == SCARLET1 && secondMorph == 0 && thirdMorph == 0 && onMorph == 0 && npc.getCurrentHp() < npc.getMaxHp() * 0.75 && status == FIGHTING)
 		{
 			startQuestTimer("attack_stop", 0, frintezza, null);
 			
-			_SecondMorph = 1;
-			_OnMorph = 1;
+			secondMorph = 1;
+			onMorph = 1;
 			
 			startQuestTimer("stop_pc", 1000, npc, null);
 			startQuestTimer("stop_npc", 1000, npc, null);
 			startQuestTimer("morph_01", 1100, npc, null);
 		}
-		else if (npc.getNpcId() == SCARLET1 && _SecondMorph == 1 && _ThirdMorph == 0 && _OnMorph == 0 && npc.getCurrentHp() < npc.getMaxHp() * 0.5 && status == FIGHTING)
+		else if (npc.getNpcId() == SCARLET1 && secondMorph == 1 && thirdMorph == 0 && onMorph == 0 && npc.getCurrentHp() < npc.getMaxHp() * 0.5 && status == FIGHTING)
 		{
 			startQuestTimer("attack_stop", 0, frintezza, null);
 			
-			_ThirdMorph = 1;
-			_OnMorph = 1;
+			thirdMorph = 1;
+			onMorph = 1;
 			
 			startQuestTimer("stop_pc", 2000, npc, null);
 			startQuestTimer("stop_npc", 2000, npc, null);
 			startQuestTimer("morph_05a", 2000, npc, null);
 			startQuestTimer("morph_05", 2100, npc, null);
 		}
-		else if (npc.getNpcId() == SCARLET2 && _SecondMorph == 1 && _ThirdMorph == 1 && _OnCheck == 0 && damage >= npc.getCurrentHp() && status == FIGHTING)
+		else if (npc.getNpcId() == SCARLET2 && secondMorph == 1 && thirdMorph == 1 && onCheck == 0 && damage >= npc.getCurrentHp() && status == FIGHTING)
 		{
-			_OnCheck = 1;
+			onCheck = 1;
 			startQuestTimer("check_hp", 0, npc, null);
 		}
-		else if ((npc.getNpcId() == 29050 || npc.getNpcId() == 29051) && _Bomber == 0)
+		else if ((npc.getNpcId() == 29050 || npc.getNpcId() == 29051) && bomber == 0)
 		{
 			if (npc.getCurrentHp() < npc.getMaxHp() * 0.1)
 			{
 				if (Rnd.get(100) < 30)
 				{
-					_Bomber = 1;
+					bomber = 1;
 					startQuestTimer("bomber", 3000, npc, null);
 					
 					final L2Skill skill = SkillTable.getInstance().getInfo(5011, 1);
@@ -2484,16 +2567,16 @@ public class Frintezza extends Quest implements Runnable
 		{
 			return null;
 		}
-		else if (npc.getNpcId() == SCARLET2 && _OnCheck == 0 && status == FIGHTING)
+		else if (npc.getNpcId() == SCARLET2 && onCheck == 0 && status == FIGHTING)
 		{
-			_OnCheck = 1;
+			onCheck = 1;
 			startQuestTimer("stop_pc", 0, npc, null);
 			startQuestTimer("stop_npc", 0, npc, null);
 			startQuestTimer("morph_16", 0, npc, null);
 		}
-		else if (npc.getNpcId() == SCARLET2 && _OnCheck == 1 && status == FIGHTING)
+		else if (npc.getNpcId() == SCARLET2 && onCheck == 1 && status == FIGHTING)
 		{
-			if (!npc.getSpawn().is_customBossInstance())
+			if (!npc.getSpawn().isCustomRaidBoss())
 			{
 				
 				// cancelQuestTimer("loc_check");
@@ -2518,13 +2601,15 @@ public class Frintezza extends Quest implements Runnable
 		}
 		else if (npc.getNpcId() == 18328)
 		{
-			_KillHallAlarmDevice++;
-			if (_KillHallAlarmDevice == 3) // open walls
+			killHallAlarmDevice++;
+			if (killHallAlarmDevice == 3) // open walls
 			{
 				for (int i = 25150051; i <= 25150058; i++)
+				{
 					DoorTable.getInstance().getDoor(i).openMe();
+				}
 			}
-			if (_KillHallAlarmDevice == 4)
+			if (killHallAlarmDevice == 4)
 			{
 				startQuestTimer("room1_del", 100, npc, null);
 				startQuestTimer("room2_spawn", 100, npc, null);
@@ -2533,26 +2618,28 @@ public class Frintezza extends Quest implements Runnable
 				DoorTable.getInstance().getDoor(25150043).openMe();
 			}
 			/*
-			 * _KillHallAlarmDevice++; if (_KillHallAlarmDevice == 4) { startQuestTimer("room1_del", 100, npc, null); startQuestTimer("room2_spawn", 100, npc, null); DoorTable.getInstance().getDoor(17130042).openMe(); DoorTable.getInstance().getDoor(17130043).openMe(); //
+			 * killHallAlarmDevice++; if (_KillHallAlarmDevice == 4) { startQuestTimer("room1_del", 100, npc, null); startQuestTimer("room2_spawn", 100, npc, null); DoorTable.getInstance().getDoor(17130042).openMe(); DoorTable.getInstance().getDoor(17130043).openMe(); //
 			 * DoorTable.getInstance().getDoor(17130045).openMe(); // DoorTable.getInstance().getDoor(17130046).openMe(); for (int i = 17130051; i <= 17130058; i++) DoorTable.getInstance().getDoor(i).openMe(); }
 			 */
 		}
 		else if (npc.getNpcId() == 18339)
 		{
-			_KillDarkChoirPlayer++;
-			if (_KillDarkChoirPlayer == 2)
+			killDarkChoirPlayer++;
+			if (killDarkChoirPlayer == 2)
 			{
 				DoorTable.getInstance().getDoor(25150042).closeMe();
 				DoorTable.getInstance().getDoor(25150043).closeMe();
 				DoorTable.getInstance().getDoor(25150045).closeMe();
 				DoorTable.getInstance().getDoor(25150046).closeMe();
 				int outside = 0;
-				synchronized (_PlayersInside)
+				synchronized (playersInside)
 				{
-					for (final L2PcInstance room2_pc : _PlayersInside)
+					for (final L2PcInstance room2_pc : playersInside)
 					{
-						if (_Zone.isInsideZone(room2_pc) && room2_pc.getY() > -86130)
+						if (zone.isInsideZone(room2_pc) && room2_pc.getY() > -86130)
+						{
 							outside++;
+						}
 					}
 				}
 				
@@ -2565,7 +2652,9 @@ public class Frintezza extends Quest implements Runnable
 				else
 				{
 					for (int i = 25150061; i <= 25150070; i++)
+					{
 						DoorTable.getInstance().getDoor(i).openMe();
+					}
 					
 					startQuestTimer("room2_spawn2", 1000, npc, null);
 				}
@@ -2574,8 +2663,8 @@ public class Frintezza extends Quest implements Runnable
 		}
 		else if (npc.getNpcId() == 18334)
 		{
-			_KillDarkChoirCaptain++;
-			if (_KillDarkChoirCaptain == 8)
+			killDarkChoirCaptain++;
+			if (killDarkChoirCaptain == 8)
 			{
 				startQuestTimer("room2_del", 100, npc, null);
 				
@@ -2631,13 +2720,6 @@ public class Frintezza extends Quest implements Runnable
 		return z/* + 4065 */;
 	}
 	
-	/*
-	 * public static void main(String[] args) { // now call the constructor (starts up the ai) new Frintezza(-1,"Frintezza","ai"); }
-	 */
-	/*
-	 * (non-Javadoc)
-	 * @see java.lang.Runnable#run()
-	 */
 	@Override
 	public void run()
 	{

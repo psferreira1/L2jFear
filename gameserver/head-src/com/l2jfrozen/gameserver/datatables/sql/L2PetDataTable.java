@@ -1,74 +1,49 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.datatables.sql;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.util.HashMap;
 import java.util.Map;
-
-import javolution.util.FastMap;
 
 import org.apache.log4j.Logger;
 
 import com.l2jfrozen.gameserver.model.L2PetData;
 import com.l2jfrozen.gameserver.model.actor.instance.L2PetInstance;
-import com.l2jfrozen.util.CloseUtil;
-import com.l2jfrozen.util.database.DatabaseUtils;
 import com.l2jfrozen.util.database.L2DatabaseFactory;
 
 public class L2PetDataTable
 {
 	private final static Logger LOGGER = Logger.getLogger(L2PetInstance.class);
-	private static L2PetDataTable _instance;
+	private static final String SELECT_PET_DATA = "SELECT typeID, level, expMax, hpMax, mpMax, patk, pdef, matk, mdef, acc, evasion, crit, speed, atk_speed, cast_speed, feedMax, feedbattle, feednormal, loadMax, hpregen, mpregen, owner_exp_taken FROM pets_stats";
+	private static L2PetDataTable instance;
 	
 	// private static final int[] PET_LIST = { 12077, 12312, 12313, 12311, 12527, 12528, 12526 };
-	private static Map<Integer, Map<Integer, L2PetData>> _petTable;
+	private static Map<Integer, Map<Integer, L2PetData>> petTable;
 	
 	public static L2PetDataTable getInstance()
 	{
-		if (_instance == null)
+		if (instance == null)
 		{
-			_instance = new L2PetDataTable();
+			instance = new L2PetDataTable();
 		}
 		
-		return _instance;
+		return instance;
 	}
 	
 	private L2PetDataTable()
 	{
-		_petTable = new FastMap<>();
+		petTable = new HashMap<>();
 	}
 	
 	public void loadPetsData()
 	{
-		Connection con = null;
-		
-		try
+		try (Connection con = L2DatabaseFactory.getInstance().getConnection();
+			PreparedStatement statement = con.prepareStatement(SELECT_PET_DATA);
+			ResultSet rset = statement.executeQuery())
 		{
-			con = L2DatabaseFactory.getInstance().getConnection(false);
-			final PreparedStatement statement = con.prepareStatement("SELECT typeID, level, expMax, hpMax, mpMax, patk, pdef, matk, mdef, acc, evasion, crit, speed, atk_speed, cast_speed, feedMax, feedbattle, feednormal, loadMax, hpregen, mpregen, owner_exp_taken FROM pets_stats");
-			final ResultSet rset = statement.executeQuery();
-			
-			int petId, petLevel;
+			int petId;
+			int petLevel;
 			
 			while (rset.next())
 			{
@@ -76,7 +51,7 @@ public class L2PetDataTable
 				petLevel = rset.getInt("level");
 				
 				// build the petdata for this level
-				final L2PetData petData = new L2PetData();
+				L2PetData petData = new L2PetData();
 				
 				petData.setPetID(petId);
 				petData.setPetLevel(petLevel);
@@ -102,37 +77,30 @@ public class L2PetDataTable
 				petData.setPetRegenMP(rset.getInt("mpregen"));
 				petData.setOwnerExpTaken(rset.getFloat("owner_exp_taken"));
 				
-				// if its the first data for this petid, we initialize its level FastMap
-				if (!_petTable.containsKey(petId))
+				// if its the first data for this petid, we initialize its level HashMap
+				if (!petTable.containsKey(petId))
 				{
-					_petTable.put(petId, new FastMap<Integer, L2PetData>());
+					petTable.put(petId, new HashMap<Integer, L2PetData>());
 				}
 				
-				_petTable.get(petId).put(petLevel, petData);
+				petTable.get(petId).put(petLevel, petData);
 			}
-			
-			DatabaseUtils.close(rset);
-			DatabaseUtils.close(statement);
 		}
-		catch (final Exception e)
+		catch (Exception e)
 		{
-			LOGGER.error("Could not load pets stats", e);
-		}
-		finally
-		{
-			CloseUtil.close(con);
+			LOGGER.error("L2PetDataTable.loadPetsData : Could not load pets stats", e);
 		}
 	}
 	
 	public void addPetData(final L2PetData petData)
 	{
-		final Map<Integer, L2PetData> h = _petTable.get(petData.getPetID());
+		final Map<Integer, L2PetData> h = petTable.get(petData.getPetID());
 		
 		if (h == null)
 		{
-			final Map<Integer, L2PetData> statTable = new FastMap<>();
+			final Map<Integer, L2PetData> statTable = new HashMap<>();
 			statTable.put(petData.getPetLevel(), petData);
-			_petTable.put(petData.getPetID(), statTable);
+			petTable.put(petData.getPetID(), statTable);
 			return;
 		}
 		
@@ -150,12 +118,12 @@ public class L2PetDataTable
 	public L2PetData getPetData(final int petID, final int petLevel)
 	{
 		// LOGGER.info("Getting id "+petID+" level "+ petLevel);
-		return _petTable.get(petID).get(petLevel);
+		return petTable.get(petID).get(petLevel);
 	}
 	
 	/**
 	 * Pets stuffs
-	 * @param npcId
+	 * @param  npcId
 	 * @return
 	 */
 	public static boolean isWolf(final int npcId)
@@ -226,60 +194,72 @@ public class L2PetDataTable
 	public static int getFoodItemId(final int npcId)
 	{
 		if (isWolf(npcId))
+		{
 			return 2515;
+		}
 		else if (isSinEater(npcId))
+		{
 			return 2515;
+		}
 		else if (isHatchling(npcId))
+		{
 			return 4038;
+		}
 		else if (isStrider(npcId))
+		{
 			return 5168;
+		}
 		else if (isBaby(npcId))
+		{
 			return 7582;
+		}
 		else
+		{
 			return 0;
+		}
 	}
 	
 	public static int getPetIdByItemId(final int itemId)
 	{
 		switch (itemId)
 		{
-		// wolf pet a
+			// wolf pet a
 			case 2375:
 				return 12077;
-				// Sin Eater
+			// Sin Eater
 			case 4425:
 				return 12564;
-				// hatchling of wind
+			// hatchling of wind
 			case 3500:
 				return 12311;
-				// hatchling of star
+			// hatchling of star
 			case 3501:
 				return 12312;
-				// hatchling of twilight
+			// hatchling of twilight
 			case 3502:
 				return 12313;
-				// wind strider
+			// wind strider
 			case 4422:
 				return 12526;
-				// Star strider
+			// Star strider
 			case 4423:
 				return 12527;
-				// Twilight strider
+			// Twilight strider
 			case 4424:
 				return 12528;
-				// Wyvern
+			// Wyvern
 			case 8663:
 				return 12621;
-				// Baby Buffalo
+			// Baby Buffalo
 			case 6648:
 				return 12780;
-				// Baby Cougar
+			// Baby Cougar
 			case 6649:
 				return 12782;
-				// Baby Kookaburra
+			// Baby Kookaburra
 			case 6650:
 				return 12781;
-				// unknown item id.. should never happen
+			// unknown item id.. should never happen
 			default:
 				return 0;
 		}
@@ -364,7 +344,7 @@ public class L2PetDataTable
 				{
 					4425
 				};
-				
+			
 			case 12311:// hatchling of wind
 			case 12312:// hatchling of star
 			case 12313:// hatchling of twilight
@@ -374,7 +354,7 @@ public class L2PetDataTable
 					3501,
 					3502
 				};
-				
+			
 			case 12526:// wind strider
 			case 12527:// Star strider
 			case 12528:// Twilight strider
@@ -384,13 +364,13 @@ public class L2PetDataTable
 					4423,
 					4424
 				};
-				
+			
 			case 12621:// Wyvern
 				return new int[]
 				{
 					8663
 				};
-				
+			
 			case 12780:// Baby Buffalo
 			case 12782:// Baby Cougar
 			case 12781:// Baby Kookaburra
@@ -400,8 +380,8 @@ public class L2PetDataTable
 					6649,
 					6650
 				};
-				
-				// unknown item id.. should never happen
+			
+			// unknown item id.. should never happen
 			default:
 				return new int[]
 				{

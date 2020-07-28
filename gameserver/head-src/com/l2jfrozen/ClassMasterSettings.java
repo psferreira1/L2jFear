@@ -1,73 +1,36 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen;
 
+import java.util.HashMap;
 import java.util.StringTokenizer;
-
-import javolution.util.FastMap;
 
 public class ClassMasterSettings
 {
-	private final FastMap<Integer, FastMap<Integer, Integer>> _claimItems;
-	private final FastMap<Integer, FastMap<Integer, Integer>> _rewardItems;
-	private final FastMap<Integer, Boolean> _allowedClassChange;
+	private final HashMap<Integer, HashMap<Integer, Integer>> claimItems;
+	private final HashMap<Integer, HashMap<Integer, Integer>> rewardItems;
+	private final HashMap<Integer, Boolean> allowedClassChange;
 	
-	public ClassMasterSettings(final String _configLine)
+	public ClassMasterSettings(final String configLine)
 	{
-		_claimItems = new FastMap<>();
-		_rewardItems = new FastMap<>();
-		_allowedClassChange = new FastMap<>();
-		if (_configLine != null)
+		claimItems = new HashMap<>();
+		rewardItems = new HashMap<>();
+		allowedClassChange = new HashMap<>();
+		if (configLine != null)
 		{
-			parseConfigLine(_configLine.trim());
+			parseConfigLine(configLine.trim());
 		}
 	}
 	
-	private void parseConfigLine(final String _configLine)
+	private void parseConfigLine(final String configLine)
 	{
-		final StringTokenizer st = new StringTokenizer(_configLine, ";");
+		final StringTokenizer st = new StringTokenizer(configLine, ";");
 		
 		while (st.hasMoreTokens())
 		{
 			final int job = Integer.parseInt(st.nextToken());
 			
-			_allowedClassChange.put(job, true);
+			allowedClassChange.put(job, true);
 			
-			FastMap<Integer, Integer> _items = new FastMap<>();
-			
-			if (st.hasMoreTokens())
-			{
-				final StringTokenizer st2 = new StringTokenizer(st.nextToken(), "[],");
-				
-				while (st2.hasMoreTokens())
-				{
-					final StringTokenizer st3 = new StringTokenizer(st2.nextToken(), "()");
-					final int _itemId = Integer.parseInt(st3.nextToken());
-					final int _quantity = Integer.parseInt(st3.nextToken());
-					_items.put(_itemId, _quantity);
-				}
-			}
-			
-			_claimItems.put(job, _items);
-			_items = new FastMap<>();
+			HashMap<Integer, Integer> items = new HashMap<>();
 			
 			if (st.hasMoreTokens())
 			{
@@ -76,35 +39,59 @@ public class ClassMasterSettings
 				while (st2.hasMoreTokens())
 				{
 					final StringTokenizer st3 = new StringTokenizer(st2.nextToken(), "()");
-					final int _itemId = Integer.parseInt(st3.nextToken());
-					final int _quantity = Integer.parseInt(st3.nextToken());
-					_items.put(_itemId, _quantity);
+					final int itemId = Integer.parseInt(st3.nextToken());
+					final int quantity = Integer.parseInt(st3.nextToken());
+					items.put(itemId, quantity);
 				}
 			}
-			_rewardItems.put(job, _items);
+			
+			claimItems.put(job, items);
+			items = new HashMap<>();
+			
+			if (st.hasMoreTokens())
+			{
+				final StringTokenizer st2 = new StringTokenizer(st.nextToken(), "[],");
+				
+				while (st2.hasMoreTokens())
+				{
+					final StringTokenizer st3 = new StringTokenizer(st2.nextToken(), "()");
+					final int itemId = Integer.parseInt(st3.nextToken());
+					final int quantity = Integer.parseInt(st3.nextToken());
+					items.put(itemId, quantity);
+				}
+			}
+			rewardItems.put(job, items);
 		}
 	}
 	
 	public boolean isAllowed(final int job)
 	{
-		if (_allowedClassChange == null)
+		if (allowedClassChange == null)
+		{
 			return false;
-		if (_allowedClassChange.containsKey(job))
-			return _allowedClassChange.get(job);
+		}
+		if (allowedClassChange.containsKey(job))
+		{
+			return allowedClassChange.get(job);
+		}
 		return false;
 	}
 	
-	public FastMap<Integer, Integer> getRewardItems(final int job)
+	public HashMap<Integer, Integer> getRewardItems(final int job)
 	{
-		if (_rewardItems.containsKey(job))
-			return _rewardItems.get(job);
+		if (rewardItems.containsKey(job))
+		{
+			return rewardItems.get(job);
+		}
 		return null;
 	}
 	
-	public FastMap<Integer, Integer> getRequireItems(final int job)
+	public HashMap<Integer, Integer> getRequireItems(final int job)
 	{
-		if (_claimItems.containsKey(job))
-			return _claimItems.get(job);
+		if (claimItems.containsKey(job))
+		{
+			return claimItems.get(job);
+		}
 		return null;
 	}
 }

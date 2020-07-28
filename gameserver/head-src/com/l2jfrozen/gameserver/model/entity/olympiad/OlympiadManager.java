@@ -1,24 +1,7 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any later
- * version.
- * 
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
- * 
- * You should have received a copy of the GNU General Public License along with
- * this program. If not, see <http://www.gnu.org/licenses/>.
- */
 package com.l2jfrozen.gameserver.model.entity.olympiad;
 
+import java.util.HashMap;
 import java.util.Map;
-
-import javolution.util.FastMap;
 
 import org.apache.log4j.Logger;
 
@@ -34,7 +17,7 @@ import com.l2jfrozen.util.random.Rnd;
 class OlympiadManager implements Runnable
 {
 	protected static final Logger LOGGER = Logger.getLogger(OlympiadManager.class);
-	private final Map<Integer, OlympiadGame> _olympiadInstances;
+	private final Map<Integer, OlympiadGame> olympiadInstances;
 	
 	protected static final OlympiadStadium[] STADIUMS =
 	{
@@ -62,23 +45,26 @@ class OlympiadManager implements Runnable
 		new OlympiadStadium(-114413, -213241, -3331)
 	};
 	
-	private OlympiadManager()
+	public OlympiadManager()
 	{
-		_olympiadInstances = new FastMap<>();
+		olympiadInstances = new HashMap<>();
 	}
 	
 	public static OlympiadManager getInstance()
 	{
-		return SingletonHolder._instance;
+		return SingletonHolder.instance;
 	}
 	
 	@Override
 	public synchronized void run()
 	{
 		if (Olympiad.getInstance().isOlympiadEnd())
+		{
 			return;
+		}
 		
-		final Map<Integer, OlympiadGameTask> _gamesQueue = new FastMap<>();
+		Map<Integer, OlympiadGameTask> gamesQueue = new HashMap<>();
+		
 		while (Olympiad.getInstance().inCompPeriod())
 		{
 			if (Olympiad.getNobleCount() == 0)
@@ -94,9 +80,8 @@ class OlympiadManager implements Runnable
 				continue;
 			}
 			
-			int _gamesQueueSize = 0;
+			int gamesQueueSize = 0;
 			
-			// _compStarted = true;
 			final L2FastList<Integer> readyClasses = Olympiad.hasEnoughRegisteredClassed();
 			final boolean readyNonClassed = Olympiad.hasEnoughRegisteredNonClassed();
 			if (readyClasses != null || readyNonClassed)
@@ -116,29 +101,33 @@ class OlympiadManager implements Runnable
 							{
 								try
 								{
-									_olympiadInstances.put(i, new OlympiadGame(i, COMP_TYPE.NON_CLASSED, nextOpponents(Olympiad.getRegisteredNonClassBased())));
-									_gamesQueue.put(i, new OlympiadGameTask(_olympiadInstances.get(i)));
+									olympiadInstances.put(i, new OlympiadGame(i, COMP_TYPE.NON_CLASSED, nextOpponents(Olympiad.getRegisteredNonClassBased())));
+									gamesQueue.put(i, new OlympiadGameTask(olympiadInstances.get(i)));
 									STADIUMS[i].setStadiaBusy();
 								}
 								catch (final Exception ex)
 								{
 									if (Config.DEBUG)
-										LOGGER.warn("Olympiad Manager: Stadium - " + i + " assignment, an error has been occurred:", ex);
-									
-									if (_olympiadInstances.get(i) != null)
 									{
-										for (final L2PcInstance player : _olympiadInstances.get(i).getPlayers())
+										LOGGER.warn("Olympiad Manager: Stadium - " + i + " assignment, an error has been occurred:", ex);
+									}
+									
+									if (olympiadInstances.get(i) != null)
+									{
+										for (final L2PcInstance player : olympiadInstances.get(i).getPlayers())
 										{
 											player.sendMessage("Your olympiad registration was canceled due to an error");
 											player.setIsInOlympiadMode(false);
-											player.setIsOlympiadStart(false);
+											player.setIsInOlympiadFight(false);
 											player.setOlympiadSide(-1);
 											player.setOlympiadGameId(-1);
 										}
-										_olympiadInstances.remove(i);
+										olympiadInstances.remove(i);
 									}
-									if (_gamesQueue.get(i) != null)
-										_gamesQueue.remove(i);
+									if (gamesQueue.get(i) != null)
+									{
+										gamesQueue.remove(i);
+									}
 									STADIUMS[i].setStadiaFree();
 									
 									// try to reuse this stadia next time
@@ -150,29 +139,33 @@ class OlympiadManager implements Runnable
 							{
 								try
 								{
-									_olympiadInstances.put(i, new OlympiadGame(i, COMP_TYPE.CLASSED, nextOpponents(getRandomClassList(Olympiad.getRegisteredClassBased(), readyClasses))));
-									_gamesQueue.put(i, new OlympiadGameTask(_olympiadInstances.get(i)));
+									olympiadInstances.put(i, new OlympiadGame(i, COMP_TYPE.CLASSED, nextOpponents(getRandomClassList(Olympiad.getRegisteredClassBased(), readyClasses))));
+									gamesQueue.put(i, new OlympiadGameTask(olympiadInstances.get(i)));
 									STADIUMS[i].setStadiaBusy();
 								}
 								catch (final Exception ex)
 								{
 									if (Config.DEBUG)
-										LOGGER.warn("Olympiad Manager: Stadium - " + i + " assignment, an error has been occurred:", ex);
-									
-									if (_olympiadInstances.get(i) != null)
 									{
-										for (final L2PcInstance player : _olympiadInstances.get(i).getPlayers())
+										LOGGER.warn("Olympiad Manager: Stadium - " + i + " assignment, an error has been occurred:", ex);
+									}
+									
+									if (olympiadInstances.get(i) != null)
+									{
+										for (final L2PcInstance player : olympiadInstances.get(i).getPlayers())
 										{
 											player.sendMessage("Your olympiad registration was canceled due to an error");
 											player.setIsInOlympiadMode(false);
-											player.setIsOlympiadStart(false);
+											player.setIsInOlympiadFight(false);
 											player.setOlympiadSide(-1);
 											player.setOlympiadGameId(-1);
 										}
-										_olympiadInstances.remove(i);
+										olympiadInstances.remove(i);
 									}
-									if (_gamesQueue.get(i) != null)
-										_gamesQueue.remove(i);
+									if (gamesQueue.get(i) != null)
+									{
+										gamesQueue.remove(i);
+									}
 									STADIUMS[i].setStadiaFree();
 									
 									// try to reuse this stadia next time
@@ -186,29 +179,33 @@ class OlympiadManager implements Runnable
 							{
 								try
 								{
-									_olympiadInstances.put(i, new OlympiadGame(i, COMP_TYPE.CLASSED, nextOpponents(getRandomClassList(Olympiad.getRegisteredClassBased(), readyClasses))));
-									_gamesQueue.put(i, new OlympiadGameTask(_olympiadInstances.get(i)));
+									olympiadInstances.put(i, new OlympiadGame(i, COMP_TYPE.CLASSED, nextOpponents(getRandomClassList(Olympiad.getRegisteredClassBased(), readyClasses))));
+									gamesQueue.put(i, new OlympiadGameTask(olympiadInstances.get(i)));
 									STADIUMS[i].setStadiaBusy();
 								}
 								catch (final Exception ex)
 								{
 									if (Config.DEBUG)
-										LOGGER.warn("Olympiad Manager: Stadium - " + i + " assignment, an error has been occurred:", ex);
-									
-									if (_olympiadInstances.get(i) != null)
 									{
-										for (final L2PcInstance player : _olympiadInstances.get(i).getPlayers())
+										LOGGER.warn("Olympiad Manager: Stadium - " + i + " assignment, an error has been occurred:", ex);
+									}
+									
+									if (olympiadInstances.get(i) != null)
+									{
+										for (final L2PcInstance player : olympiadInstances.get(i).getPlayers())
 										{
 											player.sendMessage("Your olympiad registration was canceled due to an error");
 											player.setIsInOlympiadMode(false);
-											player.setIsOlympiadStart(false);
+											player.setIsInOlympiadFight(false);
 											player.setOlympiadSide(-1);
 											player.setOlympiadGameId(-1);
 										}
-										_olympiadInstances.remove(i);
+										olympiadInstances.remove(i);
 									}
-									if (_gamesQueue.get(i) != null)
-										_gamesQueue.remove(i);
+									if (gamesQueue.get(i) != null)
+									{
+										gamesQueue.remove(i);
+									}
 									STADIUMS[i].setStadiaFree();
 									
 									// try to reuse this stadia next time
@@ -219,29 +216,33 @@ class OlympiadManager implements Runnable
 							{
 								try
 								{
-									_olympiadInstances.put(i, new OlympiadGame(i, COMP_TYPE.NON_CLASSED, nextOpponents(Olympiad.getRegisteredNonClassBased())));
-									_gamesQueue.put(i, new OlympiadGameTask(_olympiadInstances.get(i)));
+									olympiadInstances.put(i, new OlympiadGame(i, COMP_TYPE.NON_CLASSED, nextOpponents(Olympiad.getRegisteredNonClassBased())));
+									gamesQueue.put(i, new OlympiadGameTask(olympiadInstances.get(i)));
 									STADIUMS[i].setStadiaBusy();
 								}
 								catch (final Exception ex)
 								{
 									if (Config.DEBUG)
-										LOGGER.warn("Olympiad Manager: Stadium - " + i + " assignment, an error has been occurred:", ex);
-									
-									if (_olympiadInstances.get(i) != null)
 									{
-										for (final L2PcInstance player : _olympiadInstances.get(i).getPlayers())
+										LOGGER.warn("Olympiad Manager: Stadium - " + i + " assignment, an error has been occurred:", ex);
+									}
+									
+									if (olympiadInstances.get(i) != null)
+									{
+										for (final L2PcInstance player : olympiadInstances.get(i).getPlayers())
 										{
 											player.sendMessage("Your olympiad registration was canceled due to an error");
 											player.setIsInOlympiadMode(false);
-											player.setIsOlympiadStart(false);
+											player.setIsInOlympiadFight(false);
 											player.setOlympiadSide(-1);
 											player.setOlympiadGameId(-1);
 										}
-										_olympiadInstances.remove(i);
+										olympiadInstances.remove(i);
 									}
-									if (_gamesQueue.get(i) != null)
-										_gamesQueue.remove(i);
+									if (gamesQueue.get(i) != null)
+									{
+										gamesQueue.remove(i);
+									}
 									STADIUMS[i].setStadiaFree();
 									
 									// try to reuse this stadia next time
@@ -252,12 +253,12 @@ class OlympiadManager implements Runnable
 					}
 					else
 					{
-						if (_gamesQueue.get(i) == null || _gamesQueue.get(i).isTerminated() || _gamesQueue.get(i)._game == null)
+						if (gamesQueue.get(i) == null || gamesQueue.get(i).isTerminated() || gamesQueue.get(i).game == null)
 						{
 							try
 							{
-								_olympiadInstances.remove(i);
-								_gamesQueue.remove(i);
+								olympiadInstances.remove(i);
+								gamesQueue.remove(i);
 								STADIUMS[i].setStadiaFree();
 								i--;
 							}
@@ -274,13 +275,13 @@ class OlympiadManager implements Runnable
 				 */
 				
 				// Start games
-				_gamesQueueSize = _gamesQueue.size();
-				for (int i = 0; i < _gamesQueueSize; i++)
+				gamesQueueSize = gamesQueue.size();
+				for (int i = 0; i < gamesQueueSize; i++)
 				{
-					if (_gamesQueue.get(i) != null && !_gamesQueue.get(i).isTerminated() && !_gamesQueue.get(i).isStarted())
+					if (gamesQueue.get(i) != null && !gamesQueue.get(i).isTerminated() && !gamesQueue.get(i).isStarted())
 					{
 						// start new games
-						final Thread T = new Thread(_gamesQueue.get(i));
+						final Thread T = new Thread(gamesQueue.get(i));
 						T.start();
 					}
 					
@@ -321,44 +322,44 @@ class OlympiadManager implements Runnable
 			{
 			}
 			
-			if (_gamesQueue.isEmpty())
+			if (gamesQueue.isEmpty())
 			{
 				allGamesTerminated = true;
 			}
 			else
 			{
-				for (final OlympiadGameTask game : _gamesQueue.values())
+				for (final OlympiadGameTask game : gamesQueue.values())
 				{
 					allGamesTerminated = allGamesTerminated || game.isTerminated();
 				}
 			}
 		}
 		// when all games terminated clear all
-		_gamesQueue.clear();
-		_olympiadInstances.clear();
+		gamesQueue.clear();
+		olympiadInstances.clear();
 		Olympiad.clearRegistered();
 		
-		OlympiadGame._battleStarted = false;
+		OlympiadGame.battleStarted = false;
 	}
 	
 	protected OlympiadGame getOlympiadGame(final int index)
 	{
-		if (_olympiadInstances != null && !_olympiadInstances.isEmpty())
+		if (olympiadInstances != null && !olympiadInstances.isEmpty())
 		{
-			return _olympiadInstances.get(index);
+			return olympiadInstances.get(index);
 		}
 		return null;
 	}
 	
 	protected void removeGame(final OlympiadGame game)
 	{
-		if (_olympiadInstances != null && !_olympiadInstances.isEmpty())
+		if (olympiadInstances != null && !olympiadInstances.isEmpty())
 		{
-			for (int i = 0; i < _olympiadInstances.size(); i++)
+			for (int i = 0; i < olympiadInstances.size(); i++)
 			{
-				if (_olympiadInstances.get(i) == game)
+				if (olympiadInstances.get(i) == game)
 				{
-					_olympiadInstances.remove(i);
+					olympiadInstances.remove(i);
 				}
 			}
 		}
@@ -366,13 +367,15 @@ class OlympiadManager implements Runnable
 	
 	protected Map<Integer, OlympiadGame> getOlympiadGames()
 	{
-		return _olympiadInstances;
+		return olympiadInstances;
 	}
 	
 	protected L2FastList<L2PcInstance> getRandomClassList(final Map<Integer, L2FastList<L2PcInstance>> list, final L2FastList<Integer> classList)
 	{
 		if (list == null || classList == null || list.isEmpty() || classList.isEmpty())
+		{
 			return null;
+		}
 		
 		return list.get(classList.get(Rnd.nextInt(classList.size())));
 	}
@@ -381,14 +384,18 @@ class OlympiadManager implements Runnable
 	{
 		final L2FastList<L2PcInstance> opponents = new L2FastList<>();
 		if (list.isEmpty())
+		{
 			return opponents;
+		}
 		final int loopCount = (list.size() / 2);
 		
 		int first;
 		int second;
 		
 		if (loopCount < 1)
+		{
 			return opponents;
+		}
 		
 		first = Rnd.nextInt(list.size());
 		opponents.add(list.get(first));
@@ -405,34 +412,41 @@ class OlympiadManager implements Runnable
 	protected boolean existNextOpponents(final L2FastList<L2PcInstance> list)
 	{
 		if (list == null)
+		{
 			return false;
+		}
 		if (list.isEmpty())
+		{
 			return false;
+		}
 		final int loopCount = list.size() >> 1;
 		if (loopCount < 1)
+		{
 			return false;
+		}
 		
 		return true;
 	}
 	
-	protected FastMap<Integer, String> getAllTitles()
+	protected Map<Integer, String> getAllTitles()
 	{
-		final FastMap<Integer, String> titles = new FastMap<>();
+		Map<Integer, String> titles = new HashMap<>();
 		
-		for (final OlympiadGame instance : _olympiadInstances.values())
+		for (final OlympiadGame instance : olympiadInstances.values())
 		{
-			if (instance._gamestarted != true)
+			if (instance.gamestarted != true)
+			{
 				continue;
+			}
 			
-			titles.put(instance._stadiumID, instance.getTitle());
+			titles.put(instance.stadiumID, instance.getTitle());
 		}
 		
 		return titles;
 	}
 	
-	@SuppressWarnings("synthetic-access")
 	private static class SingletonHolder
 	{
-		protected static final OlympiadManager _instance = new OlympiadManager();
+		protected static final OlympiadManager instance = new OlympiadManager();
 	}
 }

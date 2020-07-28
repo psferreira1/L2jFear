@@ -1,33 +1,13 @@
-/* L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.datatables.xml;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
 
 import javax.xml.parsers.DocumentBuilderFactory;
-
-import javolution.util.FastList;
-import javolution.util.FastMap;
 
 import org.apache.log4j.Logger;
 import org.w3c.dom.Document;
@@ -50,34 +30,25 @@ public class AugmentationData
 {
 	private static final Logger LOGGER = Logger.getLogger(AugmentationData.class);
 	
-	// =========================================================
-	private static AugmentationData _instance;
+	private static AugmentationData instance;
 	
 	public static final AugmentationData getInstance()
 	{
-		if (_instance == null)
+		if (instance == null)
 		{
-			_instance = new AugmentationData();
+			instance = new AugmentationData();
 		}
 		
-		return _instance;
+		return instance;
 	}
 	
-	// =========================================================
-	// Data Field
-	
-	// stats
 	private static final int STAT_START = 1;
 	private static final int STAT_END = 14560;
 	private static final int STAT_BLOCKSIZE = 3640;
-	// private static final int STAT_NUMBEROF_BLOCKS = 4;
 	private static final int STAT_SUBBLOCKSIZE = 91;
-	// private static final int STAT_NUMBEROF_SUBBLOCKS = 40;
 	
 	// skills
 	private static final int BLUE_START = 14561;
-	// private static final int PURPLE_START = 14578;
-	// private static final int RED_START = 14685;
 	private static final int SKILLS_BLOCKSIZE = 178;
 	
 	// basestats
@@ -86,44 +57,42 @@ public class AugmentationData
 	private static final int BASESTAT_INT = 16343;
 	private static final int BASESTAT_MEN = 16344;
 	
-	private final FastList<augmentationStat> _augmentationStats[];
-	private final Map<Integer, FastList<augmentationSkill>> _blueSkills;
-	private final Map<Integer, FastList<augmentationSkill>> _purpleSkills;
-	private final Map<Integer, FastList<augmentationSkill>> _redSkills;
+	private final List<AugmentationStat> augmentationStats[];
+	private final Map<Integer, List<AugmentationSkill>> blueSkills;
+	private final Map<Integer, List<AugmentationSkill>> purpleSkills;
+	private final Map<Integer, List<AugmentationSkill>> redSkills;
 	
-	// =========================================================
-	// Constructor
 	@SuppressWarnings("unchecked")
 	private AugmentationData()
 	{
 		LOGGER.info("Initializing AugmentationData.");
 		
-		_augmentationStats = new FastList[4];
-		_augmentationStats[0] = new FastList<>();
-		_augmentationStats[1] = new FastList<>();
-		_augmentationStats[2] = new FastList<>();
-		_augmentationStats[3] = new FastList<>();
+		augmentationStats = new ArrayList[4];
+		augmentationStats[0] = new ArrayList<>();
+		augmentationStats[1] = new ArrayList<>();
+		augmentationStats[2] = new ArrayList<>();
+		augmentationStats[3] = new ArrayList<>();
 		
-		_blueSkills = new FastMap<>();
-		_purpleSkills = new FastMap<>();
-		_redSkills = new FastMap<>();
+		blueSkills = new HashMap<>();
+		purpleSkills = new HashMap<>();
+		redSkills = new HashMap<>();
 		for (int i = 1; i <= 10; i++)
 		{
-			_blueSkills.put(i, new FastList<augmentationSkill>());
-			_purpleSkills.put(i, new FastList<augmentationSkill>());
-			_redSkills.put(i, new FastList<augmentationSkill>());
+			blueSkills.put(i, new ArrayList<AugmentationSkill>());
+			purpleSkills.put(i, new ArrayList<AugmentationSkill>());
+			redSkills.put(i, new ArrayList<AugmentationSkill>());
 		}
 		
 		load();
 		
 		// Use size*4: since theres 4 blocks of stat-data with equivalent size
-		LOGGER.info("AugmentationData: Loaded: " + _augmentationStats[0].size() * 4 + " augmentation stats.");
+		LOGGER.info("AugmentationData: Loaded: " + augmentationStats[0].size() * 4 + " augmentation stats.");
 		
 		if (Config.DEBUG)
 		{
 			for (int i = 1; i <= 10; i++)
 			{
-				LOGGER.info("AugmentationData: Loaded: " + _blueSkills.get(i).size() + " blue, " + _purpleSkills.get(i).size() + " purple and " + _redSkills.get(i).size() + " red skills for lifeStoneLevel " + i);
+				LOGGER.info("AugmentationData: Loaded: " + blueSkills.get(i).size() + " blue, " + purpleSkills.get(i).size() + " purple and " + redSkills.get(i).size() + " red skills for lifeStoneLevel " + i);
 			}
 		}
 		
@@ -131,91 +100,91 @@ public class AugmentationData
 	
 	public static void reload()
 	{
-		_instance = null;
+		instance = null;
 		getInstance();
 	}
 	
-	// =========================================================
-	// Nested Class
-	
-	public class augmentationSkill
+	public class AugmentationSkill
 	{
-		private final int _skillId;
-		private final int _maxSkillLevel;
-		private final int _augmentationSkillId;
+		private final int skillId;
+		private final int maxSkillLevel;
+		private final int augmentationSkillId;
 		
-		public augmentationSkill(final int skillId, final int maxSkillLevel, final int augmentationSkillId)
+		public AugmentationSkill(final int skillId, final int maxSkillLevel, final int augmentationSkillId)
 		{
-			_skillId = skillId;
-			_maxSkillLevel = maxSkillLevel;
-			_augmentationSkillId = augmentationSkillId;
+			this.skillId = skillId;
+			this.maxSkillLevel = maxSkillLevel;
+			this.augmentationSkillId = augmentationSkillId;
 		}
 		
 		public L2Skill getSkill(final int level)
 		{
-			if (level > _maxSkillLevel)
-				return SkillTable.getInstance().getInfo(_skillId, _maxSkillLevel);
+			if (level > maxSkillLevel)
+			{
+				return SkillTable.getInstance().getInfo(skillId, maxSkillLevel);
+			}
 			
-			return SkillTable.getInstance().getInfo(_skillId, level);
+			return SkillTable.getInstance().getInfo(skillId, level);
 		}
 		
 		public int getAugmentationSkillId()
 		{
-			return _augmentationSkillId;
+			return augmentationSkillId;
 		}
 	}
 	
-	public class augmentationStat
+	public class AugmentationStat
 	{
-		private final Stats _stat;
-		private final int _singleSize;
-		private final int _combinedSize;
-		private final float _singleValues[];
-		private final float _combinedValues[];
+		private final Stats stat;
+		private final int singleSize;
+		private final int combinedSize;
+		private final float singleValues[];
+		private final float combinedValues[];
 		
-		public augmentationStat(final Stats stat, final float sValues[], final float cValues[])
+		public AugmentationStat(final Stats stat, final float sValues[], final float cValues[])
 		{
-			_stat = stat;
-			_singleSize = sValues.length;
-			_singleValues = sValues;
-			_combinedSize = cValues.length;
-			_combinedValues = cValues;
+			this.stat = stat;
+			singleSize = sValues.length;
+			singleValues = sValues;
+			combinedSize = cValues.length;
+			combinedValues = cValues;
 		}
 		
 		public int getSingleStatSize()
 		{
-			return _singleSize;
+			return singleSize;
 		}
 		
 		public int getCombinedStatSize()
 		{
-			return _combinedSize;
+			return combinedSize;
 		}
 		
 		public float getSingleStatValue(final int i)
 		{
-			if (i >= _singleSize || i < 0)
-				return _singleValues[_singleSize - 1];
+			if (i >= singleSize || i < 0)
+			{
+				return singleValues[singleSize - 1];
+			}
 			
-			return _singleValues[i];
+			return singleValues[i];
 		}
 		
 		public float getCombinedStatValue(final int i)
 		{
-			if (i >= _combinedSize || i < 0)
-				return _combinedValues[_combinedSize - 1];
+			if (i >= combinedSize || i < 0)
+			{
+				return combinedValues[combinedSize - 1];
+			}
 			
-			return _combinedValues[i];
+			return combinedValues[i];
 		}
 		
 		public Stats getStat()
 		{
-			return _stat;
+			return stat;
 		}
 	}
-	
-	// =========================================================
-	// Method - Private
 	
 	private final void load()
 	{
@@ -231,7 +200,7 @@ public class AugmentationData
 			
 			int badAugmantData = 0;
 			
-			File file = new File(Config.DATAPACK_ROOT + "/data/stats/augmentation/augmentation_skillmap.xml");
+			File file = new File(Config.DATAPACK_ROOT + "/data/xml/augmentation/augmentation_skillmap.xml");
 			if (!file.exists())
 			{
 				if (Config.DEBUG)
@@ -303,15 +272,15 @@ public class AugmentationData
 							
 							if (type.equalsIgnoreCase("blue"))
 							{
-								_blueSkills.get(k).add(new augmentationSkill(skillId, skillLvL, augmentationId));
+								blueSkills.get(k).add(new AugmentationSkill(skillId, skillLvL, augmentationId));
 							}
 							else if (type.equalsIgnoreCase("purple"))
 							{
-								_purpleSkills.get(k).add(new augmentationSkill(skillId, skillLvL, augmentationId));
+								purpleSkills.get(k).add(new AugmentationSkill(skillId, skillLvL, augmentationId));
 							}
 							else
 							{
-								_redSkills.get(k).add(new augmentationSkill(skillId, skillLvL, augmentationId));
+								redSkills.get(k).add(new AugmentationSkill(skillId, skillLvL, augmentationId));
 							}
 							
 							attrs = null;
@@ -331,7 +300,9 @@ public class AugmentationData
 		catch (final Exception e)
 		{
 			if (Config.ENABLE_ALL_EXCEPTIONS)
+			{
 				e.printStackTrace();
+			}
 			
 			LOGGER.error("Error parsing augmentation_skillmap.xml.", e);
 			
@@ -347,7 +318,7 @@ public class AugmentationData
 				factory.setValidating(false);
 				factory.setIgnoringComments(true);
 				
-				File file = new File(Config.DATAPACK_ROOT + "/data/stats/augmentation/augmentation_stats" + i + ".xml");
+				File file = new File(Config.DATAPACK_ROOT + "/data/xml/augmentation/augmentation_stats" + i + ".xml");
 				
 				if (!file.exists())
 				{
@@ -382,7 +353,7 @@ public class AugmentationData
 										String tableName = attrs.getNamedItem("name").getNodeValue();
 										
 										final StringTokenizer data = new StringTokenizer(cd.getFirstChild().getNodeValue());
-										final List<Float> array = new FastList<>();
+										final List<Float> array = new ArrayList<>();
 										
 										while (data.hasMoreTokens())
 										{
@@ -415,7 +386,7 @@ public class AugmentationData
 								}
 								
 								// store this stat
-								_augmentationStats[(i - 1)].add(new augmentationStat(Stats.valueOfXml(statName), soloValues, combinedValues));
+								augmentationStats[(i - 1)].add(new AugmentationStat(Stats.valueOfXml(statName), soloValues, combinedValues));
 								
 								statName = null;
 								attrs = null;
@@ -431,7 +402,9 @@ public class AugmentationData
 			catch (final Exception e)
 			{
 				if (Config.ENABLE_ALL_EXCEPTIONS)
+				{
 					e.printStackTrace();
+				}
 				
 				LOGGER.error("Error parsing augmentation_stats" + i + ".xml.", e);
 				return;
@@ -439,15 +412,12 @@ public class AugmentationData
 		}
 	}
 	
-	// =========================================================
-	// Properties - Public
-	
 	/**
 	 * Generate a new random augmentation
-	 * @param item
-	 * @param lifeStoneLevel
-	 * @param lifeStoneGrade
-	 * @return L2Augmentation
+	 * @param  item
+	 * @param  lifeStoneLevel
+	 * @param  lifeStoneGrade
+	 * @return                L2Augmentation
 	 */
 	public L2Augmentation generateRandomAugmentation(final L2ItemInstance item, final int lifeStoneLevel, final int lifeStoneGrade)
 	{
@@ -593,21 +563,21 @@ public class AugmentationData
 		L2Skill skill = null;
 		if (generateSkill)
 		{
-			augmentationSkill temp = null;
+			AugmentationSkill temp = null;
 			switch (resultColor)
 			{
 				case 1: // blue skill
-					temp = _blueSkills.get(lifeStoneLevel).get(Rnd.get(0, _blueSkills.get(lifeStoneLevel).size() - 1));
+					temp = blueSkills.get(lifeStoneLevel).get(Rnd.get(0, blueSkills.get(lifeStoneLevel).size() - 1));
 					skill = temp.getSkill(lifeStoneLevel);
 					stat34 = temp.getAugmentationSkillId();
 					break;
 				case 2: // purple skill
-					temp = _purpleSkills.get(lifeStoneLevel).get(Rnd.get(0, _purpleSkills.get(lifeStoneLevel).size() - 1));
+					temp = purpleSkills.get(lifeStoneLevel).get(Rnd.get(0, purpleSkills.get(lifeStoneLevel).size() - 1));
 					skill = temp.getSkill(lifeStoneLevel);
 					stat34 = temp.getAugmentationSkillId();
 					break;
 				case 3: // red skill
-					temp = _redSkills.get(lifeStoneLevel).get(Rnd.get(0, _redSkills.get(lifeStoneLevel).size() - 1));
+					temp = redSkills.get(lifeStoneLevel).get(Rnd.get(0, redSkills.get(lifeStoneLevel).size() - 1));
 					skill = temp.getSkill(lifeStoneLevel);
 					stat34 = temp.getAugmentationSkillId();
 					break;
@@ -623,34 +593,34 @@ public class AugmentationData
 	
 	public class AugStat
 	{
-		private final Stats _stat;
-		private final float _value;
+		private final Stats stat;
+		private final float value;
 		
 		public AugStat(final Stats stat, final float value)
 		{
-			_stat = stat;
-			_value = value;
+			this.stat = stat;
+			this.value = value;
 		}
 		
 		public Stats getStat()
 		{
-			return _stat;
+			return stat;
 		}
 		
 		public float getValue()
 		{
-			return _value;
+			return value;
 		}
 	}
 	
 	/**
 	 * Returns the stat and basestat boni for a given augmentation id
-	 * @param augmentationId
+	 * @param  augmentationId
 	 * @return
 	 */
-	public FastList<AugStat> getAugStatsById(final int augmentationId)
+	public List<AugStat> getAugStatsById(final int augmentationId)
 	{
-		final FastList<AugStat> temp = new FastList<>();
+		final List<AugStat> temp = new ArrayList<>();
 		// An augmentation id contains 2 short vaues so we gotta seperate them here
 		// both values contain a number from 1-16380, the first 14560 values are stats
 		// the 14560 stats are devided into 4 blocks each holding 3640 values
@@ -687,7 +657,7 @@ public class AugmentationData
 				
 				if (stats[i] < 14) // solo stat
 				{
-					final augmentationStat as = _augmentationStats[block].get((stats[i] - 1));
+					final AugmentationStat as = augmentationStats[block].get((stats[i] - 1));
 					temp.add(new AugStat(as.getStat(), as.getSingleStatValue(subblock)));
 				}
 				else
@@ -706,7 +676,7 @@ public class AugmentationData
 					}
 					
 					// get first stat
-					augmentationStat as = _augmentationStats[block].get(rescales);
+					AugmentationStat as = augmentationStats[block].get(rescales);
 					if (rescales == 0)
 					{
 						temp.add(new AugStat(as.getStat(), as.getCombinedStatValue(subblock)));
@@ -717,7 +687,7 @@ public class AugmentationData
 					}
 					
 					// get 2nd stat
-					as = _augmentationStats[block].get(rescales + stats[i]);
+					as = augmentationStats[block].get(rescales + stats[i]);
 					if (as.getStat() == Stats.CRITICAL_DAMAGE)
 					{
 						temp.add(new AugStat(as.getStat(), as.getCombinedStatValue(subblock)));

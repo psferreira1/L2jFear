@@ -1,19 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any later
- * version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
- *
- * You should have received a copy of the GNU General Public License along with
- * this program. If not, see <http://www.gnu.org/licenses/>.
- */
 package com.l2jfrozen.gameserver.managers;
 
 import org.apache.log4j.Logger;
@@ -31,26 +15,27 @@ import com.l2jfrozen.gameserver.model.entity.siege.Castle;
 public class CrownManager
 {
 	protected static final Logger LOGGER = Logger.getLogger(CrownManager.class);
-	private static CrownManager _instance;
-	
-	public static final CrownManager getInstance()
-	{
-		if (_instance == null)
-		{
-			_instance = new CrownManager();
-		}
-		return _instance;
-	}
+	private static CrownManager instance;
 	
 	public CrownManager()
 	{
-		LOGGER.info("CrownManager: initialized");
+	}
+	
+	public static final CrownManager getInstance()
+	{
+		if (instance == null)
+		{
+			instance = new CrownManager();
+		}
+		return instance;
 	}
 	
 	public void checkCrowns(final L2Clan clan)
 	{
 		if (clan == null)
+		{
 			return;
+		}
 		
 		for (final L2ClanMember member : clan.getMembers())
 		{
@@ -64,7 +49,9 @@ public class CrownManager
 	public void checkCrowns(final L2PcInstance activeChar)
 	{
 		if (activeChar == null)
+		{
 			return;
+		}
 		
 		boolean isLeader = false;
 		int crownId = -1;

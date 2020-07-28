@@ -1,41 +1,10 @@
-/*
- * $Header: WayPointNode.java, 20/07/2005 19:49:29 luisantonioa Exp $
- *
- * $Author: luisantonioa $
- * $Date: 20/07/2005 19:49:29 $
- * $Revision: 1 $
- * $Log: WayPointNode.java,v $
- * Revision 1  20/07/2005 19:49:29  luisantonioa
- * Added copyright notice
- *
- *
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.model.waypoint;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
-
-import javolution.util.FastList;
 
 import com.l2jfrozen.Config;
 import com.l2jfrozen.gameserver.idfactory.IdFactory;
@@ -46,32 +15,23 @@ import com.l2jfrozen.gameserver.network.serverpackets.MyTargetSelected;
 import com.l2jfrozen.util.Point3D;
 
 /**
- * This class ...
- * @version $Revision: 1.2 $ $Date: 2004/06/27 08:12:59 $
+ * @author luisantonioa
  */
-
 public class WayPointNode extends L2Object
 {
-	private int _id;
-	private String _title, _type;
+	private int id;
+	private String title, type;
 	private static final String NORMAL = "Node", SELECTED = "Selected", LINKED = "Linked";
-	private static int _lineId = 5560;
+	private static int lineId = 5560;
 	private static final String LINE_TYPE = "item";
-	private final Map<WayPointNode, List<WayPointNode>> _linkLists;
+	private final Map<WayPointNode, List<WayPointNode>> linkLists;
 	
-	/**
-	 * @param objectId
-	 */
 	public WayPointNode(final int objectId)
 	{
 		super(objectId);
-		_linkLists = Collections.synchronizedMap(new WeakHashMap<WayPointNode, List<WayPointNode>>());
+		linkLists = Collections.synchronizedMap(new WeakHashMap<WayPointNode, List<WayPointNode>>());
 	}
 	
-	/*
-	 * (non-Javadoc)
-	 * @see com.l2jfrozen.gameserver.model.L2Object#isAutoAttackable(com.l2jfrozen.gameserver.model.L2Character)
-	 */
 	@Override
 	public boolean isAutoAttackable(final L2Character attacker)
 	{
@@ -121,19 +81,19 @@ public class WayPointNode extends L2Object
 	
 	public void setNormalInfo(final String type, final int id, final String title)
 	{
-		_type = type;
+		this.type = type;
 		changeID(id, title);
 	}
 	
 	public void setNormalInfo(final String type, final int id)
 	{
-		_type = type;
+		this.type = type;
 		changeID(id);
 	}
 	
 	private void changeID(final int id)
 	{
-		_id = id;
+		this.id = id;
 		toggleVisible();
 		toggleVisible();
 	}
@@ -168,27 +128,27 @@ public class WayPointNode extends L2Object
 	
 	public final String getTitle()
 	{
-		return _title;
+		return title;
 	}
 	
 	public final void setTitle(final String title)
 	{
-		_title = title;
+		this.title = title;
 	}
 	
 	public int getId()
 	{
-		return _id;
+		return id;
 	}
 	
 	public String getType()
 	{
-		return _type;
+		return type;
 	}
 	
 	public void setType(final String type)
 	{
-		_type = type;
+		this.type = type;
 	}
 	
 	/**
@@ -211,7 +171,7 @@ public class WayPointNode extends L2Object
 		
 		final int steps = distance / 40;
 		
-		List<WayPointNode> lineNodes = new FastList<>();
+		List<WayPointNode> lineNodes = new ArrayList<>();
 		
 		for (int i = 0; i < steps; i++)
 		{
@@ -219,7 +179,7 @@ public class WayPointNode extends L2Object
 			y1 = y1 + modY * diffY / steps;
 			z1 = z1 + modZ * diffZ / steps;
 			
-			lineNodes.add(WayPointNode.spawn(LINE_TYPE, _lineId, x1, y1, z1));
+			lineNodes.add(WayPointNode.spawn(LINE_TYPE, lineId, x1, y1, z1));
 		}
 		
 		nodeA.addLineInfo(nodeB, lineNodes);
@@ -230,7 +190,7 @@ public class WayPointNode extends L2Object
 	
 	public void addLineInfo(final WayPointNode node, final List<WayPointNode> line)
 	{
-		_linkLists.put(node, line);
+		linkLists.put(node, line);
 	}
 	
 	/**
@@ -242,7 +202,9 @@ public class WayPointNode extends L2Object
 		List<WayPointNode> lineNodes = target.getLineInfo(selectedNode);
 		
 		if (lineNodes == null)
+		{
 			return;
+		}
 		
 		for (final WayPointNode node : lineNodes)
 		{
@@ -259,28 +221,28 @@ public class WayPointNode extends L2Object
 	 */
 	public void eraseLine(final WayPointNode target)
 	{
-		_linkLists.remove(target);
+		linkLists.remove(target);
 	}
 	
 	/**
-	 * @param selectedNode
+	 * @param  selectedNode
 	 * @return
 	 */
 	private List<WayPointNode> getLineInfo(final WayPointNode selectedNode)
 	{
-		return _linkLists.get(selectedNode);
+		return linkLists.get(selectedNode);
 	}
 	
 	public static void setLineId(final int line_id)
 	{
-		_lineId = line_id;
+		lineId = line_id;
 	}
 	
 	public List<WayPointNode> getLineNodes()
 	{
-		final List<WayPointNode> list = new FastList<>();
+		List<WayPointNode> list = new ArrayList<>();
 		
-		for (final List<WayPointNode> points : _linkLists.values())
+		for (List<WayPointNode> points : linkLists.values())
 		{
 			list.addAll(points);
 		}

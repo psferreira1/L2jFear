@@ -1,29 +1,9 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.model;
 
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.concurrent.ScheduledFuture;
-
-import javolution.util.FastList;
 
 import org.apache.log4j.Logger;
 
@@ -52,114 +32,124 @@ public final class L2WorldRegion
 	/**
 	 * L2ObjectHashSet(L2PlayableInstance) containing L2PlayableInstance of all player & summon in game in this L2WorldRegion
 	 */
-	private final L2ObjectSet<L2PlayableInstance> _allPlayable;
+	private final L2ObjectSet<L2PlayableInstance> allPlayable;
 	
 	/** L2ObjectHashSet(L2Object) containing L2Object visible in this L2WorldRegion */
-	private final L2ObjectSet<L2Object> _visibleObjects;
+	private final L2ObjectSet<L2Object> visibleObjects;
 	
-	private final FastList<L2WorldRegion> _surroundingRegions;
-	private final int _tileX, _tileY;
-	private Boolean _active = false;
-	private ScheduledFuture<?> _neighborsTask = null;
+	private final List<L2WorldRegion> surroundingRegions;
+	private final int tileX, tileY;
+	private Boolean active = false;
+	private ScheduledFuture<?> neighborsTask = null;
 	
-	private L2ZoneManager _zoneManager;
+	private L2ZoneManager zoneManager;
 	
 	public L2WorldRegion(final int pTileX, final int pTileY)
 	{
-		_allPlayable = L2ObjectSet.createL2PlayerSet(); // new L2ObjectHashSet<L2PcInstance>();
-		_visibleObjects = L2ObjectSet.createL2ObjectSet(); // new L2ObjectHashSet<L2Object>();
-		_surroundingRegions = new FastList<>();
-		// _surroundingRegions.add(this); //done in L2World.initRegions()
+		allPlayable = L2ObjectSet.createL2PlayerSet(); // new L2ObjectHashSet<L2PcInstance>();
+		visibleObjects = L2ObjectSet.createL2ObjectSet(); // new L2ObjectHashSet<L2Object>();
+		surroundingRegions = new ArrayList<>();
+		// surroundingRegions.add(this); //done in L2World.initRegions()
 		
-		_tileX = pTileX;
-		_tileY = pTileY;
+		tileX = pTileX;
+		tileY = pTileY;
 		
 		// default a newly initialized region to inactive, unless always on is specified
 		if (Config.GRIDS_ALWAYS_ON)
 		{
-			_active = true;
+			active = true;
 		}
 		else
 		{
-			_active = false;
+			active = false;
 		}
 	}
 	
 	public void addZone(final L2ZoneType zone)
 	{
-		if (_zoneManager == null)
+		if (zoneManager == null)
 		{
-			_zoneManager = new L2ZoneManager();
+			zoneManager = new L2ZoneManager();
 		}
-		_zoneManager.registerNewZone(zone);
+		zoneManager.registerNewZone(zone);
 	}
 	
 	public void removeZone(final L2ZoneType zone)
 	{
-		if (_zoneManager == null)
+		if (zoneManager == null)
+		{
 			return;
+		}
 		
-		_zoneManager.unregisterZone(zone);
+		zoneManager.unregisterZone(zone);
 	}
 	
 	public void revalidateZones(final L2Character character)
 	{
-		if (_zoneManager == null)
-			return;
-		
-		if (_zoneManager != null)
+		if (zoneManager == null)
 		{
-			_zoneManager.revalidateZones(character);
+			return;
+		}
+		
+		if (zoneManager != null)
+		{
+			zoneManager.revalidateZones(character);
 		}
 	}
 	
 	public void removeFromZones(final L2Character character)
 	{
-		if (_zoneManager == null)
-			return;
-		
-		if (_zoneManager != null)
+		if (zoneManager == null)
 		{
-			_zoneManager.removeCharacter(character);
+			return;
+		}
+		
+		if (zoneManager != null)
+		{
+			zoneManager.removeCharacter(character);
 		}
 	}
 	
 	public void onDeath(final L2Character character)
 	{
-		if (_zoneManager == null)
-			return;
-		
-		if (_zoneManager != null)
+		if (zoneManager == null)
 		{
-			_zoneManager.onDeath(character);
+			return;
+		}
+		
+		if (zoneManager != null)
+		{
+			zoneManager.onDeath(character);
 		}
 	}
 	
 	public void onRevive(final L2Character character)
 	{
-		if (_zoneManager == null)
-			return;
-		
-		if (_zoneManager != null)
+		if (zoneManager == null)
 		{
-			_zoneManager.onRevive(character);
+			return;
+		}
+		
+		if (zoneManager != null)
+		{
+			zoneManager.onRevive(character);
 		}
 	}
 	
 	/** Task of AI notification */
 	public class NeighborsTask implements Runnable
 	{
-		private final boolean _isActivating;
+		private final boolean isActivating;
 		
 		public NeighborsTask(final boolean isActivating)
 		{
-			_isActivating = isActivating;
+			this.isActivating = isActivating;
 		}
 		
 		@Override
 		public void run()
 		{
-			if (_isActivating)
+			if (isActivating)
 			{
 				// for each neighbor, if it's not active, activate.
 				for (final L2WorldRegion neighbor : getSurroundingRegions())
@@ -176,10 +166,12 @@ public final class L2WorldRegion
 				
 				// check and deactivate
 				for (final L2WorldRegion neighbor : getSurroundingRegions())
+				{
 					if (neighbor.areNeighborsEmpty())
 					{
 						neighbor.setActive(false);
 					}
+				}
 			}
 		}
 	}
@@ -190,7 +182,7 @@ public final class L2WorldRegion
 		
 		if (!isOn)
 		{
-			for (final L2Object o : _visibleObjects)
+			for (final L2Object o : visibleObjects)
 			{
 				if (o instanceof L2Attackable)
 				{
@@ -216,11 +208,17 @@ public final class L2WorldRegion
 						
 						// stop the ai tasks
 						if (mob.getAI() instanceof L2AttackableAI)
+						{
 							((L2AttackableAI) mob.getAI()).stopAITask();
+						}
 						else if (mob.getAI() instanceof L2FortSiegeGuardAI)
+						{
 							((L2FortSiegeGuardAI) mob.getAI()).stopAITask();
+						}
 						else if (mob.getAI() instanceof L2SiegeGuardAI)
+						{
 							((L2SiegeGuardAI) mob.getAI()).stopAITask();
+						}
 						
 					}
 					
@@ -231,11 +229,13 @@ public final class L2WorldRegion
 				}
 			}
 			if (Config.DEBUG)
+			{
 				LOGGER.info(c + " mobs were turned off");
+			}
 		}
 		else
 		{
-			for (final L2Object o : _visibleObjects)
+			for (final L2Object o : visibleObjects)
 			{
 				if (o instanceof L2Attackable)
 				{
@@ -254,14 +254,16 @@ public final class L2WorldRegion
 				}
 			}
 			if (Config.DEBUG)
+			{
 				LOGGER.info(c + " mobs were turned on");
+			}
 		}
 		
 	}
 	
 	public Boolean isActive()
 	{
-		return _active;
+		return active;
 	}
 	
 	// check if all 9 neighbors (including self) are inactive or active but with no players.
@@ -269,13 +271,19 @@ public final class L2WorldRegion
 	public Boolean areNeighborsEmpty()
 	{
 		// if this region is occupied, return false.
-		if (isActive() && _allPlayable.size() > 0)
+		if (isActive() && allPlayable.size() > 0)
+		{
 			return false;
+		}
 		
 		// if any one of the neighbors is occupied, return false
-		for (final L2WorldRegion neighbor : _surroundingRegions)
-			if (neighbor.isActive() && neighbor._allPlayable.size() > 0)
+		for (final L2WorldRegion neighbor : surroundingRegions)
+		{
+			if (neighbor.isActive() && neighbor.allPlayable.size() > 0)
+			{
 				return false;
+			}
+		}
 		
 		// in all other cases, return true.
 		return true;
@@ -287,10 +295,12 @@ public final class L2WorldRegion
 	 */
 	public void setActive(final boolean value)
 	{
-		if (_active == value)
+		if (active == value)
+		{
 			return;
+		}
 		
-		_active = value;
+		active = value;
 		
 		// turn the AI on or off to match the region's activation.
 		switchAI(value);
@@ -298,14 +308,16 @@ public final class L2WorldRegion
 		// TODO
 		// turn the geodata on or off to match the region's activation.
 		if (Config.DEBUG)
+		{
 			if (value)
 			{
-				LOGGER.info("Starting Grid " + _tileX + "," + _tileY);
+				LOGGER.info("Starting Grid " + tileX + "," + tileY);
 			}
 			else
 			{
-				LOGGER.info("Stoping Grid " + _tileX + "," + _tileY);
+				LOGGER.info("Stoping Grid " + tileX + "," + tileY);
 			}
+		}
 	}
 	
 	/**
@@ -317,14 +329,14 @@ public final class L2WorldRegion
 		setActive(true);
 		
 		// if the timer to deactivate neighbors is running, cancel it.
-		if (_neighborsTask != null)
+		if (neighborsTask != null)
 		{
-			_neighborsTask.cancel(true);
-			_neighborsTask = null;
+			neighborsTask.cancel(true);
+			neighborsTask = null;
 		}
 		
 		// then, set a timer to activate the neighbors
-		_neighborsTask = ThreadPoolManager.getInstance().scheduleGeneral(new NeighborsTask(true), 1000 * Config.GRID_NEIGHBOR_TURNON_TIME);
+		neighborsTask = ThreadPoolManager.getInstance().scheduleGeneral(new NeighborsTask(true), 1000 * Config.GRID_NEIGHBOR_TURNON_TIME);
 	}
 	
 	/**
@@ -333,20 +345,20 @@ public final class L2WorldRegion
 	private void startDeactivation()
 	{
 		// if the timer to activate neighbors is running, cancel it.
-		if (_neighborsTask != null)
+		if (neighborsTask != null)
 		{
-			_neighborsTask.cancel(true);
-			_neighborsTask = null;
+			neighborsTask.cancel(true);
+			neighborsTask = null;
 		}
 		
 		// start a timer to "suggest" a deactivate to self and neighbors.
 		// suggest means: first check if a neighbor has L2PcInstances in it. If not, deactivate.
-		_neighborsTask = ThreadPoolManager.getInstance().scheduleGeneral(new NeighborsTask(false), 1000 * Config.GRID_NEIGHBOR_TURNOFF_TIME);
+		neighborsTask = ThreadPoolManager.getInstance().scheduleGeneral(new NeighborsTask(false), 1000 * Config.GRID_NEIGHBOR_TURNOFF_TIME);
 	}
 	
 	/**
-	 * Add the L2Object in the L2ObjectHashSet(L2Object) _visibleObjects containing L2Object visible in this L2WorldRegion <BR>
-	 * If L2Object is a L2PcInstance, Add the L2PcInstance in the L2ObjectHashSet(L2PcInstance) _allPlayable containing L2PcInstance of all player in game in this L2WorldRegion <BR>
+	 * Add the L2Object in the L2ObjectHashSet(L2Object) visibleObjects containing L2Object visible in this L2WorldRegion <BR>
+	 * If L2Object is a L2PcInstance, Add the L2PcInstance in the L2ObjectHashSet(L2PcInstance) allPlayable containing L2PcInstance of all player in game in this L2WorldRegion <BR>
 	 * Assert : object.getCurrentWorldRegion() == this
 	 * @param object
 	 */
@@ -358,16 +370,18 @@ public final class L2WorldRegion
 		}
 		
 		if (object == null)
+		{
 			return;
+		}
 		
-		_visibleObjects.put(object);
+		visibleObjects.put(object);
 		
 		if (object instanceof L2PlayableInstance)
 		{
-			_allPlayable.put((L2PlayableInstance) object);
+			allPlayable.put((L2PlayableInstance) object);
 			
 			// if this is the first player to enter the region, activate self & neighbors
-			if (_allPlayable.size() == 1 && !Config.GRIDS_ALWAYS_ON)
+			if (allPlayable.size() == 1 && !Config.GRIDS_ALWAYS_ON)
 			{
 				startActivation();
 			}
@@ -375,9 +389,9 @@ public final class L2WorldRegion
 	}
 	
 	/**
-	 * Remove the L2Object from the L2ObjectHashSet(L2Object) _visibleObjects in this L2WorldRegion <BR>
+	 * Remove the L2Object from the L2ObjectHashSet(L2Object) visibleObjects in this L2WorldRegion <BR>
 	 * <BR>
-	 * If L2Object is a L2PcInstance, remove it from the L2ObjectHashSet(L2PcInstance) _allPlayable of this L2WorldRegion <BR>
+	 * If L2Object is a L2PcInstance, remove it from the L2ObjectHashSet(L2PcInstance) allPlayable of this L2WorldRegion <BR>
 	 * Assert : object.getCurrentWorldRegion() == this || object.getCurrentWorldRegion() == null
 	 * @param object
 	 */
@@ -389,15 +403,17 @@ public final class L2WorldRegion
 		}
 		
 		if (object == null)
+		{
 			return;
+		}
 		
-		_visibleObjects.remove(object);
+		visibleObjects.remove(object);
 		
 		if (object instanceof L2PlayableInstance)
 		{
-			_allPlayable.remove((L2PlayableInstance) object);
+			allPlayable.remove((L2PlayableInstance) object);
 			
-			if (_allPlayable.size() == 0 && !Config.GRIDS_ALWAYS_ON)
+			if (allPlayable.size() == 0 && !Config.GRIDS_ALWAYS_ON)
 			{
 				startDeactivation();
 			}
@@ -406,33 +422,33 @@ public final class L2WorldRegion
 	
 	public void addSurroundingRegion(final L2WorldRegion region)
 	{
-		_surroundingRegions.add(region);
+		surroundingRegions.add(region);
 	}
 	
 	/**
-	 * @return the list _surroundingRegions containing all L2WorldRegion around the current L2WorldRegion
+	 * @return the list surroundingRegions containing all L2WorldRegion around the current L2WorldRegion
 	 */
-	public FastList<L2WorldRegion> getSurroundingRegions()
+	public List<L2WorldRegion> getSurroundingRegions()
 	{
 		// change to return L2WorldRegion[] ?
 		// this should not change after initialization, so maybe changes are not necessary
 		
-		return _surroundingRegions;
+		return surroundingRegions;
 	}
 	
 	public Iterator<L2PlayableInstance> iterateAllPlayers()
 	{
-		return _allPlayable.iterator();
+		return allPlayable.iterator();
 	}
 	
 	public L2ObjectSet<L2Object> getVisibleObjects()
 	{
-		return _visibleObjects;
+		return visibleObjects;
 	}
 	
 	public String getName()
 	{
-		return "(" + _tileX + ", " + _tileY + ")";
+		return "(" + tileX + ", " + tileY + ")";
 	}
 	
 	/**
@@ -441,7 +457,7 @@ public final class L2WorldRegion
 	public synchronized void deleteVisibleNpcSpawns()
 	{
 		LOGGER.debug("Deleting all visible NPC's in Region: " + getName());
-		for (final L2Object obj : _visibleObjects)
+		for (final L2Object obj : visibleObjects)
 		{
 			if (obj instanceof L2NpcInstance)
 			{
@@ -468,15 +484,15 @@ public final class L2WorldRegion
 	}
 	
 	/**
-	 * @param skill
-	 * @param x
-	 * @param y
-	 * @param z
+	 * @param  skill
+	 * @param  x
+	 * @param  y
+	 * @param  z
 	 * @return
 	 */
 	public boolean checkEffectRangeInsidePeaceZone(final L2Skill skill, final int x, final int y, final int z)
 	{
-		if (_zoneManager != null)
+		if (zoneManager != null)
 		{
 			final int range = skill.getEffectRange();
 			final int up = y + range;
@@ -484,24 +500,34 @@ public final class L2WorldRegion
 			final int left = x + range;
 			final int right = x - range;
 			
-			for (final L2ZoneType e : _zoneManager.getZones())
+			for (final L2ZoneType e : zoneManager.getZones())
 			{
 				if (e instanceof L2PeaceZone)
 				{
 					if (e.isInsideZone(x, up, z))
+					{
 						return false;
+					}
 					
 					if (e.isInsideZone(x, down, z))
+					{
 						return false;
+					}
 					
 					if (e.isInsideZone(left, y, z))
+					{
 						return false;
+					}
 					
 					if (e.isInsideZone(right, y, z))
+					{
 						return false;
+					}
 					
 					if (e.isInsideZone(x, y, z))
+					{
 						return false;
+					}
 				}
 			}
 			return true;

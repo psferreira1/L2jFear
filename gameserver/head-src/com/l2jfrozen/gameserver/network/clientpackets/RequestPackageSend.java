@@ -1,27 +1,7 @@
-/* L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.network.clientpackets;
 
+import java.util.ArrayList;
 import java.util.List;
-
-import javolution.util.FastList;
 
 import org.apache.log4j.Logger;
 
@@ -47,55 +27,65 @@ import com.l2jfrozen.gameserver.templates.L2EtcItemType;
 public final class RequestPackageSend extends L2GameClientPacket
 {
 	private static Logger LOGGER = Logger.getLogger(RequestPackageSend.class);
-	private final List<Item> _items = new FastList<>();
-	private int _objectID;
-	private int _count;
+	private final List<Item> items = new ArrayList<>();
+	private int objectID;
+	private int psCount;
 	
 	@Override
 	protected void readImpl()
 	{
-		_objectID = readD();
-		_count = readD();
+		objectID = readD();
+		psCount = readD();
 		
-		if (_count < 0 || _count > 500)
+		if (psCount < 0 || psCount > 500)
 		{
-			_count = -1;
+			psCount = -1;
 			return;
 		}
 		
-		for (int i = 0; i < _count; i++)
+		for (int i = 0; i < psCount; i++)
 		{
 			final int id = readD(); // this is some id sent in PackageSendableList
 			final int count = readD();
-			_items.add(new Item(id, count));
+			items.add(new Item(id, count));
 		}
 	}
 	
 	@Override
 	protected void runImpl()
 	{
-		if (_count == -1 || _items == null)
+		if (psCount == -1 || items == null)
+		{
 			return;
+		}
 		
 		final L2PcInstance player = getClient().getActiveChar();
 		
 		if (player == null)
+		{
 			return;
+		}
 		
-		if (player.getObjectId() == _objectID)
+		if (player.getObjectId() == objectID)
+		{
 			return;
+		}
 		
-		final L2PcInstance target = L2PcInstance.load(_objectID);
+		final L2PcInstance target = L2PcInstance.load(objectID);
 		
 		if (player.getAccountChars().size() < 1)
 		{
 			return;
 		}
-		else if (!player.getAccountChars().containsKey(_objectID))
+		else if (!player.getAccountChars().containsKey(objectID))
+		{
 			return;
+		}
 		
-		if (L2World.getInstance().getPlayer(_objectID) != null)
+		if (L2World.getInstance().getPlayer(objectID) != null)
+		{
 			return;
+		}
 		
 		if (!getClient().getFloodProtectors().getTransaction().tryPerformAction("deposit"))
 		{
@@ -109,12 +99,16 @@ public final class RequestPackageSend extends L2GameClientPacket
 		final ItemContainer warehouse = player.getActiveWarehouse();
 		
 		if (warehouse == null)
+		{
 			return;
+		}
 		
 		final L2FolkInstance manager = player.getLastFolkNPC();
 		
 		if ((manager == null || !player.isInsideRadius(manager, L2NpcInstance.INTERACTION_DISTANCE, false, false)) && !player.isGM())
+		{
 			return;
+		}
 		
 		if (warehouse instanceof PcFreight && !player.getAccessLevel().allowTransaction())
 		{
@@ -125,14 +119,16 @@ public final class RequestPackageSend extends L2GameClientPacket
 		
 		// Alt game - Karma punishment
 		if (!Config.ALT_GAME_KARMA_PLAYER_CAN_USE_WAREHOUSE && player.getKarma() > 0)
+		{
 			return;
+		}
 		
 		// Freight price from config or normal price per item slot (30)
-		final int fee = _count * Config.ALT_GAME_FREIGHT_PRICE;
+		final int fee = psCount * Config.ALT_GAME_FREIGHT_PRICE;
 		int currentAdena = player.getAdena();
 		int slots = 0;
 		
-		for (final Item i : _items)
+		for (final Item i : items)
 		{
 			final int objectId = i.id;
 			final int count = i.count;
@@ -157,7 +153,9 @@ public final class RequestPackageSend extends L2GameClientPacket
 			}
 			
 			if (!item.isTradeable() || item.getItemType() == L2EtcItemType.QUEST)
+			{
 				return;
+			}
 			
 			// Calculate needed adena and slots
 			if (item.getItemId() == 57)
@@ -191,7 +189,7 @@ public final class RequestPackageSend extends L2GameClientPacket
 		
 		// Proceed to the transfer
 		final InventoryUpdate playerIU = Config.FORCE_INVENTORY_UPDATE ? null : new InventoryUpdate();
-		for (final Item i : _items)
+		for (final Item i : items)
 		{
 			final int objectId = i.id;
 			final int count = i.count;

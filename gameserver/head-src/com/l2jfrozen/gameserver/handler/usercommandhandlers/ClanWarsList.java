@@ -1,23 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 
 package com.l2jfrozen.gameserver.handler.usercommandhandlers;
 
@@ -48,15 +28,13 @@ public class ClanWarsList implements IUserCommandHandler
 		90
 	};
 	
-	/*
-	 * (non-Javadoc)
-	 * @see com.l2jfrozen.gameserver.handler.IUserCommandHandler#useUserCommand(int, com.l2jfrozen.gameserver.model.L2PcInstance)
-	 */
 	@Override
 	public boolean useUserCommand(final int id, final L2PcInstance activeChar)
 	{
 		if (id != COMMAND_IDS[0] && id != COMMAND_IDS[1] && id != COMMAND_IDS[2])
+		{
 			return false;
+		}
 		
 		L2Clan clan = activeChar.getClan();
 		
@@ -71,7 +49,7 @@ public class ClanWarsList implements IUserCommandHandler
 		
 		try
 		{
-			con = L2DatabaseFactory.getInstance().getConnection(false);
+			con = L2DatabaseFactory.getInstance().getConnection();
 			PreparedStatement statement;
 			
 			if (id == 88)
@@ -133,7 +111,9 @@ public class ClanWarsList implements IUserCommandHandler
 		catch (final Exception e)
 		{
 			if (Config.ENABLE_ALL_EXCEPTIONS)
+			{
 				e.printStackTrace();
+			}
 		}
 		finally
 		{
@@ -147,10 +127,6 @@ public class ClanWarsList implements IUserCommandHandler
 		return true;
 	}
 	
-	/*
-	 * (non-Javadoc)
-	 * @see com.l2jfrozen.gameserver.handler.IUserCommandHandler#getUserCommandList()
-	 */
 	@Override
 	public int[] getUserCommandList()
 	{

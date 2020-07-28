@@ -1,43 +1,19 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.model;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
-
-import javolution.text.TextBuilder;
-import javolution.util.FastList;
-import javolution.util.FastMap;
 
 import org.apache.log4j.Logger;
 
 import com.l2jfrozen.gameserver.model.L2Macro.L2MacroCmd;
 import com.l2jfrozen.gameserver.model.actor.instance.L2PcInstance;
 import com.l2jfrozen.gameserver.network.serverpackets.SendMacroList;
-import com.l2jfrozen.util.CloseUtil;
-import com.l2jfrozen.util.database.DatabaseUtils;
 import com.l2jfrozen.util.database.L2DatabaseFactory;
 
 /**
@@ -48,50 +24,54 @@ public class MacroList
 {
 	private static Logger LOGGER = Logger.getLogger(MacroList.class);
 	
-	private final L2PcInstance _owner;
-	private int _revision;
-	private int _macroId;
-	private final Map<Integer, L2Macro> _macroses = new FastMap<>();
+	private static final String INSERT_CHARACTER_MACRO = "INSERT INTO character_macroses (char_obj_id,id,icon,name,descr,acronym,commands) VALUES (?,?,?,?,?,?,?)";
+	private static final String SELECT_CHARACTER_MACROS_BY_OBJ_ID = "SELECT char_obj_id, id, icon, name, descr, acronym, commands FROM character_macroses WHERE char_obj_id=?";
+	private static final String DELETE_CHARACTER_MACRO_BY_CHAR_ID_AND_ID = "DELETE FROM character_macroses WHERE char_obj_id=? AND id=?";
+	
+	private final L2PcInstance owner;
+	private int revision;
+	private int macroId;
+	private final Map<Integer, L2Macro> macroses = new HashMap<>();
 	
 	public MacroList(final L2PcInstance owner)
 	{
-		_owner = owner;
-		_revision = 1;
-		_macroId = 1000;
+		this.owner = owner;
+		revision = 1;
+		macroId = 1000;
 	}
 	
 	public int getRevision()
 	{
-		return _revision;
+		return revision;
 	}
 	
 	public L2Macro[] getAllMacroses()
 	{
-		return _macroses.values().toArray(new L2Macro[_macroses.size()]);
+		return macroses.values().toArray(new L2Macro[macroses.size()]);
 	}
 	
 	public L2Macro getMacro(final int id)
 	{
-		return _macroses.get(id - 1);
+		return macroses.get(id - 1);
 	}
 	
 	public void registerMacro(final L2Macro macro)
 	{
 		if (macro.id == 0)
 		{
-			macro.id = _macroId++;
+			macro.id = macroId++;
 			
-			while (_macroses.get(macro.id) != null)
+			while (macroses.get(macro.id) != null)
 			{
-				macro.id = _macroId++;
+				macro.id = macroId++;
 			}
 			
-			_macroses.put(macro.id, macro);
+			macroses.put(macro.id, macro);
 			registerMacroInDb(macro);
 		}
 		else
 		{
-			L2Macro old = _macroses.put(macro.id, macro);
+			L2Macro old = macroses.put(macro.id, macro);
 			
 			if (old != null)
 			{
@@ -107,72 +87,63 @@ public class MacroList
 	
 	public void deleteMacro(final int id)
 	{
-		L2Macro toRemove = _macroses.get(id);
+		L2Macro toRemove = macroses.get(id);
 		
 		if (toRemove != null)
 		{
 			deleteMacroFromDb(toRemove);
 		}
 		
-		_macroses.remove(id);
+		macroses.remove(id);
 		
-		final L2ShortCut[] allShortCuts = _owner.getAllShortCuts();
-		
-		for (final L2ShortCut sc : allShortCuts)
+		for (L2ShortCut sc : owner.getAllShortCuts())
 		{
 			if (sc.getId() == id && sc.getType() == L2ShortCut.TYPE_MACRO)
 			{
-				_owner.deleteShortCut(sc.getSlot(), sc.getPage());
+				owner.deleteShortCut(sc.getSlot(), sc.getPage());
 			}
 		}
 		
 		sendUpdate();
-		
-		toRemove = null;
 	}
 	
 	public void sendUpdate()
 	{
-		_revision++;
+		revision++;
 		
 		L2Macro[] all = getAllMacroses();
 		
 		if (all.length == 0)
 		{
-			_owner.sendPacket(new SendMacroList(_revision, all.length, null));
+			owner.sendPacket(new SendMacroList(revision, all.length, null));
 		}
 		else
 		{
-			for (final L2Macro m : all)
+			for (L2Macro m : all)
 			{
-				_owner.sendPacket(new SendMacroList(_revision, all.length, m));
+				owner.sendPacket(new SendMacroList(revision, all.length, m));
 			}
 		}
-		
-		all = null;
 	}
 	
-	private void registerMacroInDb(final L2Macro macro)
+	private void registerMacroInDb(L2Macro macro)
 	{
-		Connection con = null;
-		try
+		try (Connection con = L2DatabaseFactory.getInstance().getConnection();
+			PreparedStatement statement = con.prepareStatement(INSERT_CHARACTER_MACRO))
 		{
-			con = L2DatabaseFactory.getInstance().getConnection(false);
-			
-			PreparedStatement statement = con.prepareStatement("INSERT INTO character_macroses (char_obj_id,id,icon,name,descr,acronym,commands) values(?,?,?,?,?,?,?)");
-			statement.setInt(1, _owner.getObjectId());
+			statement.setInt(1, owner.getObjectId());
 			statement.setInt(2, macro.id);
 			statement.setInt(3, macro.icon);
 			statement.setString(4, macro.name);
 			statement.setString(5, macro.descr);
 			statement.setString(6, macro.acronym);
 			
-			TextBuilder sb = new TextBuilder();
+			StringBuilder sb = new StringBuilder();
 			
 			for (final L2MacroCmd cmd : macro.commands)
 			{
 				
-				final TextBuilder cmd_sb = new TextBuilder();
+				final StringBuilder cmd_sb = new StringBuilder();
 				
 				cmd_sb.append(cmd.type).append(',');
 				cmd_sb.append(cmd.d1).append(',');
@@ -190,24 +161,19 @@ public class MacroList
 					sb.append(cmd_sb.toString());
 				}
 				else
+				{
 					break;
+				}
 				
 			}
 			
 			statement.setString(7, sb.toString());
-			statement.execute();
-			DatabaseUtils.close(statement);
-			statement = null;
-			sb = null;
+			statement.executeUpdate();
 		}
 		catch (final Exception e)
 		{
-			LOGGER.info("Player: " + _owner.getName() + " IP:" + _owner.getClient().getConnection().getInetAddress().getHostAddress() + " try to use bug with macros");
+			LOGGER.info("Player: " + owner.getName() + " IP:" + owner.getClient().getConnection().getInetAddress().getHostAddress() + " try to use bug with macros");
 			LOGGER.warn("could not store macro:", e);
-		}
-		finally
-		{
-			CloseUtil.close(con);
 		}
 	}
 	
@@ -216,100 +182,80 @@ public class MacroList
 	 */
 	private void deleteMacroFromDb(final L2Macro macro)
 	{
-		Connection con = null;
-		try
+		try (Connection con = L2DatabaseFactory.getInstance().getConnection();
+			PreparedStatement statement = con.prepareStatement(DELETE_CHARACTER_MACRO_BY_CHAR_ID_AND_ID))
 		{
-			con = L2DatabaseFactory.getInstance().getConnection(false);
-			
-			PreparedStatement statement = con.prepareStatement("DELETE FROM character_macroses WHERE char_obj_id=? AND id=?");
-			statement.setInt(1, _owner.getObjectId());
+			statement.setInt(1, owner.getObjectId());
 			statement.setInt(2, macro.id);
-			statement.execute();
-			DatabaseUtils.close(statement);
-			statement = null;
+			statement.executeUpdate();
 		}
-		catch (final Exception e)
+		catch (Exception e)
 		{
-			LOGGER.warn("could not delete macro:", e);
-		}
-		finally
-		{
-			CloseUtil.close(con);
-			con = null;
+			LOGGER.error("MacroList.deleteMacroFromDb : Could not delete macro in database", e);
 		}
 	}
 	
 	public void restore()
 	{
-		_macroses.clear();
-		Connection con = null;
-		try
+		macroses.clear();
+		try (Connection con = L2DatabaseFactory.getInstance().getConnection();
+			PreparedStatement statement = con.prepareStatement(SELECT_CHARACTER_MACROS_BY_OBJ_ID))
 		{
-			con = L2DatabaseFactory.getInstance().getConnection(false);
-			PreparedStatement statement = con.prepareStatement("SELECT char_obj_id, id, icon, name, descr, acronym, commands FROM character_macroses WHERE char_obj_id=?");
-			statement.setInt(1, _owner.getObjectId());
-			ResultSet rset = statement.executeQuery();
-			
-			while (rset.next())
+			statement.setInt(1, owner.getObjectId());
+			try (ResultSet rset = statement.executeQuery())
 			{
-				final int id = rset.getInt("id");
-				final int icon = rset.getInt("icon");
-				
-				String name = rset.getString("name");
-				String descr = rset.getString("descr");
-				String acronym = rset.getString("acronym");
-				List<L2MacroCmd> commands = new FastList<>();
-				StringTokenizer st1 = new StringTokenizer(rset.getString("commands"), ";");
-				
-				while (st1.hasMoreTokens())
+				while (rset.next())
 				{
-					StringTokenizer st = new StringTokenizer(st1.nextToken(), ",");
+					final int id = rset.getInt("id");
+					final int icon = rset.getInt("icon");
 					
-					if (st.countTokens() < 3)
+					String name = rset.getString("name");
+					String descr = rset.getString("descr");
+					String acronym = rset.getString("acronym");
+					List<L2MacroCmd> commands = new ArrayList<>();
+					StringTokenizer st1 = new StringTokenizer(rset.getString("commands"), ";");
+					
+					while (st1.hasMoreTokens())
 					{
-						continue;
+						StringTokenizer st = new StringTokenizer(st1.nextToken(), ",");
+						
+						if (st.countTokens() < 3)
+						{
+							continue;
+						}
+						
+						final int type = Integer.parseInt(st.nextToken());
+						final int d1 = Integer.parseInt(st.nextToken());
+						final int d2 = Integer.parseInt(st.nextToken());
+						
+						String cmd = "";
+						
+						if (st.hasMoreTokens())
+						{
+							cmd = st.nextToken();
+						}
+						
+						L2MacroCmd mcmd = new L2MacroCmd(commands.size(), type, d1, d2, cmd);
+						commands.add(mcmd);
+						
+						mcmd = null;
+						st = null;
 					}
 					
-					final int type = Integer.parseInt(st.nextToken());
-					final int d1 = Integer.parseInt(st.nextToken());
-					final int d2 = Integer.parseInt(st.nextToken());
-					
-					String cmd = "";
-					
-					if (st.hasMoreTokens())
-					{
-						cmd = st.nextToken();
-					}
-					
-					L2MacroCmd mcmd = new L2MacroCmd(commands.size(), type, d1, d2, cmd);
-					commands.add(mcmd);
-					
-					mcmd = null;
-					st = null;
+					L2Macro m = new L2Macro(id, icon, name, descr, acronym, commands.toArray(new L2MacroCmd[commands.size()]));
+					macroses.put(m.id, m);
+					m = null;
+					name = null;
+					descr = null;
+					acronym = null;
+					commands = null;
+					st1 = null;
 				}
-				
-				L2Macro m = new L2Macro(id, icon, name, descr, acronym, commands.toArray(new L2MacroCmd[commands.size()]));
-				_macroses.put(m.id, m);
-				m = null;
-				name = null;
-				descr = null;
-				acronym = null;
-				commands = null;
-				st1 = null;
 			}
-			DatabaseUtils.close(rset);
-			DatabaseUtils.close(statement);
-			rset = null;
-			statement = null;
 		}
-		catch (final Exception e)
+		catch (Exception e)
 		{
-			LOGGER.warn("could not store shortcuts:", e);
-		}
-		finally
-		{
-			CloseUtil.close(con);
-			con = null;
+			LOGGER.error("MacroList.restore : Could not store shortcuts", e);
 		}
 	}
 }

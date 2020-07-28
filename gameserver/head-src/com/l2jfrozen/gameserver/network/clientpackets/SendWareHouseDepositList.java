@@ -1,23 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.network.clientpackets;
 
 import org.apache.log4j.Logger;
@@ -43,56 +23,64 @@ public final class SendWareHouseDepositList extends L2GameClientPacket
 {
 	private static Logger LOGGER = Logger.getLogger(SendWareHouseDepositList.class);
 	
-	private int _count;
-	private int[] _items;
+	private int count;
+	private int[] items;
 	
 	@Override
 	protected void readImpl()
 	{
-		_count = readD();
+		count = readD();
 		
 		// check packet list size
-		if (_count < 0 || _count * 8 > _buf.remaining() || _count > Config.MAX_ITEM_IN_PACKET)
+		if (count < 0 || count * 8 > buf.remaining() || count > Config.MAX_ITEM_IN_PACKET)
 		{
-			_count = 0;
+			count = 0;
 		}
 		
-		_items = new int[_count * 2];
-		for (int i = 0; i < _count; i++)
+		items = new int[count * 2];
+		for (int i = 0; i < count; i++)
 		{
 			final int objectId = readD();
-			_items[i * 2 + 0] = objectId;
+			items[i * 2 + 0] = objectId;
 			final long cnt = readD();
 			
 			if (cnt > Integer.MAX_VALUE || cnt < 0)
 			{
-				_count = 0;
-				_items = null;
+				count = 0;
+				items = null;
 				return;
 			}
 			
-			_items[i * 2 + 1] = (int) cnt;
+			items[i * 2 + 1] = (int) cnt;
 		}
 	}
 	
 	@Override
 	protected void runImpl()
 	{
-		if (_items == null)
+		if (items == null)
+		{
 			return;
+		}
 		
 		final L2PcInstance player = getClient().getActiveChar();
 		if (player == null)
+		{
 			return;
+		}
 		
 		final ItemContainer warehouse = player.getActiveWarehouse();
 		if (warehouse == null)
+		{
 			return;
+		}
 		
 		final L2FolkInstance manager = player.getLastFolkNPC();
 		
 		if (manager == null || !player.isInsideRadius(manager, L2NpcInstance.INTERACTION_DISTANCE, false, false))
+		{
 			return;
+		}
 		
 		if (!getClient().getFloodProtectors().getTransaction().tryPerformAction("deposit"))
 		{
@@ -135,7 +123,9 @@ public final class SendWareHouseDepositList extends L2GameClientPacket
 		
 		// Alt game - Karma punishment
 		if (!Config.ALT_GAME_KARMA_PLAYER_CAN_USE_WAREHOUSE && player.getKarma() > 0)
+		{
 			return;
+		}
 		
 		// Like L2OFF enchant window must close
 		if (player.getActiveEnchantItem() != null)
@@ -147,32 +137,48 @@ public final class SendWareHouseDepositList extends L2GameClientPacket
 		}
 		
 		// Freight price from config or normal price per item slot (30)
-		final int fee = _count * 30;
+		final int fee = count * 30;
 		int currentAdena = player.getAdena();
 		int slots = 0;
 		
-		for (int i = 0; i < _count; i++)
+		for (int i = 0; i < count; i++)
 		{
-			final int objectId = _items[i * 2 + 0];
-			final int count = _items[i * 2 + 1];
+			final int objectId = items[i * 2 + 0];
+			final int count = items[i * 2 + 1];
 			
 			// Check validity of requested item
 			final L2ItemInstance item = player.checkItemManipulation(objectId, count, "deposit");
 			if (item == null)
 			{
 				LOGGER.warn("Error depositing a warehouse object for char " + player.getName() + " (validity check)");
-				_items[i * 2 + 0] = 0;
-				_items[i * 2 + 1] = 0;
+				items[i * 2 + 0] = 0;
+				items[i * 2 + 1] = 0;
 				continue;
 			}
 			
 			if (warehouse instanceof ClanWarehouse && !item.isTradeable() || item.getItemType() == L2EtcItemType.QUEST)
+			{
 				return;
+			}
 			
 			// Calculate needed adena and slots
 			if (item.getItemId() == 57)
 			{
 				currentAdena -= count;
+				
+				// Max adena limit for warehouse (Tested for normal and clan warehouse)
+				if (warehouse.getItemByItemId(57) != null)
+				{
+					long adenaInWarehouse = warehouse.getItemByItemId(57).getCount();
+					long adenaDeposit = count;
+					long totalAdena = adenaInWarehouse + adenaDeposit;
+					if (totalAdena >= Integer.MAX_VALUE)
+					{
+						player.sendMessage("The maximum limit of adena in the warehouse is " + Integer.MAX_VALUE);
+						player.sendMessage("You can only deposit " + (Integer.MAX_VALUE - adenaInWarehouse));
+						return;
+					}
+				}
 			}
 			
 			if (!item.isStackable())
@@ -201,10 +207,10 @@ public final class SendWareHouseDepositList extends L2GameClientPacket
 		
 		// Proceed to the transfer
 		final InventoryUpdate playerIU = Config.FORCE_INVENTORY_UPDATE ? null : new InventoryUpdate();
-		for (int i = 0; i < _count; i++)
+		for (int i = 0; i < count; i++)
 		{
-			final int objectId = _items[i * 2 + 0];
-			final int count = _items[i * 2 + 1];
+			final int objectId = items[i * 2 + 0];
+			final int count = items[i * 2 + 1];
 			
 			// check for an invalid item
 			if (objectId == 0 && count == 0)
@@ -242,17 +248,25 @@ public final class SendWareHouseDepositList extends L2GameClientPacket
 			if (playerIU != null)
 			{
 				if (oldItem.getCount() > 0 && oldItem != newItem)
+				{
 					playerIU.addModifiedItem(oldItem);
+				}
 				else
+				{
 					playerIU.addRemovedItem(oldItem);
+				}
 			}
 		}
 		
 		// Send updated item list to the player
 		if (playerIU != null)
+		{
 			player.sendPacket(playerIU);
+		}
 		else
+		{
 			player.sendPacket(new ItemList(player, false));
+		}
 		
 		// Update current load status on player
 		final StatusUpdate su = new StatusUpdate(player.getObjectId());

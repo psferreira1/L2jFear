@@ -1,23 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.geo.util;
 
 import java.lang.reflect.Array;
@@ -45,7 +25,9 @@ public abstract class L2FastCollection<E> implements Collection<E>
 	{
 		final Record first = head().getNext();
 		if (first == tail())
+		{
 			return null;
+		}
 		
 		return valueOf(first);
 	}
@@ -54,7 +36,9 @@ public abstract class L2FastCollection<E> implements Collection<E>
 	{
 		final Record last = tail().getPrevious();
 		if (last == head())
+		{
 			return null;
+		}
 		
 		return valueOf(last);
 	}
@@ -63,7 +47,9 @@ public abstract class L2FastCollection<E> implements Collection<E>
 	{
 		final Record first = head().getNext();
 		if (first == tail())
+		{
 			return null;
+		}
 		
 		final E value = valueOf(first);
 		delete(first, value);
@@ -74,7 +60,9 @@ public abstract class L2FastCollection<E> implements Collection<E>
 	{
 		final Record last = tail().getPrevious();
 		if (last == head())
+		{
 			return null;
+		}
 		
 		final E value = valueOf(last);
 		delete(last, value);
@@ -86,8 +74,12 @@ public abstract class L2FastCollection<E> implements Collection<E>
 		boolean modified = false;
 		
 		for (final E e : c)
+		{
 			if (add(e))
+			{
 				modified = true;
+			}
+		}
 		
 		return modified;
 	}
@@ -101,19 +93,29 @@ public abstract class L2FastCollection<E> implements Collection<E>
 	public boolean addAll(final Iterable<? extends E> c)
 	{
 		if (c instanceof RandomAccess && c instanceof List<?>)
+		{
 			return addAll((List<? extends E>) c);
+		}
 		
 		if (c instanceof FastCollection<?>)
+		{
 			return addAll((FastCollection<? extends E>) c);
+		}
 		
 		if (c instanceof L2FastCollection<?>)
+		{
 			return addAll((L2FastCollection<? extends E>) c);
+		}
 		
 		boolean modified = false;
 		
 		for (final E e : c)
+		{
 			if (add(e))
+			{
 				modified = true;
+			}
+		}
 		
 		return modified;
 	}
@@ -123,8 +125,12 @@ public abstract class L2FastCollection<E> implements Collection<E>
 		boolean modified = false;
 		
 		for (Record r = c.head(), end = c.tail(); (r = r.getNext()) != end;)
+		{
 			if (add(c.valueOf(r)))
+			{
 				modified = true;
+			}
+		}
 		
 		return modified;
 	}
@@ -134,8 +140,12 @@ public abstract class L2FastCollection<E> implements Collection<E>
 		boolean modified = false;
 		
 		for (Record r = c.head(), end = c.tail(); (r = r.getNext()) != end;)
+		{
 			if (add(c.valueOf(r)))
+			{
 				modified = true;
+			}
+		}
 		
 		return modified;
 	}
@@ -145,8 +155,12 @@ public abstract class L2FastCollection<E> implements Collection<E>
 		boolean modified = false;
 		
 		for (int i = 0, size = c.size(); i < size;)
+		{
 			if (add(c.get(i++)))
+			{
 				modified = true;
+			}
+		}
 		
 		return modified;
 	}
@@ -154,8 +168,12 @@ public abstract class L2FastCollection<E> implements Collection<E>
 	public boolean containsAll(final Object[] c)
 	{
 		for (final Object obj : c)
+		{
 			if (!contains(obj))
+			{
 				return false;
+			}
+		}
 		
 		return true;
 	}
@@ -169,17 +187,27 @@ public abstract class L2FastCollection<E> implements Collection<E>
 	public boolean containsAll(final Iterable<?> c)
 	{
 		if (c instanceof RandomAccess && c instanceof List<?>)
+		{
 			return containsAll((List<?>) c);
+		}
 		
 		if (c instanceof FastCollection<?>)
+		{
 			return containsAll((FastCollection<?>) c);
+		}
 		
 		if (c instanceof L2FastCollection<?>)
+		{
 			return containsAll((L2FastCollection<?>) c);
+		}
 		
 		for (final Object obj : c)
+		{
 			if (!contains(obj))
+			{
 				return false;
+			}
+		}
 		
 		return true;
 	}
@@ -187,8 +215,12 @@ public abstract class L2FastCollection<E> implements Collection<E>
 	private boolean containsAll(final L2FastCollection<?> c)
 	{
 		for (Record r = c.head(), end = c.tail(); (r = r.getNext()) != end;)
+		{
 			if (!contains(c.valueOf(r)))
+			{
 				return false;
+			}
+		}
 		
 		return true;
 	}
@@ -196,8 +228,12 @@ public abstract class L2FastCollection<E> implements Collection<E>
 	private boolean containsAll(final FastCollection<?> c)
 	{
 		for (Record r = c.head(), end = c.tail(); (r = r.getNext()) != end;)
+		{
 			if (!contains(c.valueOf(r)))
+			{
 				return false;
+			}
+		}
 		
 		return true;
 	}
@@ -205,8 +241,12 @@ public abstract class L2FastCollection<E> implements Collection<E>
 	private boolean containsAll(final List<?> c)
 	{
 		for (int i = 0, size = c.size(); i < size;)
+		{
 			if (!contains(c.get(i++)))
+			{
 				return false;
+			}
+		}
 		
 		return true;
 	}
@@ -259,14 +299,20 @@ public abstract class L2FastCollection<E> implements Collection<E>
 		final int size = size();
 		
 		if (array.length != size)
+		{
 			array = (T[]) Array.newInstance(array.getClass().getComponentType(), size);
+		}
 		
 		if (size == 0 && array.length == 0)
+		{
 			return array;
+		}
 		
 		int i = 0;
 		for (Record r = head(), end = tail(); (r = r.getNext()) != end;)
+		{
 			array[i++] = (T) valueOf(r);
+		}
 		
 		return array;
 	}

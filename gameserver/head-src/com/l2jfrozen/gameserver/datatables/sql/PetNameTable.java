@@ -1,23 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.datatables.sql;
 
 import java.sql.Connection;
@@ -31,35 +11,32 @@ import java.util.regex.PatternSyntaxException;
 import org.apache.log4j.Logger;
 
 import com.l2jfrozen.Config;
-import com.l2jfrozen.util.CloseUtil;
-import com.l2jfrozen.util.database.DatabaseUtils;
 import com.l2jfrozen.util.database.L2DatabaseFactory;
 
 public class PetNameTable
 {
 	private final static Logger LOGGER = Logger.getLogger(PetNameTable.class);
+	private static final String SELECT_PET_NAME = "SELECT name FROM pets p, items i WHERE p.item_obj_id = i.object_id AND name=? AND i.item_id IN (?)";
 	
-	private static PetNameTable _instance;
+	private static PetNameTable instance;
 	
 	public static PetNameTable getInstance()
 	{
-		if (_instance == null)
+		if (instance == null)
 		{
-			_instance = new PetNameTable();
+			instance = new PetNameTable();
 		}
 		
-		return _instance;
+		return instance;
 	}
 	
-	public boolean doesPetNameExist(final String name, final int petNpcId)
+	public boolean doesPetNameExist(String name, int petNpcId)
 	{
 		boolean result = true;
-		Connection con = null;
 		
-		try
+		try (Connection con = L2DatabaseFactory.getInstance().getConnection();
+			PreparedStatement statement = con.prepareStatement(SELECT_PET_NAME))
 		{
-			con = L2DatabaseFactory.getInstance().getConnection(false);
-			final PreparedStatement statement = con.prepareStatement("SELECT name FROM pets p, items i WHERE p.item_obj_id = i.object_id AND name=? AND i.item_id IN (?)");
 			statement.setString(1, name);
 			
 			String cond = "";
@@ -73,18 +50,15 @@ public class PetNameTable
 				cond += it;
 			}
 			statement.setString(2, cond);
-			final ResultSet rset = statement.executeQuery();
-			result = rset.next();
-			DatabaseUtils.close(rset);
-			DatabaseUtils.close(statement);
+			
+			try (ResultSet rset = statement.executeQuery())
+			{
+				result = rset.next();
+			}
 		}
-		catch (final SQLException e)
+		catch (SQLException e)
 		{
-			LOGGER.error("Could not check existing petname", e);
-		}
-		finally
-		{
-			CloseUtil.close(con);
+			LOGGER.error("PetNameTable.doesPetNameExist : Could not check existing petname", e);
 		}
 		return result;
 	}
@@ -94,7 +68,9 @@ public class PetNameTable
 		boolean result = true;
 		
 		if (!isAlphaNumeric(name))
+		{
 			return result;
+		}
 		
 		Pattern pattern;
 		try

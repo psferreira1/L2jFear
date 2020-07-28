@@ -1,29 +1,8 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.script;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-
-import javolution.util.FastList;
 
 /**
  * This class manage drop of Special Events created by GM for a defined period. During a Special Event all L2Attackable can drop extra Items. Those extra Items are defined in the table <B>allNpcDateDrops</B>. Each Special Event has a start and end date to stop to drop extra Items automaticaly.<BR>
@@ -31,21 +10,19 @@ import javolution.util.FastList;
  */
 public class EventDroplist
 {
-	// private static Logger LOGGER = Logger.getLogger(EventDroplist.class);
-	
-	private static EventDroplist _instance;
+	private static EventDroplist instance;
 	
 	/** The table containing all DataDrop object */
-	private final List<DateDrop> _allNpcDateDrops;
+	private final List<DateDrop> allNpcDateDrops;
 	
 	public static EventDroplist getInstance()
 	{
-		if (_instance == null)
+		if (instance == null)
 		{
-			_instance = new EventDroplist();
+			instance = new EventDroplist();
 		}
 		
-		return _instance;
+		return instance;
 	}
 	
 	public class DateDrop
@@ -72,16 +49,16 @@ public class EventDroplist
 	 */
 	private EventDroplist()
 	{
-		_allNpcDateDrops = new FastList<>();
+		allNpcDateDrops = new ArrayList<>();
 	}
 	
 	/**
 	 * Create and Init a new DateDrop then add it to the allNpcDateDrops of EventDroplist .<BR>
 	 * <BR>
-	 * @param items The table containing all item identifier of this DateDrop
-	 * @param count The table containing min and max value of this DateDrop
+	 * @param items  The table containing all item identifier of this DateDrop
+	 * @param count  The table containing min and max value of this DateDrop
 	 * @param chance The chance to obtain this drop
-	 * @param range The DateRange object to add to this DateDrop
+	 * @param range  The DateRange object to add to this DateDrop
 	 */
 	public void addGlobalDrop(final int[] items, final int[] count, final int chance, final DateRange range)
 	{
@@ -94,7 +71,7 @@ public class EventDroplist
 		date.max = count[1];
 		date.chance = chance;
 		
-		_allNpcDateDrops.add(date);
+		allNpcDateDrops.add(date);
 		date = null;
 	}
 	
@@ -103,9 +80,9 @@ public class EventDroplist
 	 */
 	public List<DateDrop> getAllDrops()
 	{
-		final List<DateDrop> list = new FastList<>();
+		final List<DateDrop> list = new ArrayList<>();
 		
-		for (final DateDrop drop : _allNpcDateDrops)
+		for (final DateDrop drop : allNpcDateDrops)
 		{
 			Date currentDate = new Date();
 			// LOGGER.info("From: "+drop.from+" To: "+drop.to+" Now: "+ currentDate);
@@ -113,6 +90,7 @@ public class EventDroplist
 			{
 				list.add(drop);
 			}
+			
 			currentDate = null;
 		}
 		

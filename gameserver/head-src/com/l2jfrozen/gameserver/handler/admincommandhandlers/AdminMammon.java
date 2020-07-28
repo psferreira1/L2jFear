@@ -1,23 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * [URL]http://www.gnu.org/copyleft/gpl.html[/URL]
- */
 package com.l2jfrozen.gameserver.handler.admincommandhandlers;
 
 import java.util.regex.Matcher;
@@ -33,6 +13,7 @@ import com.l2jfrozen.gameserver.model.entity.sevensigns.SevenSigns;
 import com.l2jfrozen.gameserver.model.spawn.AutoSpawn;
 import com.l2jfrozen.gameserver.model.spawn.AutoSpawn.AutoSpawnInstance;
 import com.l2jfrozen.gameserver.network.serverpackets.SystemMessage;
+import com.l2jfrozen.gameserver.templates.L2NpcTemplate;
 
 /**
  * Admin Command Handler for Mammon NPCs
@@ -49,19 +30,14 @@ public class AdminMammon implements IAdminCommandHandler
 		"admin_msg"
 	};
 	
-	private final boolean _isSealValidation = SevenSigns.getInstance().isSealValidationPeriod();
+	private final boolean isSealValidation = SevenSigns.getInstance().isSealValidationPeriod();
 	
 	@Override
-	@SuppressWarnings("deprecation")
 	public boolean useAdminCommand(final String command, final L2PcInstance activeChar)
 	{
-		/*
-		 * if(!AdminCommandAccessRights.getInstance().hasAccess(command, activeChar.getAccessLevel())){ return false; } if(Config.GMAUDIT) { Logger _logAudit = Logger.getLogger("gmaudit"); LogRecord record = new LogRecord(Level.INFO, command); record.setParameters(new Object[] { "GM: " +
-		 * activeChar.getName(), " to target [" + activeChar.getTarget() + "] " }); _logAudit.LOGGER(record); }
-		 */
-		
 		int npcId = 0;
 		int teleportIndex = -1;
+		int spawnId = 0;
 		
 		AutoSpawnInstance blackSpawnInst = AutoSpawn.getInstance().getAutoSpawnInstance(SevenSigns.MAMMON_BLACKSMITH_ID, false);
 		AutoSpawnInstance merchSpawnInst = AutoSpawn.getInstance().getAutoSpawnInstance(SevenSigns.MAMMON_MERCHANT_ID, false);
@@ -78,12 +54,14 @@ public class AdminMammon implements IAdminCommandHandler
 			catch (final Exception NumberFormatException)
 			{
 				if (Config.ENABLE_ALL_EXCEPTIONS)
+				{
 					NumberFormatException.printStackTrace();
+				}
 				
 				activeChar.sendMessage("Usage: //mammon_find [teleportIndex] (where 1 = Blacksmith, 2 = Merchant)");
 			}
 			
-			if (!_isSealValidation)
+			if (!isSealValidation)
 			{
 				activeChar.sendMessage("The competition period is currently in effect.");
 				return true;
@@ -136,7 +114,7 @@ public class AdminMammon implements IAdminCommandHandler
 		
 		else if (command.startsWith("admin_mammon_respawn"))
 		{
-			if (!_isSealValidation)
+			if (!isSealValidation)
 			{
 				activeChar.sendMessage("The competition period is currently in effect.");
 				return true;
@@ -162,12 +140,11 @@ public class AdminMammon implements IAdminCommandHandler
 				activeChar.sendMessage("Blacksmith of Mammon isn't registered for spawn.");
 			}
 		}
-		
 		else if (command.startsWith("admin_list_spawns"))
 		{
 			try
 			{
-				// admin_list_spawns x[xxxx] x[xx]
+				L2NpcTemplate npc;
 				String[] params = command.split(" ");
 				Pattern pattern = Pattern.compile("[0-9]*");
 				Matcher regexp = pattern.matcher(params[1]);
@@ -179,6 +156,15 @@ public class AdminMammon implements IAdminCommandHandler
 				else
 				{
 					params[1] = params[1].replace('_', ' ');
+					String npcName = params[1];
+					npc = NpcTable.getInstance().getTemplateByName(npcName);
+					
+					if (npc == null)
+					{
+						activeChar.sendMessage("No NPC found with name: " + npcName);
+						return false;
+					}
+					
 					npcId = NpcTable.getInstance().getTemplateByName(params[1]).npcId;
 				}
 				
@@ -187,19 +173,17 @@ public class AdminMammon implements IAdminCommandHandler
 					teleportIndex = Integer.parseInt(params[2]);
 				}
 				
-				regexp = null;
-				pattern = null;
-				params = null;
-			}
-			catch (final Exception e)
-			{
-				if (Config.ENABLE_ALL_EXCEPTIONS)
-					e.printStackTrace();
+				if (params.length > 3)
+				{
+					spawnId = Integer.parseInt(params[3]);
+				}
 				
+				SpawnTable.getInstance().showSpawnList(activeChar, npcId, teleportIndex, spawnId);
+			}
+			catch (Exception e)
+			{
 				activeChar.sendPacket(SystemMessage.sendString("Command format is //list_spawns <npcId|npc_name> [tele_index]"));
 			}
-			
-			SpawnTable.getInstance().findNPCInstances(activeChar, npcId, teleportIndex);
 		}
 		
 		// Used for testing SystemMessage IDs - Use //msg <ID>
@@ -214,7 +198,9 @@ public class AdminMammon implements IAdminCommandHandler
 			catch (final Exception e)
 			{
 				if (Config.ENABLE_ALL_EXCEPTIONS)
+				{
 					e.printStackTrace();
+				}
 				
 				activeChar.sendMessage("Command format: //msg <SYSTEM_MSG_ID>");
 				return true;

@@ -1,23 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.crypt;
 
 import java.io.IOException;
@@ -1111,8 +1091,8 @@ public class BlowfishEngine
 	
 	/**
 	 * Initialize a Blowfish cipher.
-	 * @param pEncrypting whether or not we are for encryption.
-	 * @param key the key used to set up the cipher.
+	 * @param     pEncrypting              whether or not we are for encryption.
+	 * @param     key                      the key used to set up the cipher.
 	 * @exception IllegalArgumentException if the params argument is inappropriate.
 	 */
 	public void init(final boolean pEncrypting, final byte[] key)
@@ -1131,13 +1111,19 @@ public class BlowfishEngine
 	public final int processBlock(final byte[] in, final int inOff, final byte[] out, final int outOff) throws IOException
 	{
 		if (workingKey == null)
+		{
 			throw new IllegalStateException("Blowfish not initialised");
+		}
 		
 		if (inOff + BLOCK_SIZE > in.length)
+		{
 			throw new IOException("input buffer too short");
+		}
 		
 		if (outOff + BLOCK_SIZE > out.length)
+		{
 			throw new IOException("output buffer too short");
+		}
 		
 		if (encrypting)
 		{
@@ -1198,7 +1184,7 @@ public class BlowfishEngine
 	private void setKey(final byte[] key)
 	{
 		/*
-		 * - comments are from _Applied Crypto_, Schneier, p338 please be careful comparing the two, AC numbers the arrays from 1, the enclosed code from 0. (1) Initialise the S-boxes and the P-array, with a fixed string This string contains the hexadecimal digits of pi (3.141...)
+		 * - comments are from Applied Crypto, Schneier, p338 please be careful comparing the two, AC numbers the arrays from 1, the enclosed code from 0. (1) Initialise the S-boxes and the P-array, with a fixed string This string contains the hexadecimal digits of pi (3.141...)
 		 */
 		System.arraycopy(KS0, 0, S0, 0, SBOX_SK);
 		System.arraycopy(KS1, 0, S1, 0, SBOX_SK);
@@ -1228,8 +1214,8 @@ public class BlowfishEngine
 			P[i] ^= data;
 		}
 		/*
-		 * (3) Encrypt the all-zero string with the Blowfish algorithm, using the subkeys described in (1) and (2) (4) Replace P1 and P2 with the output of step (3) (5) Encrypt the output of step(3) using the Blowfish algorithm, with the modified subkeys. (6) Replace P3 and P4 with the output of
-		 * step (5) (7) Continue the process, replacing all elements of the P-array and then all four S-boxes in order, with the output of the continuously changing Blowfish algorithm
+		 * (3) Encrypt the all-zero string with the Blowfish algorithm, using the subkeys described in (1) and (2) (4) Replace P1 and P2 with the output of step (3) (5) Encrypt the output of step(3) using the Blowfish algorithm, with the modified subkeys. (6) Replace P3 and P4 with the output of step (5)
+		 * (7) Continue the process, replacing all elements of the P-array and then all four S-boxes in order, with the output of the continuously changing Blowfish algorithm
 		 */
 		processTable(0, 0, P);
 		processTable(P[P_SZ - 2], P[P_SZ - 1], S0);

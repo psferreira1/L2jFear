@@ -1,19 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any later
- * version.
- * 
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
- * 
- * You should have received a copy of the GNU General Public License along with
- * this program. If not, see <http://www.gnu.org/licenses/>.
- */
 package com.l2jfrozen.gameserver.network.clientpackets;
 
 import org.apache.log4j.Logger;
@@ -31,7 +15,9 @@ import com.l2jfrozen.gameserver.network.serverpackets.TradeUpdate;
 public final class AddTradeItem extends L2GameClientPacket
 {
 	private static Logger LOGGER = Logger.getLogger(AddTradeItem.class);
-	private int _tradeId, _objectId, _count;
+	private int tradeId;
+	private int objectId;
+	private int count;
 	
 	public AddTradeItem()
 	{
@@ -40,22 +26,24 @@ public final class AddTradeItem extends L2GameClientPacket
 	@Override
 	protected void readImpl()
 	{
-		_tradeId = readD();
-		_objectId = readD();
-		_count = readD();
+		tradeId = readD();
+		objectId = readD();
+		count = readD();
 	}
 	
 	@Override
 	protected void runImpl()
 	{
 		final L2PcInstance player = getClient().getActiveChar();
-		if (player == null) // Player null
+		if (player == null)
+		{
 			return;
+		}
 		
 		final TradeList trade = player.getActiveTradeList();
 		if (trade == null) // Trade null
 		{
-			LOGGER.warn("Character: " + player.getName() + " requested item:" + _objectId + " add without active tradelist:" + _tradeId);
+			LOGGER.warn("Character: " + player.getName() + " requested item:" + objectId + " add without active tradelist:" + tradeId);
 			player.getClient().sendPacket(ActionFailed.STATIC_PACKET);
 			return;
 		}
@@ -65,7 +53,9 @@ public final class AddTradeItem extends L2GameClientPacket
 		{
 			// Trade partner not found, cancel trade
 			if (trade.getPartner() != null)
-				LOGGER.warn("Character:" + player.getName() + " requested invalid trade object: " + _objectId);
+			{
+				LOGGER.warn("Character:" + player.getName() + " requested invalid trade object: " + objectId);
+			}
 			
 			player.sendPacket(new SystemMessage(SystemMessageId.TARGET_IS_NOT_FOUND_IN_THE_GAME));
 			player.getClient().sendPacket(ActionFailed.STATIC_PACKET);
@@ -83,7 +73,7 @@ public final class AddTradeItem extends L2GameClientPacket
 		}
 		
 		// Check validateItemManipulation
-		if (!player.validateItemManipulation(_objectId, "trade"))
+		if (!player.validateItemManipulation(objectId, "trade"))
 		{
 			player.sendPacket(new SystemMessage(SystemMessageId.NOTHING_HAPPENED));
 			player.getClient().sendPacket(ActionFailed.STATIC_PACKET);
@@ -91,19 +81,23 @@ public final class AddTradeItem extends L2GameClientPacket
 		}
 		
 		// Java Emulator Security
-		if (player.getInventory().getItemByObjectId(_objectId) == null || _count <= 0)
+		if (player.getInventory().getItemByObjectId(objectId) == null || count <= 0)
 		{
 			LOGGER.info("Character:" + player.getName() + " requested invalid trade object");
 			player.getClient().sendPacket(ActionFailed.STATIC_PACKET);
 			return;
 		}
 		
-		final TradeList.TradeItem item = trade.addItem(_objectId, _count);
+		final TradeList.TradeItem item = trade.addItem(objectId, count);
 		if (item == null)
+		{
 			return;
+		}
 		
 		if (item.isAugmented())
+		{
 			return;
+		}
 		
 		player.sendPacket(new TradeOwnAdd(item));
 		player.sendPacket(new TradeUpdate(trade, player));

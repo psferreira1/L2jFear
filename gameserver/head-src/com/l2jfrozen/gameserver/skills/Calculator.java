@@ -1,29 +1,8 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.skills;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-
-import javolution.util.FastList;
+import java.util.List;
 
 import com.l2jfrozen.gameserver.skills.funcs.Func;
 
@@ -42,10 +21,10 @@ import com.l2jfrozen.gameserver.skills.funcs.Func;
 public final class Calculator
 {
 	/** Empty Func table definition */
-	private static final Func[] _emptyFuncs = new Func[0];
+	private static final Func[] emptyFuncs = new Func[0];
 	
 	/** Table of Func object */
-	private Func[] _functions;
+	private Func[] functions;
 	
 	/**
 	 * Constructor of Calculator (Init value : emptyFuncs).<BR>
@@ -53,7 +32,7 @@ public final class Calculator
 	 */
 	public Calculator()
 	{
-		_functions = _emptyFuncs;
+		functions = emptyFuncs;
 	}
 	
 	/**
@@ -63,40 +42,52 @@ public final class Calculator
 	 */
 	public Calculator(final Calculator c)
 	{
-		_functions = c._functions;
+		functions = c.functions;
 	}
 	
 	/**
 	 * Check if 2 calculators are equals.<BR>
 	 * <BR>
-	 * @param c1
-	 * @param c2
+	 * @param  c1
+	 * @param  c2
 	 * @return
 	 */
 	public static boolean equalsCals(final Calculator c1, final Calculator c2)
 	{
 		if (c1 == c2)
+		{
 			return true;
+		}
 		
 		if (c1 == null || c2 == null)
+		{
 			return false;
+		}
 		
-		final Func[] funcs1 = c1._functions;
-		final Func[] funcs2 = c2._functions;
+		final Func[] funcs1 = c1.functions;
+		final Func[] funcs2 = c2.functions;
 		
 		if (funcs1 == funcs2)
+		{
 			return true;
+		}
 		
 		if (funcs1.length != funcs2.length)
+		{
 			return false;
+		}
 		
 		if (funcs1.length == 0)
+		{
 			return true;
+		}
 		
 		for (int i = 0; i < funcs1.length; i++)
 		{
 			if (funcs1[i] != funcs2[i])
+			{
 				return false;
+			}
 		}
 		return true;
 	}
@@ -106,7 +97,7 @@ public final class Calculator
 	 */
 	public int size()
 	{
-		return _functions.length;
+		return functions.length;
 	}
 	
 	/**
@@ -115,7 +106,7 @@ public final class Calculator
 	 */
 	public synchronized void addFunc(final Func f)
 	{
-		final Func[] funcs = _functions;
+		final Func[] funcs = functions;
 		final Func[] tmp = new Func[funcs.length + 1];
 		
 		final int order = f.order;
@@ -132,7 +123,7 @@ public final class Calculator
 			tmp[i + 1] = funcs[i];
 		}
 		
-		_functions = tmp;
+		functions = tmp;
 	}
 	
 	/**
@@ -142,27 +133,31 @@ public final class Calculator
 	public synchronized void removeFunc(final Func f)
 	{
 		if (f == null)
+		{
 			return;
+		}
 		
 		final ArrayList<Func> tmp_arraylist = new ArrayList<>();
-		tmp_arraylist.addAll(Arrays.asList(_functions));
+		tmp_arraylist.addAll(Arrays.asList(functions));
 		
 		if (tmp_arraylist.contains(f))
+		{
 			tmp_arraylist.remove(f);
+		}
 		
-		_functions = tmp_arraylist.toArray(new Func[tmp_arraylist.size()]);
+		functions = tmp_arraylist.toArray(new Func[tmp_arraylist.size()]);
 		
 	}
 	
 	/**
 	 * Remove each Func with the specified owner of the Calculator.
-	 * @param owner
+	 * @param  owner
 	 * @return
 	 */
-	public synchronized FastList<Stats> removeOwner(final Object owner)
+	public synchronized List<Stats> removeOwner(final Object owner)
 	{
-		final Func[] funcs = _functions;
-		final FastList<Stats> modifiedStats = new FastList<>();
+		final Func[] funcs = functions;
+		final List<Stats> modifiedStats = new ArrayList<>();
 		
 		for (final Func func : funcs)
 		{
@@ -181,7 +176,7 @@ public final class Calculator
 	 */
 	public void calc(final Env env)
 	{
-		final Func[] funcs = _functions;
+		final Func[] funcs = functions;
 		
 		for (final Func func : funcs)
 		{

@@ -1,22 +1,3 @@
-/* L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.model.actor.knownlist;
 
 import com.l2jfrozen.gameserver.model.L2Character;
@@ -28,18 +9,11 @@ import com.l2jfrozen.gameserver.network.serverpackets.DeleteObject;
 
 public class RaceManagerKnownList extends NpcKnownList
 {
-	// =========================================================
-	// Data Field
-	
-	// =========================================================
-	// Constructor
 	public RaceManagerKnownList(final L2RaceManagerInstance activeChar)
 	{
 		super(activeChar);
 	}
 	
-	// =========================================================
-	// Method - Public
 	@Override
 	public boolean addKnownObject(final L2Object object)
 	{
@@ -50,7 +24,9 @@ public class RaceManagerKnownList extends NpcKnownList
 	public boolean addKnownObject(final L2Object object, final L2Character dropper)
 	{
 		if (!super.addKnownObject(object, dropper))
+		{
 			return false;
+		}
 		
 		/*
 		 * DONT KNOW WHY WE NEED THIS WHEN RACE MANAGER HAS A METHOD THAT BROADCAST TO ITS KNOW PLAYERS if (object instanceof L2PcInstance) { if (packet != null) ((L2PcInstance) object).sendPacket(packet); }
@@ -63,7 +39,9 @@ public class RaceManagerKnownList extends NpcKnownList
 	public boolean removeKnownObject(final L2Object object)
 	{
 		if (!super.removeKnownObject(object))
+		{
 			return false;
+		}
 		
 		if (object instanceof L2PcInstance)
 		{
@@ -81,11 +59,6 @@ public class RaceManagerKnownList extends NpcKnownList
 		return true;
 	}
 	
-	// =========================================================
-	// Method - Private
-	
-	// =========================================================
-	// Property - Public
 	@Override
 	public L2RaceManagerInstance getActiveChar()
 	{

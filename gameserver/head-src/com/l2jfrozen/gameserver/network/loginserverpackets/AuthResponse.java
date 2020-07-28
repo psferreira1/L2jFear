@@ -1,23 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.network.loginserverpackets;
 
 /**
@@ -26,8 +6,8 @@ package com.l2jfrozen.gameserver.network.loginserverpackets;
 public class AuthResponse extends LoginServerBasePacket
 {
 	
-	private final int _serverId;
-	private final String _serverName;
+	private final int serverId;
+	private final String serverName;
 	
 	/**
 	 * @param decrypt
@@ -35,8 +15,8 @@ public class AuthResponse extends LoginServerBasePacket
 	public AuthResponse(final byte[] decrypt)
 	{
 		super(decrypt);
-		_serverId = readC();
-		_serverName = readS();
+		serverId = readC();
+		serverName = readS();
 	}
 	
 	/**
@@ -44,7 +24,7 @@ public class AuthResponse extends LoginServerBasePacket
 	 */
 	public int getServerId()
 	{
-		return _serverId;
+		return serverId;
 	}
 	
 	/**
@@ -52,7 +32,7 @@ public class AuthResponse extends LoginServerBasePacket
 	 */
 	public String getServerName()
 	{
-		return _serverName;
+		return serverName;
 	}
 	
 }

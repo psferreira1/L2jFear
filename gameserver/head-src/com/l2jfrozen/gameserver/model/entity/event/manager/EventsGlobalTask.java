@@ -1,23 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.model.entity.event.manager;
 
 import java.util.ArrayList;
@@ -53,25 +33,20 @@ public class EventsGlobalTask implements Runnable
 	
 	public static EventsGlobalTask getInstance()
 	{
-		
 		if (instance == null)
 		{
 			instance = new EventsGlobalTask();
 		}
-		
 		return instance;
 		
 	}
 	
 	public void registerNewEventTask(final EventTask event)
 	{
-		
 		if (event == null || event.getEventIdentifier() == null || event.getEventIdentifier().equals("") || event.getEventStartTime() == null || event.getEventStartTime().equals(""))
 		{
-			
 			LOGGER.error("registerNewEventTask: eventTask must be not null as its identifier and startTime ");
 			return;
-			
 		}
 		
 		ArrayList<EventTask> savedTasksForTime = time_to_tasks.get(event.getEventStartTime());
@@ -79,38 +54,30 @@ public class EventsGlobalTask implements Runnable
 		
 		if (savedTasksForTime != null)
 		{
-			
 			if (!savedTasksForTime.contains(event))
 			{
 				savedTasksForTime.add(event);
 			}
-			
 		}
 		else
 		{
-			
 			savedTasksForTime = new ArrayList<>();
 			savedTasksForTime.add(event);
-			
 		}
 		
 		time_to_tasks.put(event.getEventStartTime(), savedTasksForTime);
 		
 		if (savedTasksForId != null)
 		{
-			
 			if (!savedTasksForId.contains(event))
 			{
 				savedTasksForId.add(event);
 			}
-			
 		}
 		else
 		{
-			
 			savedTasksForId = new ArrayList<>();
 			savedTasksForId.add(event);
-			
 		}
 		
 		eventid_to_tasks.put(event.getEventIdentifier(), savedTasksForId);
@@ -120,7 +87,7 @@ public class EventsGlobalTask implements Runnable
 			LOGGER.info("Added Event: " + event.getEventIdentifier());
 			
 			// check Info
-			for (final String time : time_to_tasks.keySet())
+			for (String time : time_to_tasks.keySet())
 			{
 				
 				// LOGGER.info("--Time: "+time);
@@ -136,13 +103,12 @@ public class EventsGlobalTask implements Runnable
 				
 			}
 			
-			for (final String event_id : eventid_to_tasks.keySet())
+			for (String event_id : eventid_to_tasks.keySet())
 			{
-				
 				LOGGER.info("--Event: " + event_id);
-				final ArrayList<EventTask> times = eventid_to_tasks.get(event_id);
+				ArrayList<EventTask> times = eventid_to_tasks.get(event_id);
 				
-				final Iterator<EventTask> timesIt = times.iterator();
+				Iterator<EventTask> timesIt = times.iterator();
 				
 				while (timesIt.hasNext())
 				{
@@ -155,9 +121,8 @@ public class EventsGlobalTask implements Runnable
 		
 	}
 	
-	public void clearEventTasksByEventName(final String eventId)
+	public void clearEventTasksByEventName(String eventId)
 	{
-		
 		if (eventId == null)
 		{
 			LOGGER.error("registerNewEventTask: eventTask must be not null as its identifier and startTime ");
@@ -166,61 +131,47 @@ public class EventsGlobalTask implements Runnable
 		
 		if (eventId.equalsIgnoreCase("all"))
 		{
-			
 			time_to_tasks.clear();
 			eventid_to_tasks.clear();
-			
 		}
 		else
 		{
-			
-			final ArrayList<EventTask> oldTasksForId = eventid_to_tasks.get(eventId);
+			ArrayList<EventTask> oldTasksForId = eventid_to_tasks.get(eventId);
 			
 			if (oldTasksForId != null)
 			{
-				
-				for (final EventTask actual : oldTasksForId)
+				for (EventTask actual : oldTasksForId)
 				{
-					
-					final ArrayList<EventTask> oldTasksForTime = time_to_tasks.get(actual.getEventStartTime());
+					ArrayList<EventTask> oldTasksForTime = time_to_tasks.get(actual.getEventStartTime());
 					
 					if (oldTasksForTime != null)
 					{
-						
 						oldTasksForTime.remove(actual);
-						
 						time_to_tasks.put(actual.getEventStartTime(), oldTasksForTime);
-						
 					}
 					
 				}
-				
 				eventid_to_tasks.remove(eventId);
-				
 			}
-			
 		}
 		
 	}
 	
-	public void deleteEventTask(final EventTask event)
+	public void deleteEventTask(EventTask event)
 	{
-		
 		if (event == null || event.getEventIdentifier() == null || event.getEventIdentifier().equals("") || event.getEventStartTime() == null || event.getEventStartTime().equals(""))
 		{
-			
 			LOGGER.error("registerNewEventTask: eventTask must be not null as its identifier and startTime ");
 			return;
-			
 		}
 		
-		if (this.time_to_tasks.size() < 0)
+		if (time_to_tasks.size() < 0)
 		{
 			return;
 		}
 		
-		final ArrayList<EventTask> oldTasksForId = eventid_to_tasks.get(event.getEventIdentifier());
-		final ArrayList<EventTask> oldTasksForTime = time_to_tasks.get(event.getEventStartTime());
+		ArrayList<EventTask> oldTasksForId = eventid_to_tasks.get(event.getEventIdentifier());
+		ArrayList<EventTask> oldTasksForTime = time_to_tasks.get(event.getEventStartTime());
 		
 		if (oldTasksForId != null)
 		{
@@ -239,16 +190,16 @@ public class EventsGlobalTask implements Runnable
 	private void checkRegisteredEvents()
 	{
 		
-		if (this.time_to_tasks.size() < 0)
+		if (time_to_tasks.size() < 0)
 		{
 			return;
 		}
 		
-		final Calendar calendar = Calendar.getInstance();
+		Calendar calendar = Calendar.getInstance();
 		calendar.setTimeInMillis(System.currentTimeMillis());
 		
-		final int hour = calendar.get(Calendar.HOUR_OF_DAY);
-		final int min = calendar.get(Calendar.MINUTE);
+		int hour = calendar.get(Calendar.HOUR_OF_DAY);
+		int min = calendar.get(Calendar.MINUTE);
 		
 		String hourStr = "";
 		String minStr = "";
@@ -258,14 +209,18 @@ public class EventsGlobalTask implements Runnable
 			hourStr = "0" + hour;
 		}
 		else
+		{
 			hourStr = "" + hour;
+		}
 		
 		if (min < 10)
 		{
 			minStr = "0" + min;
 		}
 		else
+		{
 			minStr = "" + min;
+		}
 		
 		final String currentTime = hourStr + ":" + minStr;
 		
@@ -274,11 +229,9 @@ public class EventsGlobalTask implements Runnable
 		
 		if (registeredEventsAtCurrentTime != null)
 		{
-			for (final EventTask actualEvent : registeredEventsAtCurrentTime)
+			for (EventTask actualEvent : registeredEventsAtCurrentTime)
 			{
-				
 				ThreadPoolManager.getInstance().scheduleGeneral(actualEvent, 5000);
-				
 			}
 		}
 	}
@@ -292,22 +245,19 @@ public class EventsGlobalTask implements Runnable
 	@Override
 	public void run()
 	{
-		
 		while (!destroy)
-		{// start time checker
-		
+		{
+			// start time checker
 			checkRegisteredEvents();
 			
 			try
 			{
 				Thread.sleep(60000); // 1 minute
 			}
-			catch (final InterruptedException e)
+			catch (InterruptedException e)
 			{
-				if (Config.ENABLE_ALL_EXCEPTIONS)
-					e.printStackTrace();
+				LOGGER.error("EventsGlobalTask.run : Something interrupted the thread", e);
 			}
-			
 		}
 	}
 	

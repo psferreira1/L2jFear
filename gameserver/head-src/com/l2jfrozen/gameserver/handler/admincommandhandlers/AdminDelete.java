@@ -1,23 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.handler.admincommandhandlers;
 
 import com.l2jfrozen.gameserver.datatables.sql.SpawnTable;
@@ -47,11 +27,6 @@ public class AdminDelete implements IAdminCommandHandler
 	@Override
 	public boolean useAdminCommand(final String command, final L2PcInstance activeChar)
 	{
-		/*
-		 * if(!AdminCommandAccessRights.getInstance().hasAccess(command, activeChar.getAccessLevel())){ return false; } if(Config.GMAUDIT) { Logger _logAudit = Logger.getLogger("gmaudit"); LogRecord record = new LogRecord(Level.INFO, command); record.setParameters(new Object[] { "GM: " +
-		 * activeChar.getName(), " to target [" + activeChar.getTarget() + "] " }); _logAudit.LOGGER(record); }
-		 */
-		
 		if (command.equals("admin_delete"))
 		{
 			handleDelete(activeChar);
@@ -66,10 +41,16 @@ public class AdminDelete implements IAdminCommandHandler
 		return ADMIN_COMMANDS;
 	}
 	
-	// TODO: add possibility to delete any L2Object (except L2PcInstance)
 	private void handleDelete(final L2PcInstance activeChar)
 	{
 		L2Object obj = activeChar.getTarget();
+		
+		// Admin can't delete Players --> L2PcInstances
+		if (obj instanceof L2PcInstance)
+		{
+			activeChar.sendPacket(SystemMessageId.INCORRECT_TARGET);
+			return;
+		}
 		
 		if (obj != null && obj instanceof L2NpcInstance)
 		{
@@ -81,16 +62,19 @@ public class AdminDelete implements IAdminCommandHandler
 			{
 				spawn.stopRespawn();
 				
-				if (RaidBossSpawnManager.getInstance().isDefined(spawn.getNpcid()) && !spawn.is_customBossInstance())
+				if (RaidBossSpawnManager.getInstance().isDefined(spawn.getNpcid()) && !spawn.isCustomRaidBoss())
 				{
 					RaidBossSpawnManager.getInstance().deleteSpawn(spawn, true);
-					
 				}
 				else
 				{
 					boolean update_db = true;
-					if (GrandBossManager.getInstance().isDefined(spawn.getNpcid()) && spawn.is_customBossInstance()) // if custom grandboss instance, it's not saved on database
+					
+					// if custom grandboss instance, it's not saved on database
+					if (GrandBossManager.getInstance().isDefined(spawn.getNpcid()) && spawn.isCustomRaidBoss())
+					{
 						update_db = false;
+					}
 					
 					SpawnTable.getInstance().deleteSpawn(spawn, update_db);
 				}
@@ -106,10 +90,7 @@ public class AdminDelete implements IAdminCommandHandler
 		}
 		else
 		{
-			SystemMessage sm = new SystemMessage(SystemMessageId.S1_S2);
-			sm.addString("Incorrect target.");
-			activeChar.sendPacket(sm);
-			sm = null;
+			activeChar.sendPacket(SystemMessageId.INCORRECT_TARGET);
 		}
 	}
 }

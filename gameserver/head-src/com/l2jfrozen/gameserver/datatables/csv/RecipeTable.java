@@ -1,35 +1,14 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.datatables.csv;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.LineNumberReader;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
-
-import javolution.util.FastList;
-import javolution.util.FastMap;
 
 import org.apache.log4j.Logger;
 
@@ -44,9 +23,8 @@ import com.l2jfrozen.gameserver.model.actor.instance.L2RecipeInstance;
 public class RecipeTable extends RecipeController
 {
 	private static final Logger LOGGER = Logger.getLogger(RecipeTable.class);
-	private final Map<Integer, L2RecipeList> _lists;
-	
 	private static RecipeTable instance;
+	private final Map<Integer, L2RecipeList> lists;
 	
 	public static RecipeTable getInstance()
 	{
@@ -60,21 +38,15 @@ public class RecipeTable extends RecipeController
 	
 	private RecipeTable()
 	{
-		_lists = new FastMap<>();
+		lists = new HashMap<>();
 		String line = null;
 		
-		FileReader reader = null;
-		BufferedReader buff = null;
-		LineNumberReader lnr = null;
+		File recipesData = new File(Config.DATAPACK_ROOT, "data/csv/recipes.csv");
 		
-		try
+		try (FileReader reader = new FileReader(recipesData);
+			BufferedReader buff = new BufferedReader(reader);
+			LineNumberReader lnr = new LineNumberReader(buff))
 		{
-			final File recipesData = new File(Config.DATAPACK_ROOT, "data/recipes.csv");
-			
-			reader = new FileReader(recipesData);
-			buff = new BufferedReader(reader);
-			lnr = new LineNumberReader(buff);
-			
 			while ((line = lnr.readLine()) != null)
 			{
 				if (line.trim().length() == 0 || line.startsWith("#"))
@@ -83,67 +55,22 @@ public class RecipeTable extends RecipeController
 				}
 				
 				parseList(line);
-				
 			}
-			LOGGER.info("RecipeController: Loaded " + _lists.size() + " Recipes.");
+			
+			LOGGER.info("RecipeController: Loaded " + lists.size() + " Recipes.");
 		}
-		catch (final Exception e)
+		catch (Exception e)
 		{
-			if (Config.ENABLE_ALL_EXCEPTIONS)
-				e.printStackTrace();
-			
-			if (lnr != null)
-			{
-				LOGGER.warn("error while creating recipe controller in linenr: " + lnr.getLineNumber(), e);
-			}
-			else
-			{
-				LOGGER.warn("No recipes were found in data folder");
-			}
-			
-		}
-		finally
-		{
-			if (lnr != null)
-				try
-				{
-					lnr.close();
-				}
-				catch (final Exception e1)
-				{
-					e1.printStackTrace();
-				}
-			
-			if (buff != null)
-				try
-				{
-					buff.close();
-				}
-				catch (final Exception e1)
-				{
-					e1.printStackTrace();
-				}
-			
-			if (reader != null)
-				try
-				{
-					reader.close();
-				}
-				catch (final Exception e1)
-				{
-					e1.printStackTrace();
-				}
-			
+			LOGGER.error("RecipeTable.RecipeTable : cant not find recipes.csv file in gameserver/data/csv/ folder. ", e);
 		}
 	}
 	
-	// TODO XMLize the recipe list
 	private void parseList(final String line)
 	{
 		try
 		{
 			StringTokenizer st = new StringTokenizer(line, ";");
-			final List<L2RecipeInstance> recipePartList = new FastList<>();
+			List<L2RecipeInstance> recipePartList = new ArrayList<>();
 			
 			// we use common/dwarf for easy reading of the recipes.csv file
 			String recipeTypeString = st.nextToken();
@@ -201,7 +128,7 @@ public class RecipeTable extends RecipeController
 			{
 				recipeList.addRecipe(recipePart);
 			}
-			_lists.put(new Integer(_lists.size()), recipeList);
+			lists.put(lists.size(), recipeList);
 			
 			recipeList = null;
 			recipeName = null;
@@ -215,32 +142,36 @@ public class RecipeTable extends RecipeController
 	
 	public int getRecipesCount()
 	{
-		return _lists.size();
+		return lists.size();
 	}
 	
 	public L2RecipeList getRecipeList(final int listId)
 	{
-		return _lists.get(listId);
+		return lists.get(listId);
 	}
 	
 	public L2RecipeList getRecipeByItemId(final int itemId)
 	{
-		for (int i = 0; i < _lists.size(); i++)
+		for (int i = 0; i < lists.size(); i++)
 		{
-			final L2RecipeList find = _lists.get(new Integer(i));
+			final L2RecipeList find = lists.get(i);
 			if (find.getRecipeId() == itemId)
+			{
 				return find;
+			}
 		}
 		return null;
 	}
 	
 	public L2RecipeList getRecipeById(final int recId)
 	{
-		for (int i = 0; i < _lists.size(); i++)
+		for (int i = 0; i < lists.size(); i++)
 		{
-			final L2RecipeList find = _lists.get(new Integer(i));
+			final L2RecipeList find = lists.get(i);
 			if (find.getId() == recId)
+			{
 				return find;
+			}
 		}
 		return null;
 	}

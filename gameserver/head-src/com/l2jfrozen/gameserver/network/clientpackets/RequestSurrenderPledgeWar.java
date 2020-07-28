@@ -1,22 +1,3 @@
-/* L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.network.clientpackets;
 
 import org.apache.log4j.Logger;
@@ -32,53 +13,57 @@ public final class RequestSurrenderPledgeWar extends L2GameClientPacket
 {
 	private static Logger LOGGER = Logger.getLogger(RequestSurrenderPledgeWar.class);
 	
-	private String _pledgeName;
-	private L2Clan _clan;
-	private L2PcInstance _activeChar;
+	private String pledgeName;
+	private L2Clan clanInstance;
+	private L2PcInstance activeChar;
 	
 	@Override
 	protected void readImpl()
 	{
-		_pledgeName = readS();
+		pledgeName = readS();
 	}
 	
 	@Override
 	protected void runImpl()
 	{
-		_activeChar = getClient().getActiveChar();
-		if (_activeChar == null)
-			return;
-		
-		_clan = _activeChar.getClan();
-		if (_clan == null)
-			return;
-		
-		final L2Clan clan = ClanTable.getInstance().getClanByName(_pledgeName);
-		if (clan == null)
+		activeChar = getClient().getActiveChar();
+		if (activeChar == null)
 		{
-			_activeChar.sendMessage("No such clan.");
-			_activeChar.sendPacket(ActionFailed.STATIC_PACKET);
 			return;
 		}
 		
-		LOGGER.info("RequestSurrenderPledgeWar by " + getClient().getActiveChar().getClan().getName() + " with " + _pledgeName);
-		
-		if (!_clan.isAtWarWith(clan.getClanId()))
+		clanInstance = activeChar.getClan();
+		if (clanInstance == null)
 		{
-			_activeChar.sendMessage("You aren't at war with this clan.");
-			_activeChar.sendPacket(ActionFailed.STATIC_PACKET);
+			return;
+		}
+		
+		final L2Clan clan = ClanTable.getInstance().getClanByName(pledgeName);
+		if (clan == null)
+		{
+			activeChar.sendMessage("No such clan.");
+			activeChar.sendPacket(ActionFailed.STATIC_PACKET);
+			return;
+		}
+		
+		LOGGER.info("RequestSurrenderPledgeWar by " + getClient().getActiveChar().getClan().getName() + " with " + pledgeName);
+		
+		if (!clanInstance.isAtWarWith(clan.getClanId()))
+		{
+			activeChar.sendMessage("You aren't at war with this clan.");
+			activeChar.sendPacket(ActionFailed.STATIC_PACKET);
 			return;
 		}
 		
 		SystemMessage msg = new SystemMessage(SystemMessageId.YOU_HAVE_SURRENDERED_TO_THE_S1_CLAN);
-		msg.addString(_pledgeName);
-		_activeChar.sendPacket(msg);
+		msg.addString(pledgeName);
+		activeChar.sendPacket(msg);
 		msg = null;
-		_activeChar.deathPenalty(false);
-		ClanTable.getInstance().deleteclanswars(_clan.getClanId(), clan.getClanId());
+		activeChar.deathPenalty(false);
+		ClanTable.getInstance().deleteClanWars(clanInstance.getClanId(), clan.getClanId());
 		/*
-		 * L2PcInstance leader = L2World.getInstance().getPlayer(clan.getLeaderName()); if(leader != null && leader.isOnline() == 0) { player.sendMessage("Clan leader isn't online."); player.sendPacket(ActionFailed.STATIC_PACKET); return; } if (leader.isTransactionInProgress()) { SystemMessage sm =
-		 * new SystemMessage(SystemMessageId.S1_IS_BUSY_TRY_LATER); sm.addString(leader.getName()); player.sendPacket(sm); return; } leader.setTransactionRequester(player); player.setTransactionRequester(leader); leader.sendPacket(new SurrenderPledgeWar(_clan.getName(),player.getName()));
+		 * L2PcInstance leader = L2World.getInstance().getPlayer(clan.getLeaderName()); if(leader != null && leader.isOnline() == 0) { player.sendMessage("Clan leader isn't online."); player.sendPacket(ActionFailed.STATIC_PACKET); return; } if (leader.isTransactionInProgress()) { SystemMessage sm = new
+		 * SystemMessage(SystemMessageId.S1_IS_BUSY_TRY_LATER); sm.addString(leader.getName()); player.sendPacket(sm); return; } leader.setTransactionRequester(player); player.setTransactionRequester(leader); leader.sendPacket(new SurrenderPledgeWar(_clan.getName(),player.getName()));
 		 */
 	}
 	

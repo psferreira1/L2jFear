@@ -1,23 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.model;
 
 /**
@@ -27,26 +7,26 @@ package com.l2jfrozen.gameserver.model;
 public final class L2SkillLearn
 {
 	// these two build the primary key
-	private final int _id;
-	private final int _level;
+	private final int id;
+	private final int level;
 	
 	// not needed, just for easier debug
-	private final String _name;
+	private final String name;
 	
-	private final int _spCost;
-	private final int _minLevel;
-	private final int _costid;
-	private final int _costcount;
+	private final int spCost;
+	private final int minLevel;
+	private final int costId;
+	private final int costCount;
 	
 	public L2SkillLearn(final int id, final int lvl, final int minLvl, final String name, final int cost, final int costid, final int costcount)
 	{
-		_id = id;
-		_level = lvl;
-		_minLevel = minLvl;
-		_name = name.intern();
-		_spCost = cost;
-		_costid = costid;
-		_costcount = costcount;
+		this.id = id;
+		level = lvl;
+		minLevel = minLvl;
+		this.name = name.intern();
+		spCost = cost;
+		costId = costid;
+		costCount = costcount;
 	}
 	
 	/**
@@ -54,7 +34,7 @@ public final class L2SkillLearn
 	 */
 	public int getId()
 	{
-		return _id;
+		return id;
 	}
 	
 	/**
@@ -62,7 +42,7 @@ public final class L2SkillLearn
 	 */
 	public int getLevel()
 	{
-		return _level;
+		return level;
 	}
 	
 	/**
@@ -70,7 +50,7 @@ public final class L2SkillLearn
 	 */
 	public int getMinLevel()
 	{
-		return _minLevel;
+		return minLevel;
 	}
 	
 	/**
@@ -78,7 +58,7 @@ public final class L2SkillLearn
 	 */
 	public String getName()
 	{
-		return _name;
+		return name;
 	}
 	
 	/**
@@ -86,16 +66,16 @@ public final class L2SkillLearn
 	 */
 	public int getSpCost()
 	{
-		return _spCost;
+		return spCost;
 	}
 	
 	public int getIdCost()
 	{
-		return _costid;
+		return costId;
 	}
 	
 	public int getCostCount()
 	{
-		return _costcount;
+		return costCount;
 	}
 }

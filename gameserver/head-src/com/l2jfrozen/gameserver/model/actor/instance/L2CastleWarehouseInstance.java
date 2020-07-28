@@ -118,10 +118,6 @@ public class L2CastleWarehouseInstance extends L2FolkInstance
 		}
 	}
 	
-	/*
-	 * (non-Javadoc)
-	 * @see com.l2jfrozen.gameserver.model.actor.instance.L2FolkInstance#onBypassFeedback(com.l2jfrozen.gameserver.model.actor.instance.L2PcInstance, java.lang.String)
-	 */
 	@Override
 	public void onBypassFeedback(final L2PcInstance player, final String command)
 	{
@@ -158,7 +154,9 @@ public class L2CastleWarehouseInstance extends L2FolkInstance
 			catch (IndexOutOfBoundsException | NumberFormatException ioobe)
 			{
 				if (Config.ENABLE_ALL_EXCEPTIONS)
+				{
 					ioobe.printStackTrace();
+				}
 			}
 			showChatWindow(player, val);
 		}
@@ -168,10 +166,6 @@ public class L2CastleWarehouseInstance extends L2FolkInstance
 		}
 	}
 	
-	/*
-	 * (non-Javadoc)
-	 * @see com.l2jfrozen.gameserver.model.actor.instance.L2NpcInstance#showChatWindow(com.l2jfrozen.gameserver.model.actor.instance.L2PcInstance, int)
-	 */
 	@Override
 	public void showChatWindow(final L2PcInstance player, final int val)
 	{
@@ -209,21 +203,27 @@ public class L2CastleWarehouseInstance extends L2FolkInstance
 	
 	/**
 	 * Validate condition.
-	 * @param player the player
-	 * @return the int
+	 * @param  player the player
+	 * @return        the int
 	 */
 	protected int validateCondition(final L2PcInstance player)
 	{
 		if (player.isGM())
+		{
 			return COND_OWNER;
+		}
 		if (getCastle() != null && getCastle().getCastleId() > 0)
 		{
 			if (player.getClan() != null)
 			{
 				if (getCastle().getSiege().getIsInProgress())
+				{
 					return COND_BUSY_BECAUSE_OF_SIEGE; // Busy because of siege
-				else if (getCastle().getOwnerId() == player.getClanId()) // Clan owns castle
+				}
+				else if (getCastle().getOwnerId() == player.getClanId())
+				{
 					return COND_OWNER;
+				}
 			}
 		}
 		return COND_ALL_FALSE;

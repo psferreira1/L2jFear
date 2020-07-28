@@ -12,7 +12,7 @@ import com.l2jfrozen.gameserver.skills.Stats;
 
 public class ConditionTargetWeight extends Condition
 {
-	private final int _weight;
+	private final int weight;
 	
 	/**
 	 * Instantiates a new condition player weight.
@@ -20,7 +20,7 @@ public class ConditionTargetWeight extends Condition
 	 */
 	public ConditionTargetWeight(final int weight)
 	{
-		_weight = weight;
+		this.weight = weight;
 	}
 	
 	@Override
@@ -33,7 +33,7 @@ public class ConditionTargetWeight extends Condition
 			if (!target.getDietMode() && (target.getMaxLoad() > 0))
 			{
 				final int weightproc = (int) (((target.getCurrentLoad() - target.calcStat(Stats.WEIGHT_PENALTY, 1, target, null)) * 100) / target.getMaxLoad());
-				return (weightproc < _weight);
+				return (weightproc < weight);
 			}
 		}
 		return false;

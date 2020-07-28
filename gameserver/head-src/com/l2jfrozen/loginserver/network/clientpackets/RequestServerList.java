@@ -1,23 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.loginserver.network.clientpackets;
 
 import com.l2jfrozen.loginserver.network.serverpackets.LoginFail.LoginFailReason;
@@ -28,16 +8,16 @@ import com.l2jfrozen.loginserver.network.serverpackets.ServerList;
  */
 public class RequestServerList extends L2LoginClientPacket
 {
-	private int _skey1;
-	private int _skey2;
-	private int _data3;
+	private int skey1;
+	private int skey2;
+	private int data3;
 	
 	/**
 	 * @return
 	 */
 	public int getSessionKey1()
 	{
-		return _skey1;
+		return skey1;
 	}
 	
 	/**
@@ -45,7 +25,7 @@ public class RequestServerList extends L2LoginClientPacket
 	 */
 	public int getSessionKey2()
 	{
-		return _skey2;
+		return skey2;
 	}
 	
 	/**
@@ -53,16 +33,16 @@ public class RequestServerList extends L2LoginClientPacket
 	 */
 	public int getData3()
 	{
-		return _data3;
+		return data3;
 	}
 	
 	@Override
 	public boolean readImpl()
 	{
-		if (super._buf.remaining() >= 8)
+		if (super.buf.remaining() >= 8)
 		{
-			_skey1 = readD(); // loginOk 1
-			_skey2 = readD(); // loginOk 2
+			skey1 = readD(); // loginOk 1
+			skey2 = readD(); // loginOk 2
 			return true;
 		}
 		return false;
@@ -71,7 +51,7 @@ public class RequestServerList extends L2LoginClientPacket
 	@Override
 	public void run()
 	{
-		if (getClient().getSessionKey().checkLoginPair(_skey1, _skey2))
+		if (getClient().getSessionKey().checkLoginPair(skey1, skey2))
 		{
 			getClient().sendPacket(new ServerList(getClient()));
 		}

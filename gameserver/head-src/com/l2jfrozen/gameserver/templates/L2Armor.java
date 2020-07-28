@@ -1,28 +1,7 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.templates;
 
+import java.util.ArrayList;
 import java.util.List;
-
-import javolution.util.FastList;
 
 import com.l2jfrozen.gameserver.datatables.SkillTable;
 import com.l2jfrozen.gameserver.model.L2Character;
@@ -38,36 +17,38 @@ import com.l2jfrozen.gameserver.skills.funcs.FuncTemplate;
  */
 public final class L2Armor extends L2Item
 {
-	private final int _avoidModifier;
-	private final int _pDef;
-	private final int _mDef;
-	private final int _mpBonus;
-	private final int _hpBonus;
-	private L2Skill _itemSkill = null; // for passive skill
+	private final int avoidModifier;
+	private final int pDef;
+	private final int mDef;
+	private final int mpBonus;
+	private final int hpBonus;
+	private L2Skill itemSkill = null; // for passive skill
 	
 	/**
 	 * Constructor for Armor.<BR>
 	 * <BR>
 	 * <U><I>Variables filled :</I></U><BR>
-	 * <LI>_avoidModifier</LI> <LI>_pDef & _mDef</LI> <LI>_mpBonus & _hpBonus</LI>
+	 * <LI>avoidModifier</LI>
+	 * <LI>pDef & mDef</LI>
+	 * <LI>mpBonus & hpBonus</LI>
 	 * @param type : L2ArmorType designating the type of armor
-	 * @param set : StatsSet designating the set of couples (key,value) caracterizing the armor
-	 * @see L2Item constructor
+	 * @param set  : StatsSet designating the set of couples (key,value) caracterizing the armor
+	 * @see        L2Item constructor
 	 */
 	public L2Armor(final L2ArmorType type, final StatsSet set)
 	{
 		super(type, set);
-		_avoidModifier = set.getInteger("avoid_modify");
-		_pDef = set.getInteger("p_def");
-		_mDef = set.getInteger("m_def");
-		_mpBonus = set.getInteger("mp_bonus", 0);
-		_hpBonus = set.getInteger("hp_bonus", 0);
+		avoidModifier = set.getInteger("avoid_modify");
+		pDef = set.getInteger("p_def");
+		mDef = set.getInteger("m_def");
+		mpBonus = set.getInteger("mp_bonus", 0);
+		hpBonus = set.getInteger("hp_bonus", 0);
 		
 		final int sId = set.getInteger("item_skill_id");
 		final int sLv = set.getInteger("item_skill_lvl");
 		if (sId > 0 && sLv > 0)
 		{
-			_itemSkill = SkillTable.getInstance().getInfo(sId, sLv);
+			itemSkill = SkillTable.getInstance().getInfo(sId, sLv);
 		}
 	}
 	
@@ -78,7 +59,7 @@ public final class L2Armor extends L2Item
 	@Override
 	public L2ArmorType getItemType()
 	{
-		return (L2ArmorType) super._type;
+		return (L2ArmorType) super.type;
 	}
 	
 	/**
@@ -97,7 +78,7 @@ public final class L2Armor extends L2Item
 	 */
 	public final int getMDef()
 	{
-		return _mDef;
+		return mDef;
 	}
 	
 	/**
@@ -106,7 +87,7 @@ public final class L2Armor extends L2Item
 	 */
 	public final int getPDef()
 	{
-		return _pDef;
+		return pDef;
 	}
 	
 	/**
@@ -115,7 +96,7 @@ public final class L2Armor extends L2Item
 	 */
 	public final int getAvoidModifier()
 	{
-		return _avoidModifier;
+		return avoidModifier;
 	}
 	
 	/**
@@ -124,7 +105,7 @@ public final class L2Armor extends L2Item
 	 */
 	public final int getMpBonus()
 	{
-		return _mpBonus;
+		return mpBonus;
 	}
 	
 	/**
@@ -133,7 +114,7 @@ public final class L2Armor extends L2Item
 	 */
 	public final int getHpBonus()
 	{
-		return _hpBonus;
+		return hpBonus;
 	}
 	
 	/**
@@ -142,22 +123,22 @@ public final class L2Armor extends L2Item
 	 */
 	public L2Skill getSkill()
 	{
-		return _itemSkill;
+		return itemSkill;
 	}
 	
 	/**
 	 * Returns array of Func objects containing the list of functions used by the armor
-	 * @param instance : L2ItemInstance pointing out the armor
-	 * @param player : L2Character pointing out the player
-	 * @return Func[] : array of functions
+	 * @param  instance : L2ItemInstance pointing out the armor
+	 * @param  player   : L2Character pointing out the player
+	 * @return          Func[] : array of functions
 	 */
 	@Override
 	public Func[] getStatFuncs(final L2ItemInstance instance, final L2Character player)
 	{
-		final List<Func> funcs = new FastList<>();
-		if (_funcTemplates != null)
+		final List<Func> funcs = new ArrayList<>();
+		if (funcTemplates != null)
 		{
-			for (final FuncTemplate t : _funcTemplates)
+			for (final FuncTemplate t : funcTemplates)
 			{
 				final Env env = new Env();
 				env.player = player;

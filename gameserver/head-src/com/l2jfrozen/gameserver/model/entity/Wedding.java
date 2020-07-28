@@ -1,23 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.model.entity;
 
 import java.sql.Connection;
@@ -27,11 +7,8 @@ import java.util.Calendar;
 
 import org.apache.log4j.Logger;
 
-import com.l2jfrozen.Config;
 import com.l2jfrozen.gameserver.idfactory.IdFactory;
 import com.l2jfrozen.gameserver.model.actor.instance.L2PcInstance;
-import com.l2jfrozen.util.CloseUtil;
-import com.l2jfrozen.util.database.DatabaseUtils;
 import com.l2jfrozen.util.database.L2DatabaseFactory;
 
 /**
@@ -39,217 +16,155 @@ import com.l2jfrozen.util.database.L2DatabaseFactory;
  */
 public class Wedding
 {
-	protected static final Logger LOGGER = Logger.getLogger(Wedding.class);
+	private static final Logger LOGGER = Logger.getLogger(Wedding.class);
+	private static final String SELECT_WEDDING_INFO_BY_ID = "SELECT id, player1Id, player2Id, married, affianceDate, weddingDate, coupleType FROM mods_wedding WHERE id=?";
+	private static final String INSERT_ENGAGE_COUPLE_DATA = "INSERT INTO mods_wedding (id, player1Id, player2Id, married, affianceDate, weddingDate) VALUES (?,?,?,?,?,?)";
+	private static final String UPDATE_COUPLE_WEDDING = "UPDATE mods_wedding SET married= ?,weddingDate=?, coupleType=? WHERE id=?";
+	private static final String DELETE_COUPLE_WEDDING = "DELETE FROM mods_wedding WHERE id=?";
 	
-	// =========================================================
-	// Data Field
-	private int _Id = 0;
-	private int _player1Id = 0;
-	private int _player2Id = 0;
-	private boolean _maried = false;
-	private Calendar _affiancedDate;
-	private Calendar _weddingDate;
-	private int _type = 0;
+	private int id = 0;
+	private int player1Id = 0;
+	private int player2Id = 0;
+	private boolean married = false;
+	private Calendar affiancedDate;
+	private Calendar weddingDate;
+	private int weddingType = 0;
 	
-	// =========================================================
-	// Constructor
-	public Wedding(final int coupleId)
+	public Wedding(int coupleId)
 	{
-		_Id = coupleId;
+		id = coupleId;
 		
-		Connection con = null;
-		try
+		try (Connection con = L2DatabaseFactory.getInstance().getConnection();
+			PreparedStatement statement = con.prepareStatement(SELECT_WEDDING_INFO_BY_ID))
 		{
-			PreparedStatement statement;
-			ResultSet rs;
+			statement.setInt(1, id);
 			
-			con = L2DatabaseFactory.getInstance().getConnection(false);
-			
-			statement = con.prepareStatement("Select * from mods_wedding where id = ?");
-			statement.setInt(1, _Id);
-			rs = statement.executeQuery();
-			
-			while (rs.next())
+			try (ResultSet rs = statement.executeQuery())
 			{
-				_player1Id = rs.getInt("player1Id");
-				_player2Id = rs.getInt("player2Id");
-				_maried = rs.getBoolean("married");
-				
-				_affiancedDate = Calendar.getInstance();
-				_affiancedDate.setTimeInMillis(rs.getLong("affianceDate"));
-				
-				_weddingDate = Calendar.getInstance();
-				_weddingDate.setTimeInMillis(rs.getLong("weddingDate"));
-				
-				_type = rs.getInt("coupleType");
+				while (rs.next())
+				{
+					player1Id = rs.getInt("player1Id");
+					player2Id = rs.getInt("player2Id");
+					married = rs.getBoolean("married");
+					
+					affiancedDate = Calendar.getInstance();
+					affiancedDate.setTimeInMillis(rs.getLong("affianceDate"));
+					
+					weddingDate = Calendar.getInstance();
+					weddingDate.setTimeInMillis(rs.getLong("weddingDate"));
+					
+					weddingType = rs.getInt("coupleType");
+				}
 			}
-			rs.close();
-			DatabaseUtils.close(statement);
-			statement = null;
-			rs = null;
 		}
-		catch (final Exception e)
+		catch (Exception e)
 		{
-			if (Config.ENABLE_ALL_EXCEPTIONS)
-				e.printStackTrace();
-			
-			LOGGER.error("Exception: Couple.load(): " + e.getMessage(), e);
-		}
-		finally
-		{
-			CloseUtil.close(con);
-			con = null;
+			LOGGER.error("Wedding.Wedding : Something wrong while getting couple data from mods_wedding table. ", e);
 		}
 	}
 	
-	public Wedding(final L2PcInstance player1, final L2PcInstance player2)
+	public Wedding(L2PcInstance player1, L2PcInstance player2)
 	{
-		final int _tempPlayer1Id = player1.getObjectId();
-		final int _tempPlayer2Id = player2.getObjectId();
+		int tempPlayer1Id = player1.getObjectId();
+		int tempPlayer2Id = player2.getObjectId();
 		
-		_player1Id = _tempPlayer1Id;
-		_player2Id = _tempPlayer2Id;
+		player1Id = tempPlayer1Id;
+		player2Id = tempPlayer2Id;
 		
-		_affiancedDate = Calendar.getInstance();
-		_affiancedDate.setTimeInMillis(Calendar.getInstance().getTimeInMillis());
+		affiancedDate = Calendar.getInstance();
+		affiancedDate.setTimeInMillis(Calendar.getInstance().getTimeInMillis());
 		
-		_weddingDate = Calendar.getInstance();
-		_weddingDate.setTimeInMillis(Calendar.getInstance().getTimeInMillis());
+		weddingDate = Calendar.getInstance();
+		weddingDate.setTimeInMillis(Calendar.getInstance().getTimeInMillis());
 		
-		Connection con = null;
-		
-		try
+		try (Connection con = L2DatabaseFactory.getInstance().getConnection();
+			PreparedStatement statement = con.prepareStatement(INSERT_ENGAGE_COUPLE_DATA))
 		{
-			con = L2DatabaseFactory.getInstance().getConnection(false);
-			PreparedStatement statement;
+			id = IdFactory.getInstance().getNextId();
+			// Couple just engaged
+			married = false;
 			
-			_Id = IdFactory.getInstance().getNextId();
-			
-			statement = con.prepareStatement("INSERT INTO mods_wedding (id, player1Id, player2Id, married, affianceDate, weddingDate) VALUES (?, ?, ?, ?, ?, ?)");
-			statement.setInt(1, _Id);
-			statement.setInt(2, _player1Id);
-			statement.setInt(3, _player2Id);
-			statement.setBoolean(4, false);
-			statement.setLong(5, _affiancedDate.getTimeInMillis());
-			statement.setLong(6, _weddingDate.getTimeInMillis());
-			statement.execute();
-			DatabaseUtils.close(statement);
-			statement = null;
-			
-			_maried = true;
-			
+			statement.setInt(1, id);
+			statement.setInt(2, player1Id);
+			statement.setInt(3, player2Id);
+			statement.setBoolean(4, married);
+			statement.setLong(5, affiancedDate.getTimeInMillis());
+			statement.setLong(6, weddingDate.getTimeInMillis());
+			statement.executeUpdate();
 		}
-		catch (final Exception e)
+		catch (Exception e)
 		{
-			if (Config.ENABLE_ALL_EXCEPTIONS)
-				e.printStackTrace();
-			
-			LOGGER.error("", e);
-		}
-		finally
-		{
-			CloseUtil.close(con);
-			con = null;
+			LOGGER.error("Wedding.Wedding(param,param2) : Can not insert engage couple data into mods_wedding table. ", e);
 		}
 	}
 	
-	public void marry(final int type)
+	public void marry(int type)
 	{
-		_type = type;
-		Connection con = null;
-		try
+		weddingType = type;
+		
+		try (Connection con = L2DatabaseFactory.getInstance().getConnection();
+			PreparedStatement statement = con.prepareStatement(UPDATE_COUPLE_WEDDING))
 		{
-			con = L2DatabaseFactory.getInstance().getConnection(false);
-			PreparedStatement statement;
-			
-			statement = con.prepareStatement("UPDATE mods_wedding set married = ?, weddingDate = ?, coupleType = ? where id = ?");
-			statement.setBoolean(1, true);
-			
-			_weddingDate = Calendar.getInstance();
-			
-			statement.setLong(2, _weddingDate.getTimeInMillis());
-			statement.setInt(3, _type);
-			statement.setInt(4, _Id);
-			statement.execute();
-			DatabaseUtils.close(statement);
-			statement = null;
-			
-			_maried = true;
+			married = true;
+			statement.setBoolean(1, married);
+			weddingDate = Calendar.getInstance();
+			statement.setLong(2, weddingDate.getTimeInMillis());
+			statement.setInt(3, weddingType);
+			statement.setInt(4, id);
+			statement.executeUpdate();
 		}
-		catch (final Exception e)
+		catch (Exception e)
 		{
-			if (Config.ENABLE_ALL_EXCEPTIONS)
-				e.printStackTrace();
-			
-			LOGGER.error("", e);
-		}
-		finally
-		{
-			CloseUtil.close(con);
-			con = null;
+			LOGGER.error("Wedding.marry : Can not update couple wedding data into mods_wedding table. ", e);
 		}
 	}
 	
 	public void divorce()
 	{
-		Connection con = null;
-		try
+		try (Connection con = L2DatabaseFactory.getInstance().getConnection();
+			PreparedStatement statement = con.prepareStatement(DELETE_COUPLE_WEDDING))
 		{
-			con = L2DatabaseFactory.getInstance().getConnection(false);
-			PreparedStatement statement;
-			
-			statement = con.prepareStatement("DELETE FROM mods_wedding WHERE id=?");
-			statement.setInt(1, _Id);
-			statement.execute();
-			DatabaseUtils.close(statement);
-			statement = null;
+			statement.setInt(1, id);
+			statement.executeUpdate();
 		}
-		catch (final Exception e)
+		catch (Exception e)
 		{
-			if (Config.ENABLE_ALL_EXCEPTIONS)
-				e.printStackTrace();
-			
-			LOGGER.error("Exception: Couple.divorce(): " + e.getMessage(), e);
-		}
-		finally
-		{
-			CloseUtil.close(con);
-			con = null;
+			LOGGER.error("Wedding.divorce : Can not delete couple wedding data from mods_wedding table. ", e);
 		}
 	}
 	
-	public final int getId()
+	public int getId()
 	{
-		return _Id;
+		return id;
 	}
 	
-	public final int getPlayer1Id()
+	public int getPlayer1Id()
 	{
-		return _player1Id;
+		return player1Id;
 	}
 	
-	public final int getPlayer2Id()
+	public int getPlayer2Id()
 	{
-		return _player2Id;
+		return player2Id;
 	}
 	
-	public final boolean getMaried()
+	public boolean getMaried()
 	{
-		return _maried;
+		return married;
 	}
 	
-	public final Calendar getAffiancedDate()
+	public Calendar getAffiancedDate()
 	{
-		return _affiancedDate;
+		return affiancedDate;
 	}
 	
-	public final Calendar getWeddingDate()
+	public Calendar getWeddingDate()
 	{
-		return _weddingDate;
+		return weddingDate;
 	}
 	
-	public final int getType()
+	public int getType()
 	{
-		return _type;
+		return weddingType;
 	}
 }

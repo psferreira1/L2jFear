@@ -1,85 +1,74 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any later
- * version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
- *
- * You should have received a copy of the GNU General Public License along with
- * this program. If not, see <http://www.gnu.org/licenses/>.
- */
 package com.l2jfrozen.gameserver.datatables.sql;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.io.File;
+import java.util.HashMap;
 import java.util.Map;
 
-import javolution.util.FastMap;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.apache.log4j.Logger;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
-import com.l2jfrozen.Config;
 import com.l2jfrozen.gameserver.datatables.AccessLevel;
-import com.l2jfrozen.util.CloseUtil;
-import com.l2jfrozen.util.database.DatabaseUtils;
-import com.l2jfrozen.util.database.L2DatabaseFactory;
 
 /**
- * @author FBIagent<br>
+ * @author FBIagent
+ * @author ReynalDev
+ * @author Visor123 L2EMU
  */
 public class AdminCommandAccessRights
 {
-	/** The logger<br> */
 	protected static final Logger LOGGER = Logger.getLogger(AdminCommandAccessRights.class);
+	private static AdminCommandAccessRights instance = null;
 	
-	/** The one and only instance of this class, retriveable by getInstance()<br> */
-	private static AdminCommandAccessRights _instance = null;
+	private Map<String, Integer> adminCommandAccessRights = new HashMap<>();
 	
-	/** The access rights<br> */
-	private final Map<String, Integer> adminCommandAccessRights = new FastMap<>();
-	
-	/**
-	 * Loads admin command access rights from database<br>
-	 */
 	private AdminCommandAccessRights()
 	{
-		Connection con = null;
-		
+		loadData();
+	}
+	
+	private void loadData()
+	{
+		String path = "config/access_level/adminCommands.xml";
 		try
 		{
-			con = L2DatabaseFactory.getInstance().getConnection(false);
-			final PreparedStatement stmt = con.prepareStatement("SELECT * FROM admin_command_access_rights");
-			final ResultSet rset = stmt.executeQuery();
-			String adminCommand = null;
-			int accessLevels = 1;
+			File fXmlFile = new File(path);
+			DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+			DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+			Document doc = dBuilder.parse(fXmlFile);
 			
-			while (rset.next())
+			// optional, but recommended read this - http://stackoverflow.com/questions/13786607/normalization-in-dom-parsing-with-java-how-does-it-work
+			doc.getDocumentElement().normalize();
+			
+			NodeList nList = doc.getElementsByTagName("admin");
+			
+			for (int temp = 0; temp < nList.getLength(); temp++)
 			{
-				adminCommand = rset.getString("adminCommand");
-				accessLevels = rset.getInt("accessLevels");
-				adminCommandAccessRights.put(adminCommand, accessLevels);
+				Node nNode = nList.item(temp);
+				
+				if (nNode.getNodeType() == Node.ELEMENT_NODE)
+				{
+					Element element = (Element) nNode;
+					
+					String command = element.getAttribute("command");
+					int accessLevel = Integer.parseInt(element.getAttribute("accessLevel"));
+					
+					adminCommandAccessRights.put(command, accessLevel);
+				}
 			}
-			DatabaseUtils.close(rset);
-			stmt.close();
+			
+			LOGGER.info("Admin Access Rights: Loaded " + adminCommandAccessRights.size() + " Access Rigths from database.");
+			
 		}
-		catch (final SQLException e)
+		catch (Exception e)
 		{
-			LOGGER.error("Admin Access Rights: Error loading from database", e);
+			LOGGER.error("Could not read " + path, e);
 		}
-		finally
-		{
-			CloseUtil.close(con);
-		}
-		
-		LOGGER.info("Admin Access Rights: Loaded " + adminCommandAccessRights.size() + " Access Rigths from database.");
 	}
 	
 	/**
@@ -89,12 +78,12 @@ public class AdminCommandAccessRights
 	 */
 	public static AdminCommandAccessRights getInstance()
 	{
-		return _instance == null ? (_instance = new AdminCommandAccessRights()) : _instance;
+		return instance == null ? (instance = new AdminCommandAccessRights()) : instance;
 	}
 	
 	public static void reload()
 	{
-		_instance = null;
+		instance = null;
 		getInstance();
 	}
 	
@@ -110,39 +99,48 @@ public class AdminCommandAccessRights
 		return out;
 	}
 	
-	public boolean hasAccess(final String adminCommand, final AccessLevel accessLevel)
+	public boolean hasAccess(String adminCommand, AccessLevel accessLevel)
 	{
-		if (accessLevel.getLevel() <= 0)
-			return false;
-		
 		if (!accessLevel.isGm())
+		{
 			return false;
+		}
 		
-		if (accessLevel.getLevel() == Config.MASTERACCESS_LEVEL)
+		if (accessLevel.getLevel() <= AccessLevels.getInstance().getUserAccessLevel().getLevel())
+		{
+			return false;
+		}
+		
+		if (accessLevel.getLevel() == AccessLevels.getInstance().getMasterAccessLevel().getLevel())
+		{
 			return true;
+		}
 		
-		// L2EMU_ADD - Visor123 need parse command before check
 		String command = adminCommand;
 		if (adminCommand.indexOf(" ") != -1)
 		{
 			command = adminCommand.substring(0, adminCommand.indexOf(" "));
 		}
-		// L2EMU_ADD
 		
-		int acar = 0;
+		int accessLevelForComand = 0;
+		
 		if (adminCommandAccessRights.get(command) != null)
 		{
-			acar = adminCommandAccessRights.get(command);
+			accessLevelForComand = adminCommandAccessRights.get(command);
 		}
 		
-		if (acar == 0)
+		if (accessLevelForComand == 0)
 		{
-			LOGGER.warn("Admin Access Rights: No rights defined for admin command {}." + " " + command);
+			LOGGER.warn("Admin Access Rights: No rights defined for admin command " + command);
 			return false;
 		}
-		else if (acar >= accessLevel.getLevel())
+		else if (accessLevelForComand <= accessLevel.getLevel())
+		{
 			return true;
+		}
 		else
+		{
 			return false;
+		}
 	}
 }

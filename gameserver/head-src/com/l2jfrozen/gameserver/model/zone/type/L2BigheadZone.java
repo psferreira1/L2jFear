@@ -1,22 +1,3 @@
-/* L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.model.zone.type;
 
 import com.l2jfrozen.gameserver.model.L2Character;
@@ -24,44 +5,42 @@ import com.l2jfrozen.gameserver.model.actor.instance.L2PcInstance;
 import com.l2jfrozen.gameserver.model.zone.L2ZoneType;
 
 /**
- * Bighead zones give entering players big heads
  * @author durgus
  */
-public class L2BigheadZone extends L2ZoneType
+public class L2BigHeadZone extends L2ZoneType
 {
-	public L2BigheadZone(final int id)
+	public L2BigHeadZone(int id)
 	{
 		super(id);
 	}
 	
 	@Override
-	protected void onEnter(final L2Character character)
+	protected void onEnter(L2Character character)
 	{
 		if (character instanceof L2PcInstance)
 		{
-			character.startAbnormalEffect(0x2000);
+			character.startAbnormalEffect(L2Character.ABNORMAL_EFFECT_BIG_HEAD);
 		}
 	}
 	
 	@Override
-	protected void onExit(final L2Character character)
+	protected void onExit(L2Character character)
 	{
 		if (character instanceof L2PcInstance)
 		{
-			character.stopAbnormalEffect((short) 0x2000);
+			character.stopAbnormalEffect(L2Character.ABNORMAL_EFFECT_BIG_HEAD);
 		}
 	}
 	
 	@Override
-	protected void onDieInside(final L2Character character)
+	protected void onDieInside(L2Character character)
 	{
 		onExit(character);
 	}
 	
 	@Override
-	protected void onReviveInside(final L2Character character)
+	protected void onReviveInside(L2Character character)
 	{
 		onEnter(character);
 	}
-	
 }

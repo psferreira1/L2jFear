@@ -1,23 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.handler.skillhandlers;
 
 import com.l2jfrozen.Config;
@@ -29,10 +9,6 @@ import com.l2jfrozen.gameserver.model.L2Object;
 import com.l2jfrozen.gameserver.model.L2Skill;
 import com.l2jfrozen.gameserver.model.L2Skill.SkillType;
 import com.l2jfrozen.gameserver.model.actor.instance.L2PcInstance;
-import com.l2jfrozen.gameserver.model.entity.event.CTF;
-import com.l2jfrozen.gameserver.model.entity.event.DM;
-import com.l2jfrozen.gameserver.model.entity.event.TvT;
-import com.l2jfrozen.gameserver.model.entity.event.VIP;
 import com.l2jfrozen.gameserver.network.SystemMessageId;
 import com.l2jfrozen.gameserver.network.serverpackets.SystemMessage;
 
@@ -55,7 +31,7 @@ public class Recall implements ISkillHandler
 				
 				if (instance.isInOlympiadMode())
 				{
-					activeChar.sendPacket(new SystemMessage(SystemMessageId.THIS_ITEM_IS_NOT_AVAILABLE_FOR_THE_OLYMPIAD_EVENT));
+					activeChar.sendPacket(new SystemMessage(SystemMessageId.THIS_SKILL_IS_NOT_AVAILABLE_FOR_THE_OLYMPIAD_EVENT));
 					return;
 				}
 				
@@ -82,7 +58,9 @@ public class Recall implements ISkillHandler
 			for (final L2Object target1 : targets)
 			{
 				if (!(target1 instanceof L2Character))
+				{
 					continue;
+				}
 				
 				L2Character target = (L2Character) target1;
 				
@@ -96,7 +74,7 @@ public class Recall implements ISkillHandler
 						continue;
 					}
 					
-					if ((targetChar._inEventCTF && CTF.is_started()) || (targetChar._inEventTvT && TvT.is_started()) || (targetChar._inEventDM && DM.is_started()) || (targetChar._inEventVIP && VIP._started))
+					if (targetChar.isInFunEvent())
 					{
 						targetChar.sendMessage("You can't use escape skill in Event.");
 						continue;
@@ -133,8 +111,8 @@ public class Recall implements ISkillHandler
 					}
 					
 					/*
-					 * Like L2OFF player can be recalled also if he is on combat/rooted if(targetChar.isRooted() || targetChar.isInCombat()) { SystemMessage sm = new SystemMessage(SystemMessageId.S1_IS_ENGAGED_IN_COMBAT_AND_CANNOT_BE_SUMMONED); sm.addString(targetChar.getName());
-					 * activeChar.sendPacket(sm); sm = null; continue; }
+					 * Like L2OFF player can be recalled also if he is on combat/rooted if(targetChar.isRooted() || targetChar.isInCombat()) { SystemMessage sm = new SystemMessage(SystemMessageId.S1_IS_ENGAGED_IN_COMBAT_AND_CANNOT_BE_SUMMONED); sm.addString(targetChar.getName()); activeChar.sendPacket(sm); sm = null;
+					 * continue; }
 					 */
 					
 					if (GrandBossManager.getInstance().getZone(targetChar) != null && !targetChar.isGM())
@@ -163,20 +141,28 @@ public class Recall implements ISkillHandler
 			if (skill.isMagic() && skill.useSpiritShot())
 			{
 				if (activeChar.checkBss())
+				{
 					activeChar.removeBss();
+				}
 				if (activeChar.checkSps())
+				{
 					activeChar.removeSps();
+				}
 			}
 			else if (skill.useSoulShot())
 			{
 				if (activeChar.checkSs())
+				{
 					activeChar.removeSs();
+				}
 			}
 		}
 		catch (final Throwable e)
 		{
 			if (Config.ENABLE_ALL_EXCEPTIONS)
+			{
 				e.printStackTrace();
+			}
 		}
 	}
 	

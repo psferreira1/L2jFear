@@ -1,28 +1,7 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.communitybbs;
 
+import java.util.HashMap;
 import java.util.Map;
-
-import javolution.util.FastMap;
 
 import com.l2jfrozen.Config;
 import com.l2jfrozen.gameserver.cache.HtmCache;
@@ -41,23 +20,22 @@ import com.l2jfrozen.gameserver.network.serverpackets.SystemMessage;
 
 public class CommunityBoard
 {
-	private static CommunityBoard _instance;
-	private final Map<String, IBBSHandler> _handlers;
+	private static CommunityBoard instance;
+	private final Map<String, IBBSHandler> handlers;
 	
 	public CommunityBoard()
 	{
-		_handlers = new FastMap<>();
-		// null;
+		handlers = new HashMap<>();
 	}
 	
 	public static CommunityBoard getInstance()
 	{
-		if (_instance == null)
+		if (instance == null)
 		{
-			_instance = new CommunityBoard();
+			instance = new CommunityBoard();
 		}
 		
-		return _instance;
+		return instance;
 	}
 	
 	/**
@@ -68,7 +46,7 @@ public class CommunityBoard
 	{
 		for (final String s : handler.getBBSCommands())
 		{
-			_handlers.put(s, handler);
+			handlers.put(s, handler);
 		}
 	}
 	
@@ -82,7 +60,9 @@ public class CommunityBoard
 		L2PcInstance activeChar = client.getActiveChar();
 		
 		if (activeChar == null)
+		{
 			return;
+		}
 		
 		if (Config.COMMUNITY_TYPE.equals("full"))
 		{
@@ -95,7 +75,7 @@ public class CommunityBoard
 				cmd = cmd.substring(0, iPos);
 				
 			}
-			final IBBSHandler bbsh = _handlers.get(cmd);
+			final IBBSHandler bbsh = handlers.get(cmd);
 			if (bbsh != null)
 			{
 				bbsh.handleCommand(cmd, activeChar, params);
@@ -187,7 +167,9 @@ public class CommunityBoard
 		L2PcInstance activeChar = client.getActiveChar();
 		
 		if (activeChar == null)
+		{
 			return;
+		}
 		
 		if (Config.COMMUNITY_TYPE.equals("full"))
 		{

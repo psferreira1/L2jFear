@@ -1,25 +1,4 @@
-/* L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.model.actor.instance;
-
-import javolution.text.TextBuilder;
 
 import com.l2jfrozen.Config;
 import com.l2jfrozen.gameserver.datatables.SkillTable;
@@ -36,13 +15,14 @@ import com.l2jfrozen.gameserver.network.serverpackets.NpcHtmlMessage;
 import com.l2jfrozen.gameserver.network.serverpackets.SystemMessage;
 import com.l2jfrozen.gameserver.templates.L2NpcTemplate;
 
+import javolution.text.TextBuilder;
+
 /**
  * The Class L2FolkInstance.
  */
 public class L2FolkInstance extends L2NpcInstance
 {
-	/** The _classes to teach. */
-	private final ClassId[] _classesToTeach;
+	private final ClassId[] classesToTeach;
 	
 	/**
 	 * Instantiates a new l2 folk instance.
@@ -52,13 +32,9 @@ public class L2FolkInstance extends L2NpcInstance
 	public L2FolkInstance(final int objectId, final L2NpcTemplate template)
 	{
 		super(objectId, template);
-		_classesToTeach = template.getTeachInfo();
+		classesToTeach = template.getTeachInfo();
 	}
 	
-	/*
-	 * (non-Javadoc)
-	 * @see com.l2jfrozen.gameserver.model.actor.instance.L2NpcInstance#onAction(com.l2jfrozen.gameserver.model.actor.instance.L2PcInstance)
-	 */
 	@Override
 	public void onAction(final L2PcInstance player)
 	{
@@ -68,7 +44,7 @@ public class L2FolkInstance extends L2NpcInstance
 	
 	/**
 	 * this displays SkillList to the player.
-	 * @param player the player
+	 * @param player  the player
 	 * @param classId the class id
 	 */
 	public void showSkillList(final L2PcInstance player, final ClassId classId)
@@ -80,7 +56,7 @@ public class L2FolkInstance extends L2NpcInstance
 		
 		final int npcId = getTemplate().npcId;
 		
-		if (_classesToTeach == null)
+		if (classesToTeach == null)
 		{
 			if (player.isGM())
 			{
@@ -163,7 +139,7 @@ public class L2FolkInstance extends L2NpcInstance
 	
 	/**
 	 * this displays EnchantSkillList to the player.
-	 * @param player the player
+	 * @param player  the player
 	 * @param classId the class id
 	 */
 	public void showEnchantSkillList(final L2PcInstance player, final ClassId classId)
@@ -175,7 +151,7 @@ public class L2FolkInstance extends L2NpcInstance
 		
 		final int npcId = getTemplate().npcId;
 		
-		if (_classesToTeach == null)
+		if (classesToTeach == null)
 		{
 			if (player.isGM())
 			{
@@ -270,10 +246,6 @@ public class L2FolkInstance extends L2NpcInstance
 		player.sendPacket(ActionFailed.STATIC_PACKET);
 	}
 	
-	/*
-	 * (non-Javadoc)
-	 * @see com.l2jfrozen.gameserver.model.actor.instance.L2NpcInstance#onBypassFeedback(com.l2jfrozen.gameserver.model.actor.instance.L2PcInstance, java.lang.String)
-	 */
 	@Override
 	public void onBypassFeedback(final L2PcInstance player, final String command)
 	{
@@ -292,7 +264,7 @@ public class L2FolkInstance extends L2NpcInstance
 				{
 					boolean own_class = false;
 					
-					for (final ClassId cid : _classesToTeach)
+					for (final ClassId cid : classesToTeach)
 					{
 						if (cid.equalsOrChildOf(player.getClassId()))
 						{
@@ -310,14 +282,14 @@ public class L2FolkInstance extends L2NpcInstance
 					}
 					
 					// make a list of classes
-					if (_classesToTeach.length != 0)
+					if (classesToTeach.length != 0)
 					{
 						int count = 0;
 						ClassId classCheck = player.getClassId();
 						
 						while (count == 0 && classCheck != null)
 						{
-							for (final ClassId cid : _classesToTeach)
+							for (final ClassId cid : classesToTeach)
 							{
 								if (cid.level() != classCheck.level())
 								{

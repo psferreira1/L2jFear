@@ -1,22 +1,3 @@
-/* L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.network.clientpackets;
 
 import com.l2jfrozen.gameserver.datatables.SkillTable;
@@ -31,22 +12,22 @@ import com.l2jfrozen.util.Point3D;
  */
 public final class RequestExMagicSkillUseGround extends L2GameClientPacket
 {
-	private int _x;
-	private int _y;
-	private int _z;
-	private int _skillId;
-	private boolean _ctrlPressed;
-	private boolean _shiftPressed;
+	private int x;
+	private int y;
+	private int z;
+	private int skillId;
+	private boolean ctrlPressed;
+	private boolean shiftPressed;
 	
 	@Override
 	protected void readImpl()
 	{
-		_x = readD();
-		_y = readD();
-		_z = readD();
-		_skillId = readD();
-		_ctrlPressed = readD() != 0;
-		_shiftPressed = readC() != 0;
+		x = readD();
+		y = readD();
+		z = readD();
+		skillId = readD();
+		ctrlPressed = readD() != 0;
+		shiftPressed = readC() != 0;
 	}
 	
 	@Override
@@ -54,10 +35,12 @@ public final class RequestExMagicSkillUseGround extends L2GameClientPacket
 	{
 		final L2PcInstance activeChar = getClient().getActiveChar();
 		if (activeChar == null)
+		{
 			return;
+		}
 		
 		// Get the level of the used skill
-		final int level = activeChar.getSkillLevel(_skillId);
+		final int level = activeChar.getSkillLevel(skillId);
 		if (level <= 0)
 		{
 			sendPacket(ActionFailed.STATIC_PACKET);
@@ -65,20 +48,20 @@ public final class RequestExMagicSkillUseGround extends L2GameClientPacket
 		}
 		
 		// Get the L2Skill template corresponding to the skillID received from the client
-		final L2Skill skill = SkillTable.getInstance().getInfo(_skillId, level);
+		final L2Skill skill = SkillTable.getInstance().getInfo(skillId, level);
 		
 		if (skill != null)
 		{
-			activeChar.setCurrentSkillWorldPosition(new Point3D(_x, _y, _z));
+			activeChar.setCurrentSkillWorldPosition(new Point3D(x, y, z));
 			
 			// normally magicskilluse packet turns char client side but for these skills, it doesn't (even with correct target)
-			activeChar.setHeading(Util.calculateHeadingFrom(activeChar.getX(), activeChar.getY(), _x, _y));
+			activeChar.setHeading(Util.calculateHeadingFrom(activeChar.getX(), activeChar.getY(), x, y));
 			
 			// TODO: Send a valide position and broadcast the new heading.
 			// Putting a simple Validelocation chars can go up of wall spamming on position and clicking on a SIGNET
 			// activeChar.broadcastPacket(new ValidateLocation(activeChar));
 			
-			activeChar.useMagic(skill, _ctrlPressed, _shiftPressed);
+			activeChar.useMagic(skill, ctrlPressed, shiftPressed);
 		}
 		else
 		{

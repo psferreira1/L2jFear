@@ -1,38 +1,15 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.datatables.sql;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.util.HashMap;
 import java.util.Map;
-
-import javolution.util.FastMap;
 
 import org.apache.log4j.Logger;
 
 import com.l2jfrozen.Config;
 import com.l2jfrozen.gameserver.model.L2TeleportLocation;
-import com.l2jfrozen.util.CloseUtil;
-import com.l2jfrozen.util.database.DatabaseUtils;
 import com.l2jfrozen.util.database.L2DatabaseFactory;
 
 /**
@@ -42,19 +19,21 @@ import com.l2jfrozen.util.database.L2DatabaseFactory;
 public class TeleportLocationTable
 {
 	private final static Logger LOGGER = Logger.getLogger(TeleportLocationTable.class);
+	private static final String SELECT_TELEPORTS = "SELECT Description, id, loc_x, loc_y, loc_z, price, fornoble FROM teleport";
+	private static final String SELECT_CUSTOM_TELEPORTS = "SELECT Description, id, loc_x, loc_y, loc_z, price, fornoble FROM custom_teleport";
 	
-	private static TeleportLocationTable _instance;
+	private static TeleportLocationTable instance;
 	
 	private Map<Integer, L2TeleportLocation> teleports;
 	
 	public static TeleportLocationTable getInstance()
 	{
-		if (_instance == null)
+		if (instance == null)
 		{
-			_instance = new TeleportLocationTable();
+			instance = new TeleportLocationTable();
 		}
 		
-		return _instance;
+		return instance;
 	}
 	
 	private TeleportLocationTable()
@@ -64,14 +43,12 @@ public class TeleportLocationTable
 	
 	public void reloadAll()
 	{
-		teleports = new FastMap<>();
+		teleports = new HashMap<>();
 		
-		Connection con = null;
-		try
+		try (Connection con = L2DatabaseFactory.getInstance().getConnection();
+			PreparedStatement statement = con.prepareStatement(SELECT_TELEPORTS);
+			ResultSet rset = statement.executeQuery())
 		{
-			con = L2DatabaseFactory.getInstance().getConnection(false);
-			final PreparedStatement statement = con.prepareStatement("SELECT Description, id, loc_x, loc_y, loc_z, price, fornoble FROM teleport");
-			final ResultSet rset = statement.executeQuery();
 			L2TeleportLocation teleport;
 			
 			while (rset.next())
@@ -88,29 +65,22 @@ public class TeleportLocationTable
 				teleports.put(teleport.getTeleId(), teleport);
 			}
 			
-			DatabaseUtils.close(statement);
-			DatabaseUtils.close(rset);
-			
 			LOGGER.info("TeleportLocationTable: Loaded " + teleports.size() + " Teleport Location Templates");
 		}
-		catch (final Exception e)
+		catch (Exception e)
 		{
-			LOGGER.error("Error while creating teleport table ", e);
+			LOGGER.error("TeleportLocationTable.reloadAll : Error while creating teleport table ", e);
 		}
-		finally
-		{
-			CloseUtil.close(con);
-		}
+		
 		if (Config.CUSTOM_TELEPORT_TABLE)
 		{
-			try
+			try (Connection con = L2DatabaseFactory.getInstance().getConnection();
+				PreparedStatement statement = con.prepareStatement(SELECT_CUSTOM_TELEPORTS);
+				ResultSet rset = statement.executeQuery())
 			{
-				con = L2DatabaseFactory.getInstance().getConnection(false);
-				final PreparedStatement statement = con.prepareStatement("SELECT Description, id, loc_x, loc_y, loc_z, price, fornoble FROM custom_teleport");
-				final ResultSet rset = statement.executeQuery();
 				L2TeleportLocation teleport;
 				
-				int _cTeleCount = teleports.size();
+				int cTeleCount = teleports.size();
 				
 				while (rset.next())
 				{
@@ -124,32 +94,21 @@ public class TeleportLocationTable
 					teleports.put(teleport.getTeleId(), teleport);
 				}
 				
-				DatabaseUtils.close(statement);
-				DatabaseUtils.close(rset);
+				cTeleCount = teleports.size() - cTeleCount;
 				
-				_cTeleCount = teleports.size() - _cTeleCount;
-				
-				if (_cTeleCount > 0)
+				if (cTeleCount > 0)
 				{
-					LOGGER.info("TeleportLocationTable: Loaded {} Custom Teleport Location Templates. " + _cTeleCount);
+					LOGGER.info("CustomTeleportLocationTable: Loaded " + cTeleCount + " Custom Teleport Location Templates.");
 				}
 				
 			}
-			catch (final Exception e)
+			catch (Exception e)
 			{
-				LOGGER.error("Error while creating custom teleport table ", e);
-			}
-			finally
-			{
-				CloseUtil.close(con);
+				LOGGER.error("TeleportLocationTable.reloadAll : Error while creating custom teleport table ", e);
 			}
 		}
 	}
 	
-	/**
-	 * @param id
-	 * @return
-	 */
 	public L2TeleportLocation getTemplate(final int id)
 	{
 		return teleports.get(id);

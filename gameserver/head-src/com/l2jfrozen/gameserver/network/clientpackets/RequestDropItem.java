@@ -1,24 +1,7 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.network.clientpackets;
+
+import java.text.NumberFormat;
+import java.util.Locale;
 
 import org.apache.log4j.Logger;
 
@@ -41,20 +24,20 @@ public final class RequestDropItem extends L2GameClientPacket
 {
 	private static Logger LOGGER = Logger.getLogger(RequestDropItem.class);
 	
-	private int _objectId;
-	private int _count;
-	private int _x;
-	private int _y;
-	private int _z;
+	private int objectId;
+	private int count;
+	private int x;
+	private int y;
+	private int z;
 	
 	@Override
 	protected void readImpl()
 	{
-		_objectId = readD();
-		_count = readD();
-		_x = readD();
-		_y = readD();
-		_z = readD();
+		objectId = readD();
+		count = readD();
+		x = readD();
+		y = readD();
+		z = readD();
 	}
 	
 	@Override
@@ -62,7 +45,9 @@ public final class RequestDropItem extends L2GameClientPacket
 	{
 		final L2PcInstance activeChar = getClient().getActiveChar();
 		if (activeChar == null || activeChar.isDead())
+		{
 			return;
+		}
 		
 		if (activeChar.isGM() && activeChar.getAccessLevel().getLevel() > 2)
 		{ // just head gm and admin can drop items on the ground
@@ -79,11 +64,13 @@ public final class RequestDropItem extends L2GameClientPacket
 		
 		// Flood protect drop to avoid packet lag
 		if (!getClient().getFloodProtectors().getDropItem().tryPerformAction("drop item"))
+		{
 			return;
+		}
 		
-		final L2ItemInstance item = activeChar.getInventory().getItemByObjectId(_objectId);
+		final L2ItemInstance item = activeChar.getInventory().getItemByObjectId(objectId);
 		
-		if (item == null || _count == 0 || !activeChar.validateItemManipulation(_objectId, "drop"))
+		if (item == null || count == 0 || !activeChar.validateItemManipulation(objectId, "drop"))
 		{
 			activeChar.sendPacket(new SystemMessage(SystemMessageId.CANNOT_DISCARD_THIS_ITEM));
 			return;
@@ -102,10 +89,12 @@ public final class RequestDropItem extends L2GameClientPacket
 		}
 		
 		if (item.getItemType() == L2EtcItemType.QUEST && !(activeChar.isGM()))
+		{
 			return;
+		}
 		
 		// Drop item disabled by config
-		if (activeChar.isGM() && Config.GM_TRADE_RESTRICTED_ITEMS)
+		if (activeChar.isGM() && !activeChar.getAccessLevel().allowTransaction())
 		{
 			activeChar.sendMessage("Drop item disabled for GM by config!");
 			activeChar.sendPacket(ActionFailed.STATIC_PACKET);
@@ -116,9 +105,11 @@ public final class RequestDropItem extends L2GameClientPacket
 		
 		// Cursed Weapons cannot be dropped
 		if (CursedWeaponsManager.getInstance().isCursed(itemId))
+		{
 			return;
+		}
 		
-		if (_count > item.getCount())
+		if (count > item.getCount())
 		{
 			activeChar.sendPacket(new SystemMessage(SystemMessageId.CANNOT_DISCARD_THIS_ITEM));
 			return;
@@ -130,16 +121,16 @@ public final class RequestDropItem extends L2GameClientPacket
 			return;
 		}
 		
-		if (_count <= 0)
+		if (count <= 0)
 		{
 			activeChar.setAccessLevel(-1); // ban
-			Util.handleIllegalPlayerAction(activeChar, "[RequestDropItem] count <= 0! ban! oid: " + _objectId + " owner: " + activeChar.getName(), IllegalPlayerAction.PUNISH_KICK);
+			Util.handleIllegalPlayerAction(activeChar, "[RequestDropItem] count <= 0! ban! oid: " + objectId + " owner: " + activeChar.getName(), IllegalPlayerAction.PUNISH_KICK);
 			return;
 		}
 		
-		if (!item.isStackable() && _count > 1)
+		if (!item.isStackable() && count > 1)
 		{
-			Util.handleIllegalPlayerAction(activeChar, "[RequestDropItem] count > 1 but item is not stackable! ban! oid: " + _objectId + " owner: " + activeChar.getName(), IllegalPlayerAction.PUNISH_KICK);
+			Util.handleIllegalPlayerAction(activeChar, "[RequestDropItem] count > 1 but item is not stackable! ban! oid: " + objectId + " owner: " + activeChar.getName(), IllegalPlayerAction.PUNISH_KICK);
 			return;
 		}
 		
@@ -183,7 +174,7 @@ public final class RequestDropItem extends L2GameClientPacket
 			return;
 		}
 		
-		if (!activeChar.isInsideRadius(_x, _y, 150, false) || Math.abs(_z - activeChar.getZ()) > 50)
+		if (!activeChar.isInsideRadius(x, y, 150, false) || Math.abs(z - activeChar.getZ()) > 50)
 		{
 			if (Config.DEBUG)
 			{
@@ -195,7 +186,7 @@ public final class RequestDropItem extends L2GameClientPacket
 		
 		if (Config.DEBUG)
 		{
-			LOGGER.debug("requested drop item " + _objectId + "(" + item.getCount() + ") at " + _x + "/" + _y + "/" + _z);
+			LOGGER.debug("requested drop item " + objectId + "(" + item.getCount() + ") at " + x + "/" + y + "/" + z);
 		}
 		
 		if (item.isEquipped())
@@ -222,16 +213,16 @@ public final class RequestDropItem extends L2GameClientPacket
 			activeChar.sendPacket(il);
 		}
 		
-		final L2ItemInstance dropedItem = activeChar.dropItem("Drop", _objectId, _count, _x, _y, _z, null, false, false);
+		final L2ItemInstance dropedItem = activeChar.dropItem("Drop", objectId, count, x, y, z, null, false, false);
 		
 		if (Config.DEBUG)
 		{
-			LOGGER.debug("dropping " + _objectId + " item(" + _count + ") at: " + _x + " " + _y + " " + _z);
+			LOGGER.debug("dropping " + objectId + " item(" + count + ") at: " + x + " " + y + " " + z);
 		}
 		
 		if (dropedItem != null && dropedItem.getItemId() == 57 && dropedItem.getCount() >= 1000000 && Config.RATE_DROP_ADENA <= 200)
 		{
-			final String msg = "Character (" + activeChar.getName() + ") has dropped (" + dropedItem.getCount() + ")adena at (" + _x + "," + _y + "," + _z + ")";
+			String msg = "Character (" + activeChar.getName() + ") has dropped (" + NumberFormat.getInstance(Locale.ENGLISH).format(dropedItem.getCount()) + ")adena at " + x + "," + y + "," + z + " coordinates";
 			LOGGER.warn(msg);
 			GmListTable.broadcastMessageToGMs(msg);
 		}

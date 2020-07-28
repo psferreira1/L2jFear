@@ -1,23 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.network.serverpackets;
 
 import com.l2jfrozen.gameserver.model.L2Object;
@@ -28,56 +8,45 @@ import com.l2jfrozen.gameserver.model.L2Object;
  */
 public class TeleportToLocation extends L2GameServerPacket
 {
-	private static final String _S__38_TELEPORTTOLOCATION = "[S] 28 TeleportToLocation";
-	private final int _targetObjId;
-	private final int _x;
-	private final int _y;
-	private final int _z;
-	private final int _heading;
+	private final int targetObjId;
+	private final int x;
+	private final int y;
+	private final int z;
+	private final int heading;
 	
-	/**
-	 * @param obj
-	 * @param x
-	 * @param y
-	 * @param z
-	 */
 	public TeleportToLocation(final L2Object obj, final int x, final int y, final int z)
 	{
-		_targetObjId = obj.getObjectId();
-		_x = x;
-		_y = y;
-		_z = z;
-		_heading = obj.getPosition().getHeading();
+		targetObjId = obj.getObjectId();
+		this.x = x;
+		this.y = y;
+		this.z = z;
+		heading = obj.getPosition().getHeading();
 	}
 	
 	public TeleportToLocation(final L2Object obj, final int x, final int y, final int z, final int heading)
 	{
-		_targetObjId = obj.getObjectId();
-		_x = x;
-		_y = y;
-		_z = z;
-		_heading = heading;
+		targetObjId = obj.getObjectId();
+		this.x = x;
+		this.y = y;
+		this.z = z;
+		this.heading = heading;
 	}
 	
 	@Override
 	protected final void writeImpl()
 	{
 		writeC(0x28);
-		writeD(_targetObjId);
-		writeD(_x);
-		writeD(_y);
-		writeD(_z);
-		writeD(0x00); // isValidation ??
-		writeD(_heading); // nYaw
+		writeD(targetObjId);
+		writeD(x);
+		writeD(y);
+		writeD(z);
+		writeD(0x00); // 0 - with black screen, 1 - fast teleport (for correcting position)
+		writeD(heading); // nYaw
 	}
 	
-	/*
-	 * (non-Javadoc)
-	 * @see com.l2jfrozen.gameserver.serverpackets.ServerBasePacket#getType()
-	 */
 	@Override
 	public String getType()
 	{
-		return _S__38_TELEPORTTOLOCATION;
+		return "[S] 28 TeleportToLocation";
 	}
 }

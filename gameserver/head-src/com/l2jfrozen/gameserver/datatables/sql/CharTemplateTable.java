@@ -1,51 +1,25 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.datatables.sql;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.HashMap;
 import java.util.Map;
-
-import javolution.util.FastMap;
 
 import org.apache.log4j.Logger;
 
-import com.l2jfrozen.Config;
 import com.l2jfrozen.gameserver.model.base.ClassId;
 import com.l2jfrozen.gameserver.templates.L2PcTemplate;
 import com.l2jfrozen.gameserver.templates.StatsSet;
-import com.l2jfrozen.util.CloseUtil;
-import com.l2jfrozen.util.database.DatabaseUtils;
 import com.l2jfrozen.util.database.L2DatabaseFactory;
 
-/**
- * @version $Revision: 1.6.2.1.2.10 $ $Date: 2005/03/29 14:00:54 $
- */
 public class CharTemplateTable
 {
 	private static Logger LOGGER = Logger.getLogger(CharTemplateTable.class);
+	private static final String SELECT_CHARRACTER_TEMPLATE = "SELECT * FROM class_list, char_templates, lvlupgain" + " WHERE class_list.id = char_templates.classId" + " AND class_list.id = lvlupgain.classId" + " ORDER BY class_list.id";
 	
-	private static CharTemplateTable _instance;
+	private static CharTemplateTable instance;
 	
 	private static final String[] CHAR_CLASSES =
 	{
@@ -170,33 +144,28 @@ public class CharTemplateTable
 		"Maestro"
 	};
 	
-	private final Map<Integer, L2PcTemplate> _templates;
+	private final Map<Integer, L2PcTemplate> templates;
 	
 	public static CharTemplateTable getInstance()
 	{
-		if (_instance == null)
+		if (instance == null)
 		{
-			_instance = new CharTemplateTable();
+			instance = new CharTemplateTable();
 		}
-		
-		return _instance;
+		return instance;
 	}
 	
 	private CharTemplateTable()
 	{
-		_templates = new FastMap<>();
-		Connection con = null;
+		templates = new HashMap<>();
 		
-		try
+		try (Connection con = L2DatabaseFactory.getInstance().getConnection();
+			PreparedStatement statement = con.prepareStatement(SELECT_CHARRACTER_TEMPLATE);
+			ResultSet rset = statement.executeQuery())
 		{
-			con = L2DatabaseFactory.getInstance().getConnection(false);
-			PreparedStatement statement = con.prepareStatement("SELECT * FROM class_list, char_templates, lvlupgain" + " WHERE class_list.id = char_templates.classId" + " AND class_list.id = lvlupgain.classId" + " ORDER BY class_list.id");
-			ResultSet rset = statement.executeQuery();
-			
 			while (rset.next())
 			{
 				StatsSet set = new StatsSet();
-				// ClassId classId = ClassId.values()[rset.getInt("id")];
 				set.set("classId", rset.getInt("id"));
 				set.set("className", rset.getString("className"));
 				set.set("raceId", rset.getInt("raceId"));
@@ -248,30 +217,18 @@ public class CharTemplateTable
 						ct.addItem(rset.getInt("items" + x));
 					}
 				}
-				_templates.put(ct.classId.getId(), ct);
+				templates.put(ct.classId.getId(), ct);
 				
 				set = null;
 				ct = null;
 			}
-			
-			DatabaseUtils.close(statement);
-			DatabaseUtils.close(rset);
-			statement = null;
-			rset = null;
 		}
-		catch (final SQLException e)
+		catch (SQLException e)
 		{
-			if (Config.ENABLE_ALL_EXCEPTIONS)
-				e.printStackTrace();
-			
-			LOGGER.warn("error while loading char templates " + e.getMessage());
-		}
-		finally
-		{
-			CloseUtil.close(con);
+			LOGGER.error("CharTemplateTable.CharTemplateTable : Error while loading char templates", e);
 		}
 		
-		LOGGER.info("CharTemplateTable: Loaded " + _templates.size() + " Character Templates.");
+		LOGGER.info("CharTemplateTable: Loaded " + templates.size() + " Character Templates.");
 	}
 	
 	public L2PcTemplate getTemplate(final ClassId classId)
@@ -283,7 +240,7 @@ public class CharTemplateTable
 	{
 		final int key = classId;
 		
-		return _templates.get(key);
+		return templates.get(key);
 	}
 	
 	public static final String getClassNameById(final int classId)
@@ -308,8 +265,4 @@ public class CharTemplateTable
 		return currId;
 	}
 	
-	// public L2CharTemplate[] getAllTemplates()
-	// {
-	// return _templates.values().toArray(new L2CharTemplate[_templates.size()]);
-	// }
 }

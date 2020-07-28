@@ -1,19 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any later
- * version.
- * 
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
- * 
- * You should have received a copy of the GNU General Public License along with
- * this program. If not, see <http://www.gnu.org/licenses/>.
- */
 package com.l2jfrozen.gameserver.network.clientpackets;
 
 import org.apache.log4j.Logger;
@@ -24,7 +8,6 @@ import com.l2jfrozen.gameserver.datatables.SkillTable;
 import com.l2jfrozen.gameserver.model.L2Character;
 import com.l2jfrozen.gameserver.model.L2Party;
 import com.l2jfrozen.gameserver.model.actor.instance.L2PcInstance;
-import com.l2jfrozen.gameserver.model.entity.olympiad.Olympiad;
 import com.l2jfrozen.gameserver.model.entity.sevensigns.SevenSignsFestival;
 import com.l2jfrozen.gameserver.network.SystemMessageId;
 import com.l2jfrozen.gameserver.network.serverpackets.ActionFailed;
@@ -47,7 +30,9 @@ public final class Logout extends L2GameClientPacket
 		final L2PcInstance player = getClient().getActiveChar();
 		
 		if (player == null)
+		{
 			return;
+		}
 		
 		if (player.isInFunEvent() && !player.isGM())
 		{
@@ -67,7 +52,9 @@ public final class Logout extends L2GameClientPacket
 		if (AttackStanceTaskManager.getInstance().getAttackStanceTask(player) && !(player.isGM() && Config.GM_RESTART_FIGHTING))
 		{
 			if (Config.DEBUG)
+			{
 				LOGGER.debug(getType() + ": Player " + player.getName() + " tried to logout while Fighting");
+			}
 			
 			player.sendPacket(new SystemMessage(SystemMessageId.CANT_LOGOUT_WHILE_FIGHTING));
 			player.sendPacket(ActionFailed.STATIC_PACKET);
@@ -96,7 +83,7 @@ public final class Logout extends L2GameClientPacket
 			return;
 		}
 		
-		if (player.isInOlympiadMode() || Olympiad.getInstance().isRegistered(player))
+		if (player.isInOlympiadMode())
 		{
 			player.sendMessage("You can't Logout in Olympiad mode.");
 			return;
@@ -114,11 +101,15 @@ public final class Logout extends L2GameClientPacket
 			
 			final L2Party playerParty = player.getParty();
 			if (playerParty != null)
+			{
 				player.getParty().broadcastToPartyMembers(SystemMessage.sendString(player.getName() + " has been removed from the upcoming Festival."));
+			}
 		}
 		
 		if (player.isFlying())
+		{
 			player.removeSkill(SkillTable.getInstance().getInfo(4289, 1));
+		}
 		
 		if (Config.OFFLINE_LOGOUT && player.isSitting())
 		{
@@ -126,13 +117,18 @@ public final class Logout extends L2GameClientPacket
 			{
 				// Sleep effect, not official feature but however L2OFF features (like offline trade)
 				if (Config.OFFLINE_SLEEP_EFFECT)
+				{
 					player.startAbnormalEffect(L2Character.ABNORMAL_EFFECT_SLEEP);
+				}
 				
+				player.setOfflineMode(true);
 				player.store();
 				player.closeNetConnection();
 				
 				if (player.getOfflineStartTime() == 0)
+				{
 					player.setOfflineStartTime(System.currentTimeMillis());
+				}
 				return;
 			}
 		}
@@ -142,7 +138,9 @@ public final class Logout extends L2GameClientPacket
 			player.closeNetConnection();
 			
 			if (player.getOfflineStartTime() == 0)
+			{
 				player.setOfflineStartTime(System.currentTimeMillis());
+			}
 			return;
 		}
 		

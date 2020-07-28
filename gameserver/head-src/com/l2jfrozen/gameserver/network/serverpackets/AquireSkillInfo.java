@@ -1,28 +1,7 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.network.serverpackets;
 
+import java.util.ArrayList;
 import java.util.List;
-
-import javolution.util.FastList;
 
 /**
  * <code>
@@ -37,9 +16,8 @@ import javolution.util.FastList;
  */
 public class AquireSkillInfo extends L2GameServerPacket
 {
-	private static final String _S__A4_AQUIRESKILLINFO = "[S] 8b AquireSkillInfo";
-	private final List<Req> _reqs;
-	private final int _id, _level, _spCost, _mode;
+	private final List<Req> reqs;
+	private final int id, level, spCost, mode;
 	
 	private class Req
 	{
@@ -59,30 +37,30 @@ public class AquireSkillInfo extends L2GameServerPacket
 	
 	public AquireSkillInfo(final int id, final int level, final int spCost, final int mode)
 	{
-		_reqs = new FastList<>();
-		_id = id;
-		_level = level;
-		_spCost = spCost;
-		_mode = mode;
+		reqs = new ArrayList<>();
+		this.id = id;
+		this.level = level;
+		this.spCost = spCost;
+		this.mode = mode;
 	}
 	
 	public void addRequirement(final int type, final int id, final int count, final int unk)
 	{
-		_reqs.add(new Req(type, id, count, unk));
+		reqs.add(new Req(type, id, count, unk));
 	}
 	
 	@Override
 	protected final void writeImpl()
 	{
 		writeC(0x8b);
-		writeD(_id);
-		writeD(_level);
-		writeD(_spCost);
-		writeD(_mode); // c4
+		writeD(id);
+		writeD(level);
+		writeD(spCost);
+		writeD(mode); // c4
 		
-		writeD(_reqs.size());
+		writeD(reqs.size());
 		
-		for (final Req temp : _reqs)
+		for (final Req temp : reqs)
 		{
 			writeD(temp.type);
 			writeD(temp.itemId);
@@ -91,14 +69,10 @@ public class AquireSkillInfo extends L2GameServerPacket
 		}
 	}
 	
-	/*
-	 * (non-Javadoc)
-	 * @see com.l2jfrozen.gameserver.serverpackets.ServerBasePacket#getType()
-	 */
 	@Override
 	public String getType()
 	{
-		return _S__A4_AQUIRESKILLINFO;
+		return "[S] 8b AquireSkillInfo";
 	}
 	
 }

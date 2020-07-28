@@ -1,23 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 
 package com.l2jfrozen.gameserver.model;
 
@@ -29,37 +9,39 @@ import com.l2jfrozen.gameserver.model.actor.instance.L2PcInstance;
  */
 public final class L2ArmorSet
 {
-	private final int _chest;
-	private final int _legs;
-	private final int _head;
-	private final int _gloves;
-	private final int _feet;
-	private final int _skillId;
+	private final int chestArmor;
+	private final int legsArmor;
+	private final int headArmor;
+	private final int glovesArmor;
+	private final int feetArmor;
+	private final int skillIdArmor;
 	
-	private final int _shield;
-	private final int _shieldSkillId;
+	private final int shieldArmor;
+	private final int shieldSkillIdArmor;
 	
-	private final int _enchant6Skill;
+	private final int enchant6SkillArmor;
+	
+	private boolean custom = false;
 	
 	public L2ArmorSet(final int chest, final int legs, final int head, final int gloves, final int feet, final int skill_id, final int shield, final int shield_skill_id, final int enchant6skill)
 	{
-		_chest = chest;
-		_legs = legs;
-		_head = head;
-		_gloves = gloves;
-		_feet = feet;
-		_skillId = skill_id;
+		chestArmor = chest;
+		legsArmor = legs;
+		headArmor = head;
+		glovesArmor = gloves;
+		feetArmor = feet;
+		skillIdArmor = skill_id;
 		
-		_shield = shield;
-		_shieldSkillId = shield_skill_id;
+		shieldArmor = shield;
+		shieldSkillIdArmor = shield_skill_id;
 		
-		_enchant6Skill = enchant6skill;
+		enchant6SkillArmor = enchant6skill;
 	}
 	
 	/**
 	 * Checks if player have equiped all items from set (not checking shield)
-	 * @param player whose inventory is being checked
-	 * @return True if player equips whole set
+	 * @param  player whose inventory is being checked
+	 * @return        True if player equips whole set
 	 */
 	public boolean containAll(final L2PcInstance player)
 	{
@@ -97,22 +79,32 @@ public final class L2ArmorSet
 		glovesItem = null;
 		feetItem = null;
 		
-		return containAll(_chest, legs, head, gloves, feet);
+		return containAll(chestArmor, legs, head, gloves, feet);
 		
 	}
 	
 	public boolean containAll(final int chest, final int legs, final int head, final int gloves, final int feet)
 	{
-		if (_chest != 0 && _chest != chest)
+		if (chestArmor != 0 && chestArmor != chest)
+		{
 			return false;
-		if (_legs != 0 && _legs != legs)
+		}
+		if (legsArmor != 0 && legsArmor != legs)
+		{
 			return false;
-		if (_head != 0 && _head != head)
+		}
+		if (headArmor != 0 && headArmor != head)
+		{
 			return false;
-		if (_gloves != 0 && _gloves != gloves)
+		}
+		if (glovesArmor != 0 && glovesArmor != gloves)
+		{
 			return false;
-		if (_feet != 0 && _feet != feet)
+		}
+		if (feetArmor != 0 && feetArmor != feet)
+		{
 			return false;
+		}
 		
 		return true;
 	}
@@ -122,15 +114,15 @@ public final class L2ArmorSet
 		switch (slot)
 		{
 			case Inventory.PAPERDOLL_CHEST:
-				return _chest == itemId;
+				return chestArmor == itemId;
 			case Inventory.PAPERDOLL_LEGS:
-				return _legs == itemId;
+				return legsArmor == itemId;
 			case Inventory.PAPERDOLL_HEAD:
-				return _head == itemId;
+				return headArmor == itemId;
 			case Inventory.PAPERDOLL_GLOVES:
-				return _gloves == itemId;
+				return glovesArmor == itemId;
 			case Inventory.PAPERDOLL_FEET:
-				return _feet == itemId;
+				return feetArmor == itemId;
 			default:
 				return false;
 		}
@@ -138,7 +130,7 @@ public final class L2ArmorSet
 	
 	public int getSkillId()
 	{
-		return _skillId;
+		return skillIdArmor;
 	}
 	
 	public boolean containShield(final L2PcInstance player)
@@ -147,8 +139,10 @@ public final class L2ArmorSet
 		
 		L2ItemInstance shieldItem = inv.getPaperdollItem(Inventory.PAPERDOLL_LHAND);
 		
-		if (shieldItem != null && shieldItem.getItemId() == _shield)
+		if (shieldItem != null && shieldItem.getItemId() == shieldArmor)
+		{
 			return true;
+		}
 		
 		inv = null;
 		shieldItem = null;
@@ -158,32 +152,36 @@ public final class L2ArmorSet
 	
 	public boolean containShield(final int shield_id)
 	{
-		if (_shield == 0)
+		if (shieldArmor == 0)
+		{
 			return false;
+		}
 		
-		return _shield == shield_id;
+		return shieldArmor == shield_id;
 	}
 	
 	public int getShieldSkillId()
 	{
-		return _shieldSkillId;
+		return shieldSkillIdArmor;
 	}
 	
 	public int getEnchant6skillId()
 	{
-		return _enchant6Skill;
+		return enchant6SkillArmor;
 	}
 	
 	/**
 	 * Checks if all parts of set are enchanted to +6 or more
-	 * @param player
+	 * @param  player
 	 * @return
 	 */
 	public boolean isEnchanted6(final L2PcInstance player)
 	{
 		// Player don't have full set
 		if (!containAll(player))
+		{
 			return false;
+		}
 		
 		final Inventory inv = player.getInventory();
 		
@@ -194,15 +192,25 @@ public final class L2ArmorSet
 		L2ItemInstance feetItem = inv.getPaperdollItem(Inventory.PAPERDOLL_FEET);
 		
 		if (chestItem.getEnchantLevel() < 6)
+		{
 			return false;
-		if (_legs != 0 && legsItem.getEnchantLevel() < 6)
+		}
+		if (legsArmor != 0 && legsItem.getEnchantLevel() < 6)
+		{
 			return false;
-		if (_gloves != 0 && glovesItem.getEnchantLevel() < 6)
+		}
+		if (glovesArmor != 0 && glovesItem.getEnchantLevel() < 6)
+		{
 			return false;
-		if (_head != 0 && headItem.getEnchantLevel() < 6)
+		}
+		if (headArmor != 0 && headItem.getEnchantLevel() < 6)
+		{
 			return false;
-		if (_feet != 0 && feetItem.getEnchantLevel() < 6)
+		}
+		if (feetArmor != 0 && feetItem.getEnchantLevel() < 6)
+		{
 			return false;
+		}
 		
 		chestItem = null;
 		legsItem = null;
@@ -211,5 +219,15 @@ public final class L2ArmorSet
 		feetItem = null;
 		
 		return true;
+	}
+	
+	public boolean isCustom()
+	{
+		return custom;
+	}
+	
+	public void setIsCustom(boolean isCustom)
+	{
+		custom = isCustom;
 	}
 }

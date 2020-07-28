@@ -1,22 +1,3 @@
-/* L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.model.actor.instance;
 
 import com.l2jfrozen.gameserver.ai.CtrlIntention;
@@ -32,22 +13,22 @@ import com.l2jfrozen.gameserver.templates.L2NpcTemplate;
 
 public class L2SiegeFlagInstance extends L2NpcInstance
 {
-	private final L2PcInstance _player;
-	private final Siege _siege;
+	private final L2PcInstance siegePlayer;
+	private final Siege siege;
 	
 	public L2SiegeFlagInstance(final L2PcInstance player, final int objectId, final L2NpcTemplate template)
 	{
 		super(objectId, template);
 		
-		_player = player;
-		_siege = SiegeManager.getInstance().getSiege(_player.getX(), _player.getY(), _player.getZ());
-		if (_player.getClan() == null || _siege == null)
+		siegePlayer = player;
+		siege = SiegeManager.getInstance().getSiege(siegePlayer.getX(), siegePlayer.getY(), siegePlayer.getZ());
+		if (siegePlayer.getClan() == null || siege == null)
 		{
 			deleteMe();
 		}
 		else
 		{
-			L2SiegeClan sc = _siege.getAttackerClan(_player.getClan());
+			L2SiegeClan sc = siege.getAttackerClan(siegePlayer.getClan());
 			if (sc == null)
 			{
 				deleteMe();
@@ -78,8 +59,10 @@ public class L2SiegeFlagInstance extends L2NpcInstance
 	public boolean doDie(final L2Character killer)
 	{
 		if (!super.doDie(killer))
+		{
 			return false;
-		L2SiegeClan sc = _siege.getAttackerClan(_player.getClan());
+		}
+		L2SiegeClan sc = siege.getAttackerClan(siegePlayer.getClan());
 		if (sc != null)
 		{
 			sc.removeFlag(this);
@@ -99,7 +82,9 @@ public class L2SiegeFlagInstance extends L2NpcInstance
 	public void onAction(final L2PcInstance player)
 	{
 		if (player == null || !canTarget(player))
+		{
 			return;
+		}
 		
 		// Check if the L2PcInstance already target the L2NpcInstance
 		if (this != player.getTarget())

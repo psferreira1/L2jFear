@@ -27,7 +27,9 @@ public class L2CastleBlacksmithInstance extends L2FolkInstance
 	public void onAction(final L2PcInstance player)
 	{
 		if (!canTarget(player))
+		{
 			return;
+		}
 		
 		// Check if the L2PcInstance already target the L2NpcInstance
 		if (this != player.getTarget())
@@ -66,10 +68,14 @@ public class L2CastleBlacksmithInstance extends L2FolkInstance
 		
 		final int condition = validateCondition(player);
 		if (condition <= COND_ALL_FALSE)
+		{
 			return;
+		}
 		
 		if (condition == COND_BUSY_BECAUSE_OF_SIEGE)
+		{
 			return;
+		}
 		else if (condition == COND_OWNER)
 		{
 			if (command.startsWith("Chat"))
@@ -82,7 +88,9 @@ public class L2CastleBlacksmithInstance extends L2FolkInstance
 				catch (IndexOutOfBoundsException | NumberFormatException ioobe)
 				{
 					if (Config.ENABLE_ALL_EXCEPTIONS)
+					{
 						ioobe.printStackTrace();
+					}
 				}
 				showMessageWindow(player, val);
 			}
@@ -132,17 +140,23 @@ public class L2CastleBlacksmithInstance extends L2FolkInstance
 	protected int validateCondition(final L2PcInstance player)
 	{
 		if (player.isGM())
+		{
 			return COND_OWNER;
+		}
 		
 		if (getCastle() != null && getCastle().getCastleId() > 0)
 		{
 			if (player.getClan() != null)
 			{
 				if (getCastle().getSiege().getIsInProgress())
+				{
 					return COND_BUSY_BECAUSE_OF_SIEGE; // Busy because of siege
+				}
 				else if (getCastle().getOwnerId() == player.getClanId() // Clan owns castle
-					&& (player.getClanPrivileges() & L2Clan.CP_CS_MANOR_ADMIN) == L2Clan.CP_CS_MANOR_ADMIN) // Leader of clan
+					&& (player.getClanPrivileges() & L2Clan.CP_CS_MANOR_ADMIN) == L2Clan.CP_CS_MANOR_ADMIN)
+				{
 					return COND_OWNER; // Owner
+				}
 			}
 		}
 		return COND_ALL_FALSE;

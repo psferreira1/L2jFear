@@ -1,31 +1,11 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.ai.special;
 
+import java.util.ArrayList;
 import java.util.List;
-
-import javolution.util.FastList;
 
 import com.l2jfrozen.Config;
 import com.l2jfrozen.gameserver.ai.CtrlIntention;
+import com.l2jfrozen.gameserver.datatables.GmListTable;
 import com.l2jfrozen.gameserver.datatables.SkillTable;
 import com.l2jfrozen.gameserver.managers.GrandBossManager;
 import com.l2jfrozen.gameserver.model.L2Attackable;
@@ -35,7 +15,6 @@ import com.l2jfrozen.gameserver.model.actor.instance.L2NpcInstance;
 import com.l2jfrozen.gameserver.model.actor.instance.L2PcInstance;
 import com.l2jfrozen.gameserver.model.entity.Announcements;
 import com.l2jfrozen.gameserver.model.quest.Quest;
-import com.l2jfrozen.gameserver.model.zone.type.L2BossZone;
 import com.l2jfrozen.gameserver.network.serverpackets.PlaySound;
 import com.l2jfrozen.gameserver.network.serverpackets.SocialAction;
 import com.l2jfrozen.gameserver.templates.StatsSet;
@@ -53,31 +32,12 @@ public class QueenAnt extends Quest implements Runnable
 	private static final int LIVE = 0; // Queen Ant is spawned.
 	private static final int DEAD = 1; // Queen Ant has been killed.
 	
-	@SuppressWarnings("unused")
-	private static L2BossZone _Zone;
-	private L2MonsterInstance _larva = null;
-	private L2MonsterInstance _queen = null;
-	private final List<L2MonsterInstance> _Minions = new FastList<>();
-	private final List<L2MonsterInstance> _Nurses = new FastList<>();
+	private L2MonsterInstance larva = null;
+	private L2MonsterInstance queen = null;
+	private List<L2MonsterInstance> royalGuards = new ArrayList<>();
+	private List<L2MonsterInstance> antNurses = new ArrayList<>();
 	
-	// L2GrandBossInstance queen = null;
-	
-	enum Event
-	{
-		QUEEN_SPAWN, /* CHECK_QA_ZONE, */
-		CHECK_MINIONS_ZONE,
-		CHECK_NURSE_ALIVE,
-		ACTION,
-		DESPAWN_MINIONS,
-		SPAWN_ROYAL,
-		NURSES_SPAWN,
-		RESPAWN_ROYAL,
-		RESPAWN_NURSE,
-		LARVA_DESPAWN,
-		HEAL
-	}
-	
-	public QueenAnt(final int questId, final String name, final String descr)
+	public QueenAnt(int questId, String name, String descr)
 	{
 		super(questId, name, descr);
 		
@@ -89,191 +49,132 @@ public class QueenAnt extends Quest implements Runnable
 			GUARD,
 			ROYAL
 		};
-		for (final int mob : mobs)
+		for (int mob : mobs)
 		{
 			addEventId(mob, Quest.QuestEventType.ON_KILL);
 			addEventId(mob, Quest.QuestEventType.ON_ATTACK);
 		}
 		
-		_Zone = GrandBossManager.getInstance().getZone(-21610, 181594, -5734);
+		StatsSet info = GrandBossManager.getInstance().getStatsSet(QUEEN);
 		
-		final StatsSet info = GrandBossManager.getInstance().getStatsSet(QUEEN);
-		
-		final Integer status = GrandBossManager.getInstance().getBossStatus(QUEEN);
+		int status = GrandBossManager.getInstance().getBossStatus(QUEEN);
 		
 		switch (status)
 		{
 			case DEAD:
 			{
-				final long temp = info.getLong("respawn_time") - System.currentTimeMillis();
-				if (temp > 0)
+				long milisecondsTime = info.getLong("respawn_time") - System.currentTimeMillis();
+				if (milisecondsTime > 0)
 				{
-					startQuestTimer("QUEEN_SPAWN", temp, null, null);
-				}
-				else
-				{
-					final L2GrandBossInstance queen = (L2GrandBossInstance) addSpawn(QUEEN, -21610, 181594, -5734, 0, false, 0);
-					if (Config.ANNOUNCE_TO_ALL_SPAWN_RB)
-					{
-						Announcements.getInstance().announceToAll("Raid boss " + queen.getName() + " spawned in world.");
-					}
-					GrandBossManager.getInstance().setBossStatus(QUEEN, LIVE);
-					GrandBossManager.getInstance().addBoss(queen);
-					spawnBoss(queen);
+					startQuestTimer("QUEEN_ANT_SPAWN", milisecondsTime, null, null);
 				}
 			}
 				break;
 			case LIVE:
-			{
-				/*
-				 * int loc_x = info.getInteger("loc_x"); int loc_y = info.getInteger("loc_y"); int loc_z = info.getInteger("loc_z"); int heading = info.getInteger("heading");
-				 */
-				final int hp = info.getInteger("currentHP");
-				final int mp = info.getInteger("currentMP");
-				final L2GrandBossInstance queen = (L2GrandBossInstance) addSpawn(QUEEN, -21610, 181594, -5734, 0, false, 0);
-				if (Config.ANNOUNCE_TO_ALL_SPAWN_RB)
-				{
-					Announcements.getInstance().announceToAll("Raid boss " + queen.getName() + " spawned in world.");
-				}
-				GrandBossManager.getInstance().addBoss(queen);
-				queen.setCurrentHpMp(hp, mp);
-				spawnBoss(queen);
-			}
+				startQuestTimer("QUEEN_ANT_SPAWN", 0, null, null);
 				break;
-			default:
-			{
-				final L2GrandBossInstance queen = (L2GrandBossInstance) addSpawn(QUEEN, -21610, 181594, -5734, 0, false, 0);
-				if (Config.ANNOUNCE_TO_ALL_SPAWN_RB)
-				{
-					Announcements.getInstance().announceToAll("Raid boss " + queen.getName() + " spawned in world.");
-				}
-				GrandBossManager.getInstance().setBossStatus(QUEEN, LIVE);
-				GrandBossManager.getInstance().addBoss(queen);
-				spawnBoss(queen);
-			}
 		}
 	}
 	
-	private void spawnBoss(final L2GrandBossInstance npc)
-	{
-		startQuestTimer("ACTION", 10000, npc, null, true);
-		npc.broadcastPacket(new PlaySound(1, "BS02_D", 1, npc.getObjectId(), npc.getX(), npc.getY(), npc.getZ()));
-		startQuestTimer("SPAWN_ROYAL", 1000, npc, null);
-		startQuestTimer("NURSES_SPAWN", 1000, npc, null);
-		startQuestTimer("CHECK_MINIONS_ZONE", 30000, npc, null, true);
-		startQuestTimer("HEAL", 1000, null, null, true);
-		_queen = npc;
-		_larva = (L2MonsterInstance) addSpawn(LARVA, -21600, 179482, -5846, Rnd.get(360), false, 0);
-		_larva.setIsUnkillable(true);
-		_larva.setIsImobilised(true);
-		_larva.setIsAttackDisabled(true);
-	}
-	
 	@Override
-	public String onAdvEvent(final String event, final L2NpcInstance npc, final L2PcInstance player)
+	public String onAdvEvent(String event, L2NpcInstance npc, L2PcInstance player)
 	{
-		final Event event_enum = Event.valueOf(event);
-		
-		switch (event_enum)
+		switch (event)
 		{
-			case QUEEN_SPAWN:
+			case "QUEEN_ANT_SPAWN":
 			{
-				final L2GrandBossInstance queen = (L2GrandBossInstance) addSpawn(QUEEN, -21610, 181594, -5734, 0, false, 0);
+				L2GrandBossInstance queen = (L2GrandBossInstance) addSpawn(QUEEN, -21610, 181594, -5734, 0, false, 0);
+				
+				GmListTable.broadcastMessageToGMs("Spawning Grand Boss " + queen.getName() + " (" + queen.getNpcId() + ").");
+				
 				if (Config.ANNOUNCE_TO_ALL_SPAWN_RB)
 				{
-					Announcements.getInstance().announceToAll("Raid boss " + queen.getName() + " spawned in world.");
+					Announcements.getInstance().announceToAll("Grand Boss " + queen.getName() + " spawned in world.");
 				}
+				
 				GrandBossManager.getInstance().setBossStatus(QUEEN, LIVE);
 				GrandBossManager.getInstance().addBoss(queen);
-				spawnBoss(queen);
+				
+				startQuestTimer("ACTION", 10000, queen, null, true);
+				queen.broadcastPacket(new PlaySound(1, "BS02_D", 1, queen.getObjectId(), queen.getX(), queen.getY(), queen.getZ()));
+				startQuestTimer("SPAWN_ROYAL", 1000, queen, null);
+				startQuestTimer("NURSES_SPAWN", 1000, queen, null);
+				startQuestTimer("CHECK_MINIONS_ZONE", 30000, queen, null, true);
+				startQuestTimer("HEAL", 1000, null, null, true);
+				larva = (L2MonsterInstance) addSpawn(LARVA, -21600, 179482, -5846, Rnd.get(360), false, 0);
+				larva.setIsUnkillable(true);
+				larva.setIsImobilised(true);
+				larva.setIsAttackDisabled(true);
 			}
 				break;
-			case LARVA_DESPAWN:
-			{
-				_larva.decayMe();
-			}
+			case "LARVA_DESPAWN":
+				larva.decayMe();
 				break;
-			case NURSES_SPAWN:
+			case "NURSES_SPAWN":
 			{
-				final int radius = 400;
+				int radius = 400;
 				for (int i = 0; i < 6; i++)
 				{
 					final int x = (int) (radius * Math.cos(i * 1.407)); // 1.407~2pi/6
 					final int y = (int) (radius * Math.sin(i * 1.407));
-					_Nurses.add((L2MonsterInstance) addSpawn(NURSE, npc.getX() + x, npc.getY() + y, npc.getZ(), 0, false, 0));
-					_Nurses.get(i).setIsAttackDisabled(true);
+					antNurses.add((L2MonsterInstance) addSpawn(NURSE, npc.getX() + x, npc.getY() + y, npc.getZ(), 0, false, 0));
+					antNurses.get(i).setIsAttackDisabled(true);
 				}
 			}
 				break;
-			case SPAWN_ROYAL:
+			case "SPAWN_ROYAL":
 			{
-				final int radius = 400;
+				int radius = 400;
 				for (int i = 0; i < 8; i++)
 				{
-					final int x = (int) (radius * Math.cos(i * .7854)); // .7854~2pi/8
-					final int y = (int) (radius * Math.sin(i * .7854));
-					_Minions.add((L2MonsterInstance) addSpawn(ROYAL, npc.getX() + x, npc.getY() + y, npc.getZ(), 0, false, 0));
+					int x = (int) (radius * Math.cos(i * .7854)); // .7854~2pi/8
+					int y = (int) (radius * Math.sin(i * .7854));
+					royalGuards.add((L2MonsterInstance) addSpawn(ROYAL, npc.getX() + x, npc.getY() + y, npc.getZ(), 0, false, 0));
 				}
 			}
 				break;
-			case RESPAWN_ROYAL:
-			{
-				_Minions.add((L2MonsterInstance) addSpawn(ROYAL, npc.getX(), npc.getY(), npc.getZ(), 0, true, 0));
-			}
-			case RESPAWN_NURSE:
-			{
-				_Nurses.add((L2MonsterInstance) addSpawn(NURSE, npc.getX(), npc.getY(), npc.getZ(), 0, true, 0));
-			}
+			case "RESPAWN_ROYAL":
+				royalGuards.add((L2MonsterInstance) addSpawn(ROYAL, npc.getX(), npc.getY(), npc.getZ(), 0, true, 0));
 				break;
-			case DESPAWN_MINIONS:
+			case "RESPAWN_NURSE":
+				antNurses.add((L2MonsterInstance) addSpawn(NURSE, npc.getX(), npc.getY(), npc.getZ(), 0, true, 0));
+				break;
+			case "DESPAWN_MINIONS":
 			{
-				for (int i = 0; i < _Minions.size(); i++)
+				for (int i = 0; i < royalGuards.size(); i++)
 				{
-					final L2Attackable mob = _Minions.get(i);
+					L2Attackable mob = royalGuards.get(i);
 					if (mob != null)
 					{
 						mob.decayMe();
 					}
 				}
-				for (int k = 0; k < _Nurses.size(); k++)
+				for (int k = 0; k < antNurses.size(); k++)
 				{
-					final L2MonsterInstance _nurse = _Nurses.get(k);
-					if (_nurse != null)
-						_nurse.decayMe();
+					final L2MonsterInstance nurse = antNurses.get(k);
+					if (nurse != null)
+					{
+						nurse.decayMe();
+					}
 				}
-				_Nurses.clear();
-				_Minions.clear();
+				antNurses.clear();
+				royalGuards.clear();
 			}
 				break;
-			case CHECK_MINIONS_ZONE:
+			case "CHECK_MINIONS_ZONE":
 			{
-				for (int i = 0; i < _Minions.size(); i++)
+				for (int i = 0; i < royalGuards.size(); i++)
 				{
-					final L2Attackable mob = _Minions.get(i);
+					L2Attackable mob = royalGuards.get(i);
 					
-					if (mob != null && !mob.isInsideRadius(npc.getX(), npc.getY(), 700, false))/* !_Zone.isInsideZone(mob)) */
+					if (mob != null && !mob.isInsideRadius(npc.getX(), npc.getY(), 700, false))
 					{
 						mob.teleToLocation(npc.getX(), npc.getY(), npc.getZ());
 					}
 				}
 			}
 				break;
-			case CHECK_NURSE_ALIVE:
-			{
-				int deadNurses = 0;
-				for (final L2MonsterInstance nurse : _Nurses)
-				{
-					if (nurse.isDead())
-						deadNurses++;
-				}
-				if (deadNurses == _Nurses.size())
-					startQuestTimer("RESPAWN_NURSE", Config.QA_RESP_NURSE * 1000, npc, null);
-			}
-				break;
-			/*
-			 * case CHECK_QA_ZONE:{ int loc_x = -21610; int loc_y = 181594; int loc_z = -5734; if(!npc.isInsideRadius(loc_x,loc_y,3000,false)){ npc.teleToLocation(loc_x, loc_y, loc_z); } startQuestTimer("CHECK_MINIONS_ZONE", 1000, npc, null); } break;
-			 */
-			case ACTION:
+			case "ACTION":
 			{
 				if (Rnd.get(3) == 0)
 				{
@@ -286,77 +187,76 @@ public class QueenAnt extends Quest implements Runnable
 						npc.broadcastPacket(new SocialAction(npc.getObjectId(), 4));
 					}
 				}
-				/*
-				 * if(Math.abs(npc.getX() + 21610) > 1000 || Math.abs(npc.getY() - 181594) > 2500) { ((L2Attackable) npc).clearAggroList(); npc.getAI().setIntention(CtrlIntention.AI_INTENTION_IDLE); npc.teleToLocation(-21610, 181594, -5740); }
-				 */
-				// startQuestTimer("ACTION", 10000, npc, null);
-				
 			}
 				break;
-			case HEAL:
+			case "HEAL":
 			{
 				boolean notCasting;
-				final boolean larvaNeedHeal = _larva != null && _larva.getCurrentHp() < _larva.getMaxHp();
-				final boolean queenNeedHeal = _queen != null && _queen.getCurrentHp() < _queen.getMaxHp();
+				boolean larvaNeedHeal = larva != null && larva.getCurrentHp() < larva.getMaxHp();
+				boolean queenNeedHeal = queen != null && queen.getCurrentHp() < queen.getMaxHp();
 				boolean nurseNeedHeal = false;
-				for (final L2MonsterInstance nurse : _Nurses)
+				for (int i = 0; i < antNurses.size(); i++)
 				{
-					nurseNeedHeal = nurse != null && nurse.getCurrentHp() < nurse.getMaxHp();
-					if (nurse == null || nurse.isDead() || nurse.isCastingNow())
+					L2MonsterInstance antNurse = antNurses.get(i);
+					nurseNeedHeal = antNurse != null && antNurse.getCurrentHp() < antNurse.getMaxHp();
+					if (antNurse == null || antNurse.isDead() || antNurse.isCastingNow())
+					{
 						continue;
-					notCasting = nurse.getAI().getIntention() != CtrlIntention.AI_INTENTION_CAST;
+					}
+					notCasting = antNurse.getAI().getIntention() != CtrlIntention.AI_INTENTION_CAST;
 					if (larvaNeedHeal)
 					{
-						if (nurse.getTarget() != _larva || notCasting)
+						if (antNurse.getTarget() != larva || notCasting)
 						{
-							getIntoPosition(nurse, _larva);
-							nurse.setTarget(_larva);
-							nurse.doCast(SkillTable.getInstance().getInfo(4020, 1));
-							nurse.doCast(SkillTable.getInstance().getInfo(4024, 1));
+							getIntoPosition(antNurse, larva);
+							antNurse.setTarget(larva);
+							antNurse.doCast(SkillTable.getInstance().getInfo(4020, 1));
+							antNurse.doCast(SkillTable.getInstance().getInfo(4024, 1));
 						}
 						continue;
 					}
 					if (queenNeedHeal)
 					{
-						if (nurse.getTarget() != _queen || notCasting)
+						if (antNurse.getTarget() != queen || notCasting)
 						{
-							getIntoPosition(nurse, _queen);
-							nurse.setTarget(_queen);
-							nurse.doCast(SkillTable.getInstance().getInfo(4020, 1));
+							getIntoPosition(antNurse, queen);
+							antNurse.setTarget(queen);
+							antNurse.doCast(SkillTable.getInstance().getInfo(4020, 1));
 						}
 						continue;
 					}
 					if (nurseNeedHeal)
 					{
-						if (nurse.getTarget() != nurse || notCasting)
+						if (antNurse.getTarget() != antNurse || notCasting)
 						{
-							for (int k = 0; k < _Nurses.size(); k++)
+							for (int k = 0; k < antNurses.size(); k++)
 							{
-								getIntoPosition(_Nurses.get(k), nurse);
-								_Nurses.get(k).setTarget(nurse);
-								_Nurses.get(k).doCast(SkillTable.getInstance().getInfo(4020, 1));
+								getIntoPosition(antNurses.get(k), antNurse);
+								antNurses.get(k).setTarget(antNurse);
+								antNurses.get(k).doCast(SkillTable.getInstance().getInfo(4020, 1));
 							}
 							
 						}
 					}
-					if (notCasting && nurse.getTarget() != null)
-						nurse.setTarget(null);
+					if (notCasting && antNurse.getTarget() != null)
+					{
+						antNurse.setTarget(null);
+					}
 				}
 			}
 				break;
 			default:
-			{
 				LOGGER.info("QUEEN: Not defined event: " + event + "!");
-			}
+				break;
 		}
 		
 		return super.onAdvEvent(event, npc, player);
 	}
 	
 	@Override
-	public String onAttack(final L2NpcInstance npc, final L2PcInstance attacker, final int damage, final boolean isPet)
+	public String onAttack(L2NpcInstance npc, L2PcInstance attacker, int damage, boolean isPet)
 	{
-		final int npcId = npc.getNpcId();
+		int npcId = npc.getNpcId();
 		if (npcId == NURSE)
 		{
 			npc.getAI().setIntention(CtrlIntention.AI_INTENTION_IDLE, null, null);
@@ -366,31 +266,29 @@ public class QueenAnt extends Quest implements Runnable
 	}
 	
 	@Override
-	public String onKill(final L2NpcInstance npc, final L2PcInstance killer, final boolean isPet)
+	public String onKill(L2NpcInstance npc, L2PcInstance killer, boolean isPet)
 	{
-		final int npcId = npc.getNpcId();
+		int npcId = npc.getNpcId();
 		
-		final Integer status = GrandBossManager.getInstance().getBossStatus(QUEEN);
+		int status = GrandBossManager.getInstance().getBossStatus(QUEEN);
 		
 		if (npcId == QUEEN)
 		{
 			npc.broadcastPacket(new PlaySound(1, "BS02_D", 1, npc.getObjectId(), npc.getX(), npc.getY(), npc.getZ()));
 			
-			if (!npc.getSpawn().is_customBossInstance())
+			if (!npc.getSpawn().isCustomRaidBoss())
 			{
 				GrandBossManager.getInstance().setBossStatus(QUEEN, DEAD);
 				// time is 36hour +/- 17hour
-				final long respawnTime = (Config.QA_RESP_FIRST + Rnd.get(Config.QA_RESP_SECOND)) * 3600000;
-				startQuestTimer("QUEEN_SPAWN", respawnTime, null, null);
+				long respawnTime = (Config.QA_RESP_FIRST + Rnd.get(Config.QA_RESP_SECOND)) * 3600000;
+				startQuestTimer("QUEEN_ANT_SPAWN", respawnTime, null, null);
 				startQuestTimer("LARVA_DESPAWN", 4 * 60 * 60 * 1000, null, null);
 				cancelQuestTimer("ACTION", npc, null);
 				cancelQuestTimer("SPAWN_ROYAL", npc, null);
 				cancelQuestTimer("CHECK_MINIONS_ZONE", npc, null);
-				cancelQuestTimer("CHECK_NURSE_ALIVE", npc, null);
 				cancelQuestTimer("HEAL", null, null);
-				// cancelQuestTimer("CHECK_QA_ZONE", npc, null);
 				// also save the respawn time so that the info is maintained past reboots
-				final StatsSet info = GrandBossManager.getInstance().getStatsSet(QUEEN);
+				StatsSet info = GrandBossManager.getInstance().getStatsSet(QUEEN);
 				info.set("respawn_time", System.currentTimeMillis() + respawnTime);
 				GrandBossManager.getInstance().setStatsSet(QUEEN, info);
 			}
@@ -399,35 +297,34 @@ public class QueenAnt extends Quest implements Runnable
 		}
 		else if (status == LIVE)
 		{
-			if (npcId == ROYAL || npcId == NURSE)
+			if (npcId == NURSE)
 			{
-				npc.decayMe();
-				if (_Minions.contains(npc))
-				{
-					_Minions.remove(npc);
-				}
-				else
-				{
-					_Nurses.remove(npc);
-				}
+				antNurses.remove(npc);
 				
-				if (npcId == ROYAL)
+				if (antNurses.size() < 6)
+				{
+					startQuestTimer("RESPAWN_NURSE", Config.QA_RESP_NURSE * 1000, npc, null);
+				}
+			}
+			else if (npcId == ROYAL)
+			{
+				royalGuards.remove(npc);
+				
+				if (antNurses.size() < 8)
 				{
 					startQuestTimer("RESPAWN_ROYAL", (Config.QA_RESP_ROYAL + Rnd.get(40)) * 1000, npc, null);
-				}
-				else if (npcId == NURSE)
-				{
-					startQuestTimer("CHECK_NURSE_ALIVE", 1000, npc, null);
 				}
 			}
 		}
 		return super.onKill(npc, killer, isPet);
 	}
 	
-	public void getIntoPosition(final L2MonsterInstance nurse, final L2MonsterInstance caller)
+	public void getIntoPosition(L2MonsterInstance nurse, L2MonsterInstance caller)
 	{
 		if (!nurse.isInsideRadius(caller, 300, false, false))
+		{
 			nurse.getAI().moveToPawn(caller, 300);
+		}
 	}
 	
 	@Override

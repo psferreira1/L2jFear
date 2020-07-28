@@ -1,22 +1,3 @@
-/* L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.model.entity.siege;
 
 import java.sql.Connection;
@@ -26,8 +7,6 @@ import java.util.Calendar;
 
 import org.apache.log4j.Logger;
 
-import com.l2jfrozen.util.CloseUtil;
-import com.l2jfrozen.util.database.DatabaseUtils;
 import com.l2jfrozen.util.database.L2DatabaseFactory;
 
 /**
@@ -36,45 +15,39 @@ import com.l2jfrozen.util.database.L2DatabaseFactory;
 public abstract class ClanHallSiege
 {
 	private static Logger LOGGER = Logger.getLogger(ClanHallSiege.class);
-	private Calendar _siegeDate;
-	public Calendar _siegeEndDate;
-	private boolean _isInProgress = false;
+	private static final String SELECT_SIEGE_DATA = "SELECT siege_data FROM clanhall_siege WHERE id=?";
+	private static final String UPDATE_CLAN_HALL_SIEGE_DATA = "UPDATE clanhall_siege SET siege_data=? WHERE id = ?";
 	
-	public long restoreSiegeDate(final int ClanHallId)
+	private Calendar siegeDate;
+	public Calendar siegeEndDate;
+	private boolean isInProgress = false;
+	
+	public long restoreSiegeDate(int ClanHallId)
 	{
 		long res = 0;
-		Connection con = null;
-		try
+		try (Connection con = L2DatabaseFactory.getInstance().getConnection();
+			PreparedStatement statement = con.prepareStatement(SELECT_SIEGE_DATA))
 		{
-			con = L2DatabaseFactory.getInstance().getConnection(false);
-			final PreparedStatement statement = con.prepareStatement("SELECT siege_data FROM clanhall_siege WHERE id=?");
 			statement.setInt(1, ClanHallId);
-			final ResultSet rs = statement.executeQuery();
 			
-			if (rs.next())
+			try (ResultSet rs = statement.executeQuery())
 			{
-				res = rs.getLong("siege_data");
+				if (rs.next())
+				{
+					res = rs.getLong("siege_data");
+				}
 			}
-			
-			rs.close();
-			DatabaseUtils.close(statement);
 		}
-		catch (final Exception e)
+		catch (Exception e)
 		{
-			LOGGER.warn("Exception: can't get clanhall siege date: ");
-			e.printStackTrace();
-		}
-		finally
-		{
-			CloseUtil.close(con);
-			con = null;
+			LOGGER.error("ClanHallSiege.restoreSiegeDate : Can't get clanhall siege date", e);
 		}
 		return res;
 	}
 	
-	public void setNewSiegeDate(final long siegeDate, final int ClanHallId, final int hour)
+	public void setNewSiegeDate(long siegeDate, int ClanHallId, int hour)
 	{
-		final Calendar tmpDate = Calendar.getInstance();
+		Calendar tmpDate = Calendar.getInstance();
 		if (siegeDate <= System.currentTimeMillis())
 		{
 			tmpDate.setTimeInMillis(System.currentTimeMillis());
@@ -85,46 +58,38 @@ public abstract class ClanHallSiege
 			tmpDate.set(Calendar.SECOND, 0);
 			
 			setSiegeDate(tmpDate);
-			Connection con = null;
-			try
+			
+			try (Connection con = L2DatabaseFactory.getInstance().getConnection();
+				PreparedStatement statement = con.prepareStatement(UPDATE_CLAN_HALL_SIEGE_DATA))
 			{
-				con = L2DatabaseFactory.getInstance().getConnection(false);
-				final PreparedStatement statement = con.prepareStatement("UPDATE clanhall_siege SET siege_data=? WHERE id = ?");
 				statement.setLong(1, getSiegeDate().getTimeInMillis());
 				statement.setInt(2, ClanHallId);
-				statement.execute();
-				DatabaseUtils.close(statement);
+				statement.executeUpdate();
 			}
-			catch (final Exception e)
+			catch (Exception e)
 			{
-				LOGGER.warn("Exception: can't save clanhall siege date: ");
-				e.printStackTrace();
-			}
-			finally
-			{
-				CloseUtil.close(con);
-				con = null;
+				LOGGER.error("Exception: can't save clanhall siege date: ");
 			}
 		}
 	}
 	
 	public final Calendar getSiegeDate()
 	{
-		return _siegeDate;
+		return siegeDate;
 	}
 	
 	public final void setSiegeDate(final Calendar par)
 	{
-		_siegeDate = par;
+		siegeDate = par;
 	}
 	
 	public final boolean getIsInProgress()
 	{
-		return _isInProgress;
+		return isInProgress;
 	}
 	
 	public final void setIsInProgress(final boolean par)
 	{
-		_isInProgress = par;
+		isInProgress = par;
 	}
 }

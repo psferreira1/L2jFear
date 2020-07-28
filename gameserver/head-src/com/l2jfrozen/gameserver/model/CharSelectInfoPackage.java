@@ -1,23 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.model;
 
 /**
@@ -26,30 +6,30 @@ package com.l2jfrozen.gameserver.model;
  */
 public class CharSelectInfoPackage
 {
-	private String _name;
-	private int _objectId = 0;
-	private int _charId = 0x00030b7a;
-	private long _exp = 0;
-	private int _sp = 0;
-	private int _clanId = 0;
-	private int _race = 0;
-	private int _classId = 0;
-	private int _baseClassId = 0;
-	private long _deleteTimer = 0L;
-	private long _lastAccess = 0L;
-	private int _face = 0;
-	private int _hairStyle = 0;
-	private int _hairColor = 0;
-	private int _sex = 0;
-	private int _level = 1;
-	private int _maxHp = 0;
-	private double _currentHp = 0;
-	private int _maxMp = 0;
-	private double _currentMp = 0;
-	private final int[][] _paperdoll;
-	private int _karma = 0;
-	private int _augmentationId = 0;
-	private int _accessLevel;
+	private String name;
+	private int objectId = 0;
+	private int charId = 0x00030b7a;
+	private long exp = 0;
+	private int sp = 0;
+	private int clanId = 0;
+	private int race = 0;
+	private int classId = 0;
+	private int baseClassId = 0;
+	private long deleteTimer = 0L;
+	private long lastAccess = 0L;
+	private int face = 0;
+	private int hairStyle = 0;
+	private int hairColor = 0;
+	private int sex = 0;
+	private int level = 1;
+	private int maxHp = 0;
+	private double currentHp = 0;
+	private int maxMp = 0;
+	private double currentMp = 0;
+	private final int[][] paperdoll;
+	private int karma = 0;
+	private int augmentationId = 0;
+	private int accessLevel;
 	
 	/**
 	 * @param objectId
@@ -58,255 +38,257 @@ public class CharSelectInfoPackage
 	public CharSelectInfoPackage(final int objectId, final String name)
 	{
 		setObjectId(objectId);
-		_name = name;
-		_paperdoll = PcInventory.restoreVisibleInventory(objectId);
+		this.name = name;
+		paperdoll = PcInventory.restoreVisibleInventory(objectId);
 	}
 	
 	public int getObjectId()
 	{
-		return _objectId;
+		return objectId;
 	}
 	
 	public void setObjectId(final int objectId)
 	{
-		_objectId = objectId;
+		this.objectId = objectId;
 	}
 	
 	public int getCharId()
 	{
-		return _charId;
+		return charId;
 	}
 	
 	public void setCharId(final int charId)
 	{
-		_charId = charId;
+		this.charId = charId;
 	}
 	
 	public int getClanId()
 	{
-		return _clanId;
+		return clanId;
 	}
 	
 	public void setClanId(final int clanId)
 	{
-		_clanId = clanId;
+		this.clanId = clanId;
 	}
 	
 	public int getClassId()
 	{
-		return _classId;
+		return classId;
 	}
 	
 	public int getBaseClassId()
 	{
-		return _baseClassId;
+		return baseClassId;
 	}
 	
 	public void setClassId(final int classId)
 	{
-		_classId = classId;
+		this.classId = classId;
 	}
 	
 	public void setBaseClassId(final int baseClassId)
 	{
-		_baseClassId = baseClassId;
+		this.baseClassId = baseClassId;
 	}
 	
 	public double getCurrentHp()
 	{
-		return _currentHp;
+		return currentHp;
 	}
 	
 	public void setCurrentHp(final double currentHp)
 	{
-		_currentHp = currentHp;
+		this.currentHp = currentHp;
 	}
 	
 	public double getCurrentMp()
 	{
-		return _currentMp;
+		return currentMp;
 	}
 	
 	public void setCurrentMp(final double currentMp)
 	{
-		_currentMp = currentMp;
+		this.currentMp = currentMp;
 	}
 	
 	public long getDeleteTimer()
 	{
-		return _deleteTimer;
+		return deleteTimer;
 	}
 	
 	public void setDeleteTimer(final long deleteTimer)
 	{
-		_deleteTimer = deleteTimer;
+		this.deleteTimer = deleteTimer;
 	}
 	
 	public long getLastAccess()
 	{
-		return _lastAccess;
+		return lastAccess;
 	}
 	
 	public void setLastAccess(final long lastAccess)
 	{
-		_lastAccess = lastAccess;
+		this.lastAccess = lastAccess;
 	}
 	
 	public long getExp()
 	{
-		return _exp;
+		return exp;
 	}
 	
 	public void setExp(final long exp)
 	{
-		_exp = exp;
+		this.exp = exp;
 	}
 	
 	public int getFace()
 	{
-		return _face;
+		return face;
 	}
 	
 	public void setFace(final int face)
 	{
-		_face = face;
+		this.face = face;
 	}
 	
 	public int getHairColor()
 	{
-		return _hairColor;
+		return hairColor;
 	}
 	
 	public void setHairColor(final int hairColor)
 	{
-		_hairColor = hairColor;
+		this.hairColor = hairColor;
 	}
 	
 	public int getHairStyle()
 	{
-		return _hairStyle;
+		return hairStyle;
 	}
 	
 	public void setHairStyle(final int hairStyle)
 	{
-		_hairStyle = hairStyle;
+		this.hairStyle = hairStyle;
 	}
 	
 	public int getPaperdollObjectId(final int slot)
 	{
-		return _paperdoll[slot][0];
+		return paperdoll[slot][0];
 	}
 	
 	public int getPaperdollItemId(final int slot)
 	{
-		return _paperdoll[slot][1];
+		return paperdoll[slot][1];
 	}
 	
 	public int getLevel()
 	{
-		return _level;
+		return level;
 	}
 	
 	public void setLevel(final int level)
 	{
-		_level = level;
+		this.level = level;
 	}
 	
 	public int getMaxHp()
 	{
-		return _maxHp;
+		return maxHp;
 	}
 	
 	public void setMaxHp(final int maxHp)
 	{
-		_maxHp = maxHp;
+		this.maxHp = maxHp;
 	}
 	
 	public int getMaxMp()
 	{
-		return _maxMp;
+		return maxMp;
 	}
 	
 	public void setMaxMp(final int maxMp)
 	{
-		_maxMp = maxMp;
+		this.maxMp = maxMp;
 	}
 	
 	public String getName()
 	{
-		return _name;
+		return name;
 	}
 	
 	public void setName(final String name)
 	{
-		_name = name;
+		this.name = name;
 	}
 	
 	public int getRace()
 	{
-		return _race;
+		return race;
 	}
 	
 	public void setRace(final int race)
 	{
-		_race = race;
+		this.race = race;
 	}
 	
 	public int getSex()
 	{
-		return _sex;
+		return sex;
 	}
 	
 	public void setSex(final int sex)
 	{
-		_sex = sex;
+		this.sex = sex;
 	}
 	
 	public int getSp()
 	{
-		return _sp;
+		return sp;
 	}
 	
 	public void setSp(final int sp)
 	{
-		_sp = sp;
+		this.sp = sp;
 	}
 	
 	public int getEnchantEffect()
 	{
-		if (_paperdoll[Inventory.PAPERDOLL_RHAND][2] > 0)
-			return _paperdoll[Inventory.PAPERDOLL_RHAND][2];
+		if (paperdoll[Inventory.PAPERDOLL_RHAND][2] > 0)
+		{
+			return paperdoll[Inventory.PAPERDOLL_RHAND][2];
+		}
 		
-		return _paperdoll[Inventory.PAPERDOLL_LRHAND][2];
+		return paperdoll[Inventory.PAPERDOLL_LRHAND][2];
 	}
 	
 	public void setKarma(final int k)
 	{
-		_karma = k;
+		karma = k;
 	}
 	
 	public int getKarma()
 	{
-		return _karma;
+		return karma;
 	}
 	
 	public void setAugmentationId(final int augmentationId)
 	{
-		_augmentationId = augmentationId;
+		this.augmentationId = augmentationId;
 	}
 	
 	public int getAugmentationId()
 	{
-		return _augmentationId;
+		return augmentationId;
 	}
 	
 	public int getAccessLevel()
 	{
-		return _accessLevel;
+		return accessLevel;
 	}
 	
 	public void setAccessLevel(final int accessLevel)
 	{
-		_accessLevel = accessLevel;
+		this.accessLevel = accessLevel;
 	}
 }

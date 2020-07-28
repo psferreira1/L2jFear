@@ -1,22 +1,3 @@
-/* L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.util;
 
 import java.util.Arrays;
@@ -25,9 +6,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import javolution.util.FastList;
-
 import com.l2jfrozen.Config;
+
+import javolution.util.FastList;
 
 /**
  * Descending Integer Sort Algorithm - Fast ordering system. - Can easily be ported elsewhere. - Can handle any number of values, from a list or even from a map. - Handles duplicate values.
@@ -38,32 +19,32 @@ public class MultiSort
 	public static final int SORT_ASCENDING = 0;
 	public static final int SORT_DESCENDING = 1;
 	
-	private List<?> _keyList;
-	private List<Integer> _valueList;
+	private List<?> keyList;
+	private List<Integer> valueList;
 	
-	private boolean _isSortDescending;
-	private boolean _isSorted;
+	private boolean isSortDescending;
+	private boolean isSorted;
 	
 	public MultiSort(final int[] valueList)
 	{
-		_valueList = getIntList(valueList);
+		this.valueList = getIntList(valueList);
 	}
 	
 	public MultiSort(final Collection<Integer> valueList)
 	{
-		_valueList = getIntList(valueList);
+		this.valueList = getIntList(valueList);
 	}
 	
 	public MultiSort(final Object[] keyList, final int[] valueList)
 	{
-		_keyList = getList(keyList);
-		_valueList = getIntList(valueList);
+		this.keyList = getList(keyList);
+		this.valueList = getIntList(valueList);
 	}
 	
 	public MultiSort(final Map<?, Integer> valueMap)
 	{
-		_keyList = getList(valueMap.keySet());
-		_valueList = getIntList(valueMap.values());
+		keyList = getList(valueMap.keySet());
+		valueList = getIntList(valueMap.values());
 	}
 	
 	private final List<Integer> getIntList(final Collection<Integer> valueList)
@@ -77,7 +58,7 @@ public class MultiSort
 		
 		for (int i = 0; i < valueList.length; i++)
 		{
-			tempIntList[i] = new Integer(valueList[i]);
+			tempIntList[i] = valueList[i];
 		}
 		
 		return Arrays.asList(tempIntList);
@@ -101,7 +82,9 @@ public class MultiSort
 	public final int getHarmonicMean()
 	{
 		if (getValues().isEmpty())
+		{
 			return -1;
+		}
 		
 		int totalValue = 0;
 		
@@ -115,10 +98,12 @@ public class MultiSort
 	
 	public final List<?> getKeys()
 	{
-		if (_keyList == null)
+		if (keyList == null)
+		{
 			return new FastList<>();
+		}
 		
-		return _keyList;
+		return keyList;
 	}
 	
 	public final int getFrequency(final int checkValue)
@@ -139,7 +124,9 @@ public class MultiSort
 	public final int getMean()
 	{
 		if (getValues().isEmpty())
+		{
 			return -1;
+		}
 		
 		return getTotalValue() / getCount();
 	}
@@ -147,7 +134,9 @@ public class MultiSort
 	public final double getStandardDeviation()
 	{
 		if (getValues().isEmpty())
+		{
 			return -1;
+		}
 		
 		final List<Double> tempValList = new FastList<>();
 		
@@ -173,7 +162,9 @@ public class MultiSort
 	public final int getTotalValue()
 	{
 		if (getValues().isEmpty())
+		{
 			return 0;
+		}
 		
 		int totalValue = 0;
 		
@@ -187,25 +178,27 @@ public class MultiSort
 	
 	public final List<Integer> getValues()
 	{
-		if (_valueList == null)
+		if (valueList == null)
+		{
 			return new FastList<>();
+		}
 		
-		return _valueList;
+		return valueList;
 	}
 	
 	public final boolean isSortDescending()
 	{
-		return _isSortDescending;
+		return isSortDescending;
 	}
 	
 	public final boolean isSorted()
 	{
-		return _isSorted;
+		return isSorted;
 	}
 	
 	public final void setSortDescending(final boolean isDescending)
 	{
-		_isSortDescending = isDescending;
+		isSortDescending = isDescending;
 	}
 	
 	public boolean sort()
@@ -224,7 +217,9 @@ public class MultiSort
 			{
 				// If there are no keys, just return the ascendingly sorted values.
 				if (getKeys().isEmpty())
+				{
 					return true;
+				}
 				
 				// Iterate through the list of ordered numerical values.
 				for (int i = getValues().size() - 1; i > -1; i--)
@@ -289,15 +284,17 @@ public class MultiSort
 				}
 			}
 			
-			_keyList = newKeyList;
-			_valueList = newValueList;
-			_isSorted = true;
+			keyList = newKeyList;
+			valueList = newValueList;
+			isSorted = true;
 			return true;
 		}
 		catch (final Exception e)
 		{
 			if (Config.ENABLE_ALL_EXCEPTIONS)
+			{
 				e.printStackTrace();
+			}
 			return false;
 		}
 	}

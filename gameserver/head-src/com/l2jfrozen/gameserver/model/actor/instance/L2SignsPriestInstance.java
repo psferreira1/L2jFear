@@ -1,28 +1,6 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.model.actor.instance;
 
 import java.util.StringTokenizer;
-
-import javolution.text.TextBuilder;
 
 import com.l2jfrozen.Config;
 import com.l2jfrozen.gameserver.cache.HtmCache;
@@ -35,6 +13,8 @@ import com.l2jfrozen.gameserver.network.serverpackets.NpcHtmlMessage;
 import com.l2jfrozen.gameserver.network.serverpackets.StatusUpdate;
 import com.l2jfrozen.gameserver.network.serverpackets.SystemMessage;
 import com.l2jfrozen.gameserver.templates.L2NpcTemplate;
+
+import javolution.text.TextBuilder;
 
 /**
  * Dawn/Dusk Seven Signs Priest Instance
@@ -83,7 +63,9 @@ public class L2SignsPriestInstance extends L2FolkInstance
 				catch (final Exception e)
 				{
 					if (Config.ENABLE_ALL_EXCEPTIONS)
+					{
 						e.printStackTrace();
+					}
 					
 					try
 					{
@@ -104,7 +86,9 @@ public class L2SignsPriestInstance extends L2FolkInstance
 						catch (final Exception e3)
 						{
 							if (Config.ENABLE_ALL_EXCEPTIONS)
+							{
 								e3.printStackTrace();
+							}
 							
 							LOGGER.warn("Failed to retrieve cabal from bypass command. NpcId: " + getNpcId() + "; Command: " + command);
 						}
@@ -360,7 +344,9 @@ public class L2SignsPriestInstance extends L2FolkInstance
 					catch (final NumberFormatException e)
 					{
 						if (Config.ENABLE_ALL_EXCEPTIONS)
+						{
 							e.printStackTrace();
+						}
 						
 						showChatWindow(player, SevenSigns.SEVEN_SIGNS_HTML_PATH + "blkmrkt_3.htm");
 						break;
@@ -368,7 +354,9 @@ public class L2SignsPriestInstance extends L2FolkInstance
 					catch (final StringIndexOutOfBoundsException e)
 					{
 						if (Config.ENABLE_ALL_EXCEPTIONS)
+						{
 							e.printStackTrace();
+						}
 						
 						showChatWindow(player, SevenSigns.SEVEN_SIGNS_HTML_PATH + "blkmrkt_3.htm");
 						break;
@@ -449,7 +437,9 @@ public class L2SignsPriestInstance extends L2FolkInstance
 					catch (final Exception e)
 					{
 						if (Config.ENABLE_ALL_EXCEPTIONS)
+						{
 							e.printStackTrace();
+						}
 						
 						LOGGER.warn("SevenSigns: Error occurred while teleporting player: " + e);
 					}
@@ -524,7 +514,9 @@ public class L2SignsPriestInstance extends L2FolkInstance
 					catch (final Exception NumberFormatException)
 					{
 						if (Config.ENABLE_ALL_EXCEPTIONS)
+						{
 							NumberFormatException.printStackTrace();
+						}
 						
 						player.sendMessage("You must enter an integer amount.");
 						break;
@@ -617,7 +609,7 @@ public class L2SignsPriestInstance extends L2FolkInstance
 					
 					showChatWindow(player, val, null, false);
 					break;
-			
+				
 			}
 			sm = null;
 			iu = null;
@@ -637,7 +629,9 @@ public class L2SignsPriestInstance extends L2FolkInstance
 		
 		// The player is not in a clan, so return false.
 		if (playerClan == null)
+		{
 			return false;
+		}
 		
 		// If castle ownage check is clan-based rather than ally-based,
 		// check if the player's clan has a castle and return the result.
@@ -653,14 +647,18 @@ public class L2SignsPriestInstance extends L2FolkInstance
 				L2Clan[] clanList = ClanTable.getInstance().getClans();
 				
 				for (final L2Clan clan : clanList)
-					if (clan.getAllyId() == allyId && clan.getHasCastle() > 0)
+				{
+					if (clan.getAllyId() == allyId && clan.getCastleId() > 0)
+					{
 						return true;
+					}
+				}
 				
 				clanList = null;
 			}
 		}
 		
-		return playerClan.getHasCastle() > 0;
+		return playerClan.getCastleId() > 0;
 	}
 	
 	private void showChatWindow(final L2PcInstance player, final int val, final String suffix, final boolean isDescription)

@@ -1,23 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.geo.util;
 
 import java.util.Iterator;
@@ -31,21 +11,21 @@ public class L2FastSet<E> extends L2FastCollection<E> implements Set<E>
 {
 	private static final Object NULL = new Object();
 	
-	private final FastMap<E, Object> _map;
+	private final FastMap<E, Object> map;
 	
 	public L2FastSet()
 	{
-		_map = new FastMap<>();
+		map = new FastMap<>();
 	}
 	
 	public L2FastSet(final int capacity)
 	{
-		_map = new FastMap<>(capacity);
+		map = new FastMap<>(capacity);
 	}
 	
 	public L2FastSet(final Set<? extends E> elements)
 	{
-		_map = new FastMap<>(elements.size());
+		map = new FastMap<>(elements.size());
 		
 		addAll(elements);
 	}
@@ -54,27 +34,31 @@ public class L2FastSet<E> extends L2FastCollection<E> implements Set<E>
 	public L2FastSet<E> setShared(final boolean isShared)
 	{
 		if (isShared)
-			_map.shared();
+		{
+			map.shared();
+		}
 		else
-			_map.setShared(false);
+		{
+			map.setShared(false);
+		}
 		return this;
 	}
 	
 	public boolean isShared()
 	{
-		return _map.isShared();
+		return map.isShared();
 	}
 	
 	@Override
 	public Record head()
 	{
-		return _map.head();
+		return map.head();
 	}
 	
 	@Override
 	public Record tail()
 	{
-		return _map.tail();
+		return map.tail();
 	}
 	
 	@Override
@@ -86,54 +70,54 @@ public class L2FastSet<E> extends L2FastCollection<E> implements Set<E>
 	@Override
 	public void delete(final Record record)
 	{
-		_map.remove(((FastMap.Entry<E, Object>) record).getKey());
+		map.remove(((FastMap.Entry<E, Object>) record).getKey());
 	}
 	
 	@Override
 	public void delete(final Record record, final E value)
 	{
-		_map.remove(value);
+		map.remove(value);
 	}
 	
 	@Override
 	public boolean add(final E value)
 	{
-		return _map.put(value, NULL) == null;
+		return map.put(value, NULL) == null;
 	}
 	
 	@Override
 	public void clear()
 	{
-		_map.clear();
+		map.clear();
 	}
 	
 	@Override
 	public boolean contains(final Object o)
 	{
-		return _map.containsKey(o);
+		return map.containsKey(o);
 	}
 	
 	@Override
 	public boolean isEmpty()
 	{
-		return _map.isEmpty();
+		return map.isEmpty();
 	}
 	
 	@Override
 	public Iterator<E> iterator()
 	{
-		return _map.keySet().iterator();
+		return map.keySet().iterator();
 	}
 	
 	@Override
 	public boolean remove(final Object o)
 	{
-		return _map.remove(o) != null;
+		return map.remove(o) != null;
 	}
 	
 	@Override
 	public int size()
 	{
-		return _map.size();
+		return map.size();
 	}
 }

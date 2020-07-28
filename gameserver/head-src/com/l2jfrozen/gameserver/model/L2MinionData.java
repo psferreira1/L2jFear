@@ -1,23 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.model;
 
 import com.l2jfrozen.util.random.Rnd;
@@ -25,19 +5,20 @@ import com.l2jfrozen.util.random.Rnd;
 /**
  * This class defines the spawn data of a Minion type In a group mob, there are one master called RaidBoss and several slaves called Minions. <B><U> Data</U> :</B><BR>
  * <BR>
- * <li>_minionId : The Identifier of the L2Minion to spawn</li> <li>_minionAmount : The number of this Minion Type to spawn</li><BR>
+ * <li>_minionId : The Identifier of the L2Minion to spawn</li>
+ * <li>_minionAmount : The number of this Minion Type to spawn</li><BR>
  * <BR>
  */
 public class L2MinionData
 {
 	
 	/** The Identifier of the L2Minion */
-	private int _minionId;
+	private int minionId;
 	
 	/** The number of this Minion Type to spawn */
-	private int _minionAmount;
-	private int _minionAmountMin;
-	private int _minionAmountMax;
+	private int minionAmount;
+	private int minionAmountMin;
+	private int minionAmountMax;
 	
 	/**
 	 * Set the Identifier of the Minion to spawn.<BR>
@@ -46,7 +27,7 @@ public class L2MinionData
 	 */
 	public void setMinionId(final int id)
 	{
-		_minionId = id;
+		minionId = id;
 	}
 	
 	/**
@@ -54,7 +35,7 @@ public class L2MinionData
 	 */
 	public int getMinionId()
 	{
-		return _minionId;
+		return minionId;
 	}
 	
 	/**
@@ -64,7 +45,7 @@ public class L2MinionData
 	 */
 	public void setAmountMin(final int amountMin)
 	{
-		_minionAmountMin = amountMin;
+		minionAmountMin = amountMin;
 	}
 	
 	/**
@@ -74,7 +55,7 @@ public class L2MinionData
 	 */
 	public void setAmountMax(final int amountMax)
 	{
-		_minionAmountMax = amountMax;
+		minionAmountMax = amountMax;
 	}
 	
 	/**
@@ -84,7 +65,7 @@ public class L2MinionData
 	 */
 	public void setAmount(final int amount)
 	{
-		_minionAmount = amount;
+		minionAmount = amount;
 	}
 	
 	/**
@@ -92,12 +73,12 @@ public class L2MinionData
 	 */
 	public int getAmount()
 	{
-		if (_minionAmountMax > _minionAmountMin)
+		if (minionAmountMax > minionAmountMin)
 		{
-			_minionAmount = Rnd.get(_minionAmountMin, _minionAmountMax);
-			return _minionAmount;
+			minionAmount = Rnd.get(minionAmountMin, minionAmountMax);
+			return minionAmount;
 		}
-		return _minionAmountMin;
+		return minionAmountMin;
 	}
 	
 }

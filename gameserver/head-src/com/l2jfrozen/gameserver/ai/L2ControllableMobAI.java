@@ -1,31 +1,10 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.ai;
 
 import static com.l2jfrozen.gameserver.ai.CtrlIntention.AI_INTENTION_ACTIVE;
 import static com.l2jfrozen.gameserver.ai.CtrlIntention.AI_INTENTION_ATTACK;
 
+import java.util.ArrayList;
 import java.util.List;
-
-import javolution.util.FastList;
 
 import com.l2jfrozen.gameserver.datatables.MobGroupTable;
 import com.l2jfrozen.gameserver.model.L2Attackable;
@@ -54,17 +33,17 @@ public class L2ControllableMobAI extends L2AttackableAI
 	public static final int AI_CAST = 5;
 	public static final int AI_ATTACK_GROUP = 6;
 	
-	private int _alternateAI;
+	private int alternateAI;
 	
-	private boolean _isThinking; // to prevent thinking recursively
-	private boolean _isNotMoving;
+	private boolean isThinking; // to prevent thinking recursively
+	private boolean isNotMoving;
 	
-	private L2Character _forcedTarget;
-	private MobGroup _targetGroup;
+	private L2Character forcedTarget;
+	private MobGroup targetGroup;
 	
 	protected void thinkFollow()
 	{
-		final L2Attackable me = (L2Attackable) _actor;
+		final L2Attackable me = (L2Attackable) actor;
 		
 		if (!Util.checkIfInRange(MobGroupTable.FOLLOW_RANGE, me, getForcedTarget(), true))
 		{
@@ -80,8 +59,10 @@ public class L2ControllableMobAI extends L2AttackableAI
 	@Override
 	protected void onEvtThink()
 	{
-		if (isThinking() || _actor.isAllSkillsDisabled())
+		if (isThinking() || actor.isAllSkillsDisabled())
+		{
 			return;
+		}
 		
 		setThinking(true);
 		
@@ -134,19 +115,21 @@ public class L2ControllableMobAI extends L2AttackableAI
 		}
 		
 		if (getAttackTarget() == null)
+		{
 			return;
+		}
 		
-		((L2Attackable) _actor).setTarget(getAttackTarget());
+		((L2Attackable) actor).setTarget(getAttackTarget());
 		
-		if (!_actor.isMuted())
+		if (!actor.isMuted())
 		{
 			// check distant skills
 			int max_range = 0;
-			for (final L2Skill sk : _actor.getAllSkills())
+			for (final L2Skill sk : actor.getAllSkills())
 			{
-				if (Util.checkIfInRange(sk.getCastRange(), _actor, getAttackTarget(), true) && !_actor.isSkillDisabled(sk) && _actor.getCurrentMp() > _actor.getStat().getMpConsume(sk))
+				if (Util.checkIfInRange(sk.getCastRange(), actor, getAttackTarget(), true) && !actor.isSkillDisabled(sk) && actor.getCurrentMp() > actor.getStat().getMpConsume(sk))
 				{
-					_accessor.doCast(sk);
+					accessor.doCast(sk);
 					return;
 				}
 				max_range = Math.max(max_range, sk.getCastRange());
@@ -171,28 +154,30 @@ public class L2ControllableMobAI extends L2AttackableAI
 		}
 		
 		if (target == null)
+		{
 			return;
+		}
 		
-		_actor.setTarget(target);
+		actor.setTarget(target);
 		// as a response, we put the target in a forced attack mode
 		final L2ControllableMobInstance theTarget = (L2ControllableMobInstance) target;
 		final L2ControllableMobAI ctrlAi = (L2ControllableMobAI) theTarget.getAI();
-		ctrlAi.forceAttack(_actor);
+		ctrlAi.forceAttack(actor);
 		
-		final L2Skill[] skills = _actor.getAllSkills();
-		final double dist2 = _actor.getPlanDistanceSq(target.getX(), target.getY());
-		final int range = _actor.getPhysicalAttackRange() + _actor.getTemplate().collisionRadius + target.getTemplate().collisionRadius;
+		final L2Skill[] skills = actor.getAllSkills();
+		final double dist2 = actor.getPlanDistanceSq(target.getX(), target.getY());
+		final int range = actor.getPhysicalAttackRange() + actor.getTemplate().collisionRadius + target.getTemplate().collisionRadius;
 		int max_range = range;
 		
-		if (!_actor.isMuted() && dist2 > (range + 20) * (range + 20))
+		if (!actor.isMuted() && dist2 > (range + 20) * (range + 20))
 		{
 			// check distant skills
 			for (final L2Skill sk : skills)
 			{
 				final int castRange = sk.getCastRange();
-				if (castRange * castRange >= dist2 && !_actor.isSkillDisabled(sk) && _actor.getCurrentMp() > _actor.getStat().getMpConsume(sk))
+				if (castRange * castRange >= dist2 && !actor.isSkillDisabled(sk) && actor.getCurrentMp() > actor.getStat().getMpConsume(sk))
 				{
-					_accessor.doCast(sk);
+					accessor.doCast(sk);
 					return;
 				}
 				max_range = Math.max(max_range, castRange);
@@ -204,7 +189,7 @@ public class L2ControllableMobAI extends L2AttackableAI
 			}
 			return;
 		}
-		_accessor.doAttack(target);
+		accessor.doAttack(target);
 	}
 	
 	protected void thinkForceAttack()
@@ -216,22 +201,22 @@ public class L2ControllableMobAI extends L2AttackableAI
 			setAlternateAI(AI_IDLE);
 		}
 		
-		_actor.setTarget(getForcedTarget());
-		final L2Skill[] skills = _actor.getAllSkills();
-		final double dist2 = _actor.getPlanDistanceSq(getForcedTarget().getX(), getForcedTarget().getY());
-		final int range = _actor.getPhysicalAttackRange() + _actor.getTemplate().collisionRadius + getForcedTarget().getTemplate().collisionRadius;
+		actor.setTarget(getForcedTarget());
+		final L2Skill[] skills = actor.getAllSkills();
+		final double dist2 = actor.getPlanDistanceSq(getForcedTarget().getX(), getForcedTarget().getY());
+		final int range = actor.getPhysicalAttackRange() + actor.getTemplate().collisionRadius + getForcedTarget().getTemplate().collisionRadius;
 		int max_range = range;
 		
-		if (!_actor.isMuted() && dist2 > (range + 20) * (range + 20))
+		if (!actor.isMuted() && dist2 > (range + 20) * (range + 20))
 		{
 			// check distant skills
 			for (final L2Skill sk : skills)
 			{
 				final int castRange = sk.getCastRange();
 				
-				if (castRange * castRange >= dist2 && !_actor.isSkillDisabled(sk) && _actor.getCurrentMp() > _actor.getStat().getMpConsume(sk))
+				if (castRange * castRange >= dist2 && !actor.isSkillDisabled(sk) && actor.getCurrentMp() > actor.getStat().getMpConsume(sk))
 				{
-					_accessor.doCast(sk);
+					accessor.doCast(sk);
 					return;
 				}
 				max_range = Math.max(max_range, castRange);
@@ -239,11 +224,11 @@ public class L2ControllableMobAI extends L2AttackableAI
 			
 			if (!isNotMoving())
 			{
-				moveToPawn(getForcedTarget(), _actor.getPhysicalAttackRange()/* range */);
+				moveToPawn(getForcedTarget(), actor.getPhysicalAttackRange()/* range */);
 			}
 			return;
 		}
-		_accessor.doAttack(getForcedTarget());
+		accessor.doAttack(getForcedTarget());
 	}
 	
 	protected void thinkAttack()
@@ -253,7 +238,7 @@ public class L2ControllableMobAI extends L2AttackableAI
 			if (getAttackTarget() != null)
 			{
 				// stop hating
-				L2Attackable npc = (L2Attackable) _actor;
+				L2Attackable npc = (L2Attackable) actor;
 				npc.stopHating(getAttackTarget());
 				npc = null;
 			}
@@ -263,9 +248,9 @@ public class L2ControllableMobAI extends L2AttackableAI
 		else
 		{
 			// notify aggression
-			if (((L2NpcInstance) _actor).getFactionId() != null)
+			if (((L2NpcInstance) actor).getFactionId() != null)
 			{
-				for (final L2Object obj : _actor.getKnownList().getKnownObjects().values())
+				for (final L2Object obj : actor.getKnownList().getKnownObjects().values())
 				{
 					if (!(obj instanceof L2NpcInstance))
 					{
@@ -273,7 +258,7 @@ public class L2ControllableMobAI extends L2AttackableAI
 					}
 					
 					L2NpcInstance npc = (L2NpcInstance) obj;
-					String faction_id = ((L2NpcInstance) _actor).getFactionId();
+					String faction_id = ((L2NpcInstance) actor).getFactionId();
 					
 					if (!faction_id.equalsIgnoreCase(npc.getFactionId()))
 					{
@@ -282,7 +267,7 @@ public class L2ControllableMobAI extends L2AttackableAI
 					
 					faction_id = null;
 					
-					if (_actor.isInsideRadius(npc, npc.getFactionRange(), false, true) && Math.abs(getAttackTarget().getZ() - npc.getZ()) < 200)
+					if (actor.isInsideRadius(npc, npc.getFactionRange(), false, true) && Math.abs(getAttackTarget().getZ() - npc.getZ()) < 200)
 					{
 						npc.getAI().notifyEvent(CtrlEvent.EVT_AGGRESSION, getAttackTarget(), 1);
 					}
@@ -290,21 +275,21 @@ public class L2ControllableMobAI extends L2AttackableAI
 				}
 			}
 			
-			_actor.setTarget(getAttackTarget());
-			final L2Skill[] skills = _actor.getAllSkills();
-			final double dist2 = _actor.getPlanDistanceSq(getAttackTarget().getX(), getAttackTarget().getY());
-			final int range = _actor.getPhysicalAttackRange() + _actor.getTemplate().collisionRadius + getAttackTarget().getTemplate().collisionRadius;
+			actor.setTarget(getAttackTarget());
+			final L2Skill[] skills = actor.getAllSkills();
+			final double dist2 = actor.getPlanDistanceSq(getAttackTarget().getX(), getAttackTarget().getY());
+			final int range = actor.getPhysicalAttackRange() + actor.getTemplate().collisionRadius + getAttackTarget().getTemplate().collisionRadius;
 			int max_range = range;
 			
-			if (!_actor.isMuted() && dist2 > (range + 20) * (range + 20))
+			if (!actor.isMuted() && dist2 > (range + 20) * (range + 20))
 			{
 				// check distant skills
 				for (final L2Skill sk : skills)
 				{
 					final int castRange = sk.getCastRange();
-					if (castRange * castRange >= dist2 && !_actor.isSkillDisabled(sk) && _actor.getCurrentMp() > _actor.getStat().getMpConsume(sk))
+					if (castRange * castRange >= dist2 && !actor.isSkillDisabled(sk) && actor.getCurrentMp() > actor.getStat().getMpConsume(sk))
 					{
-						_accessor.doCast(sk);
+						accessor.doCast(sk);
 						return;
 					}
 					max_range = Math.max(max_range, castRange);
@@ -315,7 +300,7 @@ public class L2ControllableMobAI extends L2AttackableAI
 			
 			// Force mobs to attack anybody if confused.
 			L2Character hated;
-			if (_actor.isConfused())
+			if (actor.isConfused())
 			{
 				hated = findNextRndTarget();
 			}
@@ -335,20 +320,20 @@ public class L2ControllableMobAI extends L2AttackableAI
 				setAttackTarget(hated);
 			}
 			
-			if (!_actor.isMuted() && skills.length > 0 && Rnd.nextInt(5) == 3)
+			if (!actor.isMuted() && skills.length > 0 && Rnd.nextInt(5) == 3)
 			{
 				for (final L2Skill sk : skills)
 				{
 					final int castRange = sk.getCastRange();
 					
-					if (castRange * castRange >= dist2 && !_actor.isSkillDisabled(sk) && _actor.getCurrentMp() < _actor.getStat().getMpConsume(sk))
+					if (castRange * castRange >= dist2 && !actor.isSkillDisabled(sk) && actor.getCurrentMp() < actor.getStat().getMpConsume(sk))
 					{
-						_accessor.doCast(sk);
+						accessor.doCast(sk);
 						return;
 					}
 				}
 			}
-			_accessor.doAttack(getAttackTarget());
+			accessor.doAttack(getAttackTarget());
 		}
 	}
 	
@@ -357,7 +342,7 @@ public class L2ControllableMobAI extends L2AttackableAI
 		setAttackTarget(findNextRndTarget());
 		L2Character hated;
 		
-		if (_actor.isConfused())
+		if (actor.isConfused())
 		{
 			hated = findNextRndTarget();
 		}
@@ -368,7 +353,7 @@ public class L2ControllableMobAI extends L2AttackableAI
 		
 		if (hated != null)
 		{
-			_actor.setRunning();
+			actor.setRunning();
 			setIntention(CtrlIntention.AI_INTENTION_ATTACK, hated);
 		}
 		hated = null;
@@ -378,46 +363,58 @@ public class L2ControllableMobAI extends L2AttackableAI
 	
 	private boolean autoAttackCondition(final L2Character target)
 	{
-		if (target == null || !(_actor instanceof L2Attackable))
+		if (target == null || !(actor instanceof L2Attackable))
+		{
 			return false;
+		}
 		
-		final L2Attackable me = (L2Attackable) _actor;
+		final L2Attackable me = (L2Attackable) actor;
 		
 		if (target instanceof L2FolkInstance || target instanceof L2DoorInstance)
+		{
 			return false;
+		}
 		
-		if (target.isAlikeDead() || !me.isInsideRadius(target, me.getAggroRange(), false, false) || Math.abs(_actor.getZ() - target.getZ()) > 100)
+		if (target.isAlikeDead() || !me.isInsideRadius(target, me.getAggroRange(), false, false) || Math.abs(actor.getZ() - target.getZ()) > 100)
+		{
 			return false;
+		}
 		
 		// Check if the target isn't invulnerable
 		if (target.isInvul())
+		{
 			return false;
+		}
 		
 		// Check if the target is a L2PcInstance
 		if (target instanceof L2PcInstance)
 		{
 			// Check if the target isn't in silent move mode
 			if (((L2PcInstance) target).isSilentMoving())
+			{
 				return false;
+			}
 		}
 		
 		if (target instanceof L2NpcInstance)
+		{
 			return false;
+		}
 		
 		return me.isAggressive();
 	}
 	
 	private L2Character findNextRndTarget()
 	{
-		final int aggroRange = ((L2Attackable) _actor).getAggroRange();
+		final int aggroRange = ((L2Attackable) actor).getAggroRange();
 		
-		L2Attackable npc = (L2Attackable) _actor;
+		L2Attackable npc = (L2Attackable) actor;
 		
 		int npcX, npcY, targetX, targetY;
 		double dy, dx;
 		final double dblAggroRange = aggroRange * aggroRange;
 		
-		final List<L2Character> potentialTarget = new FastList<>();
+		final List<L2Character> potentialTarget = new ArrayList<>();
 		
 		for (final L2Object obj : npc.getKnownList().getKnownObjects().values())
 		{
@@ -448,8 +445,10 @@ public class L2ControllableMobAI extends L2AttackableAI
 		}
 		npc = null;
 		
-		if (potentialTarget.size() == 0) // nothing to do
+		if (potentialTarget.size() == 0)
+		{
 			return null;
+		}
 		
 		// we choose a random target
 		final int choice = Rnd.nextInt(potentialTarget.size());
@@ -472,12 +471,12 @@ public class L2ControllableMobAI extends L2AttackableAI
 	
 	public int getAlternateAI()
 	{
-		return _alternateAI;
+		return alternateAI;
 	}
 	
-	public void setAlternateAI(final int _alternateai)
+	public void setAlternateAI(final int alternateai)
 	{
-		_alternateAI = _alternateai;
+		alternateAI = alternateai;
 	}
 	
 	public void forceAttack(final L2Character target)
@@ -512,42 +511,42 @@ public class L2ControllableMobAI extends L2AttackableAI
 	
 	public boolean isThinking()
 	{
-		return _isThinking;
+		return isThinking;
 	}
 	
 	public boolean isNotMoving()
 	{
-		return _isNotMoving;
+		return isNotMoving;
 	}
 	
 	public void setNotMoving(final boolean isNotMoving)
 	{
-		_isNotMoving = isNotMoving;
+		this.isNotMoving = isNotMoving;
 	}
 	
 	public void setThinking(final boolean isThinking)
 	{
-		_isThinking = isThinking;
+		this.isThinking = isThinking;
 	}
 	
 	private synchronized L2Character getForcedTarget()
 	{
-		return _forcedTarget;
+		return forcedTarget;
 	}
 	
 	private synchronized MobGroup getGroupTarget()
 	{
-		return _targetGroup;
+		return targetGroup;
 	}
 	
 	private synchronized void setForcedTarget(final L2Character forcedTarget)
 	{
-		_forcedTarget = forcedTarget;
+		this.forcedTarget = forcedTarget;
 	}
 	
 	private synchronized void setGroupTarget(final MobGroup targetGroup)
 	{
-		_targetGroup = targetGroup;
+		this.targetGroup = targetGroup;
 	}
 	
 }

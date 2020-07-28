@@ -1,23 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.model.actor.instance;
 
 import java.util.StringTokenizer;
@@ -43,9 +23,7 @@ import com.l2jfrozen.gameserver.templates.L2NpcTemplate;
  */
 public class L2DoormenInstance extends L2FolkInstance
 {
-	
-	/** The _clan hall. */
-	private ClanHall _clanHall;
+	private ClanHall clanHall;
 	
 	/** The CON d_ al l_ false. */
 	private static int COND_ALL_FALSE = 0;
@@ -79,27 +57,27 @@ public class L2DoormenInstance extends L2FolkInstance
 	public final ClanHall getClanHall()
 	{
 		// LOGGER.warn(this.getName()+" searching ch");
-		if (_clanHall == null)
+		if (clanHall == null)
 		{
-			_clanHall = ClanHallManager.getInstance().getNearbyClanHall(getX(), getY(), 500);
+			clanHall = ClanHallManager.getInstance().getNearbyClanHall(getX(), getY(), 500);
 		}
 		// if (_ClanHall != null)
 		// LOGGER.warn(this.getName()+" found ch "+_ClanHall.getName());
-		return _clanHall;
+		return clanHall;
 	}
 	
-	/*
-	 * (non-Javadoc)
-	 * @see com.l2jfrozen.gameserver.model.actor.instance.L2FolkInstance#onBypassFeedback(com.l2jfrozen.gameserver.model.actor.instance.L2PcInstance, java.lang.String)
-	 */
 	@Override
 	public void onBypassFeedback(final L2PcInstance player, final String command)
 	{
 		final int condition = validateCondition(player);
 		if (condition <= COND_ALL_FALSE)
+		{
 			return;
+		}
 		if (condition == COND_BUSY_BECAUSE_OF_SIEGE)
+		{
 			return;
+		}
 		else if (condition == COND_CASTLE_OWNER || condition == COND_HALL_OWNER || condition == COND_FORT_OWNER)
 		{
 			if (command.startsWith("Chat"))
@@ -112,7 +90,8 @@ public class L2DoormenInstance extends L2FolkInstance
 				if (condition == COND_HALL_OWNER)
 				{
 					getClanHall().openCloseDoors(true);
-					player.sendPacket(new NpcHtmlMessage(getObjectId(), "<html><body>You have <font color=\"LEVEL\">opened</font> the clan hall door.<br>Outsiders may enter the clan hall while the door is open. Please close it when you've finished your business.<br><center><button value=\"Close\" action=\"bypass -h npc_" + getObjectId() + "_close_doors\" width=70 height=15 back=\"sek.cbui94\" fore=\"sek.cbui92\"></center></body></html>"));
+					player.sendPacket(new NpcHtmlMessage(getObjectId(), "<html><body>You have <font color=\"LEVEL\">opened</font> the clan hall door.<br>Outsiders may enter the clan hall while the door is open. Please close it when you've finished your business.<br><center><button value=\"Close\" action=\"bypass -h npc_" + getObjectId()
+						+ "_close_doors\" width=70 height=15 back=\"sek.cbui94\" fore=\"sek.cbui92\"></center></body></html>"));
 				}
 				else if (condition == COND_CASTLE_OWNER)
 				{
@@ -180,7 +159,9 @@ public class L2DoormenInstance extends L2FolkInstance
 						else
 						{
 							if (!player.disarmWeapons())
+							{
 								return;
+							}
 							player.getPet().unSummon(player);
 							player.getInventory().destroyItemByItemId("Wyvern", 1460, 10, player, player.getTarget());
 							final Ride mount = new Ride(player.getObjectId(), Ride.ACTION_MOUNT, 12621);
@@ -259,7 +240,9 @@ public class L2DoormenInstance extends L2FolkInstance
 	public void onAction(final L2PcInstance player)
 	{
 		if (!canTarget(player))
+		{
 			return;
+		}
 		
 		// Check if the L2PcInstance already target the L2NpcInstance
 		if (this != player.getTarget())
@@ -365,8 +348,8 @@ public class L2DoormenInstance extends L2FolkInstance
 	
 	/**
 	 * Validate condition.
-	 * @param player the player
-	 * @return the int
+	 * @param  player the player
+	 * @return        the int
 	 */
 	private int validateCondition(final L2PcInstance player)
 	{
@@ -376,20 +359,26 @@ public class L2DoormenInstance extends L2FolkInstance
 			if (getClanHall() != null)
 			{
 				if (player.getClanId() == getClanHall().getOwnerId())
+				{
 					return COND_HALL_OWNER;
+				}
 				return COND_ALL_FALSE;
 			}
 			// Prepare doormen for Castle
 			if (getCastle() != null && getCastle().getCastleId() > 0)
 			{
-				if (getCastle().getOwnerId() == player.getClanId()) // Clan owns castle
+				if (getCastle().getOwnerId() == player.getClanId())
+				{
 					return COND_CASTLE_OWNER; // Owner
+				}
 			}
 			// Prepare doormen for Fortress
 			if (getFort() != null && getFort().getFortId() > 0)
 			{
-				if (getFort().getOwnerId() == player.getClanId()) // Clan owns fort
+				if (getFort().getOwnerId() == player.getClanId())
+				{
 					return COND_FORT_OWNER;
+				}
 			}
 		}
 		

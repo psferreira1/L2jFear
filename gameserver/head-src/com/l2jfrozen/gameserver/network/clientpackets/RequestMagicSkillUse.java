@@ -1,23 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.network.clientpackets;
 
 import org.apache.log4j.Logger;
@@ -37,16 +17,16 @@ public final class RequestMagicSkillUse extends L2GameClientPacket
 {
 	private static Logger LOGGER = Logger.getLogger(RequestMagicSkillUse.class);
 	
-	private int _magicId;
-	private boolean _ctrlPressed;
-	private boolean _shiftPressed;
+	private int magicId;
+	private boolean ctrlPressed;
+	private boolean shiftPressed;
 	
 	@Override
 	protected void readImpl()
 	{
-		_magicId = readD(); // Identifier of the used skill
-		_ctrlPressed = readD() != 0; // True if it's a ForceAttack : Ctrl pressed
-		_shiftPressed = readC() != 0; // True if Shift pressed
+		magicId = readD(); // Identifier of the used skill
+		ctrlPressed = readD() != 0; // True if it's a ForceAttack : Ctrl pressed
+		shiftPressed = readC() != 0; // True if Shift pressed
 	}
 	
 	@Override
@@ -56,10 +36,12 @@ public final class RequestMagicSkillUse extends L2GameClientPacket
 		final L2PcInstance activeChar = getClient().getActiveChar();
 		
 		if (activeChar == null)
+		{
 			return;
+		}
 		
 		// Get the level of the used skill
-		final int level = activeChar.getSkillLevel(_magicId);
+		final int level = activeChar.getSkillLevel(magicId);
 		if (level <= 0)
 		{
 			activeChar.sendPacket(ActionFailed.STATIC_PACKET);
@@ -73,16 +55,16 @@ public final class RequestMagicSkillUse extends L2GameClientPacket
 		}
 		
 		// Get the L2Skill template corresponding to the skillID received from the client
-		final L2Skill skill = SkillTable.getInstance().getInfo(_magicId, level);
+		final L2Skill skill = SkillTable.getInstance().getInfo(magicId, level);
 		
 		// Check the validity of the skill
 		if (skill != null)
 		{
 			
-			// LOGGER.fine(" [FINE] 	skill:"+skill.getName() + " level:"+skill.getLevel() + " passive:"+skill.isPassive());
-			// LOGGER.fine(" [FINE] 	range:"+skill.getCastRange()+" targettype:"+skill.getTargetType()+" optype:"+skill.getOperateType()+" power:"+skill.getPower());
-			// LOGGER.fine(" [FINE] 	reusedelay:"+skill.getReuseDelay()+" hittime:"+skill.getHitTime());
-			// LOGGER.fine(" [FINE] 	currentState:"+activeChar.getCurrentState()); //for debug
+			// LOGGER.fine(" [FINE] skill:"+skill.getName() + " level:"+skill.getLevel() + " passive:"+skill.isPassive());
+			// LOGGER.fine(" [FINE] range:"+skill.getCastRange()+" targettype:"+skill.getTargetType()+" optype:"+skill.getOperateType()+" power:"+skill.getPower());
+			// LOGGER.fine(" [FINE] reusedelay:"+skill.getReuseDelay()+" hittime:"+skill.getHitTime());
+			// LOGGER.fine(" [FINE] currentState:"+activeChar.getCurrentState()); //for debug
 			
 			// If Alternate rule Karma punishment is set to true, forbid skill Return to player with Karma
 			if (skill.getSkillType() == SkillType.RECALL && !Config.ALT_GAME_KARMA_PLAYER_CAN_TELEPORT && activeChar.getKarma() > 0)
@@ -98,12 +80,12 @@ public final class RequestMagicSkillUse extends L2GameClientPacket
 				return;
 			}
 			
-			activeChar.useMagic(skill, _ctrlPressed, _shiftPressed);
+			activeChar.useMagic(skill, ctrlPressed, shiftPressed);
 		}
 		else
 		{
 			activeChar.sendPacket(ActionFailed.STATIC_PACKET);
-			LOGGER.warn("No skill found with id " + _magicId + " and level " + level + " !!");
+			LOGGER.warn("No skill found with id " + magicId + " and level " + level + " !!");
 		}
 	}
 	

@@ -1,23 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.network.clientpackets;
 
 import com.l2jfrozen.gameserver.model.L2Party;
@@ -34,12 +14,12 @@ import com.l2jfrozen.gameserver.network.serverpackets.SystemMessage;
  */
 public final class RequestExAskJoinMPCC extends L2GameClientPacket
 {
-	private String _name;
+	private String name;
 	
 	@Override
 	protected void readImpl()
 	{
-		_name = readS();
+		name = readS();
 	}
 	
 	@Override
@@ -48,16 +28,22 @@ public final class RequestExAskJoinMPCC extends L2GameClientPacket
 		final L2PcInstance activeChar = getClient().getActiveChar();
 		
 		if (activeChar == null)
+		{
 			return;
+		}
 		
-		final L2PcInstance player = L2World.getInstance().getPlayer(_name);
+		final L2PcInstance player = L2World.getInstance().getPlayer(name);
 		
 		if (player == null)
+		{
 			return;
-		// invite yourself? ;)
+			// invite yourself? ;)
+		}
 		
 		if (activeChar.isInParty() && player.isInParty() && activeChar.getParty().equals(player.getParty()))
+		{
 			return;
+		}
 		
 		// activeChar is in a Party?
 		if (activeChar.isInParty())
@@ -75,16 +61,24 @@ public final class RequestExAskJoinMPCC extends L2GameClientPacket
 					{
 						// targets party already in a CChannel?
 						if (player.getParty().isInCommandChannel())
+						{
 							activeChar.sendPacket(new SystemMessage(SystemMessageId.S1_ALREADY_MEMBER_OF_COMMAND_CHANNEL).addString(player.getName()));
+						}
 						else
+						{
 							askJoinMPCC(activeChar, player);
+						}
 					}
 					else
+					{
 						activeChar.sendMessage(player.getName() + " doesn't have party and cannot be invited to Command Channel.");
+					}
 					
 				}
 				else if (activeParty.isInCommandChannel() && !activeParty.getCommandChannel().getChannelLeader().equals(activeChar))
+				{
 					activeChar.sendPacket(new SystemMessage(SystemMessageId.CANNOT_INVITE_TO_COMMAND_CHANNEL));
+				}
 				else
 				{
 					// target in a party?
@@ -92,16 +86,24 @@ public final class RequestExAskJoinMPCC extends L2GameClientPacket
 					{
 						// targets party already in a CChannel?
 						if (player.getParty().isInCommandChannel())
+						{
 							activeChar.sendPacket(new SystemMessage(SystemMessageId.S1_ALREADY_MEMBER_OF_COMMAND_CHANNEL).addString(player.getName()));
+						}
 						else
+						{
 							askJoinMPCC(activeChar, player);
+						}
 					}
 					else
+					{
 						activeChar.sendMessage(player.getName() + " doesn't have party and cannot be invited to Command Channel.");
+					}
 				}
 			}
 			else
+			{
 				activeChar.sendPacket(SystemMessageId.CANNOT_INVITE_TO_COMMAND_CHANNEL);
+			}
 		}
 		
 	}
@@ -144,7 +146,9 @@ public final class RequestExAskJoinMPCC extends L2GameClientPacket
 			targetLeader.sendPacket(new ExAskJoinMPCC(requestor.getName()));
 		}
 		else
+		{
 			requestor.sendPacket(new SystemMessage(SystemMessageId.S1_IS_BUSY_TRY_LATER).addString(targetLeader.getName()));
+		}
 	}
 	
 	@Override

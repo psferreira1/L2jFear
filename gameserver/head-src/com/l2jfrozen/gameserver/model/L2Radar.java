@@ -1,22 +1,3 @@
-/* L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.model;
 
 import java.util.Vector;
@@ -27,13 +8,13 @@ import com.l2jfrozen.gameserver.thread.ThreadPoolManager;
 
 public final class L2Radar
 {
-	private final L2PcInstance _player;
-	private final Vector<RadarMarker> _markers;
+	private final L2PcInstance player;
+	private final Vector<RadarMarker> markers;
 	
 	public L2Radar(final L2PcInstance player)
 	{
-		_player = player;
-		_markers = new Vector<>();
+		this.player = player;
+		markers = new Vector<>();
 	}
 	
 	// Add a marker to player's radar
@@ -41,8 +22,8 @@ public final class L2Radar
 	{
 		RadarMarker newMarker = new RadarMarker(x, y, z);
 		
-		_markers.add(newMarker);
-		_player.sendPacket(new RadarControl(0, 1, x, y, z));
+		markers.add(newMarker);
+		player.sendPacket(new RadarControl(0, 1, x, y, z));
 		
 		newMarker = null;
 	}
@@ -52,8 +33,8 @@ public final class L2Radar
 	{
 		RadarMarker newMarker = new RadarMarker(x, y, z);
 		
-		_markers.remove(newMarker);
-		_player.sendPacket(new RadarControl(1, 1, x, y, z));
+		markers.remove(newMarker);
+		player.sendPacket(new RadarControl(1, 1, x, y, z));
 		
 		newMarker = null;
 	}
@@ -61,12 +42,12 @@ public final class L2Radar
 	public void removeAllMarkers()
 	{
 		// TODO: Need method to remove all markers from radar at once
-		for (final RadarMarker tempMarker : _markers)
+		for (final RadarMarker tempMarker : markers)
 		{
-			_player.sendPacket(new RadarControl(1, tempMarker._type, tempMarker._x, tempMarker._y, tempMarker._z));
+			player.sendPacket(new RadarControl(1, tempMarker.type, tempMarker.x, tempMarker.y, tempMarker.z));
 		}
 		
-		_markers.removeAllElements();
+		markers.removeAllElements();
 	}
 	
 	public void loadMarkers()
@@ -78,23 +59,23 @@ public final class L2Radar
 	private static class RadarMarker
 	{
 		// Simple class to model radar points.
-		public int _type, _x, _y, _z;
+		public int type, x, y, z;
 		
 		@SuppressWarnings("unused")
 		public RadarMarker(final int type, final int x, final int y, final int z)
 		{
-			_type = type;
-			_x = x;
-			_y = y;
-			_z = z;
+			this.type = type;
+			this.x = x;
+			this.y = y;
+			this.z = z;
 		}
 		
 		public RadarMarker(final int x, final int y, final int z)
 		{
-			_type = 1;
-			_x = x;
-			_y = y;
-			_z = z;
+			type = 1;
+			this.x = x;
+			this.y = y;
+			this.z = z;
 		}
 		
 		@Override
@@ -104,8 +85,10 @@ public final class L2Radar
 			{
 				RadarMarker temp = (RadarMarker) obj;
 				
-				if (temp._x == _x && temp._y == _y && temp._z == _z && temp._type == _type)
+				if (temp.x == x && temp.y == y && temp.z == z && temp.type == type)
+				{
 					return true;
+				}
 				
 				temp = null;
 				
@@ -120,12 +103,12 @@ public final class L2Radar
 	
 	public class RadarOnPlayer implements Runnable
 	{
-		private final L2PcInstance _myTarget, _me;
+		private final L2PcInstance myTarget, me;
 		
 		public RadarOnPlayer(final L2PcInstance target, final L2PcInstance me)
 		{
-			_me = me;
-			_myTarget = target;
+			this.me = me;
+			myTarget = target;
 		}
 		
 		@Override
@@ -133,15 +116,17 @@ public final class L2Radar
 		{
 			try
 			{
-				if (_me == null || _me.isOnline() == 0)
-					return;
-				_me.sendPacket(new RadarControl(1, 1, _me.getX(), _me.getY(), _me.getZ()));
-				if (_myTarget == null || _myTarget.isOnline() == 0 || !_myTarget._haveFlagCTF)
+				if (me == null || !me.isOnline())
 				{
 					return;
 				}
-				_me.sendPacket(new RadarControl(0, 1, _myTarget.getX(), _myTarget.getY(), _myTarget.getZ()));
-				ThreadPoolManager.getInstance().scheduleGeneral(new RadarOnPlayer(_myTarget, _me), 15000);
+				me.sendPacket(new RadarControl(1, 1, me.getX(), me.getY(), me.getZ()));
+				if (myTarget == null || !myTarget.isOnline() || !myTarget.haveFlagCTF)
+				{
+					return;
+				}
+				me.sendPacket(new RadarControl(0, 1, myTarget.getX(), myTarget.getY(), myTarget.getZ()));
+				ThreadPoolManager.getInstance().scheduleGeneral(new RadarOnPlayer(myTarget, me), 15000);
 			}
 			catch (final Throwable t)
 			{

@@ -1,23 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.network.clientpackets;
 
 import org.apache.log4j.Logger;
@@ -42,14 +22,14 @@ public final class RequestCrystallizeItem extends L2GameClientPacket
 {
 	private static Logger LOGGER = Logger.getLogger(RequestCrystallizeItem.class);
 	
-	private int _objectId;
-	private int _count;
+	private int objectId;
+	private int count;
 	
 	@Override
 	protected void readImpl()
 	{
-		_objectId = readD();
-		_count = readD();
+		objectId = readD();
+		count = readD();
 	}
 	
 	@Override
@@ -69,9 +49,9 @@ public final class RequestCrystallizeItem extends L2GameClientPacket
 			return;
 		}
 		
-		if (_count <= 0)
+		if (count <= 0)
 		{
-			Util.handleIllegalPlayerAction(activeChar, "[RequestCrystallizeItem] count <= 0! ban! oid: " + _objectId + " owner: " + activeChar.getName(), IllegalPlayerAction.PUNISH_KICK);
+			Util.handleIllegalPlayerAction(activeChar, "[RequestCrystallizeItem] count <= 0! ban! oid: " + objectId + " owner: " + activeChar.getName(), IllegalPlayerAction.PUNISH_KICK);
 			return;
 		}
 		
@@ -95,7 +75,7 @@ public final class RequestCrystallizeItem extends L2GameClientPacket
 		final PcInventory inventory = activeChar.getInventory();
 		if (inventory != null)
 		{
-			final L2ItemInstance item = inventory.getItemByObjectId(_objectId);
+			final L2ItemInstance item = inventory.getItemByObjectId(objectId);
 			if (item == null || item.isWear())
 			{
 				final ActionFailed af = ActionFailed.STATIC_PACKET;
@@ -106,18 +86,22 @@ public final class RequestCrystallizeItem extends L2GameClientPacket
 			final int itemId = item.getItemId();
 			
 			if (itemId >= 6611 && itemId <= 6621 || itemId == 6842)
-				return;
-			
-			if (_count > item.getCount())
 			{
-				_count = activeChar.getInventory().getItemByObjectId(_objectId).getCount();
+				return;
+			}
+			
+			if (count > item.getCount())
+			{
+				count = activeChar.getInventory().getItemByObjectId(objectId).getCount();
 			}
 		}
 		
-		final L2ItemInstance itemToRemove = activeChar.getInventory().getItemByObjectId(_objectId);
+		final L2ItemInstance itemToRemove = activeChar.getInventory().getItemByObjectId(objectId);
 		
 		if (itemToRemove == null || itemToRemove.isWear())
+		{
 			return;
+		}
 		if (itemToRemove.fireEvent("CRYSTALLIZE", (Object[]) null) != null)
 		{
 			activeChar.sendPacket(new SystemMessage(SystemMessageId.CANNOT_DISCARD_THIS_ITEM));
@@ -201,7 +185,7 @@ public final class RequestCrystallizeItem extends L2GameClientPacket
 		}
 		
 		// remove from inventory
-		final L2ItemInstance removedItem = activeChar.getInventory().destroyItem("Crystalize", _objectId, _count, activeChar, null);
+		final L2ItemInstance removedItem = activeChar.getInventory().destroyItem("Crystalize", objectId, count, activeChar, null);
 		
 		// add crystals
 		final int crystalId = itemToRemove.getItem().getCrystalItemId();

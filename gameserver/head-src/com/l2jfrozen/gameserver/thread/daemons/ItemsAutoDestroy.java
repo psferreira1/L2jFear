@@ -1,28 +1,7 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.thread.daemons;
 
+import java.util.ArrayList;
 import java.util.List;
-
-import javolution.util.FastList;
 
 import org.apache.log4j.Logger;
 
@@ -36,54 +15,59 @@ import com.l2jfrozen.gameserver.thread.ThreadPoolManager;
 public class ItemsAutoDestroy
 {
 	protected static final Logger LOGGER = Logger.getLogger("ItemsAutoDestroy");
-	private static ItemsAutoDestroy _instance;
-	protected List<L2ItemInstance> _items = null;
-	protected static long _sleep;
+	private static ItemsAutoDestroy instance;
+	protected List<L2ItemInstance> items = null;
+	protected static long sleep;
 	
 	private ItemsAutoDestroy()
 	{
-		_items = new FastList<>();
-		_sleep = Config.AUTODESTROY_ITEM_AFTER * 1000;
-		if (_sleep == 0)
+		items = new ArrayList<>();
+		sleep = Config.AUTODESTROY_ITEM_AFTER * 1000;
+		
+		if (sleep == 0)
 		{
-			_sleep = 3600000;
+			sleep = 3600000;
 		}
+		
 		ThreadPoolManager.getInstance().scheduleGeneralAtFixedRate(new CheckItemsForDestroy(), 5000, 5000);
 	}
 	
 	public static ItemsAutoDestroy getInstance()
 	{
-		if (_instance == null)
+		if (instance == null)
 		{
 			LOGGER.info("Initializing ItemsAutoDestroy.");
-			_instance = new ItemsAutoDestroy();
+			instance = new ItemsAutoDestroy();
 		}
-		return _instance;
+		return instance;
 	}
 	
 	public synchronized void addItem(final L2ItemInstance item)
 	{
 		item.setDropTime(System.currentTimeMillis());
-		_items.add(item);
+		items.add(item);
 	}
 	
 	public synchronized void removeItems()
 	{
 		if (Config.DEBUG)
 		{
-			LOGGER.info("[ItemsAutoDestroy] : " + _items.size() + " items to check.");
+			LOGGER.info("[ItemsAutoDestroy] : " + items.size() + " items to check.");
 		}
 		
-		if (_items.isEmpty())
+		if (items.isEmpty())
+		{
 			return;
+		}
 		
 		final long curtime = System.currentTimeMillis();
 		
-		for (final L2ItemInstance item : _items)
+		for (int i = 0; i < items.size(); i++)
 		{
+			L2ItemInstance item = items.get(i);
 			if (item == null || item.getDropTime() == 0 || item.getLocation() != L2ItemInstance.ItemLocation.VOID)
 			{
-				_items.remove(item);
+				items.remove(item);
 			}
 			else
 			{
@@ -93,7 +77,7 @@ public class ItemsAutoDestroy
 					{
 						L2World.getInstance().removeVisibleObject(item, item.getWorldRegion());
 						L2World.getInstance().removeObject(item);
-						_items.remove(item);
+						items.remove(item);
 						
 						if (Config.SAVE_DROPPED_ITEM)
 						{
@@ -101,11 +85,11 @@ public class ItemsAutoDestroy
 						}
 					}
 				}
-				else if (curtime - item.getDropTime() > _sleep)
+				else if (curtime - item.getDropTime() > sleep)
 				{
 					L2World.getInstance().removeVisibleObject(item, item.getWorldRegion());
 					L2World.getInstance().removeObject(item);
-					_items.remove(item);
+					items.remove(item);
 					
 					if (Config.SAVE_DROPPED_ITEM)
 					{
@@ -117,7 +101,7 @@ public class ItemsAutoDestroy
 		
 		if (Config.DEBUG)
 		{
-			LOGGER.info("[ItemsAutoDestroy] : " + _items.size() + " items remaining.");
+			LOGGER.info("[ItemsAutoDestroy] : " + items.size() + " items remaining.");
 		}
 	}
 	

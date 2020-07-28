@@ -1,23 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.network.clientpackets;
 
 import org.apache.log4j.Logger;
@@ -34,12 +14,12 @@ public final class RequestOustPledgeMember extends L2GameClientPacket
 {
 	static Logger LOGGER = Logger.getLogger(RequestOustPledgeMember.class);
 	
-	private String _target;
+	private String target;
 	
 	@Override
 	protected void readImpl()
 	{
-		_target = readS();
+		target = readS();
 	}
 	
 	@Override
@@ -47,7 +27,9 @@ public final class RequestOustPledgeMember extends L2GameClientPacket
 	{
 		final L2PcInstance activeChar = getClient().getActiveChar();
 		if (activeChar == null)
+		{
 			return;
+		}
 		
 		if (activeChar.getClan() == null)
 		{
@@ -61,7 +43,7 @@ public final class RequestOustPledgeMember extends L2GameClientPacket
 			return;
 		}
 		
-		if (activeChar.getName().equalsIgnoreCase(_target))
+		if (activeChar.getName().equalsIgnoreCase(target))
 		{
 			activeChar.sendPacket(new SystemMessage(SystemMessageId.YOU_CANNOT_DISMISS_YOURSELF));
 			return;
@@ -69,11 +51,11 @@ public final class RequestOustPledgeMember extends L2GameClientPacket
 		
 		final L2Clan clan = activeChar.getClan();
 		
-		final L2ClanMember member = clan.getClanMember(_target);
+		final L2ClanMember member = clan.getClanMember(target);
 		
 		if (member == null)
 		{
-			LOGGER.debug("Target (" + _target + ") is not member of the clan");
+			LOGGER.debug("Target (" + target + ") is not member of the clan");
 			return;
 		}
 		
@@ -84,7 +66,7 @@ public final class RequestOustPledgeMember extends L2GameClientPacket
 		}
 		
 		// this also updates the database
-		clan.removeClanMember(_target, System.currentTimeMillis() + Config.ALT_CLAN_JOIN_DAYS * 86400000L); // Like L2OFF also player takes the penality
+		clan.removeClanMember(target, System.currentTimeMillis() + Config.ALT_CLAN_JOIN_DAYS * 86400000L); // Like L2OFF also player takes the penality
 		clan.setCharPenaltyExpiryTime(System.currentTimeMillis() + Config.ALT_CLAN_JOIN_DAYS * 86400000L); // 24*60*60*1000 = 86400000
 		clan.updateClanInDB();
 		
@@ -96,7 +78,7 @@ public final class RequestOustPledgeMember extends L2GameClientPacket
 		activeChar.sendPacket(new SystemMessage(SystemMessageId.YOU_MUST_WAIT_BEFORE_ACCEPTING_A_NEW_MEMBER));
 		
 		// Remove the Player From the Member list
-		clan.broadcastToOnlineMembers(new PledgeShowMemberListDelete(_target));
+		clan.broadcastToOnlineMembers(new PledgeShowMemberListDelete(target));
 		if (member.isOnline())
 		{
 			final L2PcInstance player = member.getPlayerInstance();

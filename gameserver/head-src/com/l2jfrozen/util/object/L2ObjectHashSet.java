@@ -1,23 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.util.object;
 
 import java.util.Iterator;
@@ -33,7 +13,7 @@ import com.l2jfrozen.gameserver.model.L2Object;
  * position is already busy, we iterate to the next position, unil we find the needed element or null. To iterate over the table (read access) we may simply iterate throgh table array. In case we remove an element from the table, we check - if the next position is null, we reset table's slot to
  * null, otherwice we assign it to a dummy value
  * @author mkizub
- * @param <T> type of values stored in this hashtable
+ * @param  <T> type of values stored in this hashtable
  */
 public final class L2ObjectHashSet<T extends L2Object> extends L2ObjectSet<T>
 {
@@ -118,16 +98,18 @@ public final class L2ObjectHashSet<T extends L2Object> extends L2ObjectSet<T>
 		7199369
 	};
 	
-	private T[] _table;
-	private int[] _collisions;
-	private int _count;
+	private T[] table;
+	private int[] collisions;
+	private int count;
 	
 	private static int getPrime(final int min)
 	{
 		for (final int element : PRIMES)
 		{
 			if (element >= min)
+			{
 				return element;
+			}
 		}
 		throw new OutOfMemoryError();
 	}
@@ -136,46 +118,34 @@ public final class L2ObjectHashSet<T extends L2Object> extends L2ObjectSet<T>
 	public L2ObjectHashSet()
 	{
 		final int size = PRIMES[0];
-		_table = (T[]) new L2Object[size];
-		_collisions = new int[size + 31 >> 5];
+		table = (T[]) new L2Object[size];
+		collisions = new int[size + 31 >> 5];
 		if (DEBUG)
 		{
 			check();
 		}
 	}
 	
-	/*
-	 * (non-Javadoc)
-	 * @see com.l2jfrozen.util.L2ObjectSet#size()
-	 */
 	@Override
 	public int size()
 	{
-		return _count;
+		return count;
 	}
 	
-	/*
-	 * (non-Javadoc)
-	 * @see com.l2jfrozen.util.L2ObjectSet#isEmpty()
-	 */
 	@Override
 	public boolean isEmpty()
 	{
-		return _count == 0;
+		return count == 0;
 	}
 	
-	/*
-	 * (non-Javadoc)
-	 * @see com.l2jfrozen.util.L2ObjectSet#clear()
-	 */
 	@Override
 	@SuppressWarnings("unchecked")
 	public synchronized void clear()
 	{
 		final int size = PRIMES[0];
-		_table = (T[]) new L2Object[size];
-		_collisions = new int[size + 31 >> 5];
-		_count = 0;
+		table = (T[]) new L2Object[size];
+		collisions = new int[size + 31 >> 5];
+		count = 0;
 		if (DEBUG)
 		{
 			check();
@@ -187,30 +157,30 @@ public final class L2ObjectHashSet<T extends L2Object> extends L2ObjectSet<T>
 		if (DEBUG)
 		{
 			int cnt = 0;
-			assert _collisions.length == _table.length + 31 >> 5;
-			for (final T obj : _table)
+			assert collisions.length == table.length + 31 >> 5;
+			for (final T obj : table)
 			{
 				if (obj != null)
 				{
 					cnt++;
 				}
 			}
-			assert cnt == _count;
+			assert cnt == count;
 		}
 	}
 	
-	/*
-	 * (non-Javadoc)
-	 * @see com.l2jfrozen.util.L2ObjectSet#put(T)
-	 */
 	@Override
 	public synchronized void put(final T obj)
 	{
 		if (obj == null)
+		{
 			return;
+		}
 		if (contains(obj))
+		{
 			return;
-		if (_count >= _table.length / 2)
+		}
+		if (count >= table.length / 2)
 		{
 			expand();
 		}
@@ -220,24 +190,24 @@ public final class L2ObjectHashSet<T extends L2Object> extends L2ObjectSet<T>
 			assert hashcode > 0;
 		}
 		int seed = hashcode;
-		final int incr = 1 + ((seed >> 5) + 1) % (_table.length - 1);
+		final int incr = 1 + ((seed >> 5) + 1) % (table.length - 1);
 		int ntry = 0;
 		int slot = -1; // keep last found slot
 		do
 		{
-			final int pos = seed % _table.length & 0x7FFFFFFF;
-			if (_table[pos] == null)
+			final int pos = seed % table.length & 0x7FFFFFFF;
+			if (table[pos] == null)
 			{
 				if (slot < 0)
 				{
 					slot = pos;
 				}
-				if ((_collisions[pos >> 5] & 1 << (pos & 31)) == 0)
+				if ((collisions[pos >> 5] & 1 << (pos & 31)) == 0)
 				{
 					// found an empty slot without previous collisions,
 					// but use previously found slot
-					_table[slot] = obj;
-					_count++;
+					table[slot] = obj;
+					count++;
 					if (TRACE)
 					{
 						LOGGER.error("ht: put obj id=" + hashcode + " at slot=" + slot);
@@ -252,19 +222,21 @@ public final class L2ObjectHashSet<T extends L2Object> extends L2ObjectSet<T>
 			else
 			{
 				// check if we are adding the same object
-				if (_table[pos] == obj)
+				if (table[pos] == obj)
+				{
 					return;
+				}
 				// this should never happen
 				if (Config.ASSERT)
 				{
-					assert obj.getObjectId() != _table[pos].getObjectId();
+					assert obj.getObjectId() != table[pos].getObjectId();
 				}
 				// if there was no collisions at this slot, and we found a free
 				// slot previously - use found slot
-				if (slot >= 0 && (_collisions[pos >> 5] & 1 << (pos & 31)) == 0)
+				if (slot >= 0 && (collisions[pos >> 5] & 1 << (pos & 31)) == 0)
 				{
-					_table[slot] = obj;
-					_count++;
+					table[slot] = obj;
+					count++;
 					if (TRACE)
 					{
 						LOGGER.error("ht: put obj id=" + hashcode + " at slot=" + slot);
@@ -278,11 +250,11 @@ public final class L2ObjectHashSet<T extends L2Object> extends L2ObjectSet<T>
 			}
 			
 			// set collision bit
-			_collisions[pos >> 5] |= 1 << (pos & 31);
+			collisions[pos >> 5] |= 1 << (pos & 31);
 			// calculate next slot
 			seed += incr;
 		}
-		while (++ntry < _table.length);
+		while (++ntry < table.length);
 		if (DEBUG)
 		{
 			check();
@@ -290,33 +262,33 @@ public final class L2ObjectHashSet<T extends L2Object> extends L2ObjectSet<T>
 		throw new IllegalStateException();
 	}
 	
-	/*
-	 * (non-Javadoc)
-	 * @see com.l2jfrozen.util.L2ObjectSet#remove(T)
-	 */
 	@Override
 	public synchronized void remove(final T obj)
 	{
 		if (obj == null)
+		{
 			return;
+		}
 		if (!contains(obj))
+		{
 			return;
+		}
 		final int hashcode = obj.getObjectId();
 		if (Config.ASSERT)
 		{
 			assert hashcode > 0;
 		}
 		int seed = hashcode;
-		final int incr = 1 + ((seed >> 5) + 1) % (_table.length - 1);
+		final int incr = 1 + ((seed >> 5) + 1) % (table.length - 1);
 		int ntry = 0;
 		do
 		{
-			final int pos = seed % _table.length & 0x7FFFFFFF;
-			if (_table[pos] == obj)
+			final int pos = seed % table.length & 0x7FFFFFFF;
+			if (table[pos] == obj)
 			{
 				// found the object
-				_table[pos] = null;
-				_count--;
+				table[pos] = null;
+				count--;
 				if (TRACE)
 				{
 					LOGGER.error("ht: remove obj id=" + hashcode + " from slot=" + pos);
@@ -328,7 +300,7 @@ public final class L2ObjectHashSet<T extends L2Object> extends L2ObjectSet<T>
 				return;
 			}
 			// check for collision (if we previously deleted element)
-			if (_table[pos] == null && (_collisions[pos >> 5] & 1 << (pos & 31)) == 0)
+			if (table[pos] == null && (collisions[pos >> 5] & 1 << (pos & 31)) == 0)
 			{
 				if (DEBUG)
 				{
@@ -339,7 +311,7 @@ public final class L2ObjectHashSet<T extends L2Object> extends L2ObjectSet<T>
 			// calculate next slot
 			seed += incr;
 		}
-		while (++ntry < _table.length);
+		while (++ntry < table.length);
 		if (DEBUG)
 		{
 			check();
@@ -347,21 +319,19 @@ public final class L2ObjectHashSet<T extends L2Object> extends L2ObjectSet<T>
 		throw new IllegalStateException();
 	}
 	
-	/*
-	 * (non-Javadoc)
-	 * @see com.l2jfrozen.util.L2ObjectSet#contains(T)
-	 */
 	@Override
 	public boolean contains(final T obj)
 	{
-		final int size = _table.length;
+		final int size = table.length;
 		if (size <= 11)
 		{
 			// for small tables linear check is fast
-			for (final T a_table : _table)
+			for (final T a_table : table)
 			{
 				if (a_table == obj)
+				{
 					return true;
+				}
 			}
 			return false;
 		}
@@ -376,11 +346,15 @@ public final class L2ObjectHashSet<T extends L2Object> extends L2ObjectSet<T>
 		do
 		{
 			final int pos = seed % size & 0x7FFFFFFF;
-			if (_table[pos] == obj)
+			if (table[pos] == obj)
+			{
 				return true;
+			}
 			// check for collision (if we previously deleted element)
-			if (_table[pos] == null && (_collisions[pos >> 5] & 1 << (pos & 31)) == 0)
+			if (table[pos] == null && (collisions[pos >> 5] & 1 << (pos & 31)) == 0)
+			{
 				return false;
+			}
 			// calculate next slot
 			seed += incr;
 		}
@@ -391,15 +365,15 @@ public final class L2ObjectHashSet<T extends L2Object> extends L2ObjectSet<T>
 	@SuppressWarnings("unchecked")
 	private/* already synchronized in put() */void expand()
 	{
-		final int newSize = getPrime(_table.length + 1);
+		final int newSize = getPrime(table.length + 1);
 		final L2Object[] newTable = new L2Object[newSize];
 		final int[] newCollisions = new int[newSize + 31 >> 5];
 		
 		// over all old entries
 		next_entry:
-		for (int i = 0; i < _table.length; i++)
+		for (int i = 0; i < table.length; i++)
 		{
-			final L2Object obj = _table[i];
+			final L2Object obj = table[i];
 			if (obj == null)
 			{
 				continue;
@@ -430,75 +404,77 @@ public final class L2ObjectHashSet<T extends L2Object> extends L2ObjectSet<T>
 			while (++ntry < newSize);
 			throw new IllegalStateException();
 		}
-		_table = (T[]) newTable;
-		_collisions = newCollisions;
+		table = (T[]) newTable;
+		collisions = newCollisions;
 		if (DEBUG)
 		{
 			check();
 		}
 	}
 	
-	/*
-	 * (non-Javadoc)
-	 * @see com.l2jfrozen.util.L2ObjectSet#iterator()
-	 */
 	@Override
 	public Iterator<T> iterator()
 	{
-		return new Itr(_table);
+		return new Itr(table);
 	}
 	
 	class Itr implements Iterator<T>
 	{
-		private final T[] _array;
-		private int _nextIdx;
-		private T _nextObj;
-		private T _lastRet;
+		private final T[] array;
+		private int nextIdx;
+		private T nextObj;
+		private T lastRet;
 		
 		Itr(final T[] pArray)
 		{
-			this._array = pArray;
-			for (; _nextIdx < _array.length; _nextIdx++)
+			this.array = pArray;
+			for (; nextIdx < array.length; nextIdx++)
 			{
-				_nextObj = _array[_nextIdx];
-				if (_nextObj != null)
+				nextObj = array[nextIdx];
+				if (nextObj != null)
+				{
 					return;
+				}
 			}
 		}
 		
 		@Override
 		public boolean hasNext()
 		{
-			return _nextObj != null;
+			return nextObj != null;
 		}
 		
 		@Override
 		public T next()
 		{
-			if (_nextObj == null)
-				throw new NoSuchElementException();
-			_lastRet = _nextObj;
-			for (_nextIdx++; _nextIdx < _array.length; _nextIdx++)
+			if (nextObj == null)
 			{
-				_nextObj = _array[_nextIdx];
-				if (_nextObj != null)
+				throw new NoSuchElementException();
+			}
+			lastRet = nextObj;
+			for (nextIdx++; nextIdx < array.length; nextIdx++)
+			{
+				nextObj = array[nextIdx];
+				if (nextObj != null)
 				{
 					break;
 				}
 			}
-			if (_nextIdx >= _array.length)
+			if (nextIdx >= array.length)
 			{
-				_nextObj = null;
+				nextObj = null;
 			}
-			return _lastRet;
+			return lastRet;
 		}
 		
 		@Override
 		public void remove()
 		{
-			if (_lastRet == null)
+			if (lastRet == null)
+			{
 				throw new IllegalStateException();
-			L2ObjectHashSet.this.remove(_lastRet);
+			}
+			L2ObjectHashSet.this.remove(lastRet);
 		}
 	}
 }

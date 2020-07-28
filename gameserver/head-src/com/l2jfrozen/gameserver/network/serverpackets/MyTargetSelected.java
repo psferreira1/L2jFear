@@ -1,23 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.network.serverpackets;
 
 /**
@@ -46,47 +26,27 @@ package com.l2jfrozen.gameserver.network.serverpackets;
  */
 public class MyTargetSelected extends L2GameServerPacket
 {
+	private final int objectId;
+	private final int color;
 	
-	/** The Constant _S__BF_MYTARGETSELECTED. */
-	private static final String _S__BF_MYTARGETSELECTED = "[S] a6 MyTargetSelected";
-	
-	/** The _object id. */
-	private final int _objectId;
-	
-	/** The _color. */
-	private final int _color;
-	
-	/**
-	 * Instantiates a new my target selected.
-	 * @param objectId the object id
-	 * @param color the color
-	 */
 	public MyTargetSelected(final int objectId, final int color)
 	{
-		_objectId = objectId;
-		_color = color;
+		this.objectId = objectId;
+		this.color = color;
 	}
 	
-	/*
-	 * (non-Javadoc)
-	 * @see com.l2jfrozen.gameserver.network.serverpackets.L2GameServerPacket#writeImpl()
-	 */
 	@Override
 	protected final void writeImpl()
 	{
 		writeC(0xa6);
-		writeD(_objectId);
-		writeH(_color);
+		writeD(objectId);
+		writeH(color);
 	}
 	
-	/*
-	 * (non-Javadoc)
-	 * @see com.l2jfrozen.gameserver.serverpackets.ServerBasePacket#getType()
-	 */
 	@Override
 	public String getType()
 	{
-		return _S__BF_MYTARGETSELECTED;
+		return "[S] a6 MyTargetSelected";
 	}
 	
 }

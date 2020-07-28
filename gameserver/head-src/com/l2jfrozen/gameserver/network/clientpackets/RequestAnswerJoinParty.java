@@ -1,23 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.network.clientpackets;
 
 import com.l2jfrozen.gameserver.model.PartyMatchRoom;
@@ -34,12 +14,12 @@ import com.l2jfrozen.gameserver.network.serverpackets.SystemMessage;
 public final class RequestAnswerJoinParty extends L2GameClientPacket
 {
 	
-	private int _response;
+	private int response;
 	
 	@Override
 	protected void readImpl()
 	{
-		_response = readD();
+		response = readD();
 	}
 	
 	@Override
@@ -47,11 +27,15 @@ public final class RequestAnswerJoinParty extends L2GameClientPacket
 	{
 		final L2PcInstance player = getClient().getActiveChar();
 		if (player == null)
+		{
 			return;
+		}
 		
 		final L2PcInstance requestor = player.getActiveRequester();
 		if (requestor == null)
+		{
 			return;
+		}
 		
 		if (player.isCursedWeaponEquiped() || requestor.isCursedWeaponEquiped())
 		{
@@ -59,9 +43,9 @@ public final class RequestAnswerJoinParty extends L2GameClientPacket
 			return;
 		}
 		
-		requestor.sendPacket(new JoinParty(_response));
+		requestor.sendPacket(new JoinParty(response));
 		
-		if (_response == 1)
+		if (response == 1)
 		{
 			if (requestor.isInParty())
 			{
@@ -87,7 +71,9 @@ public final class RequestAnswerJoinParty extends L2GameClientPacket
 						for (final L2PcInstance member : room.getPartyMembers())
 						{
 							if (member != null)
+							{
 								member.sendPacket(packet);
+							}
 						}
 					}
 				}
@@ -105,7 +91,9 @@ public final class RequestAnswerJoinParty extends L2GameClientPacket
 						for (final L2PcInstance member : room.getPartyMembers())
 						{
 							if (member != null)
+							{
 								member.sendPacket(packet);
+							}
 						}
 						player.setPartyRoom(room.getId());
 						player.broadcastUserInfo();
@@ -117,11 +105,15 @@ public final class RequestAnswerJoinParty extends L2GameClientPacket
 		{
 			// activate garbage collection if there are no other members in party (happens when we were creating new one)
 			if (requestor.isInParty() && requestor.getParty().getMemberCount() == 1)
+			{
 				requestor.getParty().removePartyMember(requestor, false);
+			}
 		}
 		
 		if (requestor.isInParty())
+		{
 			requestor.getParty().setPendingInvitation(false);
+		}
 		
 		player.setActiveRequester(null);
 		requestor.onTransactionResponse();

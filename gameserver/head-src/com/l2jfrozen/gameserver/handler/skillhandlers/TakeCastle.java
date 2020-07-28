@@ -1,23 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.handler.skillhandlers;
 
 import com.l2jfrozen.Config;
@@ -37,7 +17,7 @@ import com.l2jfrozen.gameserver.network.serverpackets.SystemMessage;
 import com.l2jfrozen.gameserver.util.Util;
 
 /**
- * @author _drunk_ TODO To change the template for this generated type comment go to Window - Preferences - Java - Code Style - Code Templates
+ * @author drunk
  */
 public class TakeCastle implements ISkillHandler
 {
@@ -51,12 +31,16 @@ public class TakeCastle implements ISkillHandler
 	public void useSkill(final L2Character activeChar, final L2Skill skill, final L2Object[] targets)
 	{
 		if (activeChar == null || !(activeChar instanceof L2PcInstance))
+		{
 			return;
+		}
 		
 		L2PcInstance player = (L2PcInstance) activeChar;
 		
 		if (player.getClan() == null || player.getClan().getLeaderId() != player.getObjectId())
+		{
 			return;
+		}
 		
 		Castle castle = CastleManager.getInstance().getCastle(player);
 		Fort fort = FortManager.getInstance().getFort(player);
@@ -64,29 +48,41 @@ public class TakeCastle implements ISkillHandler
 		if (castle != null && fort == null)
 		{
 			if (!checkIfOkToCastSealOfRule(player, castle, true))
+			{
 				return;
+			}
 			
 		}
 		else if (fort != null && castle == null)
 		{
 			if (!checkIfOkToCastFlagDisplay(player, fort, true))
+			{
 				return;
+			}
 		}
 		
 		if (castle == null && fort == null)
+		{
 			return;
+		}
 		
 		try
 		{
 			if ((castle != null) && (targets[0] instanceof L2ArtefactInstance))
+			{
 				castle.Engrave(player.getClan(), targets[0].getObjectId());
+			}
 			else if (fort != null)
+			{
 				fort.EndOfSiege(player.getClan());
+			}
 		}
 		catch (final Exception e)
 		{
 			if (Config.ENABLE_ALL_EXCEPTIONS)
+			{
 				e.printStackTrace();
+			}
 		}
 		player = null;
 		castle = null;
@@ -102,8 +98,8 @@ public class TakeCastle implements ISkillHandler
 	/**
 	 * Return true if character clan place a flag<BR>
 	 * <BR>
-	 * @param activeChar The L2Character of the character placing the flag
-	 * @param isCheckOnly
+	 * @param  activeChar  The L2Character of the character placing the flag
+	 * @param  isCheckOnly
 	 * @return
 	 */
 	public static boolean checkIfOkToCastSealOfRule(final L2Character activeChar, final boolean isCheckOnly)
@@ -121,25 +117,39 @@ public class TakeCastle implements ISkillHandler
 	public static boolean checkIfOkToCastSealOfRule(final L2Character activeChar, final Castle castle, final boolean isCheckOnly)
 	{
 		if (activeChar == null || !(activeChar instanceof L2PcInstance))
+		{
 			return false;
+		}
 		
 		SystemMessage sm = new SystemMessage(SystemMessageId.S1_S2);
 		L2PcInstance player = (L2PcInstance) activeChar;
 		
 		if (castle == null || castle.getCastleId() <= 0)
+		{
 			sm.addString("You must be on castle ground to use this skill");
+		}
 		else if (player.getTarget() == null || !(player.getTarget() instanceof L2ArtefactInstance))
+		{
 			sm.addString("You can only use this skill on an artifact");
+		}
 		else if (!castle.getSiege().getIsInProgress())
+		{
 			sm.addString("You can only use this skill during a siege.");
+		}
 		else if (!Util.checkIfInRange(200, player, player.getTarget(), true))
+		{
 			sm.addString("You are not in range of the artifact.");
+		}
 		else if (castle.getSiege().getAttackerClan(player.getClan()) == null)
+		{
 			sm.addString("You must be an attacker to use this skill");
+		}
 		else
 		{
 			if (!isCheckOnly)
+			{
 				castle.getSiege().announceToPlayer("Clan " + player.getClan().getName() + " has begun to engrave the ruler.", true);
+			}
 			sm = null;
 			player = null;
 			return true;
@@ -163,25 +173,39 @@ public class TakeCastle implements ISkillHandler
 	public static boolean checkIfOkToCastFlagDisplay(final L2Character activeChar, final Fort fort, final boolean isCheckOnly)
 	{
 		if (activeChar == null || !(activeChar instanceof L2PcInstance))
+		{
 			return false;
+		}
 		
 		SystemMessage sm = new SystemMessage(SystemMessageId.S1_S2);
 		L2PcInstance player = (L2PcInstance) activeChar;
 		
 		if (fort == null || fort.getFortId() <= 0)
+		{
 			sm.addString("You must be on fort ground to use this skill");
+		}
 		else if (player.getTarget() == null && !(player.getTarget() instanceof L2ArtefactInstance))
+		{
 			sm.addString("You can only use this skill on an flagpole");
+		}
 		else if (!fort.getSiege().getIsInProgress())
+		{
 			sm.addString("You can only use this skill during a siege.");
+		}
 		else if (!Util.checkIfInRange(200, player, player.getTarget(), true))
+		{
 			sm.addString("You are not in range of the flagpole.");
+		}
 		else if (fort.getSiege().getAttackerClan(player.getClan()) == null)
+		{
 			sm.addString("You must be an attacker to use this skill");
+		}
 		else
 		{
 			if (!isCheckOnly)
+			{
 				fort.getSiege().announceToPlayer("Clan " + player.getClan().getName() + " has begun to raise flag.", true);
+			}
 			sm = null;
 			player = null;
 			return true;

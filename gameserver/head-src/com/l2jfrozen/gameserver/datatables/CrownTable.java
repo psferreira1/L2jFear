@@ -1,28 +1,7 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.datatables;
 
+import java.util.Arrays;
 import java.util.List;
-
-import javolution.util.FastList;
 
 /**
  * This class has just one simple function to return the item id of a crown regarding to castleid
@@ -30,25 +9,21 @@ import javolution.util.FastList;
  */
 public class CrownTable
 {
-	private static List<Integer> _crownList = new FastList<>();
+	private static final List<Integer> CROWNLIST = Arrays.asList(6841, // Crown of the lord
+		6834, // Innadril
+		6835, // Dion
+		6836, // Goddard
+		6837, // Oren
+		6838, // Gludio
+		6839, // Giran
+		6840, // Aden
+		8182, // Rune
+		8183 // Schuttgart
+	);
 	
 	public static List<Integer> getCrownList()
 	{
-		if (_crownList.isEmpty())
-		{
-			_crownList.add(6841); // Crown of the lord
-			_crownList.add(6834); // Innadril
-			_crownList.add(6835); // Dion
-			_crownList.add(6836); // Goddard
-			_crownList.add(6837); // Oren
-			_crownList.add(6838); // Gludio
-			_crownList.add(6839); // Giran
-			_crownList.add(6840); // Aden
-			_crownList.add(8182); // Rune
-			_crownList.add(8183); // Schuttgart
-		}
-		
-		return _crownList;
+		return CROWNLIST;
 	}
 	
 	public static int getCrownId(final int CastleId)
@@ -56,7 +31,7 @@ public class CrownTable
 		int CrownId = 0;
 		switch (CastleId)
 		{
-		// Gludio
+			// Gludio
 			case 1:
 				CrownId = 6838;
 				break;

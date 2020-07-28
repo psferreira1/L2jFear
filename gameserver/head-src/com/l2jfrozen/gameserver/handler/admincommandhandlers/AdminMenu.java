@@ -1,23 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.handler.admincommandhandlers;
 
 import java.sql.Connection;
@@ -37,8 +17,6 @@ import com.l2jfrozen.gameserver.model.actor.instance.L2PcInstance;
 import com.l2jfrozen.gameserver.network.SystemMessageId;
 import com.l2jfrozen.gameserver.network.serverpackets.SystemMessage;
 import com.l2jfrozen.gameserver.thread.LoginServerThread;
-import com.l2jfrozen.util.CloseUtil;
-import com.l2jfrozen.util.database.DatabaseUtils;
 import com.l2jfrozen.util.database.L2DatabaseFactory;
 
 /**
@@ -48,6 +26,8 @@ import com.l2jfrozen.util.database.L2DatabaseFactory;
 public class AdminMenu implements IAdminCommandHandler
 {
 	private static final Logger LOGGER = Logger.getLogger(AdminMenu.class);
+	
+	private static final String SELECT_ACCOUNT_BY_CHARACTER = "SELECT account_name FROM characters WHERE char_name=?";
 	
 	private static final String[] ADMIN_COMMANDS =
 	{
@@ -66,11 +46,6 @@ public class AdminMenu implements IAdminCommandHandler
 	@Override
 	public boolean useAdminCommand(final String command, final L2PcInstance activeChar)
 	{
-		/*
-		 * if(!AdminCommandAccessRights.getInstance().hasAccess(command, activeChar.getAccessLevel())){ return false; } if(Config.GMAUDIT) { Logger _logAudit = Logger.getLogger("gmaudit"); LogRecord record = new LogRecord(Level.INFO, command); record.setParameters(new Object[] { "GM: " +
-		 * activeChar.getName(), " to target [" + activeChar.getTarget() + "] " }); _logAudit.LOGGER(record); }
-		 */
-		
 		if (command.equals("admin_char_manage"))
 		{
 			showMainPage(activeChar);
@@ -110,7 +85,9 @@ public class AdminMenu implements IAdminCommandHandler
 			catch (final StringIndexOutOfBoundsException e)
 			{
 				if (Config.ENABLE_ALL_EXCEPTIONS)
+				{
 					e.printStackTrace();
+				}
 			}
 		}
 		else if (command.startsWith("admin_recall_party_menu"))
@@ -146,7 +123,9 @@ public class AdminMenu implements IAdminCommandHandler
 			catch (final Exception e)
 			{
 				if (Config.ENABLE_ALL_EXCEPTIONS)
+				{
 					e.printStackTrace();
+				}
 			}
 		}
 		else if (command.startsWith("admin_recall_clan_menu"))
@@ -187,7 +166,9 @@ public class AdminMenu implements IAdminCommandHandler
 			catch (final Exception e)
 			{
 				if (Config.ENABLE_ALL_EXCEPTIONS)
+				{
 					e.printStackTrace();
+				}
 			}
 		}
 		else if (command.startsWith("admin_goto_char_menu"))
@@ -203,7 +184,9 @@ public class AdminMenu implements IAdminCommandHandler
 			catch (final StringIndexOutOfBoundsException e)
 			{
 				if (Config.ENABLE_ALL_EXCEPTIONS)
+				{
 					e.printStackTrace();
+				}
 			}
 		}
 		else if (command.equals("admin_kill_menu"))
@@ -380,66 +363,47 @@ public class AdminMenu implements IAdminCommandHandler
 		player = null;
 	}
 	
-	/**
-	 * @param activeChar
-	 */
 	private void showMainPage(final L2PcInstance activeChar)
 	{
 		AdminHelpPage.showHelpPage(activeChar, "charmanage.htm");
 	}
 	
-	private void setAccountAccessLevel(final String player, final L2PcInstance activeChar, final int banLevel)
+	private void setAccountAccessLevel(String player, L2PcInstance activeChar, int banLevel)
 	{
-		Connection con = null;
-		
-		try
+		try (Connection con = L2DatabaseFactory.getInstance().getConnection();
+			PreparedStatement statement = con.prepareStatement(SELECT_ACCOUNT_BY_CHARACTER))
 		{
-			con = L2DatabaseFactory.getInstance().getConnection(false);
-			String stmt = "SELECT account_name FROM characters WHERE char_name = ?";
-			PreparedStatement statement = con.prepareStatement(stmt);
 			statement.setString(1, player);
-			ResultSet result = statement.executeQuery();
-			
-			if (result.next())
+			try (ResultSet result = statement.executeQuery())
 			{
-				String acc_name = result.getString(1);
-				SystemMessage sm = new SystemMessage(SystemMessageId.S1_S2);
-				
-				if (acc_name.length() > 0)
+				if (result.next())
 				{
-					LoginServerThread.getInstance().sendAccessLevel(acc_name, banLevel);
-					sm.addString("Account Access Level for " + player + " set to " + banLevel + ".");
+					String acc_name = result.getString(1);
+					SystemMessage sm = new SystemMessage(SystemMessageId.S1_S2);
+					
+					if (acc_name.length() > 0)
+					{
+						LoginServerThread.getInstance().sendAccessLevel(acc_name, banLevel);
+						sm.addString("Account Access Level for " + player + " set to " + banLevel + ".");
+					}
+					else
+					{
+						sm.addString("Couldn't find player: " + player + ".");
+					}
+					
+					activeChar.sendPacket(sm);
+					sm = null;
+					acc_name = null;
 				}
 				else
 				{
-					sm.addString("Couldn't find player: " + player + ".");
+					activeChar.sendMessage("Specified player name didn't lead to a valid account.");
 				}
-				
-				activeChar.sendPacket(sm);
-				sm = null;
-				acc_name = null;
 			}
-			else
-			{
-				activeChar.sendMessage("Specified player name didn't lead to a valid account.");
-			}
-			
-			DatabaseUtils.close(statement);
-			statement = null;
-			result.close();
-			result = null;
-			stmt = null;
 		}
-		catch (final Exception e)
+		catch (Exception e)
 		{
-			LOGGER.warn("Could not set accessLevel:" + e);
-			
-			if (Config.ENABLE_ALL_EXCEPTIONS)
-				e.printStackTrace();
-		}
-		finally
-		{
-			CloseUtil.close(con);
+			LOGGER.error("AdminMenu.setAccountAccessLevel : Could not set accessLevel", e);
 		}
 	}
 }

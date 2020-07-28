@@ -1,23 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.skills.conditions;
 
 import com.l2jfrozen.gameserver.model.actor.instance.L2PcInstance;
@@ -39,37 +19,39 @@ public class ConditionPlayerState extends Condition
 		SIDE
 	}
 	
-	private final CheckPlayerState _check;
-	private final boolean _required;
+	private final CheckPlayerState check;
+	private final boolean required;
 	
 	public ConditionPlayerState(final CheckPlayerState check, final boolean required)
 	{
-		_check = check;
-		_required = required;
+		this.check = check;
+		this.required = required;
 	}
 	
 	@Override
 	public boolean testImpl(final Env env)
 	{
-		switch (_check)
+		switch (check)
 		{
 			case RESTING:
 				if (env.player instanceof L2PcInstance)
-					return ((L2PcInstance) env.player).isSitting() == _required;
-				return !_required;
+				{
+					return ((L2PcInstance) env.player).isSitting() == required;
+				}
+				return !required;
 			case MOVING:
-				return env.player.isMoving() == _required;
+				return env.player.isMoving() == required;
 			case RUNNING:
-				return env.player.isMoving() == _required && env.player.isRunning() == _required;
+				return env.player.isMoving() == required && env.player.isRunning() == required;
 			case FLYING:
-				return env.player.isFlying() == _required;
+				return env.player.isFlying() == required;
 			case BEHIND:
-				return env.player.isBehindTarget() == _required;
+				return env.player.isBehindTarget() == required;
 			case FRONT:
-				return env.player.isFrontTarget() == _required;
+				return env.player.isFrontTarget() == required;
 			case SIDE:
-				return env.player.isSideTarget() == _required;
+				return env.player.isSideTarget() == required;
 		}
-		return !_required;
+		return !required;
 	}
 }

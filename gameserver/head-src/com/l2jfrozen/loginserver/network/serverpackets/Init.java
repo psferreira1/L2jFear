@@ -1,23 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.loginserver.network.serverpackets;
 
 import com.l2jfrozen.loginserver.L2LoginClient;
@@ -27,10 +7,10 @@ import com.l2jfrozen.loginserver.L2LoginClient;
  */
 public final class Init extends L2LoginServerPacket
 {
-	private final int _sessionId;
+	private final int sessionId;
 	
-	private final byte[] _publicKey;
-	private final byte[] _blowfishKey;
+	private final byte[] publicKey;
+	private final byte[] blowfishKey;
 	
 	public Init(final L2LoginClient client)
 	{
@@ -39,9 +19,9 @@ public final class Init extends L2LoginServerPacket
 	
 	public Init(final byte[] publickey, final byte[] blowfishkey, final int sessionId)
 	{
-		_sessionId = sessionId;
-		_publicKey = publickey;
-		_blowfishKey = blowfishkey;
+		this.sessionId = sessionId;
+		publicKey = publickey;
+		blowfishKey = blowfishkey;
 	}
 	
 	@Override
@@ -49,10 +29,10 @@ public final class Init extends L2LoginServerPacket
 	{
 		writeC(0x00); // init packet id
 		
-		writeD(_sessionId); // session id
+		writeD(sessionId); // session id
 		writeD(0x0000c621); // protocol revision
 		
-		writeB(_publicKey); // RSA Public Key
+		writeB(publicKey); // RSA Public Key
 		
 		// unk GG related?
 		writeD(0x29DD954E);
@@ -60,14 +40,10 @@ public final class Init extends L2LoginServerPacket
 		writeD(0x97ADB620);
 		writeD(0x07BDE0F7);
 		
-		writeB(_blowfishKey); // BlowFish key
+		writeB(blowfishKey); // BlowFish key
 		writeC(0x00); // null termination ;)
 	}
 	
-	/*
-	 * (non-Javadoc)
-	 * @see com.l2jfrozen.loginserver.network.serverpackets.L2LoginServerPacket#getType()
-	 */
 	@Override
 	public String getType()
 	{

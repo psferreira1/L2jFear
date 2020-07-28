@@ -1,26 +1,5 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.handler.itemhandlers;
 
-import com.l2jfrozen.gameserver.cache.HtmCache;
 import com.l2jfrozen.gameserver.handler.IItemHandler;
 import com.l2jfrozen.gameserver.model.actor.instance.L2ItemInstance;
 import com.l2jfrozen.gameserver.model.actor.instance.L2PcInstance;
@@ -75,13 +54,12 @@ public class Book implements IItemHandler
 	public void useItem(final L2PlayableInstance playable, final L2ItemInstance item)
 	{
 		if (!(playable instanceof L2PcInstance))
+		{
 			return;
+		}
 		
 		L2PcInstance activeChar = (L2PcInstance) playable;
 		final int itemId = item.getItemId();
-		
-		String filename = "data/html/help/" + itemId + ".htm";
-		String content = HtmCache.getInstance().getHtm(filename);
 		
 		// Quest item: Lidia's diary
 		if (itemId == 7064)
@@ -90,26 +68,10 @@ public class Book implements IItemHandler
 			activeChar.sendPacket(new RadarControl(0, 1, 51995, -51265, -3104));
 		}
 		
-		if (content == null)
-		{
-			NpcHtmlMessage html = new NpcHtmlMessage(1);
-			html.setHtml("<html><body>My Text is missing:<br>" + filename + "</body></html>");
-			activeChar.sendPacket(html);
-			html = null;
-		}
-		else
-		{
-			NpcHtmlMessage itemReply = new NpcHtmlMessage(5);
-			itemReply.setHtml(content);
-			activeChar.sendPacket(itemReply);
-			itemReply = null;
-		}
-		
+		NpcHtmlMessage html = new NpcHtmlMessage(1);
+		html.setFile("data/html/help/" + itemId + ".htm");
+		activeChar.sendPacket(html);
 		activeChar.sendPacket(ActionFailed.STATIC_PACKET);
-		
-		activeChar = null;
-		filename = null;
-		content = null;
 	}
 	
 	@Override

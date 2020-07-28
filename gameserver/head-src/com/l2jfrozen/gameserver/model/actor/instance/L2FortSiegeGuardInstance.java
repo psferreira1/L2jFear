@@ -1,19 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any later
- * version.
- * 
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
- * 
- * You should have received a copy of the GNU General Public License along with
- * this program. If not, see <http://www.gnu.org/licenses/>.
- */
 package com.l2jfrozen.gameserver.model.actor.instance;
 
 import com.l2jfrozen.Config;
@@ -52,16 +36,16 @@ public class L2FortSiegeGuardInstance extends L2Attackable
 	@Override
 	public L2CharacterAI getAI()
 	{
-		final L2CharacterAI ai = _ai; // copy handle
+		final L2CharacterAI ai = aiCharacter; // copy handle
 		if (ai == null)
 		{
 			synchronized (this)
 			{
-				if (_ai == null)
+				if (aiCharacter == null)
 				{
-					_ai = new L2FortSiegeGuardAI(new AIAccessor());
+					aiCharacter = new L2FortSiegeGuardAI(new AIAccessor());
 				}
-				return _ai;
+				return aiCharacter;
 			}
 		}
 		return ai;
@@ -76,7 +60,9 @@ public class L2FortSiegeGuardInstance extends L2Attackable
 	public boolean isAutoAttackable(final L2Character attacker)
 	{
 		if (!(attacker instanceof L2PlayableInstance))
+		{
 			return false;
+		}
 		
 		boolean isFort = false;
 		if (attacker instanceof L2PcInstance)
@@ -104,7 +90,9 @@ public class L2FortSiegeGuardInstance extends L2Attackable
 	public void returnHome()
 	{
 		if (getWalkSpeed() <= 0)
+		{
 			return;
+		}
 		if (!isInsideRadius(getSpawn().getLocx(), getSpawn().getLocy(), 40, false))
 		{
 			if (Config.DEBUG)
@@ -185,7 +173,9 @@ public class L2FortSiegeGuardInstance extends L2Attackable
 	public void addDamageHate(final L2Character attacker, final int damage, final int aggro)
 	{
 		if (attacker == null)
+		{
 			return;
+		}
 		
 		if (!(attacker instanceof L2FortSiegeGuardInstance))
 		{
@@ -201,7 +191,9 @@ public class L2FortSiegeGuardInstance extends L2Attackable
 					player = ((L2Summon) attacker).getOwner();
 				}
 				if (player != null && player.getClan() != null && player.getClan().getHasFort() == getFort().getFortId())
+				{
 					return;
+				}
 			}
 			super.addDamageHate(attacker, damage, aggro);
 		}

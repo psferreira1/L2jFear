@@ -1,23 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.network.serverpackets;
 
 import com.l2jfrozen.gameserver.model.L2Character;
@@ -31,29 +11,29 @@ public class Attack extends L2GameServerPacket
 {
 	private class Hit
 	{
-		protected int _targetId;
-		protected int _damage;
-		protected int _flags;
+		protected int targetId;
+		protected int damage;
+		protected int flags;
 		
 		Hit(final L2Object target, final int damage, final boolean miss, final boolean crit, final boolean shld)
 		{
-			_targetId = target.getObjectId();
-			_damage = damage;
+			targetId = target.getObjectId();
+			this.damage = damage;
 			if (soulshot)
 			{
-				_flags |= 0x10 | _grade;
+				flags |= 0x10 | grade;
 			}
 			if (crit)
 			{
-				_flags |= 0x20;
+				flags |= 0x20;
 			}
 			if (shld)
 			{
-				_flags |= 0x40;
+				flags |= 0x40;
 			}
 			if (miss)
 			{
-				_flags |= 0x80;
+				flags |= 0x80;
 			}
 			
 		}
@@ -61,29 +41,28 @@ public class Attack extends L2GameServerPacket
 	
 	// dh
 	
-	private static final String _S__06_ATTACK = "[S] 06 Attack";
-	protected final int _attackerObjId;
+	protected final int attackerObjId;
 	public final boolean soulshot;
-	protected int _grade;
-	private final int _x;
-	private final int _y;
-	private final int _z;
-	private Hit[] _hits;
+	protected int grade;
+	private final int x;
+	private final int y;
+	private final int z;
+	private Hit[] hits;
 	
 	/**
 	 * @param attacker the attacker L2Character
-	 * @param ss true if useing SoulShots
+	 * @param ss       true if useing SoulShots
 	 * @param grade
 	 */
 	public Attack(final L2Character attacker, final boolean ss, final int grade)
 	{
-		_attackerObjId = attacker.getObjectId();
+		attackerObjId = attacker.getObjectId();
 		soulshot = ss;
-		_grade = grade;
-		_x = attacker.getX();
-		_y = attacker.getY();
-		_z = attacker.getZ();
-		_hits = new Hit[0];
+		this.grade = grade;
+		x = attacker.getX();
+		y = attacker.getY();
+		z = attacker.getZ();
+		hits = new Hit[0];
 	}
 	
 	/**
@@ -97,15 +76,15 @@ public class Attack extends L2GameServerPacket
 	public void addHit(final L2Object target, final int damage, final boolean miss, final boolean crit, final boolean shld)
 	{
 		// Get the last position in the hits table
-		final int pos = _hits.length;
+		final int pos = hits.length;
 		
 		// Create a new Hit object
 		final Hit[] tmp = new Hit[pos + 1];
 		
 		// Add the new Hit object to hits table
-		System.arraycopy(_hits, 0, tmp, 0, _hits.length);
+		System.arraycopy(hits, 0, tmp, 0, hits.length);
 		tmp[pos] = new Hit(target, damage, miss, crit, shld);
-		_hits = tmp;
+		hits = tmp;
 	}
 	
 	/**
@@ -114,7 +93,7 @@ public class Attack extends L2GameServerPacket
 	 */
 	public boolean hasHits()
 	{
-		return _hits.length > 0;
+		return hits.length > 0;
 	}
 	
 	@Override
@@ -122,29 +101,25 @@ public class Attack extends L2GameServerPacket
 	{
 		writeC(0x05);
 		
-		writeD(_attackerObjId);
-		writeD(_hits[0]._targetId);
-		writeD(_hits[0]._damage);
-		writeC(_hits[0]._flags);
-		writeD(_x);
-		writeD(_y);
-		writeD(_z);
-		writeH(_hits.length - 1);
-		for (int i = 1; i < _hits.length; i++)
+		writeD(attackerObjId);
+		writeD(hits[0].targetId);
+		writeD(hits[0].damage);
+		writeC(hits[0].flags);
+		writeD(x);
+		writeD(y);
+		writeD(z);
+		writeH(hits.length - 1);
+		for (int i = 1; i < hits.length; i++)
 		{
-			writeD(_hits[i]._targetId);
-			writeD(_hits[i]._damage);
-			writeC(_hits[i]._flags);
+			writeD(hits[i].targetId);
+			writeD(hits[i].damage);
+			writeC(hits[i].flags);
 		}
 	}
 	
-	/*
-	 * (non-Javadoc)
-	 * @see com.l2jfrozen.gameserver.serverpackets.ServerBasePacket#getType()
-	 */
 	@Override
 	public String getType()
 	{
-		return _S__06_ATTACK;
+		return "[S] 06 Attack";
 	}
 }

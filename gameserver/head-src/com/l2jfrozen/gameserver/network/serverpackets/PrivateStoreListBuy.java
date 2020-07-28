@@ -1,23 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.network.serverpackets;
 
 import com.l2jfrozen.Config;
@@ -30,30 +10,30 @@ import com.l2jfrozen.gameserver.model.actor.instance.L2PcInstance;
  */
 public class PrivateStoreListBuy extends L2GameServerPacket
 {
-	// private static final String _S__D1_PRIVATEBUYLISTBUY = "[S] b8 PrivateBuyListBuy";
-	private static final String _S__D1_PRIVATESTORELISTBUY = "[S] b8 PrivateStoreListBuy";
-	private final L2PcInstance _storePlayer;
-	private final L2PcInstance _activeChar;
-	private int _playerAdena;
-	private final TradeList.TradeItem[] _items;
+	private final L2PcInstance privateStorePlayer;
+	private final L2PcInstance activeChar;
+	private int playerAdena;
+	private final TradeList.TradeItem[] items;
 	
 	public PrivateStoreListBuy(final L2PcInstance player, final L2PcInstance storePlayer)
 	{
-		_storePlayer = storePlayer;
-		_activeChar = player;
+		privateStorePlayer = storePlayer;
+		activeChar = player;
 		
 		if (Config.SELL_BY_ITEM)
 		{
 			final CreatureSay cs11 = new CreatureSay(0, 15, "", "ATTENTION: Store System is not based on Adena, be careful!"); // 8D
-			_activeChar.sendPacket(cs11);
-			_playerAdena = _activeChar.getItemCount(Config.SELL_ITEM, -1);
+			activeChar.sendPacket(cs11);
+			playerAdena = activeChar.getItemCount(Config.SELL_ITEM, -1);
 		}
 		else
-			_playerAdena = _activeChar.getAdena();
+		{
+			playerAdena = activeChar.getAdena();
+		}
 		
-		// _storePlayer.getSellList().updateItems(); // Update SellList for case inventory content has changed
-		// this items must be the items available into the _activeChar (seller) inventory
-		_items = _storePlayer.getBuyList().getAvailableItems(_activeChar.getInventory());
+		// privateStorePlayer.getSellList().updateItems(); // Update SellList for case inventory content has changed
+		// this items must be the items available into the activeChar (seller) inventory
+		items = privateStorePlayer.getBuyList().getAvailableItems(activeChar.getInventory());
 		
 	}
 	
@@ -61,12 +41,12 @@ public class PrivateStoreListBuy extends L2GameServerPacket
 	protected final void writeImpl()
 	{
 		writeC(0xb8);
-		writeD(_storePlayer.getObjectId());
-		writeD(_playerAdena);
+		writeD(privateStorePlayer.getObjectId());
+		writeD(playerAdena);
 		
-		writeD(_items.length);
+		writeD(items.length);
 		
-		for (final TradeList.TradeItem item : _items)
+		for (final TradeList.TradeItem item : items)
 		{
 			writeD(item.getObjectId());
 			writeD(item.getItem().getItemId());
@@ -85,13 +65,9 @@ public class PrivateStoreListBuy extends L2GameServerPacket
 		}
 	}
 	
-	/*
-	 * (non-Javadoc)
-	 * @see com.l2jfrozen.gameserver.serverpackets.ServerBasePacket#getType()
-	 */
 	@Override
 	public String getType()
 	{
-		return _S__D1_PRIVATESTORELISTBUY;
+		return "[S] b8 PrivateStoreListBuy";
 	}
 }

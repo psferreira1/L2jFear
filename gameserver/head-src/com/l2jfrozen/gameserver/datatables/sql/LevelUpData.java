@@ -1,43 +1,20 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.datatables.sql;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.util.HashMap;
 import java.util.Map;
-
-import javolution.util.FastMap;
 
 import org.apache.log4j.Logger;
 
 import com.l2jfrozen.gameserver.model.L2LvlupData;
 import com.l2jfrozen.gameserver.model.base.ClassId;
-import com.l2jfrozen.util.CloseUtil;
-import com.l2jfrozen.util.database.DatabaseUtils;
 import com.l2jfrozen.util.database.L2DatabaseFactory;
 
 /**
  * This class ...
- * @author NightMarez
+ * @author  NightMarez
  * @version $Revision: 1.3.2.4.2.3 $ $Date: 2005/03/27 15:29:18 $
  */
 public class LevelUpData
@@ -57,29 +34,27 @@ public class LevelUpData
 	
 	private final static Logger LOGGER = Logger.getLogger(LevelUpData.class);
 	
-	private static LevelUpData _instance;
+	private static LevelUpData instance;
 	
 	private final Map<Integer, L2LvlupData> lvlTable;
 	
 	public static LevelUpData getInstance()
 	{
-		if (_instance == null)
+		if (instance == null)
 		{
-			_instance = new LevelUpData();
+			instance = new LevelUpData();
 		}
 		
-		return _instance;
+		return instance;
 	}
 	
 	private LevelUpData()
 	{
-		lvlTable = new FastMap<>();
-		Connection con = null;
-		try
+		lvlTable = new HashMap<>();
+		try (Connection con = L2DatabaseFactory.getInstance().getConnection();
+			PreparedStatement statement = con.prepareStatement(SELECT_ALL);
+			ResultSet rset = statement.executeQuery())
 		{
-			con = L2DatabaseFactory.getInstance().getConnection(false);
-			final PreparedStatement statement = con.prepareStatement(SELECT_ALL);
-			final ResultSet rset = statement.executeQuery();
 			L2LvlupData lvlDat;
 			
 			while (rset.next())
@@ -97,26 +72,19 @@ public class LevelUpData
 				lvlDat.setClassMpAdd(rset.getFloat(MP_ADD));
 				lvlDat.setClassMpModifier(rset.getFloat(MP_MOD));
 				
-				lvlTable.put(new Integer(lvlDat.getClassid()), lvlDat);
+				lvlTable.put(lvlDat.getClassid(), lvlDat);
 			}
-			
-			DatabaseUtils.close(statement);
-			DatabaseUtils.close(rset);
 			
 			LOGGER.info("LevelUpData: Loaded " + lvlTable.size() + " Character Level Up Templates.");
 		}
-		catch (final Exception e)
+		catch (Exception e)
 		{
-			LOGGER.error("Error while creating Lvl up data table", e);
-		}
-		finally
-		{
-			CloseUtil.close(con);
+			LOGGER.error("LevelUpData.LevelUpdata : Error while creating Lvl up data table", e);
 		}
 	}
 	
 	/**
-	 * @param classId
+	 * @param  classId
 	 * @return
 	 */
 	public L2LvlupData getTemplate(final int classId)

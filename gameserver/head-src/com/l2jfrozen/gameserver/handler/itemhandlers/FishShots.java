@@ -1,23 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.handler.itemhandlers;
 
 import com.l2jfrozen.gameserver.handler.IItemHandler;
@@ -58,26 +38,28 @@ public class FishShots implements IItemHandler
 		2186
 	};
 	
-	/*
-	 * (non-Javadoc)
-	 * @see com.l2jfrozen.gameserver.handler.IItemHandler#useItem(com.l2jfrozen.gameserver.model.L2PcInstance, com.l2jfrozen.gameserver.model.L2ItemInstance)
-	 */
 	@Override
 	public void useItem(final L2PlayableInstance playable, final L2ItemInstance item)
 	{
 		if (!(playable instanceof L2PcInstance))
+		{
 			return;
+		}
 		
 		L2PcInstance activeChar = (L2PcInstance) playable;
 		L2ItemInstance weaponInst = activeChar.getActiveWeaponInstance();
 		L2Weapon weaponItem = activeChar.getActiveWeaponItem();
 		
 		if (weaponInst == null || weaponItem.getItemType() != L2WeaponType.ROD)
+		{
 			return;
+		}
 		
 		if (weaponInst.getChargedFishshot())
+		{
 			// spiritshot is already active
 			return;
+		}
 		
 		final int FishshotId = item.getItemId();
 		final int grade = weaponItem.getCrystalType();
@@ -93,7 +75,9 @@ public class FishShots implements IItemHandler
 		}
 		
 		if (count < 1)
+		{
 			return;
+		}
 		
 		weaponInst.setChargedFishshot(true);
 		activeChar.destroyItemWithoutTrace("Consume", item.getObjectId(), 1, null, false);

@@ -1,23 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.model.entity;
 
 import java.sql.Connection;
@@ -25,10 +5,9 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import javolution.util.FastMap;
 
 import org.apache.log4j.Logger;
 
@@ -56,18 +35,18 @@ public class Hero
 {
 	private static final Logger LOGGER = Logger.getLogger(Hero.class);
 	
-	private static Hero _instance;
+	private static Hero instance;
 	private static final String GET_HEROES = "SELECT * FROM heroes WHERE played = 1";
 	private static final String GET_ALL_HEROES = "SELECT * FROM heroes";
 	private static final String UPDATE_ALL = "UPDATE heroes SET played = 0";
 	private static final String INSERT_HERO = "INSERT INTO heroes VALUES (?,?,?,?,?)";
-	private static final String UPDATE_HERO = "UPDATE heroes SET count = ?, played = ?" + " WHERE charId = ?";
-	private static final String GET_CLAN_ALLY = "SELECT characters.clanid AS clanid, coalesce(clan_data.ally_Id, 0) AS allyId FROM characters LEFT JOIN clan_data ON clan_data.clan_id = characters.clanid " + " WHERE characters.obj_Id = ?";
+	private static final String UPDATE_HERO = "UPDATE heroes SET count = ?, played = ?  WHERE charId = ?";
+	private static final String GET_CLAN_ALLY = "SELECT characters.clanid AS clanid, coalesce(clan_data.ally_Id, 0) AS allyId FROM characters LEFT JOIN clan_data ON clan_data.clan_id = characters.clanid WHERE characters.obj_Id = ?";
 	private static final String GET_CLAN_NAME = "SELECT clan_name FROM clan_data WHERE clan_id = (SELECT clanid FROM characters WHERE char_name = ?)";
-	private static final String DELETE_ITEMS = "DELETE FROM items WHERE item_id IN " + "(6842, 6611, 6612, 6613, 6614, 6615, 6616, 6617, 6618, 6619, 6620, 6621) " + "AND owner_id NOT IN (SELECT obj_id FROM characters WHERE accesslevel > 0)";
-	private static final List<Integer> _heroItems = Arrays.asList(6842, 6611, 6612, 6613, 6614, 6615, 6616, 6617, 6618, 6619, 6620, 6621);
-	private static Map<Integer, StatsSet> _heroes;
-	private static Map<Integer, StatsSet> _completeHeroes;
+	private static final String DELETE_ITEMS = "DELETE FROM items WHERE item_id IN (6842, 6611, 6612, 6613, 6614, 6615, 6616, 6617, 6618, 6619, 6620, 6621) AND owner_id NOT IN (SELECT obj_id FROM characters WHERE accesslevel > 0)";
+	private static final List<Integer> HERO_ITEMS = Arrays.asList(6842, 6611, 6612, 6613, 6614, 6615, 6616, 6617, 6618, 6619, 6620, 6621);
+	private static Map<Integer, StatsSet> heroesMap;
+	private static Map<Integer, StatsSet> completeHeroes;
 	
 	public static final String COUNT = "count";
 	public static final String PLAYED = "played";
@@ -78,11 +57,11 @@ public class Hero
 	
 	public static Hero getInstance()
 	{
-		if (_instance == null)
+		if (instance == null)
 		{
-			_instance = new Hero();
+			instance = new Hero();
 		}
-		return _instance;
+		return instance;
 	}
 	
 	public Hero()
@@ -92,8 +71,8 @@ public class Hero
 	
 	private void init()
 	{
-		_heroes = new FastMap<>();
-		_completeHeroes = new FastMap<>();
+		heroesMap = new HashMap<>();
+		completeHeroes = new HashMap<>();
 		Connection con = null;
 		PreparedStatement statement = null;
 		PreparedStatement statement2 = null;
@@ -101,7 +80,7 @@ public class Hero
 		ResultSet rset2 = null;
 		try
 		{
-			con = L2DatabaseFactory.getInstance().getConnection(false);
+			con = L2DatabaseFactory.getInstance().getConnection();
 			statement = con.prepareStatement(GET_HEROES);
 			rset = statement.executeQuery();
 			while (rset.next())
@@ -140,7 +119,7 @@ public class Hero
 				}
 				rset2.close();
 				statement2.close();
-				_heroes.put(charId, hero);
+				heroesMap.put(charId, hero);
 			}
 			DatabaseUtils.close(rset);
 			DatabaseUtils.close(statement);
@@ -186,9 +165,7 @@ public class Hero
 						}
 						else
 						{
-							
 							LOGGER.error("Hero System: Player " + charName + " has clan id " + clanId + " that is not present inside clanTable..");
-							
 						}
 						
 					}
@@ -199,22 +176,32 @@ public class Hero
 				}
 				rset2.close();
 				statement2.close();
-				_completeHeroes.put(charId, hero);
+				completeHeroes.put(charId, hero);
 			}
 		}
 		catch (final SQLException e)
 		{
 			LOGGER.warn("Hero System: Couldnt load Heroes");
 			if (Config.DEBUG)
+			{
 				e.printStackTrace();
+			}
 		}
 		finally
 		{
 			DatabaseUtils.closeDatabaseSR(statement2, rset2);
 			DatabaseUtils.closeDatabaseCSR(con, statement, rset);
 		}
-		LOGGER.info("Hero System: Loaded " + _heroes.size() + " Heroes.");
-		LOGGER.info("Hero System: Loaded " + _completeHeroes.size() + " all time Heroes.");
+		
+		if (!heroesMap.isEmpty())
+		{
+			LOGGER.info("Loaded " + heroesMap.size() + " Heroes.");
+		}
+		
+		if (!completeHeroes.isEmpty())
+		{
+			LOGGER.info(" Loaded " + completeHeroes.size() + " all time Heroes.");
+		}
 	}
 	
 	public void putHero(final L2PcInstance player, final boolean isComplete)
@@ -232,9 +219,11 @@ public class Hero
 			newHero.set(Olympiad.CLASS_ID, player.getClassId().getId());
 			newHero.set(COUNT, 1);
 			newHero.set(PLAYED, 1);
-			_heroes.put(player.getObjectId(), newHero);
+			heroesMap.put(player.getObjectId(), newHero);
 			if (isComplete)
-				_completeHeroes.put(player.getObjectId(), newHero);
+			{
+				completeHeroes.put(player.getObjectId(), newHero);
+			}
 		}
 		catch (final Exception e)
 		{
@@ -245,16 +234,22 @@ public class Hero
 	public void deleteHero(final L2PcInstance player, final boolean isComplete)
 	{
 		final int objId = player.getObjectId();
-		if (_heroes.containsKey(objId))
-			_heroes.remove(objId);
+		if (heroesMap.containsKey(objId))
+		{
+			heroesMap.remove(objId);
+		}
 		if (isComplete)
-			if (_completeHeroes.containsKey(objId))
-				_completeHeroes.remove(objId);
+		{
+			if (completeHeroes.containsKey(objId))
+			{
+				completeHeroes.remove(objId);
+			}
+		}
 	}
 	
 	public Map<Integer, StatsSet> getHeroes()
 	{
-		return _heroes;
+		return heroesMap;
 	}
 	
 	public synchronized void computeNewHeroes(final List<StatsSet> newHeroes)
@@ -262,14 +257,16 @@ public class Hero
 		updateHeroes(true);
 		L2ItemInstance[] items;
 		InventoryUpdate iu;
-		if (_heroes.size() != 0)
+		if (heroesMap.size() != 0)
 		{
-			for (final StatsSet hero : _heroes.values())
+			for (final StatsSet hero : heroesMap.values())
 			{
 				final String name = hero.getString(Olympiad.CHAR_NAME);
 				final L2PcInstance player = L2World.getInstance().getPlayer(name);
 				if (player == null)
+				{
 					continue;
+				}
 				try
 				{
 					player.setHero(false);
@@ -311,9 +308,13 @@ public class Hero
 					for (final L2ItemInstance item : player.getInventory().getAvailableItems(false))
 					{
 						if (item == null)
+						{
 							continue;
-						if (!_heroItems.contains(item.getItemId()))
+						}
+						if (!HERO_ITEMS.contains(item.getItemId()))
+						{
 							continue;
+						}
 						player.destroyItem("Hero", item, null, true);
 						iu = new InventoryUpdate();
 						iu.addRemovedItem(item);
@@ -330,16 +331,18 @@ public class Hero
 		}
 		if (newHeroes.size() == 0)
 		{
-			_heroes.clear();
+			heroesMap.clear();
 			return;
 		}
-		final Map<Integer, StatsSet> heroes = new FastMap<>();
+		
+		final Map<Integer, StatsSet> heroes = new HashMap<>();
+		
 		for (final StatsSet hero : newHeroes)
 		{
 			final int charId = hero.getInteger(Olympiad.CHAR_ID);
-			if (_completeHeroes != null && _completeHeroes.containsKey(charId))
+			if (completeHeroes != null && completeHeroes.containsKey(charId))
 			{
-				final StatsSet oldHero = _completeHeroes.get(charId);
+				final StatsSet oldHero = completeHeroes.get(charId);
 				final int count = oldHero.getInteger(COUNT);
 				oldHero.set(COUNT, count + 1);
 				oldHero.set(PLAYED, 1);
@@ -356,11 +359,11 @@ public class Hero
 			}
 		}
 		deleteItemsInDb();
-		_heroes.clear();
-		_heroes.putAll(heroes);
+		heroesMap.clear();
+		heroesMap.putAll(heroes);
 		heroes.clear();
 		updateHeroes(false);
-		for (final StatsSet hero : _heroes.values())
+		for (final StatsSet hero : heroesMap.values())
 		{
 			final String name = hero.getString(Olympiad.CHAR_NAME);
 			final L2PcInstance player = L2World.getInstance().getPlayer(name);
@@ -382,40 +385,35 @@ public class Hero
 			}
 			else
 			{
-				Connection con = null;
-				PreparedStatement statement = null;
-				ResultSet rset = null;
-				try
+				try (Connection con = L2DatabaseFactory.getInstance().getConnection();
+					PreparedStatement statement = con.prepareStatement(GET_CLAN_NAME);)
 				{
-					con = L2DatabaseFactory.getInstance().getConnection();
-					statement = con.prepareStatement(GET_CLAN_NAME);
 					statement.setString(1, name);
-					rset = statement.executeQuery();
-					if (rset.next())
+					
+					try (ResultSet rset = statement.executeQuery())
 					{
-						final String clanName = rset.getString("clan_name");
-						if (clanName != null)
+						if (rset.next())
 						{
-							final L2Clan clan = ClanTable.getInstance().getClanByName(clanName);
-							if (clan != null)
+							String clanName = rset.getString("clan_name");
+							if (clanName != null)
 							{
-								clan.setReputationScore(clan.getReputationScore() + 1000, true);
-								clan.broadcastToOnlineMembers(new PledgeShowInfoUpdate(clan));
-								final SystemMessage sm = new SystemMessage(SystemMessageId.CLAN_MEMBER_S1_BECAME_HERO_AND_GAINED_S2_REPUTATION_POINTS);
-								sm.addString(name);
-								sm.addNumber(1000);
-								clan.broadcastToOnlineMembers(sm);
+								L2Clan clan = ClanTable.getInstance().getClanByName(clanName);
+								if (clan != null)
+								{
+									clan.setReputationScore(clan.getReputationScore() + 1000, true);
+									clan.broadcastToOnlineMembers(new PledgeShowInfoUpdate(clan));
+									SystemMessage sm = new SystemMessage(SystemMessageId.CLAN_MEMBER_S1_BECAME_HERO_AND_GAINED_S2_REPUTATION_POINTS);
+									sm.addString(name);
+									sm.addNumber(1000);
+									clan.broadcastToOnlineMembers(sm);
+								}
 							}
 						}
 					}
 				}
-				catch (final Exception e)
+				catch (Exception e)
 				{
-					LOGGER.warn("could not get clan name of " + name + ": " + e);
-				}
-				finally
-				{
-					DatabaseUtils.closeDatabaseCSR(con, statement, rset);
+					LOGGER.error("could not get clan name of " + name + ": " + e);
 				}
 			}
 		}
@@ -438,10 +436,10 @@ public class Hero
 			}
 			else
 			{
-				for (final Integer heroId : _heroes.keySet())
+				for (final Integer heroId : heroesMap.keySet())
 				{
-					final StatsSet hero = _heroes.get(heroId);
-					if (_completeHeroes == null || !_completeHeroes.containsKey(heroId))
+					final StatsSet hero = heroesMap.get(heroId);
+					if (completeHeroes == null || !completeHeroes.containsKey(heroId))
 					{
 						statement = con.prepareStatement(INSERT_HERO);
 						statement.setInt(1, heroId);
@@ -478,9 +476,9 @@ public class Hero
 						}
 						rset2.close();
 						statement2.close();
-						_heroes.remove(heroId);
-						_heroes.put(heroId, hero);
-						_completeHeroes.put(heroId, hero);
+						heroesMap.remove(heroId);
+						heroesMap.put(heroId, hero);
+						completeHeroes.put(heroId, hero);
 					}
 					else
 					{
@@ -498,7 +496,9 @@ public class Hero
 		{
 			LOGGER.warn("Hero System: Couldnt update Heroes");
 			if (Config.DEBUG)
+			{
 				e.printStackTrace();
+			}
 		}
 		finally
 		{
@@ -509,26 +509,19 @@ public class Hero
 	
 	public List<Integer> getHeroItems()
 	{
-		return _heroItems;
+		return HERO_ITEMS;
 	}
 	
 	private void deleteItemsInDb()
 	{
-		Connection con = null;
-		PreparedStatement statement = null;
-		try
+		try (Connection con = L2DatabaseFactory.getInstance().getConnection();
+			PreparedStatement statement = con.prepareStatement(DELETE_ITEMS);)
 		{
-			con = L2DatabaseFactory.getInstance().getConnection();
-			statement = con.prepareStatement(DELETE_ITEMS);
-			statement.execute();
+			statement.executeUpdate();
 		}
-		catch (final SQLException e)
+		catch (SQLException e)
 		{
-			e.printStackTrace();
-		}
-		finally
-		{
-			DatabaseUtils.closeDatabaseCS(con, statement);
+			LOGGER.error("Hero.deleteItemsInDb : Could not delete items in db", e);
 		}
 	}
 }

@@ -1,24 +1,6 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any later
- * version.
- * 
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
- * 
- * You should have received a copy of the GNU General Public License along with
- * this program. If not, see <http://www.gnu.org/licenses/>.
- */
 package com.l2jfrozen.gameserver.handler.admincommandhandlers;
 
 import java.util.StringTokenizer;
-
-import javolution.text.TextBuilder;
 
 import com.l2jfrozen.gameserver.datatables.sql.ClanTable;
 import com.l2jfrozen.gameserver.handler.IAdminCommandHandler;
@@ -30,6 +12,8 @@ import com.l2jfrozen.gameserver.model.entity.siege.Fort;
 import com.l2jfrozen.gameserver.network.SystemMessageId;
 import com.l2jfrozen.gameserver.network.serverpackets.NpcHtmlMessage;
 import com.l2jfrozen.gameserver.network.serverpackets.SystemMessage;
+
+import javolution.text.TextBuilder;
 
 /**
  * This class handles all siege commands: Todo: change the class name, and neaten it up
@@ -58,11 +42,6 @@ public class AdminFortSiege implements IAdminCommandHandler
 	@Override
 	public boolean useAdminCommand(String command, final L2PcInstance activeChar)
 	{
-		/*
-		 * if(!AdminCommandAccessRights.getInstance().hasAccess(command, activeChar.getAccessLevel())){ return false; } if(Config.GMAUDIT) { Logger _logAudit = Logger.getLogger("gmaudit"); LogRecord record = new LogRecord(Level.INFO, command); record.setParameters(new Object[] { "GM: " +
-		 * activeChar.getName(), " to target [" + activeChar.getTarget() + "] " }); _logAudit.LOGGER(record); }
-		 */
-		
 		final StringTokenizer st = new StringTokenizer(command, " ");
 		command = st.nextToken(); // Get actual command
 		
@@ -73,16 +52,6 @@ public class AdminFortSiege implements IAdminCommandHandler
 		{
 			fort = FortManager.getInstance().getFort(st.nextToken());
 		}
-		
-		// Get fort
-		// String val = "";
-		//
-		// if(st.hasMoreTokens())
-		// {
-		// val = st.nextToken();
-		// }
-		//
-		// val = null;
 		
 		// No fort specified
 		if (fort == null || fort.getFortId() < 0)
@@ -98,8 +67,6 @@ public class AdminFortSiege implements IAdminCommandHandler
 			{
 				player = (L2PcInstance) target;
 			}
-			
-			target = null;
 			
 			if (command.equalsIgnoreCase("admin_add_fortattacker"))
 			{
@@ -123,19 +90,6 @@ public class AdminFortSiege implements IAdminCommandHandler
 					fort.getSiege().registerDefender(player, true);
 				}
 			}
-			// FIXME
-			// else if (command.equalsIgnoreCase("admin_add_guard"))
-			// {
-			// try
-			// {
-			// int npcId = Integer.parseInt(val);
-			// fort.getSiege().getFortSiegeGuardManager().addFortSiegeGuard(activeChar, npcId);
-			// }
-			// catch (Exception e)
-			// {
-			// activeChar.sendMessage("Usage: //add_guard npcId");
-			// }
-			// }
 			else if (command.equalsIgnoreCase("admin_clear_fortsiege_list"))
 			{
 				fort.getSiege().clearSiegeClan();
@@ -147,7 +101,6 @@ public class AdminFortSiege implements IAdminCommandHandler
 			else if (command.equalsIgnoreCase("admin_list_fortsiege_clans"))
 			{
 				fort.getSiege().listRegisterClan(activeChar);
-				
 				return true;
 			}
 			else if (command.equalsIgnoreCase("admin_move_fortdefenders"))
@@ -190,10 +143,7 @@ public class AdminFortSiege implements IAdminCommandHandler
 			}
 			
 			showFortSiegePage(activeChar, fort.getName());
-			
-			player = null;
 		}
-		
 		return true;
 	}
 	
@@ -224,9 +174,6 @@ public class AdminFortSiege implements IAdminCommandHandler
 		
 		adminReply.replace("%forts%", cList.toString());
 		activeChar.sendPacket(adminReply);
-		
-		cList = null;
-		adminReply = null;
 	}
 	
 	private void showFortSiegePage(final L2PcInstance activeChar, final String fortName)

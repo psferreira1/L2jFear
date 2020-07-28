@@ -1,22 +1,3 @@
-/* L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.skills.l2skills;
 
 import com.l2jfrozen.Config;
@@ -36,22 +17,24 @@ import com.l2jfrozen.gameserver.templates.StatsSet;
 public class L2SkillDrain extends L2Skill
 {
 	
-	private final float _absorbPart;
-	private final int _absorbAbs;
+	private final float absorbPart;
+	private final int absorbAbs;
 	
 	public L2SkillDrain(final StatsSet set)
 	{
 		super(set);
 		
-		_absorbPart = set.getFloat("absorbPart", 0.f);
-		_absorbAbs = set.getInteger("absorbAbs", 0);
+		absorbPart = set.getFloat("absorbPart", 0.f);
+		absorbAbs = set.getInteger("absorbAbs", 0);
 	}
 	
 	@Override
 	public void useSkill(final L2Character activeChar, final L2Object[] targets)
 	{
 		if (activeChar.isAlikeDead())
+		{
 			return;
+		}
 		
 		final boolean sps = activeChar.checkSps();
 		final boolean bss = activeChar.checkBss();
@@ -71,39 +54,39 @@ public class L2SkillDrain extends L2Skill
 			}
 			
 			/*
-			 * L2ItemInstance weaponInst = activeChar.getActiveWeaponInstance(); if(weaponInst != null) { if(weaponInst.getChargedSpiritshot() == L2ItemInstance.CHARGED_BLESSED_SPIRITSHOT) { bss = true; weaponInst.setChargedSpiritshot(L2ItemInstance.CHARGED_NONE); } else
-			 * if(weaponInst.getChargedSpiritshot() == L2ItemInstance.CHARGED_SPIRITSHOT) { ss = true; weaponInst.setChargedSpiritshot(L2ItemInstance.CHARGED_NONE); } } // If there is no weapon equipped, check for an active summon. else if(activeChar instanceof L2Summon) { L2Summon activeSummon =
-			 * (L2Summon) activeChar; if(activeSummon.getChargedSpiritShot() == L2ItemInstance.CHARGED_BLESSED_SPIRITSHOT) { bss = true; activeSummon.setChargedSpiritShot(L2ItemInstance.CHARGED_NONE); } else if(activeSummon.getChargedSpiritShot() == L2ItemInstance.CHARGED_SPIRITSHOT) { ss = true;
+			 * L2ItemInstance weaponInst = activeChar.getActiveWeaponInstance(); if(weaponInst != null) { if(weaponInst.getChargedSpiritshot() == L2ItemInstance.CHARGED_BLESSED_SPIRITSHOT) { bss = true; weaponInst.setChargedSpiritshot(L2ItemInstance.CHARGED_NONE); } else if(weaponInst.getChargedSpiritshot() ==
+			 * L2ItemInstance.CHARGED_SPIRITSHOT) { ss = true; weaponInst.setChargedSpiritshot(L2ItemInstance.CHARGED_NONE); } } // If there is no weapon equipped, check for an active summon. else if(activeChar instanceof L2Summon) { L2Summon activeSummon = (L2Summon) activeChar;
+			 * if(activeSummon.getChargedSpiritShot() == L2ItemInstance.CHARGED_BLESSED_SPIRITSHOT) { bss = true; activeSummon.setChargedSpiritShot(L2ItemInstance.CHARGED_NONE); } else if(activeSummon.getChargedSpiritShot() == L2ItemInstance.CHARGED_SPIRITSHOT) { ss = true;
 			 * activeSummon.setChargedSpiritShot(L2ItemInstance.CHARGED_NONE); } }
 			 */
 			final boolean mcrit = Formulas.calcMCrit(activeChar.getMCriticalHit(target, this));
 			final int damage = (int) Formulas.calcMagicDam(activeChar, target, this, sps, bss, mcrit);
 			
-			int _drain = 0;
-			final int _cp = (int) target.getStatus().getCurrentCp();
-			final int _hp = (int) target.getStatus().getCurrentHp();
+			int drain = 0;
+			final int currentCp = (int) target.getStatus().getCurrentCp();
+			final int currentHp = (int) target.getStatus().getCurrentHp();
 			
-			if (_cp > 0)
+			if (currentCp > 0)
 			{
-				if (damage < _cp)
+				if (damage < currentCp)
 				{
-					_drain = 0;
+					drain = 0;
 				}
 				else
 				{
-					_drain = damage - _cp;
+					drain = damage - currentCp;
 				}
 			}
-			else if (damage > _hp)
+			else if (damage > currentHp)
 			{
-				_drain = _hp;
+				drain = currentHp;
 			}
 			else
 			{
-				_drain = damage;
+				drain = damage;
 			}
 			
-			final double hpAdd = _absorbAbs + _absorbPart * _drain;
+			final double hpAdd = absorbAbs + absorbPart * drain;
 			final double hp = activeChar.getCurrentHp() + hpAdd > activeChar.getMaxHp() ? activeChar.getMaxHp() : activeChar.getCurrentHp() + hpAdd;
 			
 			activeChar.setCurrentHp(hp);
@@ -185,20 +168,26 @@ public class L2SkillDrain extends L2Skill
 	public void useCubicSkill(final L2CubicInstance activeCubic, final L2Object[] targets)
 	{
 		if (Config.DEBUG)
+		{
 			LOGGER.info("L2SkillDrain: useCubicSkill()");
+		}
 		
 		for (final L2Character target : (L2Character[]) targets)
 		{
 			if (target.isAlikeDead() && getTargetType() != SkillTargetType.TARGET_CORPSE_MOB)
+			{
 				continue;
+			}
 			
 			final boolean mcrit = Formulas.calcMCrit(activeCubic.getMCriticalHit(target, this));
 			
 			final int damage = (int) Formulas.calcMagicDam(activeCubic, target, this, mcrit);
 			if (Config.DEBUG)
+			{
 				LOGGER.info("L2SkillDrain: useCubicSkill() -> damage = " + damage);
+			}
 			
-			final double hpAdd = _absorbAbs + _absorbPart * damage;
+			final double hpAdd = absorbAbs + absorbPart * damage;
 			final L2PcInstance owner = activeCubic.getOwner();
 			final double hp = ((owner.getCurrentHp() + hpAdd) > owner.getMaxHp() ? owner.getMaxHp() : (owner.getCurrentHp() + hpAdd));
 			

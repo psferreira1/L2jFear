@@ -1,19 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any later
- * version.
- * 
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
- * 
- * You should have received a copy of the GNU General Public License along with
- * this program. If not, see <http://www.gnu.org/licenses/>.
- */
 package com.l2jfrozen.gameserver.network;
 
 import com.l2jfrozen.netcore.NetcoreConfig;
@@ -32,30 +16,30 @@ public class ClientStats
 	public int totalQueueOverflows = 0;
 	public int totalUnderflowExceptions = 0;
 	
-	private final int[] _packetsInSecond;
-	private long _packetCountStartTick = 0;
-	private int _head;
-	private int _totalCount = 0;
+	private final int[] packetsInSecond;
+	private long packetCountStartTick = 0;
+	private int head;
+	private int totalCount = 0;
 	
-	private int _floodsInMin = 0;
-	private long _floodStartTick = 0;
-	private int _unknownPacketsInMin = 0;
-	private long _unknownPacketStartTick = 0;
-	private int _overflowsInMin = 0;
-	private long _overflowStartTick = 0;
-	private int _underflowReadsInMin = 0;
-	private long _underflowReadStartTick = 0;
+	private int floodsInMin = 0;
+	private long floodStartTick = 0;
+	private int unknownPacketsInMin = 0;
+	private long unknownPacketStartTick = 0;
+	private int overflowsInMin = 0;
+	private long overflowStartTick = 0;
+	private int underflowReadsInMin = 0;
+	private long underflowReadStartTick = 0;
 	
-	private volatile boolean _floodDetected = false;
-	private volatile boolean _queueOverflowDetected = false;
+	private volatile boolean floodDetected = false;
+	private volatile boolean queueOverflowDetected = false;
 	
 	private final int BUFFER_SIZE;
 	
 	public ClientStats()
 	{
 		BUFFER_SIZE = NetcoreConfig.getInstance().CLIENT_PACKET_QUEUE_MEASURE_INTERVAL;
-		_packetsInSecond = new int[BUFFER_SIZE];
-		_head = BUFFER_SIZE - 1;
+		packetsInSecond = new int[BUFFER_SIZE];
+		head = BUFFER_SIZE - 1;
 	}
 	
 	/**
@@ -63,25 +47,31 @@ public class ClientStats
 	 */
 	protected final boolean dropPacket()
 	{
-		final boolean result = _floodDetected || _queueOverflowDetected;
+		final boolean result = floodDetected || queueOverflowDetected;
 		if (result)
+		{
 			droppedPackets++;
+		}
 		return result;
 	}
 	
 	/**
 	 * Later during flood returns true (and send ActionFailed) once per second.
-	 * @param queueSize
-	 * @return true if flood detected first and ActionFailed packet need to be sent.
+	 * @param  queueSize
+	 * @return           true if flood detected first and ActionFailed packet need to be sent.
 	 */
 	protected final boolean countPacket(final int queueSize)
 	{
 		processedPackets++;
 		totalQueueSize += queueSize;
 		if (maxQueueSize < queueSize)
+		{
 			maxQueueSize = queueSize;
-		if (_queueOverflowDetected && queueSize < 2)
-			_queueOverflowDetected = false;
+		}
+		if (queueOverflowDetected && queueSize < 2)
+		{
+			queueOverflowDetected = false;
+		}
 		
 		return countPacket();
 	}
@@ -95,29 +85,33 @@ public class ClientStats
 		unknownPackets++;
 		
 		final long tick = System.currentTimeMillis();
-		if (tick - _unknownPacketStartTick > 60000)
+		if (tick - unknownPacketStartTick > 60000)
 		{
-			_unknownPacketStartTick = tick;
-			_unknownPacketsInMin = 1;
+			unknownPacketStartTick = tick;
+			unknownPacketsInMin = 1;
 			return false;
 		}
 		
-		_unknownPacketsInMin++;
-		return _unknownPacketsInMin > NetcoreConfig.getInstance().CLIENT_PACKET_QUEUE_MAX_UNKNOWN_PER_MIN;
+		unknownPacketsInMin++;
+		return unknownPacketsInMin > NetcoreConfig.getInstance().CLIENT_PACKET_QUEUE_MAX_UNKNOWN_PER_MIN;
 	}
 	
 	/**
 	 * Counts burst length and return true if execution of the queue need to be aborted.
-	 * @param count - current number of processed packets in burst
+	 * @param  count - current number of processed packets in burst
 	 * @return
 	 */
 	protected final boolean countBurst(final int count)
 	{
 		if (count > maxBurstSize)
+		{
 			maxBurstSize = count;
+		}
 		
 		if (count < NetcoreConfig.getInstance().CLIENT_PACKET_QUEUE_MAX_BURST_SIZE)
+		{
 			return false;
+		}
 		
 		totalBursts++;
 		return true;
@@ -129,19 +123,19 @@ public class ClientStats
 	 */
 	protected final boolean countQueueOverflow()
 	{
-		_queueOverflowDetected = true;
+		queueOverflowDetected = true;
 		totalQueueOverflows++;
 		
 		final long tick = System.currentTimeMillis();
-		if (tick - _overflowStartTick > 60000)
+		if (tick - overflowStartTick > 60000)
 		{
-			_overflowStartTick = tick;
-			_overflowsInMin = 1;
+			overflowStartTick = tick;
+			overflowsInMin = 1;
 			return false;
 		}
 		
-		_overflowsInMin++;
-		return _overflowsInMin > NetcoreConfig.getInstance().CLIENT_PACKET_QUEUE_MAX_OVERFLOWS_PER_MIN;
+		overflowsInMin++;
+		return overflowsInMin > NetcoreConfig.getInstance().CLIENT_PACKET_QUEUE_MAX_OVERFLOWS_PER_MIN;
 	}
 	
 	/**
@@ -153,15 +147,15 @@ public class ClientStats
 		totalUnderflowExceptions++;
 		
 		final long tick = System.currentTimeMillis();
-		if (tick - _underflowReadStartTick > 60000)
+		if (tick - underflowReadStartTick > 60000)
 		{
-			_underflowReadStartTick = tick;
-			_underflowReadsInMin = 1;
+			underflowReadStartTick = tick;
+			underflowReadsInMin = 1;
 			return false;
 		}
 		
-		_underflowReadsInMin++;
-		return _underflowReadsInMin > NetcoreConfig.getInstance().CLIENT_PACKET_QUEUE_MAX_UNDERFLOWS_PER_MIN;
+		underflowReadsInMin++;
+		return underflowReadsInMin > NetcoreConfig.getInstance().CLIENT_PACKET_QUEUE_MAX_UNDERFLOWS_PER_MIN;
 	}
 	
 	/**
@@ -170,12 +164,12 @@ public class ClientStats
 	 */
 	protected final boolean countFloods()
 	{
-		return _floodsInMin > NetcoreConfig.getInstance().CLIENT_PACKET_QUEUE_MAX_FLOODS_PER_MIN;
+		return floodsInMin > NetcoreConfig.getInstance().CLIENT_PACKET_QUEUE_MAX_FLOODS_PER_MIN;
 	}
 	
 	private final boolean longFloodDetected()
 	{
-		return (_totalCount / BUFFER_SIZE) > NetcoreConfig.getInstance().CLIENT_PACKET_QUEUE_MAX_AVERAGE_PACKETS_PER_SECOND;
+		return (totalCount / BUFFER_SIZE) > NetcoreConfig.getInstance().CLIENT_PACKET_QUEUE_MAX_AVERAGE_PACKETS_PER_SECOND;
 	}
 	
 	/**
@@ -184,44 +178,56 @@ public class ClientStats
 	 */
 	private final synchronized boolean countPacket()
 	{
-		_totalCount++;
+		totalCount++;
 		final long tick = System.currentTimeMillis();
-		if (tick - _packetCountStartTick > 1000)
+		if (tick - packetCountStartTick > 1000)
 		{
-			_packetCountStartTick = tick;
+			packetCountStartTick = tick;
 			
 			// clear flag if no more flooding during last seconds
-			if (_floodDetected && !longFloodDetected() && _packetsInSecond[_head] < NetcoreConfig.getInstance().CLIENT_PACKET_QUEUE_MAX_PACKETS_PER_SECOND / 2)
-				_floodDetected = false;
+			if (floodDetected && !longFloodDetected() && packetsInSecond[head] < NetcoreConfig.getInstance().CLIENT_PACKET_QUEUE_MAX_PACKETS_PER_SECOND / 2)
+			{
+				floodDetected = false;
+			}
 			
 			// wrap head of the buffer around the tail
-			if (_head <= 0)
-				_head = BUFFER_SIZE;
-			_head--;
+			if (head <= 0)
+			{
+				head = BUFFER_SIZE;
+			}
+			head--;
 			
-			_totalCount -= _packetsInSecond[_head];
-			_packetsInSecond[_head] = 1;
-			return _floodDetected;
+			totalCount -= packetsInSecond[head];
+			packetsInSecond[head] = 1;
+			return floodDetected;
 		}
 		
-		final int count = ++_packetsInSecond[_head];
-		if (!_floodDetected)
+		final int count = ++packetsInSecond[head];
+		if (!floodDetected)
 		{
 			if (count > NetcoreConfig.getInstance().CLIENT_PACKET_QUEUE_MAX_PACKETS_PER_SECOND)
-				shortFloods++;
-			else if (longFloodDetected())
-				longFloods++;
-			else
-				return false;
-			
-			_floodDetected = true;
-			if (tick - _floodStartTick > 60000)
 			{
-				_floodStartTick = tick;
-				_floodsInMin = 1;
+				shortFloods++;
+			}
+			else if (longFloodDetected())
+			{
+				longFloods++;
 			}
 			else
-				_floodsInMin++;
+			{
+				return false;
+			}
+			
+			floodDetected = true;
+			if (tick - floodStartTick > 60000)
+			{
+				floodStartTick = tick;
+				floodsInMin = 1;
+			}
+			else
+			{
+				floodsInMin++;
+			}
 			
 			return true; // Return true only in the beginning of the flood
 		}

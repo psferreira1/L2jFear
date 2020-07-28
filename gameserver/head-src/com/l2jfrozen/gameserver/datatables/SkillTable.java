@@ -1,28 +1,7 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.datatables;
 
+import java.util.HashMap;
 import java.util.Map;
-
-import javolution.util.FastMap;
 
 import com.l2jfrozen.gameserver.model.L2Skill;
 import com.l2jfrozen.gameserver.skills.SkillsEngine;
@@ -30,47 +9,47 @@ import com.l2jfrozen.gameserver.templates.L2WeaponType;
 
 /**
  * This class ...
- * @author ProGramMoS, scoria dev
+ * @author  ProGramMoS, scoria dev
  * @version $Revision: 1.8.2.6.2.18 $ $Date: 2009/04/09 12:06 $
  */
 public class SkillTable
 {
 	// private static Logger LOGGER = Logger.getLogger(SkillTable.class);
-	private static SkillTable _instance;
+	private static SkillTable instance;
 	
-	private final Map<Integer, L2Skill> _skills;
-	private final boolean _initialized = true;
+	private final Map<Integer, L2Skill> skills;
+	private final boolean initialized = true;
 	
 	public static SkillTable getInstance()
 	{
-		if (_instance == null)
+		if (instance == null)
 		{
-			_instance = new SkillTable();
+			instance = new SkillTable();
 		}
 		
-		return _instance;
+		return instance;
 	}
 	
 	private SkillTable()
 	{
-		_skills = new FastMap<>();
-		SkillsEngine.getInstance().loadAllSkills(_skills);
+		skills = new HashMap<>();
+		SkillsEngine.getInstance().loadAllSkills(skills);
 	}
 	
 	public void reload()
 	{
-		_instance = new SkillTable();
+		instance = new SkillTable();
 	}
 	
 	public boolean isInitialized()
 	{
-		return _initialized;
+		return initialized;
 	}
 	
 	/**
 	 * Provides the skill hash
-	 * @param skill The L2Skill to be hashed
-	 * @return SkillTable.getSkillHashCode(skill.getId(), skill.getLevel())
+	 * @param  skill The L2Skill to be hashed
+	 * @return       SkillTable.getSkillHashCode(skill.getId(), skill.getLevel())
 	 */
 	public static int getSkillHashCode(final L2Skill skill)
 	{
@@ -79,9 +58,9 @@ public class SkillTable
 	
 	/**
 	 * Centralized method for easier change of the hashing sys
-	 * @param skillId The Skill Id
-	 * @param skillLevel The Skill Level
-	 * @return The Skill hash number
+	 * @param  skillId    The Skill Id
+	 * @param  skillLevel The Skill Level
+	 * @return            The Skill hash number
 	 */
 	public static int getSkillHashCode(final int skillId, final int skillLevel)
 	{
@@ -90,7 +69,7 @@ public class SkillTable
 	
 	public L2Skill getInfo(final int skillId, final int level)
 	{
-		return _skills.get(SkillTable.getSkillHashCode(skillId, level));
+		return skills.get(SkillTable.getSkillHashCode(skillId, level));
 	}
 	
 	public int getMaxLevel(final int magicId, int level)
@@ -100,10 +79,12 @@ public class SkillTable
 		while (level < 100)
 		{
 			level++;
-			temp = _skills.get(SkillTable.getSkillHashCode(magicId, level));
+			temp = skills.get(SkillTable.getSkillHashCode(magicId, level));
 			
 			if (temp == null)
+			{
 				return level - 1;
+			}
 		}
 		
 		temp = null;
@@ -129,15 +110,19 @@ public class SkillTable
 	public int calcWeaponsAllowed(final int mask)
 	{
 		if (mask == 0)
+		{
 			return 0;
+		}
 		
 		int weaponsAllowed = 0;
 		
 		for (int i = 0; i < weaponDbMasks.length; i++)
+		{
 			if ((mask & 1 << i) != 0)
 			{
 				weaponsAllowed |= weaponDbMasks[i].mask();
 			}
+		}
 		
 		return weaponsAllowed;
 	}

@@ -1,23 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.network.clientpackets;
 
 import com.l2jfrozen.Config;
@@ -37,9 +17,9 @@ import com.l2jfrozen.gameserver.network.serverpackets.SystemMessage;
 
 public final class RequestSellItem extends L2GameClientPacket
 {
-	private int _listId;
-	private int _count;
-	private int[] _items; // count*3
+	private int listId;
+	private int count;
+	private int[] items; // count*3
 	
 	/**
 	 * packet type id 0x1e sample 1e 00 00 00 00 // list id 02 00 00 00 // number of items 71 72 00 10 // object id ea 05 00 00 // item id 01 00 00 00 // item count 76 4b 00 10 // object id 2e 0a 00 00 // item id 01 00 00 00 // item count format: cdd (ddd)
@@ -47,33 +27,33 @@ public final class RequestSellItem extends L2GameClientPacket
 	@Override
 	protected void readImpl()
 	{
-		_listId = readD();
-		_count = readD();
+		listId = readD();
+		count = readD();
 		
-		if (_count <= 0 || _count * 12 > _buf.remaining() || _count > Config.MAX_ITEM_IN_PACKET)
+		if (count <= 0 || count * 12 > buf.remaining() || count > Config.MAX_ITEM_IN_PACKET)
 		{
-			_count = 0;
-			_items = null;
+			count = 0;
+			items = null;
 			return;
 		}
 		
-		_items = new int[_count * 3];
+		items = new int[count * 3];
 		
-		for (int i = 0; i < _count; i++)
+		for (int i = 0; i < count; i++)
 		{
 			final int objectId = readD();
-			_items[i * 3 + 0] = objectId;
+			items[i * 3 + 0] = objectId;
 			final int itemId = readD();
-			_items[i * 3 + 1] = itemId;
+			items[i * 3 + 1] = itemId;
 			final long cnt = readD();
 			
 			if (cnt > Integer.MAX_VALUE || cnt <= 0)
 			{
-				_count = 0;
-				_items = null;
+				count = 0;
+				items = null;
 				return;
 			}
-			_items[i * 3 + 2] = (int) cnt;
+			items[i * 3 + 2] = (int) cnt;
 		}
 	}
 	
@@ -83,7 +63,9 @@ public final class RequestSellItem extends L2GameClientPacket
 		final L2PcInstance player = getClient().getActiveChar();
 		
 		if (player == null)
+		{
 			return;
+		}
 		
 		if (!getClient().getFloodProtectors().getTransaction().tryPerformAction("buy"))
 		{
@@ -93,14 +75,18 @@ public final class RequestSellItem extends L2GameClientPacket
 		
 		// Alt game - Karma punishment
 		if (!Config.ALT_GAME_KARMA_PLAYER_CAN_SHOP && player.getKarma() > 0)
+		{
 			return;
+		}
 		
 		final L2Object target = player.getTarget();
 		if (!player.isGM() && (target == null // No target (ie GM Shop)
 			|| !(target instanceof L2MerchantInstance) // Target not a merchant and not mercmanager
-		|| !player.isInsideRadius(target, L2NpcInstance.INTERACTION_DISTANCE, false, false)))
+			|| !player.isInsideRadius(target, L2NpcInstance.INTERACTION_DISTANCE, false, false)))
+		{
 			return; // Distance is too far
-			
+		}
+		
 		String htmlFolder = "";
 		L2NpcInstance merchant = null;
 		if (target instanceof L2MerchantInstance)
@@ -118,9 +104,9 @@ public final class RequestSellItem extends L2GameClientPacket
 			return;
 		}
 		
-		if (_listId > 1000000) // lease
+		if (listId > 1000000) // lease
 		{
-			if (merchant.getTemplate().npcId != _listId - 1000000)
+			if (merchant.getTemplate().npcId != listId - 1000000)
 			{
 				sendPacket(ActionFailed.STATIC_PACKET);
 				return;
@@ -129,12 +115,10 @@ public final class RequestSellItem extends L2GameClientPacket
 		
 		long totalPrice = 0;
 		// Proceed the sell
-		for (int i = 0; i < _count; i++)
+		for (int i = 0; i < count; i++)
 		{
-			final int objectId = _items[i * 3 + 0];
-			@SuppressWarnings("unused")
-			final int itemId = _items[i * 3 + 1];
-			final int count = _items[i * 3 + 2];
+			final int objectId = items[i * 3 + 0];
+			final int count = items[i * 3 + 2];
 			
 			// Check count
 			if (count <= 0 || count > Integer.MAX_VALUE)
@@ -180,11 +164,11 @@ public final class RequestSellItem extends L2GameClientPacket
 			item = player.getInventory().destroyItem("Sell", objectId, count, player, null);
 			
 			/*
-			 * TODO: Disabled until Leaseholders are rewritten ;-) int price = item.getReferencePrice()*(int)count/2; L2ItemInstance li = null; L2ItemInstance la = null; if (_listId > 1000000) { li = merchant.findLeaseItem(item.getItemId(),item.getEnchantLevel()); la = merchant.getLeaseAdena(); if
-			 * (li == null || la == null) continue; price = li.getPriceToBuy()*(int)count; // player sells, thus merchant buys. if (price > la.getCount()) continue; }
+			 * TODO: Disabled until Leaseholders are rewritten ;-) int price = item.getReferencePrice()*(int)count/2; L2ItemInstance li = null; L2ItemInstance la = null; if (_listId > 1000000) { li = merchant.findLeaseItem(item.getItemId(),item.getEnchantLevel()); la = merchant.getLeaseAdena(); if (li == null
+			 * || la == null) continue; price = li.getPriceToBuy()*(int)count; // player sells, thus merchant buys. if (price > la.getCount()) continue; }
 			 */
 			/*
-			 * TODO: Disabled until Leaseholders are rewritten ;-) if (item != null && _listId > 1000000) { li.setCount(li.getCount()+(int)count); li.updateDatabase(); la.setCount(la.getCount()-price); la.updateDatabase(); }
+			 * TODO: Disabled until Leaseholders are rewritten ;-) if (item != null && listId > 1000000) { li.setCount(li.getCount()+(int)count); li.updateDatabase(); la.setCount(la.getCount()-price); la.updateDatabase(); }
 			 */
 		}
 		player.addAdena("Sell", (int) totalPrice, merchant, false);

@@ -1,23 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.network.gameserverpackets;
 
 import java.io.ByteArrayOutputStream;
@@ -30,43 +10,43 @@ import com.l2jfrozen.gameserver.thread.TaskPriority;
  */
 public abstract class GameServerBasePacket
 {
-	private final ByteArrayOutputStream _bao;
+	private final ByteArrayOutputStream baos;
 	
 	protected GameServerBasePacket()
 	{
-		_bao = new ByteArrayOutputStream();
+		baos = new ByteArrayOutputStream();
 	}
 	
 	protected void writeD(final int value)
 	{
-		_bao.write(value & 0xff);
-		_bao.write(value >> 8 & 0xff);
-		_bao.write(value >> 16 & 0xff);
-		_bao.write(value >> 24 & 0xff);
+		baos.write(value & 0xff);
+		baos.write(value >> 8 & 0xff);
+		baos.write(value >> 16 & 0xff);
+		baos.write(value >> 24 & 0xff);
 	}
 	
 	protected void writeH(final int value)
 	{
-		_bao.write(value & 0xff);
-		_bao.write(value >> 8 & 0xff);
+		baos.write(value & 0xff);
+		baos.write(value >> 8 & 0xff);
 	}
 	
 	protected void writeC(final int value)
 	{
-		_bao.write(value & 0xff);
+		baos.write(value & 0xff);
 	}
 	
 	protected void writeF(final double org)
 	{
 		final long value = Double.doubleToRawLongBits(org);
-		_bao.write((int) (value & 0xff));
-		_bao.write((int) (value >> 8 & 0xff));
-		_bao.write((int) (value >> 16 & 0xff));
-		_bao.write((int) (value >> 24 & 0xff));
-		_bao.write((int) (value >> 32 & 0xff));
-		_bao.write((int) (value >> 40 & 0xff));
-		_bao.write((int) (value >> 48 & 0xff));
-		_bao.write((int) (value >> 56 & 0xff));
+		baos.write((int) (value & 0xff));
+		baos.write((int) (value >> 8 & 0xff));
+		baos.write((int) (value >> 16 & 0xff));
+		baos.write((int) (value >> 24 & 0xff));
+		baos.write((int) (value >> 32 & 0xff));
+		baos.write((int) (value >> 40 & 0xff));
+		baos.write((int) (value >> 48 & 0xff));
+		baos.write((int) (value >> 56 & 0xff));
 	}
 	
 	protected void writeS(final String text)
@@ -75,7 +55,7 @@ public abstract class GameServerBasePacket
 		{
 			if (text != null)
 			{
-				_bao.write(text.getBytes("UTF-16LE"));
+				baos.write(text.getBytes("UTF-16LE"));
 			}
 		}
 		catch (final Exception e)
@@ -83,33 +63,32 @@ public abstract class GameServerBasePacket
 			e.printStackTrace();
 		}
 		
-		_bao.write(0);
-		_bao.write(0);
+		baos.write(0);
+		baos.write(0);
 	}
 	
 	protected void writeB(final byte[] array)
 	{
 		try
 		{
-			_bao.write(array);
+			baos.write(array);
 		}
 		catch (final IOException e)
 		{
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
 	
 	public int getLength()
 	{
-		return _bao.size() + 2;
+		return baos.size() + 2;
 	}
 	
 	public byte[] getBytes()
 	{
 		writeD(0x00); // reserve for checksum
 		
-		final int padding = _bao.size() % 8;
+		final int padding = baos.size() % 8;
 		if (padding != 0)
 		{
 			for (int i = padding; i < 8; i++)
@@ -118,7 +97,7 @@ public abstract class GameServerBasePacket
 			}
 		}
 		
-		return _bao.toByteArray();
+		return baos.toByteArray();
 	}
 	
 	public TaskPriority getPriority()

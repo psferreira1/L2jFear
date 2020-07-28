@@ -1,23 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.network.serverpackets;
 
 import com.l2jfrozen.gameserver.model.actor.instance.L2ItemInstance;
@@ -31,29 +11,28 @@ import com.l2jfrozen.gameserver.templates.L2Weapon;
  */
 public class GMViewWarehouseWithdrawList extends L2GameServerPacket
 {
-	private static final String _S__95_GMViewWarehouseWithdrawList = "[S] 95 GMViewWarehouseWithdrawList";
-	private final L2ItemInstance[] _items;
-	private final String _playerName;
-	private final L2PcInstance _activeChar;
-	private final int _money;
+	private final L2ItemInstance[] items;
+	private final String playerName;
+	private final L2PcInstance activeChar;
+	private final int money;
 	
 	public GMViewWarehouseWithdrawList(final L2PcInstance cha)
 	{
-		_activeChar = cha;
-		_items = _activeChar.getWarehouse().getItems();
-		_playerName = _activeChar.getName();
-		_money = _activeChar.getAdena();
+		activeChar = cha;
+		items = activeChar.getWarehouse().getItems();
+		playerName = activeChar.getName();
+		money = activeChar.getAdena();
 	}
 	
 	@Override
 	protected final void writeImpl()
 	{
 		writeC(0x95);
-		writeS(_playerName);
-		writeD(_money);
-		writeH(_items.length);
+		writeS(playerName);
+		writeD(money);
+		writeH(items.length);
 		
-		for (final L2ItemInstance item : _items)
+		for (final L2ItemInstance item : items)
 		{
 			writeH(item.getItem().getType1());
 			
@@ -126,6 +105,6 @@ public class GMViewWarehouseWithdrawList extends L2GameServerPacket
 	@Override
 	public String getType()
 	{
-		return _S__95_GMViewWarehouseWithdrawList;
+		return "[S] 95 GMViewWarehouseWithdrawList";
 	}
 }

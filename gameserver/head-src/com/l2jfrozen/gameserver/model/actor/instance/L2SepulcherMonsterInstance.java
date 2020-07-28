@@ -1,19 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any later
- * version.
- * 
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
- * 
- * You should have received a copy of the GNU General Public License along with
- * this program. If not, see <http://www.gnu.org/licenses/>.
- */
 package com.l2jfrozen.gameserver.model.actor.instance;
 
 import java.util.concurrent.Future;
@@ -34,10 +18,10 @@ public class L2SepulcherMonsterInstance extends L2MonsterInstance
 {
 	public int mysteriousBoxId = 0;
 	
-	protected Future<?> _victimSpawnKeyBoxTask = null;
-	protected Future<?> _victimShout = null;
-	protected Future<?> _changeImmortalTask = null;
-	protected Future<?> _onDeadEventTask = null;
+	protected Future<?> victimSpawnKeyBoxTask = null;
+	protected Future<?> victimShout = null;
+	protected Future<?> changeImmortalTask = null;
+	protected Future<?> onDeadEventTask = null;
 	
 	public L2SepulcherMonsterInstance(final int objectId, final L2NpcTemplate template)
 	{
@@ -60,16 +44,16 @@ public class L2SepulcherMonsterInstance extends L2MonsterInstance
 			case 18155:
 			case 18156:
 			case 18157:
-				if (_victimSpawnKeyBoxTask != null)
+				if (victimSpawnKeyBoxTask != null)
 				{
-					_victimSpawnKeyBoxTask.cancel(true);
+					victimSpawnKeyBoxTask.cancel(true);
 				}
-				_victimSpawnKeyBoxTask = ThreadPoolManager.getInstance().scheduleEffect(new VictimSpawnKeyBox(this), 300000);
-				if (_victimShout != null)
+				victimSpawnKeyBoxTask = ThreadPoolManager.getInstance().scheduleEffect(new VictimSpawnKeyBox(this), 300000);
+				if (victimShout != null)
 				{
-					_victimShout.cancel(true);
+					victimShout.cancel(true);
 				}
-				_victimShout = ThreadPoolManager.getInstance().scheduleEffect(new VictimShout(this), 5000);
+				victimShout = ThreadPoolManager.getInstance().scheduleEffect(new VictimShout(this), 5000);
 				break;
 			case 18196:
 			case 18197:
@@ -102,11 +86,11 @@ public class L2SepulcherMonsterInstance extends L2MonsterInstance
 			case 18241:
 			case 18242:
 			case 18243:
-				if (_changeImmortalTask != null)
+				if (changeImmortalTask != null)
 				{
-					_changeImmortalTask.cancel(true);
+					changeImmortalTask.cancel(true);
 				}
-				_changeImmortalTask = ThreadPoolManager.getInstance().scheduleEffect(new ChangeImmortal(this), 1600);
+				changeImmortalTask = ThreadPoolManager.getInstance().scheduleEffect(new ChangeImmortal(this), 1600);
 				
 				break;
 			case 18256:
@@ -118,7 +102,9 @@ public class L2SepulcherMonsterInstance extends L2MonsterInstance
 	public boolean doDie(final L2Character killer)
 	{
 		if (!super.doDie(killer))
+		{
 			return false;
+		}
 		
 		switch (getNpcId())
 		{
@@ -153,11 +139,11 @@ public class L2SepulcherMonsterInstance extends L2MonsterInstance
 			case 18217:
 			case 18218:
 			case 18219:
-				if (_onDeadEventTask != null)
+				if (onDeadEventTask != null)
 				{
-					_onDeadEventTask.cancel(true);
+					onDeadEventTask.cancel(true);
 				}
-				_onDeadEventTask = ThreadPoolManager.getInstance().scheduleEffect(new OnDeadEvent(this), 3500);
+				onDeadEventTask = ThreadPoolManager.getInstance().scheduleEffect(new OnDeadEvent(this), 3500);
 				break;
 			
 			case 18150:
@@ -168,21 +154,21 @@ public class L2SepulcherMonsterInstance extends L2MonsterInstance
 			case 18155:
 			case 18156:
 			case 18157:
-				if (_victimSpawnKeyBoxTask != null)
+				if (victimSpawnKeyBoxTask != null)
 				{
-					_victimSpawnKeyBoxTask.cancel(true);
-					_victimSpawnKeyBoxTask = null;
+					victimSpawnKeyBoxTask.cancel(true);
+					victimSpawnKeyBoxTask = null;
 				}
-				if (_victimShout != null)
+				if (victimShout != null)
 				{
-					_victimShout.cancel(true);
-					_victimShout = null;
+					victimShout.cancel(true);
+					victimShout = null;
 				}
-				if (_onDeadEventTask != null)
+				if (onDeadEventTask != null)
 				{
-					_onDeadEventTask.cancel(true);
+					onDeadEventTask.cancel(true);
 				}
-				_onDeadEventTask = ThreadPoolManager.getInstance().scheduleEffect(new OnDeadEvent(this), 3500);
+				onDeadEventTask = ThreadPoolManager.getInstance().scheduleEffect(new OnDeadEvent(this), 3500);
 				break;
 			
 			case 18141:
@@ -195,11 +181,11 @@ public class L2SepulcherMonsterInstance extends L2MonsterInstance
 			case 18148:
 				if (FourSepulchersManager.getInstance().isViscountMobsAnnihilated(mysteriousBoxId))
 				{
-					if (_onDeadEventTask != null)
+					if (onDeadEventTask != null)
 					{
-						_onDeadEventTask.cancel(true);
+						onDeadEventTask.cancel(true);
 					}
-					_onDeadEventTask = ThreadPoolManager.getInstance().scheduleEffect(new OnDeadEvent(this), 3500);
+					onDeadEventTask = ThreadPoolManager.getInstance().scheduleEffect(new OnDeadEvent(this), 3500);
 				}
 				break;
 			
@@ -226,11 +212,11 @@ public class L2SepulcherMonsterInstance extends L2MonsterInstance
 			case 18240:
 				if (FourSepulchersManager.getInstance().isDukeMobsAnnihilated(mysteriousBoxId))
 				{
-					if (_onDeadEventTask != null)
+					if (onDeadEventTask != null)
 					{
-						_onDeadEventTask.cancel(true);
+						onDeadEventTask.cancel(true);
 					}
-					_onDeadEventTask = ThreadPoolManager.getInstance().scheduleEffect(new OnDeadEvent(this), 3500);
+					onDeadEventTask = ThreadPoolManager.getInstance().scheduleEffect(new OnDeadEvent(this), 3500);
 				}
 				break;
 			
@@ -239,11 +225,11 @@ public class L2SepulcherMonsterInstance extends L2MonsterInstance
 			case 25346:
 			case 25349:
 				giveCup((L2PcInstance) killer);
-				if (_onDeadEventTask != null)
+				if (onDeadEventTask != null)
 				{
-					_onDeadEventTask.cancel(true);
+					onDeadEventTask.cancel(true);
 				}
-				_onDeadEventTask = ThreadPoolManager.getInstance().scheduleEffect(new OnDeadEvent(this), 8500);
+				onDeadEventTask = ThreadPoolManager.getInstance().scheduleEffect(new OnDeadEvent(this), 8500);
 				break;
 		}
 		return true;
@@ -252,15 +238,15 @@ public class L2SepulcherMonsterInstance extends L2MonsterInstance
 	@Override
 	public void deleteMe()
 	{
-		if (_victimSpawnKeyBoxTask != null)
+		if (victimSpawnKeyBoxTask != null)
 		{
-			_victimSpawnKeyBoxTask.cancel(true);
-			_victimSpawnKeyBoxTask = null;
+			victimSpawnKeyBoxTask.cancel(true);
+			victimSpawnKeyBoxTask = null;
 		}
-		if (_onDeadEventTask != null)
+		if (onDeadEventTask != null)
 		{
-			_onDeadEventTask.cancel(true);
-			_onDeadEventTask = null;
+			onDeadEventTask.cancel(true);
+			onDeadEventTask = null;
 		}
 		
 		super.deleteMe();
@@ -326,21 +312,25 @@ public class L2SepulcherMonsterInstance extends L2MonsterInstance
 	
 	private class VictimShout implements Runnable
 	{
-		private final L2SepulcherMonsterInstance _activeChar;
+		private final L2SepulcherMonsterInstance activeChar;
 		
 		public VictimShout(final L2SepulcherMonsterInstance activeChar)
 		{
-			_activeChar = activeChar;
+			this.activeChar = activeChar;
 		}
 		
 		@Override
 		public void run()
 		{
-			if (_activeChar.isDead())
+			if (activeChar.isDead())
+			{
 				return;
+			}
 			
-			if (!_activeChar.isVisible())
+			if (!activeChar.isVisible())
+			{
 				return;
+			}
 			
 			broadcastPacket(new CreatureSay(getObjectId(), 0, getName(), "forgive me!!"));
 		}
@@ -348,40 +338,44 @@ public class L2SepulcherMonsterInstance extends L2MonsterInstance
 	
 	private class VictimSpawnKeyBox implements Runnable
 	{
-		private final L2SepulcherMonsterInstance _activeChar;
+		private final L2SepulcherMonsterInstance activeChar;
 		
 		public VictimSpawnKeyBox(final L2SepulcherMonsterInstance activeChar)
 		{
-			_activeChar = activeChar;
+			this.activeChar = activeChar;
 		}
 		
 		@Override
 		public void run()
 		{
-			if (_activeChar.isDead())
+			if (activeChar.isDead())
+			{
 				return;
+			}
 			
-			if (!_activeChar.isVisible())
+			if (!activeChar.isVisible())
+			{
 				return;
+			}
 			
-			FourSepulchersManager.getInstance().spawnKeyBox(_activeChar);
+			FourSepulchersManager.getInstance().spawnKeyBox(activeChar);
 			broadcastPacket(new CreatureSay(getObjectId(), 0, getName(), "Many thanks for rescue me."));
 		}
 	}
 	
 	private class OnDeadEvent implements Runnable
 	{
-		L2SepulcherMonsterInstance _activeChar;
+		L2SepulcherMonsterInstance activeChar;
 		
 		public OnDeadEvent(final L2SepulcherMonsterInstance activeChar)
 		{
-			_activeChar = activeChar;
+			this.activeChar = activeChar;
 		}
 		
 		@Override
 		public void run()
 		{
-			switch (_activeChar.getNpcId())
+			switch (activeChar.getNpcId())
 			{
 				case 18120:
 				case 18121:
@@ -414,7 +408,7 @@ public class L2SepulcherMonsterInstance extends L2MonsterInstance
 				case 18217:
 				case 18218:
 				case 18219:
-					FourSepulchersManager.getInstance().spawnKeyBox(_activeChar);
+					FourSepulchersManager.getInstance().spawnKeyBox(activeChar);
 					break;
 				
 				case 18150:
@@ -425,7 +419,7 @@ public class L2SepulcherMonsterInstance extends L2MonsterInstance
 				case 18155:
 				case 18156:
 				case 18157:
-					FourSepulchersManager.getInstance().spawnExecutionerOfHalisha(_activeChar);
+					FourSepulchersManager.getInstance().spawnExecutionerOfHalisha(activeChar);
 					break;
 				
 				case 18141:
@@ -436,7 +430,7 @@ public class L2SepulcherMonsterInstance extends L2MonsterInstance
 				case 18146:
 				case 18147:
 				case 18148:
-					FourSepulchersManager.getInstance().spawnMonster(_activeChar.mysteriousBoxId);
+					FourSepulchersManager.getInstance().spawnMonster(activeChar.mysteriousBoxId);
 					break;
 				
 				case 18220:
@@ -460,14 +454,14 @@ public class L2SepulcherMonsterInstance extends L2MonsterInstance
 				case 18238:
 				case 18239:
 				case 18240:
-					FourSepulchersManager.getInstance().spawnArchonOfHalisha(_activeChar.mysteriousBoxId);
+					FourSepulchersManager.getInstance().spawnArchonOfHalisha(activeChar.mysteriousBoxId);
 					break;
 				
 				case 25339:
 				case 25342:
 				case 25346:
 				case 25349:
-					FourSepulchersManager.getInstance().spawnEmperorsGraveNpc(_activeChar.mysteriousBoxId);
+					FourSepulchersManager.getInstance().spawnEmperorsGraveNpc(activeChar.mysteriousBoxId);
 					break;
 			}
 		}

@@ -1,5 +1,7 @@
 package com.l2jfrozen.gameserver.thread.daemons;
 
+import java.util.concurrent.ThreadLocalRandom;
+
 import org.apache.log4j.Logger;
 
 import com.l2jfrozen.Config;
@@ -7,7 +9,6 @@ import com.l2jfrozen.gameserver.model.L2World;
 import com.l2jfrozen.gameserver.model.actor.instance.L2PcInstance;
 import com.l2jfrozen.gameserver.network.SystemMessageId;
 import com.l2jfrozen.gameserver.network.serverpackets.SystemMessage;
-import com.l2jfrozen.util.random.Rnd;
 
 /**
  * @author ProGramMoS
@@ -16,16 +17,16 @@ import com.l2jfrozen.util.random.Rnd;
 public class PcPoint implements Runnable
 {
 	Logger LOGGER = Logger.getLogger(PcPoint.class);
-	private static PcPoint _instance;
+	private static PcPoint instance;
 	
 	public static PcPoint getInstance()
 	{
-		if (_instance == null)
+		if (instance == null)
 		{
-			_instance = new PcPoint();
+			instance = new PcPoint();
 		}
 		
-		return _instance;
+		return instance;
 	}
 	
 	private PcPoint()
@@ -36,42 +37,25 @@ public class PcPoint implements Runnable
 	@Override
 	public void run()
 	{
-		
 		int score = 0;
 		for (L2PcInstance activeChar : L2World.getInstance().getAllPlayers())
 		{
-			
-			if (activeChar.isOnline() == 1 && activeChar.getLevel() > Config.PCB_MIN_LEVEL && !activeChar.isInOfflineMode())
+			if (activeChar.isOnline() && activeChar.getLevel() > Config.PCB_MIN_LEVEL && !activeChar.isInOfflineMode())
 			{
-				score = Rnd.get(Config.PCB_POINT_MIN, Config.PCB_POINT_MAX);
+				score = ThreadLocalRandom.current().nextInt(Config.PCB_POINT_MIN, Config.PCB_POINT_MAX + 1);
+				SystemMessage sm = new SystemMessage(SystemMessageId.YOU_RECEVIED_$51_GLASSES_PC);
 				
-				if (Rnd.get(100) <= Config.PCB_CHANCE_DUAL_POINT)
+				if (ThreadLocalRandom.current().nextInt(100) <= Config.PCB_DOUBLE_POINT_CHANCE)
 				{
 					score *= 2;
-					
-					activeChar.addPcBangScore(score);
-					
-					SystemMessage sm = new SystemMessage(SystemMessageId.DOUBLE_POINTS_YOU_GOT_$51_GLASSES_PC);
-					sm.addNumber(score);
-					activeChar.sendPacket(sm);
-					sm = null;
-					
-					activeChar.updatePcBangWnd(score, true, true);
+					sm = new SystemMessage(SystemMessageId.DOUBLE_POINTS_YOU_GOT_$51_GLASSES_PC);
 				}
-				else
-				{
-					activeChar.addPcBangScore(score);
-					
-					SystemMessage sm = new SystemMessage(SystemMessageId.YOU_RECEVIED_$51_GLASSES_PC);
-					sm.addNumber(score);
-					activeChar.sendPacket(sm);
-					sm = null;
-					
-					activeChar.updatePcBangWnd(score, true, false);
-				}
+				
+				activeChar.addPcBangScore(score);
+				sm.addNumber(score);
+				activeChar.sendPacket(sm);
+				activeChar.updatePcBangWnd(score, true, true);
 			}
-			
-			activeChar = null;
 		}
 	}
 }

@@ -1,22 +1,3 @@
-/* L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.taskmanager.tasks;
 
 import java.util.Calendar;
@@ -63,7 +44,9 @@ public class TaskRaidPointsReset extends Task
 				{
 					final L2Object obj = L2World.getInstance().findObject(entry.getKey());
 					if (obj instanceof L2PcInstance)
+					{
 						playerName = ((L2PcInstance) obj).getName();
+					}
 					if (entry.getValue() <= 100 && c.isMember(playerName))
 					{
 						int reputation = 0;
@@ -101,9 +84,13 @@ public class TaskRaidPointsReset extends Task
 								break;
 							default:
 								if (entry.getValue() <= 50)
+								{
 									reputation = Config.RAID_RANKING_UP_TO_50TH;
+								}
 								else
+								{
 									reputation = Config.RAID_RANKING_UP_TO_100TH;
+								}
 								break;
 						}
 						c.setReputationScore(c.getReputationScore() + reputation, true);

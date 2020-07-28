@@ -1,22 +1,3 @@
-/* L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.model.actor.stat;
 
 import com.l2jfrozen.gameserver.datatables.sql.L2PetDataTable;
@@ -40,7 +21,9 @@ public class PetStat extends SummonStat
 	public boolean addExp(final int value)
 	{
 		if (!super.addExp(value))
+		{
 			return false;
+		}
 		
 		/*
 		 * Micht : Use of PetInfo for C5 StatusUpdate su = new StatusUpdate(getActiveChar().getObjectId()); su.addAttribute(StatusUpdate.EXP, getExp()); getActiveChar().broadcastPacket(su);
@@ -56,7 +39,9 @@ public class PetStat extends SummonStat
 	public boolean addExpAndSp(final long addToExp, final int addToSp)
 	{
 		if (!super.addExpAndSp(addToExp, addToSp))
+		{
 			return false;
+		}
 		
 		SystemMessage sm = new SystemMessage(SystemMessageId.PET_EARNED_S1_EXP);
 		sm.addNumber((int) addToExp);
@@ -71,7 +56,9 @@ public class PetStat extends SummonStat
 	public final boolean addLevel(final byte value)
 	{
 		if (getLevel() + value > ExperienceData.getInstance().getMaxLevel() - 1)
+		{
 			return false;
+		}
 		
 		final boolean levelIncreased = super.addLevel(value);
 		

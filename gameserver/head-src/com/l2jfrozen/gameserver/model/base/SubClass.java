@@ -1,23 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.model.base;
 
 import com.l2jfrozen.Config;
@@ -30,26 +10,26 @@ import com.l2jfrozen.gameserver.datatables.xml.ExperienceData;
  */
 public final class SubClass
 {
-	private PlayerClass _class;
-	private long _exp = ExperienceData.getInstance().getExpForLevel(Config.BASE_SUBCLASS_LEVEL);
-	private int _sp = 0;
-	private int _level = Config.BASE_SUBCLASS_LEVEL;
-	private int _classIndex = 1;
+	private PlayerClass playerClass;
+	private long exp = ExperienceData.getInstance().getExpForLevel(Config.BASE_SUBCLASS_LEVEL);
+	private int sp = 0;
+	private int level = Config.BASE_SUBCLASS_LEVEL;
+	private int classIndex = 1;
 	
 	public SubClass(final int classId, final long exp, final int sp, final byte level, final int classIndex)
 	{
-		_class = PlayerClass.values()[classId];
-		_exp = exp;
-		_sp = sp;
-		_level = level;
-		_classIndex = classIndex;
+		playerClass = PlayerClass.values()[classId];
+		this.exp = exp;
+		this.sp = sp;
+		this.level = level;
+		this.classIndex = classIndex;
 	}
 	
 	public SubClass(final int classId, final int classIndex)
 	{
 		// Used for defining a sub class using default values for XP, SP and player level.
-		_class = PlayerClass.values()[classId];
-		_classIndex = classIndex;
+		playerClass = PlayerClass.values()[classId];
+		this.classIndex = classIndex;
 	}
 	
 	public SubClass()
@@ -60,37 +40,37 @@ public final class SubClass
 	
 	public PlayerClass getClassDefinition()
 	{
-		return _class;
+		return playerClass;
 	}
 	
 	public int getClassId()
 	{
-		return _class.ordinal();
+		return playerClass.ordinal();
 	}
 	
 	public long getExp()
 	{
-		return _exp;
+		return exp;
 	}
 	
 	public int getSp()
 	{
-		return _sp;
+		return sp;
 	}
 	
 	public int getLevel()
 	{
-		return _level;
+		return level;
 	}
 	
 	public int getClassIndex()
 	{
-		return _classIndex;
+		return classIndex;
 	}
 	
 	public void setClassId(final int classId)
 	{
-		_class = PlayerClass.values()[classId];
+		playerClass = PlayerClass.values()[classId];
 	}
 	
 	public void setExp(long expValue)
@@ -100,17 +80,17 @@ public final class SubClass
 			expValue = ExperienceData.getInstance().getExpForLevel(Config.MAX_SUBCLASS_LEVEL);
 		}
 		
-		_exp = expValue;
+		exp = expValue;
 	}
 	
 	public void setSp(final int spValue)
 	{
-		_sp = spValue;
+		sp = spValue;
 	}
 	
 	public void setClassIndex(final int classIndex)
 	{
-		_classIndex = classIndex;
+		this.classIndex = classIndex;
 	}
 	
 	public void setLevel(int levelValue)
@@ -124,7 +104,7 @@ public final class SubClass
 			levelValue = Config.BASE_SUBCLASS_LEVEL;
 		}
 		
-		_level = levelValue;
+		level = levelValue;
 	}
 	
 	public void incLevel()
@@ -133,7 +113,7 @@ public final class SubClass
 		{
 			return;
 		}
-		_level++;
+		level++;
 		setExp(ExperienceData.getInstance().getExpForLevel(getLevel()));
 	}
 	
@@ -143,7 +123,7 @@ public final class SubClass
 		{
 			return;
 		}
-		_level--;
+		level--;
 		setExp(ExperienceData.getInstance().getExpForLevel(getLevel()));
 	}
 }

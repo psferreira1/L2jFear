@@ -1,23 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * [URL]http://www.gnu.org/copyleft/gpl.html[/URL]
- */
 package com.l2jfrozen.gameserver.handler.admincommandhandlers;
 
 import java.io.BufferedInputStream;
@@ -32,8 +12,6 @@ import java.io.PrintStream;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.StringTokenizer;
-
-import javolution.text.TextBuilder;
 
 import com.l2jfrozen.Config;
 import com.l2jfrozen.gameserver.datatables.sql.SpawnTable;
@@ -50,6 +28,8 @@ import com.l2jfrozen.gameserver.network.serverpackets.PlaySound;
 import com.l2jfrozen.gameserver.network.serverpackets.Revive;
 import com.l2jfrozen.gameserver.network.serverpackets.SocialAction;
 import com.l2jfrozen.gameserver.network.serverpackets.UserInfo;
+
+import javolution.text.TextBuilder;
 
 /**
  * This class handles following admin commands: - admin = shows menu
@@ -136,7 +116,9 @@ public class AdminEventEngine implements IAdminCommandHandler
 			catch (final Exception e)
 			{
 				if (Config.ENABLE_ALL_EXCEPTIONS)
+				{
 					e.printStackTrace();
+				}
 				
 				e.printStackTrace();
 			}
@@ -227,7 +209,9 @@ public class AdminEventEngine implements IAdminCommandHandler
 			catch (final Exception e)
 			{
 				if (Config.ENABLE_ALL_EXCEPTIONS)
+				{
 					e.printStackTrace();
+				}
 				
 				tempBuffer = "";
 			}
@@ -254,9 +238,12 @@ public class AdminEventEngine implements IAdminCommandHandler
 			{
 				
 				if (p != null)
+				{
 					p.close();
+				}
 				
 				if (file != null)
+				{
 					try
 					{
 						file.close();
@@ -265,6 +252,7 @@ public class AdminEventEngine implements IAdminCommandHandler
 					{
 						e.printStackTrace();
 					}
+				}
 				
 			}
 			
@@ -321,7 +309,9 @@ public class AdminEventEngine implements IAdminCommandHandler
 			catch (final Exception e)
 			{
 				if (Config.ENABLE_ALL_EXCEPTIONS)
+				{
 					e.printStackTrace();
+				}
 				
 				e.printStackTrace();
 			}
@@ -496,10 +486,10 @@ public class AdminEventEngine implements IAdminCommandHandler
 			
 			muestraNpcConInfoAPlayers(activeChar, L2Event.id);
 			
-			PlaySound _snd = new PlaySound(1, "B03_F", 0, 0, 0, 0, 0);
-			activeChar.sendPacket(_snd);
-			activeChar.broadcastPacket(_snd);
-			_snd = null;
+			PlaySound snd = new PlaySound(1, "B03_F", 0, 0, 0, 0, 0);
+			activeChar.sendPacket(snd);
+			activeChar.broadcastPacket(snd);
+			snd = null;
 			
 			NpcHtmlMessage adminReply = new NpcHtmlMessage(5);
 			
@@ -542,7 +532,8 @@ public class AdminEventEngine implements IAdminCommandHandler
 			
 			final File file = new File("data/events/" + file2);
 			
-			result += "<font color=\"LEVEL\">" + file.getName() + " </font><br><button value=\"select\" action=\"bypass -h admin_event_set " + file.getName() + "\" width=90 height=15 back=\"sek.cbui94\" fore=\"sek.cbui92\"><button value=\"ver\" action=\"bypass -h " + "admin_event_see " + file.getName() + "\" width=90 height=15 back=\"sek.cbui94\" fore=\"sek.cbui92\"><button value=\"delete\" " + "action=\"bypass -h admin_event_del " + file.getName() + "\" width=90 height=15 back=\"sek.cbui94\" fore=\"sek.cbui92\"><br><br>";
+			result += "<font color=\"LEVEL\">" + file.getName() + " </font><br><button value=\"select\" action=\"bypass -h admin_event_set " + file.getName() + "\" width=90 height=15 back=\"sek.cbui94\" fore=\"sek.cbui92\"><button value=\"ver\" action=\"bypass -h " + "admin_event_see " + file.getName() + "\" width=90 height=15 back=\"sek.cbui94\" fore=\"sek.cbui92\"><button value=\"delete\" "
+				+ "action=\"bypass -h admin_event_del " + file.getName() + "\" width=90 height=15 back=\"sek.cbui94\" fore=\"sek.cbui92\"><br><br>";
 			
 		}
 		
@@ -659,10 +650,12 @@ public class AdminEventEngine implements IAdminCommandHandler
 				temp.add(player);
 			}
 			for (final L2PcInstance playertemp : player.getKnownList().getKnownPlayers().values())
+			{
 				if (Math.abs(playertemp.getX() - player.getX()) < 500 && Math.abs(playertemp.getY() - player.getY()) < 500 && Math.abs(playertemp.getZ() - player.getZ()) < 500)
 				{
 					temp.add(playertemp);
 				}
+			}
 		}
 		
 		L2Event.announceAllPlayers(activeChar.getName() + " wants to make an event !!! (you'll find a npc with the details around)");
@@ -699,7 +692,8 @@ public class AdminEventEngine implements IAdminCommandHandler
 		replyMSG.append("<tr><td><button value=\"UnPolymorph\" action=\"bypass -h admin_event_control_unpoly $team_number\" width=90 height=15 " + "back=\"sek.cbui94\" fore=\"sek.cbui92\"></td><td><font color=\"LEVEL\">Unpolymorph the team</font></td></tr>");
 		replyMSG.append("<tr>" + "<td>&nbsp;</td></tr>");
 		replyMSG.append("<tr><td>&nbsp;</td></tr>");
-		replyMSG.append("<tr><td><button value=\"Give Item\" action=\"bypass -h admin_event_control_prize $team_number $n $id\" width=90 " + "height=15 back=\"sek.cbui94\" fore=\"sek.cbui92\"> number <edit var=\"n\" width=100 height=15> item id <edit var=\"id\" width=100 " + "height=15></td><td><font color=\"LEVEL\">Give the specified item id to every single member of the team, you can put 5*level, 5*kills " + "or 5 in the number field for example</font></td></tr>");
+		replyMSG.append("<tr><td><button value=\"Give Item\" action=\"bypass -h admin_event_control_prize $team_number $n $id\" width=90 " + "height=15 back=\"sek.cbui94\" fore=\"sek.cbui92\"> number <edit var=\"n\" width=100 height=15> item id <edit var=\"id\" width=100 "
+			+ "height=15></td><td><font color=\"LEVEL\">Give the specified item id to every single member of the team, you can put 5*level, 5*kills " + "or 5 in the number field for example</font></td></tr>");
 		replyMSG.append("<tr><td>&nbsp;</td></tr>");
 		replyMSG.append("<tr><td><button value=\"End\" action=\"bypass -h admin_event_control_finish\" width=90 height=15 back=\"sek.cbui94\" " + "fore=\"sek.cbui92\"></td><td><font color=\"LEVEL\">Will finish the event teleporting back all the players</font></td></tr>");
 		replyMSG.append("</table></body></html>");
@@ -736,7 +730,9 @@ public class AdminEventEngine implements IAdminCommandHandler
 			catch (final Exception e)
 			{
 				if (Config.ENABLE_ALL_EXCEPTIONS)
+				{
 					e.printStackTrace();
+				}
 				
 				try
 				{
@@ -745,7 +741,9 @@ public class AdminEventEngine implements IAdminCommandHandler
 				catch (final Exception e2)
 				{
 					if (Config.ENABLE_ALL_EXCEPTIONS)
+					{
 						e2.printStackTrace();
+					}
 				}
 			}
 		}
@@ -783,7 +781,9 @@ public class AdminEventEngine implements IAdminCommandHandler
 			catch (final Exception e)
 			{
 				if (Config.ENABLE_ALL_EXCEPTIONS)
+				{
 					e.printStackTrace();
+				}
 				
 				L2Event.npcs.removeFirst();
 			}
@@ -806,7 +806,9 @@ public class AdminEventEngine implements IAdminCommandHandler
 			catch (final Exception e)
 			{
 				if (Config.ENABLE_ALL_EXCEPTIONS)
+				{
 					e.printStackTrace();
+				}
 			}
 		}
 	}
@@ -837,7 +839,9 @@ public class AdminEventEngine implements IAdminCommandHandler
 			catch (final Exception e)
 			{
 				if (Config.ENABLE_ALL_EXCEPTIONS)
+				{
 					e.printStackTrace();
+				}
 			}
 		}
 	}
@@ -858,7 +862,9 @@ public class AdminEventEngine implements IAdminCommandHandler
 			catch (final Exception e)
 			{
 				if (Config.ENABLE_ALL_EXCEPTIONS)
+				{
 					e.printStackTrace();
+				}
 			}
 		}
 		
@@ -893,7 +899,9 @@ public class AdminEventEngine implements IAdminCommandHandler
 			catch (final Exception e)
 			{
 				if (Config.ENABLE_ALL_EXCEPTIONS)
+				{
 					e.printStackTrace();
+				}
 			}
 		}
 		
@@ -927,7 +935,9 @@ public class AdminEventEngine implements IAdminCommandHandler
 			catch (final Exception e)
 			{
 				if (Config.ENABLE_ALL_EXCEPTIONS)
+				{
 					e.printStackTrace();
+				}
 			}
 		}
 		
@@ -963,7 +973,9 @@ public class AdminEventEngine implements IAdminCommandHandler
 			catch (final Exception e)
 			{
 				if (Config.ENABLE_ALL_EXCEPTIONS)
+				{
 					e.printStackTrace();
+				}
 			}
 		}
 		
@@ -1025,7 +1037,9 @@ public class AdminEventEngine implements IAdminCommandHandler
 			catch (final Exception e)
 			{
 				if (Config.ENABLE_ALL_EXCEPTIONS)
+				{
 					e.printStackTrace();
+				}
 			}
 		}
 		
@@ -1060,7 +1074,9 @@ public class AdminEventEngine implements IAdminCommandHandler
 			catch (final Exception e)
 			{
 				if (Config.ENABLE_ALL_EXCEPTIONS)
+				{
 					e.printStackTrace();
+				}
 			}
 		}
 		

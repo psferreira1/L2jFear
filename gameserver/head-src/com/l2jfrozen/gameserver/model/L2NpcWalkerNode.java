@@ -1,132 +1,111 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.model;
 
 import com.l2jfrozen.gameserver.templates.StatsSet;
 
 /**
  * @author Rayan RPG
- * @since 927
+ * @since  927
  */
 public class L2NpcWalkerNode
 {
-	private int _routeId;
-	private int _npcId;
-	private String _movePoint;
-	private String _chatText;
-	private int _moveX;
-	private int _moveY;
-	private int _moveZ;
-	private int _delay;
-	
-	private boolean _running;
+	private int routeId;
+	private int npcId;
+	private String movePoint;
+	private String chatText;
+	private int moveX;
+	private int moveY;
+	private int moveZ;
+	private int delay;
+	private boolean running;
 	
 	public void setRunning(final boolean val)
 	{
-		_running = val;
+		running = val;
 	}
 	
 	public void setRouteId(final int id)
 	{
-		_routeId = id;
+		routeId = id;
 	}
 	
 	public void setNpcId(final int id)
 	{
-		_npcId = id;
+		npcId = id;
 	}
 	
 	public void setMovePoint(final String val)
 	{
-		_movePoint = val;
+		movePoint = val;
 	}
 	
 	public void setChatText(final String val)
 	{
-		_chatText = val;
+		chatText = val;
 	}
 	
 	public void setMoveX(final int val)
 	{
-		_moveX = val;
+		moveX = val;
 	}
 	
 	public void setMoveY(final int val)
 	{
-		_moveY = val;
+		moveY = val;
 	}
 	
 	public void setMoveZ(final int val)
 	{
-		_moveZ = val;
+		moveZ = val;
 	}
 	
 	public void setDelay(final int val)
 	{
-		_delay = val;
+		delay = val;
 	}
 	
 	public int getRouteId()
 	{
-		return _routeId;
+		return routeId;
 	}
 	
 	public int getNpcId()
 	{
-		return _npcId;
+		return npcId;
 	}
 	
 	public String getMovePoint()
 	{
-		return _movePoint;
+		return movePoint;
 	}
 	
 	public String getChatText()
 	{
-		return _chatText;
+		return chatText;
 	}
 	
 	public int getMoveX()
 	{
-		return _moveX;
+		return moveX;
 	}
 	
 	public int getMoveY()
 	{
-		return _moveY;
+		return moveY;
 	}
 	
 	public int getMoveZ()
 	{
-		return _moveZ;
+		return moveZ;
 	}
 	
 	public int getDelay()
 	{
-		return _delay;
+		return delay;
 	}
 	
 	public boolean getRunning()
 	{
-		return _running;
+		return running;
 	}
 	
 	/**
@@ -143,12 +122,12 @@ public class L2NpcWalkerNode
 	 */
 	public L2NpcWalkerNode(final StatsSet set)
 	{
-		_npcId = set.getInteger("npc_id");
-		_movePoint = set.getString("move_point");
-		_chatText = set.getString("chatText");
-		_moveX = set.getInteger("move_x");
-		_moveX = set.getInteger("move_y");
-		_moveX = set.getInteger("move_z");
-		_delay = set.getInteger("delay");
+		npcId = set.getInteger("npc_id");
+		movePoint = set.getString("move_point");
+		chatText = set.getString("chatText");
+		moveX = set.getInteger("move_x");
+		moveX = set.getInteger("move_y");
+		moveX = set.getInteger("move_z");
+		delay = set.getInteger("delay");
 	}
 }

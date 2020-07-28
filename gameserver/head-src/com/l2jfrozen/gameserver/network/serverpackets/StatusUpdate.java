@@ -1,23 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.network.serverpackets;
 
 import java.util.Vector;
@@ -37,7 +17,6 @@ import com.l2jfrozen.gameserver.model.actor.instance.L2PcInstance;
  */
 public class StatusUpdate extends L2GameServerPacket
 {
-	private static final String _S__1A_STATUSUPDATE = "[S] 0e StatusUpdate";
 	public static final int LEVEL = 0x01;
 	public static final int EXP = 0x02;
 	public static final int STR = 0x03;
@@ -71,14 +50,13 @@ public class StatusUpdate extends L2GameServerPacket
 	public static final int CUR_CP = 0x21;
 	public static final int MAX_CP = 0x22;
 	
-	private L2PcInstance _actor;
+	private L2PcInstance actor;
 	
-	private Vector<Attribute> _attributes;
-	public int _objectId;
+	private Vector<Attribute> attributes;
+	public int objectId;
 	
 	class Attribute
 	{
-		
 		// id values 09 - current health 0a - max health 0b - current mana 0c - max mana
 		public int id;
 		public int value;
@@ -92,18 +70,18 @@ public class StatusUpdate extends L2GameServerPacket
 	
 	public StatusUpdate(final L2PcInstance actor)
 	{
-		_actor = actor;
+		this.actor = actor;
 	}
 	
 	public StatusUpdate(final int objectId)
 	{
-		_attributes = new Vector<>();
-		_objectId = objectId;
+		attributes = new Vector<>();
+		this.objectId = objectId;
 	}
 	
 	public void addAttribute(final int id, final int level)
 	{
-		_attributes.add(new Attribute(id, level));
+		attributes.add(new Attribute(id, level));
 	}
 	
 	@Override
@@ -111,81 +89,81 @@ public class StatusUpdate extends L2GameServerPacket
 	{
 		writeC(0x0e);
 		
-		if (_actor != null)
+		if (actor != null)
 		{
-			writeD(_actor.getObjectId());
+			writeD(actor.getObjectId());
 			writeD(28); // all the attributes
 			
 			writeD(LEVEL);
-			writeD(_actor.getLevel());
+			writeD(actor.getLevel());
 			writeD(EXP);
-			writeD((int) _actor.getExp());
+			writeD((int) actor.getExp());
 			writeD(STR);
-			writeD(_actor.getSTR());
+			writeD(actor.getSTR());
 			writeD(DEX);
-			writeD(_actor.getDEX());
+			writeD(actor.getDEX());
 			writeD(CON);
-			writeD(_actor.getCON());
+			writeD(actor.getCON());
 			writeD(INT);
-			writeD(_actor.getINT());
+			writeD(actor.getINT());
 			writeD(WIT);
-			writeD(_actor.getWIT());
+			writeD(actor.getWIT());
 			writeD(MEN);
-			writeD(_actor.getMEN());
+			writeD(actor.getMEN());
 			
 			writeD(CUR_HP);
-			writeD((int) _actor.getCurrentHp());
+			writeD((int) actor.getCurrentHp());
 			writeD(MAX_HP);
-			writeD(_actor.getMaxHp());
+			writeD(actor.getMaxHp());
 			writeD(CUR_MP);
-			writeD((int) _actor.getCurrentMp());
+			writeD((int) actor.getCurrentMp());
 			writeD(MAX_MP);
-			writeD(_actor.getMaxMp());
+			writeD(actor.getMaxMp());
 			writeD(SP);
-			writeD(_actor.getSp());
+			writeD(actor.getSp());
 			writeD(CUR_LOAD);
-			writeD(_actor.getCurrentLoad());
+			writeD(actor.getCurrentLoad());
 			writeD(MAX_LOAD);
-			writeD(_actor.getMaxLoad());
+			writeD(actor.getMaxLoad());
 			
 			writeD(P_ATK);
-			writeD(_actor.getPAtk(null));
+			writeD(actor.getPAtk(null));
 			writeD(ATK_SPD);
-			writeD(_actor.getPAtkSpd());
+			writeD(actor.getPAtkSpd());
 			writeD(P_DEF);
-			writeD(_actor.getPDef(null));
+			writeD(actor.getPDef(null));
 			writeD(EVASION);
-			writeD(_actor.getEvasionRate(null));
+			writeD(actor.getEvasionRate(null));
 			writeD(ACCURACY);
-			writeD(_actor.getAccuracy());
+			writeD(actor.getAccuracy());
 			writeD(CRITICAL);
-			writeD(_actor.getCriticalHit(null, null));
+			writeD(actor.getCriticalHit(null, null));
 			writeD(M_ATK);
-			writeD(_actor.getMAtk(null, null));
+			writeD(actor.getMAtk(null, null));
 			
 			writeD(CAST_SPD);
-			writeD(_actor.getMAtkSpd());
+			writeD(actor.getMAtkSpd());
 			writeD(M_DEF);
-			writeD(_actor.getMDef(null, null));
+			writeD(actor.getMDef(null, null));
 			writeD(PVP_FLAG);
-			writeD(_actor.getPvpFlag());
+			writeD(actor.getPvpFlag());
 			writeD(KARMA);
-			writeD(_actor.getKarma());
+			writeD(actor.getKarma());
 			writeD(CUR_CP);
-			writeD((int) _actor.getCurrentCp());
+			writeD((int) actor.getCurrentCp());
 			writeD(MAX_CP);
-			writeD(_actor.getMaxCp());
+			writeD(actor.getMaxCp());
 			
 		}
 		else
 		{
 			
-			writeD(_objectId);
-			writeD(_attributes.size());
+			writeD(objectId);
+			writeD(attributes.size());
 			
-			for (int i = 0; i < _attributes.size(); i++)
+			for (int i = 0; i < attributes.size(); i++)
 			{
-				final Attribute temp = _attributes.get(i);
+				final Attribute temp = attributes.get(i);
 				
 				writeD(temp.id);
 				writeD(temp.value);
@@ -194,13 +172,9 @@ public class StatusUpdate extends L2GameServerPacket
 		
 	}
 	
-	/*
-	 * (non-Javadoc)
-	 * @see com.l2jfrozen.gameserver.serverpackets.ServerBasePacket#getType()
-	 */
 	@Override
 	public String getType()
 	{
-		return _S__1A_STATUSUPDATE;
+		return "[S] 0e StatusUpdate";
 	}
 }

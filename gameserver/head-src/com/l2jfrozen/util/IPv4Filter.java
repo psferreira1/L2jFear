@@ -1,20 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any later
- * version.
- * 
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
- * 
- * You should have received a copy of the GNU General Public License along with
- * this program. If not, see <http://www.gnu.org/licenses/>.
- */
-
 package com.l2jfrozen.util;
 
 import java.net.InetAddress;
@@ -32,12 +15,12 @@ import com.l2jfrozen.netcore.IAcceptFilter;
  */
 public class IPv4Filter implements IAcceptFilter, Runnable
 {
-	private final HashMap<Integer, Flood> _ipFloodMap;
+	private final HashMap<Integer, Flood> ipFloodMap;
 	private static final long SLEEP_TIME = 5000;
 	
 	public IPv4Filter()
 	{
-		_ipFloodMap = new HashMap<>();
+		ipFloodMap = new HashMap<>();
 		final Thread t = new Thread(this);
 		t.setName(getClass().getSimpleName());
 		t.setDaemon(true);
@@ -45,7 +28,7 @@ public class IPv4Filter implements IAcceptFilter, Runnable
 	}
 	
 	/**
-	 * @param ip
+	 * @param  ip
 	 * @return
 	 */
 	private static final int hash(final byte[] ip)
@@ -73,9 +56,9 @@ public class IPv4Filter implements IAcceptFilter, Runnable
 		
 		final long current = System.currentTimeMillis();
 		Flood f;
-		synchronized (_ipFloodMap)
+		synchronized (ipFloodMap)
 		{
-			f = _ipFloodMap.get(h);
+			f = ipFloodMap.get(h);
 		}
 		if (f != null)
 		{
@@ -104,9 +87,9 @@ public class IPv4Filter implements IAcceptFilter, Runnable
 		}
 		else
 		{
-			synchronized (_ipFloodMap)
+			synchronized (ipFloodMap)
 			{
-				_ipFloodMap.put(h, new Flood());
+				ipFloodMap.put(h, new Flood());
 			}
 		}
 		
@@ -119,14 +102,16 @@ public class IPv4Filter implements IAcceptFilter, Runnable
 		while (true)
 		{
 			final long reference = System.currentTimeMillis() - (1000 * 300);
-			synchronized (_ipFloodMap)
+			synchronized (ipFloodMap)
 			{
-				final Iterator<Entry<Integer, Flood>> it = _ipFloodMap.entrySet().iterator();
+				final Iterator<Entry<Integer, Flood>> it = ipFloodMap.entrySet().iterator();
 				while (it.hasNext())
 				{
 					final Flood f = it.next().getValue();
 					if (f.lastAccess < reference)
+					{
 						it.remove();
+					}
 				}
 			}
 			
@@ -137,7 +122,9 @@ public class IPv4Filter implements IAcceptFilter, Runnable
 			catch (final InterruptedException e)
 			{
 				if (Config.ENABLE_ALL_EXCEPTIONS)
+				{
 					e.printStackTrace();
+				}
 				
 				return;
 			}

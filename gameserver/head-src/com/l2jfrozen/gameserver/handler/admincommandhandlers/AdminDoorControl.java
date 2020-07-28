@@ -1,23 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.handler.admincommandhandlers;
 
 import com.l2jfrozen.gameserver.datatables.csv.DoorTable;
@@ -44,12 +24,12 @@ import com.l2jfrozen.gameserver.model.entity.siege.Castle;
  * - open = open selected door<br>
  * - close = close selected door<br>
  * @version $Revision: 1.3 $
- * @author ProGramMoS
+ * @author  ProGramMoS
  */
 public class AdminDoorControl implements IAdminCommandHandler
 {
 	// private static Logger LOGGER = Logger.getLogger(AdminDoorControl.class);
-	private static DoorTable _doorTable;
+	private static DoorTable doorTable;
 	private static final String[] ADMIN_COMMANDS =
 	{
 		"admin_open",
@@ -58,17 +38,10 @@ public class AdminDoorControl implements IAdminCommandHandler
 		"admin_closeall"
 	};
 	
-	// private static final Map<String, Integer> doorMap = new FastMap<String, Integer>(); //FIXME: should we jute remove this?
-	
 	@Override
 	public boolean useAdminCommand(final String command, final L2PcInstance activeChar)
 	{
-		/*
-		 * if(!AdminCommandAccessRights.getInstance().hasAccess(command, activeChar.getAccessLevel())){ return false; } if(Config.GMAUDIT) { Logger _logAudit = Logger.getLogger("gmaudit"); LogRecord record = new LogRecord(Level.INFO, command); record.setParameters(new Object[] { "GM: " +
-		 * activeChar.getName(), " to target [" + activeChar.getTarget() + "] " }); _logAudit.LOGGER(record); }
-		 */
-		
-		_doorTable = DoorTable.getInstance();
+		doorTable = DoorTable.getInstance();
 		
 		L2Object target2 = null;
 		
@@ -78,17 +51,19 @@ public class AdminDoorControl implements IAdminCommandHandler
 			{
 				final int doorId = Integer.parseInt(command.substring(12));
 				
-				if (_doorTable.getDoor(doorId) != null)
+				if (doorTable.getDoor(doorId) != null)
 				{
-					_doorTable.getDoor(doorId).closeMe();
+					doorTable.getDoor(doorId).closeMe();
 				}
 				else
 				{
 					for (final Castle castle : CastleManager.getInstance().getCastles())
+					{
 						if (castle.getDoor(doorId) != null)
 						{
 							castle.getDoor(doorId).closeMe();
 						}
+					}
 				}
 			}
 			catch (final Exception e)
@@ -119,17 +94,19 @@ public class AdminDoorControl implements IAdminCommandHandler
 			{
 				final int doorId = Integer.parseInt(command.substring(11));
 				
-				if (_doorTable.getDoor(doorId) != null)
+				if (doorTable.getDoor(doorId) != null)
 				{
-					_doorTable.getDoor(doorId).openMe();
+					doorTable.getDoor(doorId).openMe();
 				}
 				else
 				{
 					for (final Castle castle : CastleManager.getInstance().getCastles())
+					{
 						if (castle.getDoor(doorId) != null)
 						{
 							castle.getDoor(doorId).openMe();
 						}
+					}
 				}
 			}
 			catch (final Exception e)
@@ -161,7 +138,7 @@ public class AdminDoorControl implements IAdminCommandHandler
 		{
 			try
 			{
-				for (final L2DoorInstance door : _doorTable.getDoors())
+				for (final L2DoorInstance door : doorTable.getDoors())
 				{
 					door.closeMe();
 				}
@@ -186,7 +163,7 @@ public class AdminDoorControl implements IAdminCommandHandler
 			// set limits on the PH door to do a cycle of opening doors.
 			try
 			{
-				for (final L2DoorInstance door : _doorTable.getDoors())
+				for (final L2DoorInstance door : doorTable.getDoors())
 				{
 					door.openMe();
 				}

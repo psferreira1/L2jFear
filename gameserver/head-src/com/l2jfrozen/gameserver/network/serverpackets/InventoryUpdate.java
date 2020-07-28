@@ -1,28 +1,7 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.network.serverpackets;
 
+import java.util.ArrayList;
 import java.util.List;
-
-import javolution.util.FastList;
 
 import org.apache.log4j.Logger;
 
@@ -55,14 +34,15 @@ import com.l2jfrozen.gameserver.model.actor.instance.L2ItemInstance;
 public class InventoryUpdate extends L2GameServerPacket
 {
 	private static Logger LOGGER = Logger.getLogger(InventoryUpdate.class);
-	private static final String _S__37_INVENTORYUPDATE = "[S] 27 InventoryUpdate";
-	private final List<ItemInfo> _items;
+	private final List<ItemInfo> itemList;
 	
 	public InventoryUpdate()
 	{
-		_items = new FastList<>();
+		itemList = new ArrayList<>();
 		if (Config.DEBUG)
+		{
 			showDebug();
+		}
 	}
 	
 	/**
@@ -70,56 +50,74 @@ public class InventoryUpdate extends L2GameServerPacket
 	 */
 	public InventoryUpdate(final List<ItemInfo> items)
 	{
-		_items = items;
+		itemList = items;
 		if (Config.DEBUG)
+		{
 			showDebug();
+		}
 	}
 	
 	public void addItem(final L2ItemInstance item)
 	{
 		if (item != null)
-			_items.add(new ItemInfo(item));
+		{
+			itemList.add(new ItemInfo(item));
+		}
 	}
 	
 	public void addNewItem(final L2ItemInstance item)
 	{
 		if (item != null)
-			_items.add(new ItemInfo(item, 1));
+		{
+			itemList.add(new ItemInfo(item, 1));
+		}
 	}
 	
 	public void addModifiedItem(final L2ItemInstance item)
 	{
 		if (item != null)
-			_items.add(new ItemInfo(item, 2));
+		{
+			itemList.add(new ItemInfo(item, 2));
+		}
 	}
 	
 	public void addRemovedItem(final L2ItemInstance item)
 	{
 		if (item != null)
-			_items.add(new ItemInfo(item, 3));
+		{
+			itemList.add(new ItemInfo(item, 3));
+		}
 	}
 	
 	public void addItems(final List<L2ItemInstance> items)
 	{
 		if (items != null)
+		{
 			for (final L2ItemInstance item : items)
+			{
 				if (item != null)
-					_items.add(new ItemInfo(item));
+				{
+					itemList.add(new ItemInfo(item));
+				}
+			}
+		}
 	}
 	
 	private void showDebug()
 	{
-		for (final ItemInfo item : _items)
+		for (final ItemInfo item : itemList)
+		{
 			LOGGER.debug("oid:" + Integer.toHexString(item.getObjectId()) + " item:" + item.getItem().getName() + " last change:" + item.getChange());
+		}
 	}
 	
 	@Override
 	protected final void writeImpl()
 	{
 		writeC(0x27);
-		final int count = _items.size();
+		final int count = itemList.size();
 		writeH(count);
-		for (final ItemInfo item : _items)
+		for (final ItemInfo item : itemList)
 		{
 			writeH(item.getChange()); // Update type : 01-add, 02-modify,
 			// 03-remove
@@ -154,13 +152,9 @@ public class InventoryUpdate extends L2GameServerPacket
 		}
 	}
 	
-	/*
-	 * (non-Javadoc)
-	 * @see net.sf.l2j.gameserver.network.serverpackets.ServerBasePacket#getType()
-	 */
 	@Override
 	public String getType()
 	{
-		return _S__37_INVENTORYUPDATE;
+		return "[S] 27 InventoryUpdate";
 	}
 }

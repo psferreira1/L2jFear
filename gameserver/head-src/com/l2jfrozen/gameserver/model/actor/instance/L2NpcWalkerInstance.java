@@ -1,22 +1,3 @@
-/* L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.model.actor.instance;
 
 import java.util.Map;
@@ -33,7 +14,7 @@ import com.l2jfrozen.gameserver.templates.L2NpcTemplate;
  * It inherits all methods from L2NpcInstance. <br>
  * <br>
  * @original author Rayan RPG
- * @since 819
+ * @since    819
  */
 public class L2NpcWalkerInstance extends L2NpcInstance
 {
@@ -57,16 +38,12 @@ public class L2NpcWalkerInstance extends L2NpcInstance
 	@Override
 	public void setAI(final L2CharacterAI newAI)
 	{
-		if (_ai == null)
+		if (aiCharacter == null)
 		{
 			super.setAI(newAI);
 		}
 	}
 	
-	/*
-	 * (non-Javadoc)
-	 * @see com.l2jfrozen.gameserver.model.actor.instance.L2NpcInstance#onSpawn()
-	 */
 	@Override
 	public void onSpawn()
 	{
@@ -76,29 +53,29 @@ public class L2NpcWalkerInstance extends L2NpcInstance
 	}
 	
 	/**
-	 * Sends a chat to all _knowObjects.
+	 * Sends a chat to all knowObjects.
 	 * @param chat message to say
 	 */
 	public void broadcastChat(final String chat)
 	{
-		final Map<Integer, L2PcInstance> _knownPlayers = getKnownList().getKnownPlayers();
+		final Map<Integer, L2PcInstance> knownPlayers = getKnownList().getKnownPlayers();
 		
-		if (_knownPlayers == null)
+		if (knownPlayers == null)
 		{
 			if (Config.DEVELOPER)
 			{
-				LOGGER.info("broadcastChat _players == null");
+				LOGGER.info("broadcastChat players == null");
 			}
 			return;
 		}
 		
 		// we send message to known players only!
-		if (_knownPlayers.size() > 0)
+		if (knownPlayers.size() > 0)
 		{
 			CreatureSay cs = new CreatureSay(getObjectId(), 0, getName(), chat);
 			
 			// we interact and list players here
-			for (final L2PcInstance players : _knownPlayers.values())
+			for (final L2PcInstance players : knownPlayers.values())
 			{
 				// finally send packet :D
 				players.sendPacket(cs);
@@ -110,9 +87,9 @@ public class L2NpcWalkerInstance extends L2NpcInstance
 	
 	/**
 	 * NPCs are immortal.
-	 * @param i ignore it
+	 * @param i        ignore it
 	 * @param attacker ignore it
-	 * @param awake ignore it
+	 * @param awake    ignore it
 	 */
 	@Override
 	public void reduceCurrentHp(final double i, final L2Character attacker, final boolean awake)
@@ -121,8 +98,8 @@ public class L2NpcWalkerInstance extends L2NpcInstance
 	
 	/**
 	 * NPCs are immortal.
-	 * @param killer ignore it
-	 * @return false
+	 * @param  killer ignore it
+	 * @return        false
 	 */
 	@Override
 	public boolean doDie(final L2Character killer)
@@ -130,10 +107,6 @@ public class L2NpcWalkerInstance extends L2NpcInstance
 		return false;
 	}
 	
-	/*
-	 * (non-Javadoc)
-	 * @see com.l2jfrozen.gameserver.model.L2Character#getAI()
-	 */
 	@Override
 	public L2CharacterAI getAI()
 	{

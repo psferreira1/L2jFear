@@ -1,23 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.geo;
 
 import org.apache.log4j.Logger;
@@ -50,15 +30,17 @@ public class GeoData
 	public static GeoData getInstance()
 	{
 		if (Config.GEODATA > 0)
+		{
 			return GeoEngine.getInstance();
+		}
 		return SingletonHolder.INSTANCE;
 	}
 	
 	// Public Methods
 	/**
-	 * @param x
-	 * @param y
-	 * @return Geo Block Type
+	 * @param  x
+	 * @param  y
+	 * @return   Geo Block Type
 	 */
 	public short getType(final int x, final int y)
 	{
@@ -66,10 +48,10 @@ public class GeoData
 	}
 	
 	/**
-	 * @param x
-	 * @param y
-	 * @param z
-	 * @return Nearles Z
+	 * @param  x
+	 * @param  y
+	 * @param  z
+	 * @return   Nearles Z
 	 */
 	public short getHeight(final int x, final int y, final int z)
 	{
@@ -77,11 +59,11 @@ public class GeoData
 	}
 	
 	/**
-	 * @param x
-	 * @param y
-	 * @param zmin
-	 * @param zmax
-	 * @param spawnid
+	 * @param  x
+	 * @param  y
+	 * @param  zmin
+	 * @param  zmax
+	 * @param  spawnid
 	 * @return
 	 */
 	public short getSpawnHeight(final int x, final int y, final int zmin, final int zmax, final int spawnid)
@@ -90,8 +72,8 @@ public class GeoData
 	}
 	
 	/**
-	 * @param x
-	 * @param y
+	 * @param  x
+	 * @param  y
 	 * @return
 	 */
 	public String geoPosition(final int x, final int y)
@@ -100,9 +82,9 @@ public class GeoData
 	}
 	
 	/**
-	 * @param cha
-	 * @param target
-	 * @return True if cha can see target (LOS)
+	 * @param  cha
+	 * @param  target
+	 * @return        True if cha can see target (LOS)
 	 */
 	public boolean canSeeTarget(final L2Object cha, final L2Object target)
 	{
@@ -126,9 +108,9 @@ public class GeoData
 	}
 	
 	/**
-	 * @param gm
-	 * @param target
-	 * @return True if cha can see target (LOS) and send usful info to PC
+	 * @param  gm
+	 * @param  target
+	 * @return        True if cha can see target (LOS) and send usful info to PC
 	 */
 	public boolean canSeeTargetDebug(final L2PcInstance gm, final L2Object target)
 	{
@@ -136,10 +118,10 @@ public class GeoData
 	}
 	
 	/**
-	 * @param x
-	 * @param y
-	 * @param z
-	 * @return Geo NSWE (0-15)
+	 * @param  x
+	 * @param  y
+	 * @param  z
+	 * @return   Geo NSWE (0-15)
 	 */
 	public short getNSWE(final int x, final int y, final int z)
 	{
@@ -147,13 +129,13 @@ public class GeoData
 	}
 	
 	/**
-	 * @param x
-	 * @param y
-	 * @param z
-	 * @param tx
-	 * @param ty
-	 * @param tz
-	 * @return Last Location (x,y,z) where player can walk - just before wall
+	 * @param  x
+	 * @param  y
+	 * @param  z
+	 * @param  tx
+	 * @param  ty
+	 * @param  tz
+	 * @return    Last Location (x,y,z) where player can walk - just before wall
 	 */
 	public Location moveCheck(final int x, final int y, final int z, final int tx, final int ty, final int tz)
 	{

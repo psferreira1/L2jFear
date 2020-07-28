@@ -1,20 +1,6 @@
-//   Copyright (c) 1999 CERN - European Organization for Nuclear Research.
-
-//   Permission to use, copy, modify, distribute and sell this software
-//   and its documentation for any purpose is hereby granted without fee,
-//   provided that the above copyright notice appear in all copies and
-//   that both that copyright notice and this permission notice appear in
-//   supporting documentation. CERN makes no representations about the
-//   suitability of this software for any purpose. It is provided "as is"
-//   without expressed or implied warranty.
 package com.l2jfrozen.util;
 
 import java.util.Arrays;
-
-/*
- * Modified for Trove to use the java.util.Arrays sort/search
- * algorithms instead of those provided with colt.
- */
 
 /**
  * Used to keep hash table capacities prime numbers. Not of interest for users; only for implementors of hashtables.
@@ -24,7 +10,7 @@ import java.util.Arrays;
  * However, JDK 1.2, JGL 3.1 and many other toolkits do nothing to keep capacities prime. This class provides efficient means to choose prime capacities.
  * <p>
  * Choosing a prime is <tt>O(LOGGER 300)</tt> (binary search in a list of 300 ints). Memory requirements: 1 KB static memory.
- * @author wolfgang.hoschek@cern.ch
+ * @author  wolfgang.hoschek@cern.ch
  * @version 1.0, 09/24/99
  */
 public final class PrimeFinder
@@ -35,10 +21,10 @@ public final class PrimeFinder
 	public static final int LARGEST_PRIME = Integer.MAX_VALUE; // yes, it is prime.
 	
 	/**
-	 * The prime number list consists of 11 chunks. Each chunk contains prime numbers. A chunk starts with a prime P1. The next element is a prime P2. P2 is the smallest prime for which holds: P2 >= 2*P1. The next element is P3, for which the same holds with respect to P2, and so on. Chunks are
-	 * chosen such that for any desired capacity >= 1000 the list includes a prime number <= desired capacity * 1.11. Therefore, primes can be retrieved which are quite close to any desired capacity, which in turn avoids wasting memory. For example, the list includes
-	 * 1039,1117,1201,1277,1361,1439,1523,1597,1759,1907,2081. So if you need a prime >= 1040, you will find a prime <= 1040*1.11=1154. Chunks are chosen such that they are optimized for a hashtable growthfactor of 2.0; If your hashtable has such a growthfactor then, after initially
-	 * "rounding to a prime" upon hashtable construction, it will later expand to prime capacities such that there exist no better primes. In total these are about 32*10=320 numbers -> 1 KB of static memory needed. If you are stingy, then delete every second or fourth chunk.
+	 * The prime number list consists of 11 chunks. Each chunk contains prime numbers. A chunk starts with a prime P1. The next element is a prime P2. P2 is the smallest prime for which holds: P2 >= 2*P1. The next element is P3, for which the same holds with respect to P2, and so on. Chunks are chosen
+	 * such that for any desired capacity >= 1000 the list includes a prime number <= desired capacity * 1.11. Therefore, primes can be retrieved which are quite close to any desired capacity, which in turn avoids wasting memory. For example, the list includes
+	 * 1039,1117,1201,1277,1361,1439,1523,1597,1759,1907,2081. So if you need a prime >= 1040, you will find a prime <= 1040*1.11=1154. Chunks are chosen such that they are optimized for a hashtable growthfactor of 2.0; If your hashtable has such a growthfactor then, after initially "rounding to a
+	 * prime" upon hashtable construction, it will later expand to prime capacities such that there exist no better primes. In total these are about 32*10=320 numbers -> 1 KB of static memory needed. If you are stingy, then delete every second or fourth chunk.
 	 */
 	
 	private static final int[] PRIME_CAPACITIES =
@@ -322,8 +308,8 @@ public final class PrimeFinder
 	
 	/**
 	 * Returns a prime number which is <code>&gt;= desiredCapacity</code> and very close to <code>desiredCapacity</code> (within 11% if <code>desiredCapacity &gt;= 1000</code>).
-	 * @param desiredCapacity the capacity desired by the user.
-	 * @return the capacity which should be used for a hashtable.
+	 * @param  desiredCapacity the capacity desired by the user.
+	 * @return                 the capacity which should be used for a hashtable.
 	 */
 	public static final int nextPrime(final int desiredCapacity)
 	{

@@ -1,23 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.model;
 
 public class L2PetData
@@ -50,32 +30,32 @@ public class L2PetData
 	public static final String PET_REGEN_MP = "mpregen";
 	public static final String OWNER_EXP_TAKEN = "owner_exp_taken";
 	
-	private int _petId;
-	private int _petLevel;
-	private float _ownerExpTaken;
+	private int petId;
+	private int petLevel;
+	private float ownerExpTaken;
 	// private int petExp;
-	private long _petMaxExp;
+	private long petMaxExp;
 	// private int petHP;
-	private int _petMaxHP;
+	private int petMaxHP;
 	// private int petMP;
-	private int _petMaxMP;
-	private int _petPAtk;
-	private int _petPDef;
-	private int _petMAtk;
-	private int _petMDef;
-	private int _petAccuracy;
-	private int _petEvasion;
-	private int _petCritical;
-	private int _petSpeed;
-	private int _petAtkSpeed;
-	private int _petCastSpeed;
+	private int petMaxMP;
+	private int petPAtk;
+	private int petPDef;
+	private int petMAtk;
+	private int petMDef;
+	private int petAccuracy;
+	private int petEvasion;
+	private int petCritical;
+	private int petSpeed;
+	private int petAtkSpeed;
+	private int petCastSpeed;
 	// private int petFeed;
-	private int _petMaxFeed;
-	private int _petFeedBattle;
-	private int _petFeedNormal;
-	private int _petMaxLoad;
-	private int _petRegenHP;
-	private int _petRegenMP;
+	private int petMaxFeed;
+	private int petFeedBattle;
+	private int petFeedNormal;
+	private int petMaxLoad;
+	private int petRegenHP;
+	private int petRegenMP;
 	
 	public void setStat(final String stat, final int value)
 	{
@@ -183,23 +163,23 @@ public class L2PetData
 	// ID
 	public int getPetID()
 	{
-		return _petId;
+		return petId;
 	}
 	
 	public void setPetID(final int pPetID)
 	{
-		_petId = pPetID;
+		petId = pPetID;
 	}
 	
 	// Level
 	public int getPetLevel()
 	{
-		return _petLevel;
+		return petLevel;
 	}
 	
 	public void setPetLevel(final int pPetLevel)
 	{
-		_petLevel = pPetLevel;
+		petLevel = pPetLevel;
 	}
 	
 	// Exp
@@ -209,22 +189,22 @@ public class L2PetData
 	// Max Exp
 	public long getPetMaxExp()
 	{
-		return _petMaxExp;
+		return petMaxExp;
 	}
 	
 	public void setPetMaxExp(final long pPetMaxExp)
 	{
-		_petMaxExp = pPetMaxExp;
+		petMaxExp = pPetMaxExp;
 	}
 	
 	public float getOwnerExpTaken()
 	{
-		return _ownerExpTaken;
+		return ownerExpTaken;
 	}
 	
 	public void setOwnerExpTaken(final float pOwnerExpTaken)
 	{
-		_ownerExpTaken = pOwnerExpTaken;
+		ownerExpTaken = pOwnerExpTaken;
 	}
 	
 	// HP
@@ -234,12 +214,12 @@ public class L2PetData
 	// Max HP
 	public int getPetMaxHP()
 	{
-		return _petMaxHP;
+		return petMaxHP;
 	}
 	
 	public void setPetMaxHP(final int pPetMaxHP)
 	{
-		_petMaxHP = pPetMaxHP;
+		petMaxHP = pPetMaxHP;
 	}
 	
 	// Mp
@@ -249,122 +229,122 @@ public class L2PetData
 	// Max Mp
 	public int getPetMaxMP()
 	{
-		return _petMaxMP;
+		return petMaxMP;
 	}
 	
 	public void setPetMaxMP(final int pPetMaxMP)
 	{
-		_petMaxMP = pPetMaxMP;
+		petMaxMP = pPetMaxMP;
 	}
 	
 	// PAtk
 	public int getPetPAtk()
 	{
-		return _petPAtk;
+		return petPAtk;
 	}
 	
 	public void setPetPAtk(final int pPetPAtk)
 	{
-		_petPAtk = pPetPAtk;
+		petPAtk = pPetPAtk;
 	}
 	
 	// PDef
 	public int getPetPDef()
 	{
-		return _petPDef;
+		return petPDef;
 	}
 	
 	public void setPetPDef(final int pPetPDef)
 	{
-		_petPDef = pPetPDef;
+		petPDef = pPetPDef;
 	}
 	
 	// MAtk
 	public int getPetMAtk()
 	{
-		return _petMAtk;
+		return petMAtk;
 	}
 	
 	public void setPetMAtk(final int pPetMAtk)
 	{
-		_petMAtk = pPetMAtk;
+		petMAtk = pPetMAtk;
 	}
 	
 	// MDef
 	public int getPetMDef()
 	{
-		return _petMDef;
+		return petMDef;
 	}
 	
 	public void setPetMDef(final int pPetMDef)
 	{
-		_petMDef = pPetMDef;
+		petMDef = pPetMDef;
 	}
 	
 	// Accuracy
 	public int getPetAccuracy()
 	{
-		return _petAccuracy;
+		return petAccuracy;
 	}
 	
 	public void setPetAccuracy(final int pPetAccuracy)
 	{
-		_petAccuracy = pPetAccuracy;
+		petAccuracy = pPetAccuracy;
 	}
 	
 	// Evasion
 	public int getPetEvasion()
 	{
-		return _petEvasion;
+		return petEvasion;
 	}
 	
 	public void setPetEvasion(final int pPetEvasion)
 	{
-		_petEvasion = pPetEvasion;
+		petEvasion = pPetEvasion;
 	}
 	
 	// Critical
 	public int getPetCritical()
 	{
-		return _petCritical;
+		return petCritical;
 	}
 	
 	public void setPetCritical(final int pPetCritical)
 	{
-		_petCritical = pPetCritical;
+		petCritical = pPetCritical;
 	}
 	
 	// Speed
 	public int getPetSpeed()
 	{
-		return _petSpeed;
+		return petSpeed;
 	}
 	
 	public void setPetSpeed(final int pPetSpeed)
 	{
-		_petSpeed = pPetSpeed;
+		petSpeed = pPetSpeed;
 	}
 	
 	// Atk Speed
 	public int getPetAtkSpeed()
 	{
-		return _petAtkSpeed;
+		return petAtkSpeed;
 	}
 	
 	public void setPetAtkSpeed(final int pPetAtkSpeed)
 	{
-		_petAtkSpeed = pPetAtkSpeed;
+		petAtkSpeed = pPetAtkSpeed;
 	}
 	
 	// Cast Speed
 	public int getPetCastSpeed()
 	{
-		return _petCastSpeed;
+		return petCastSpeed;
 	}
 	
 	public void setPetCastSpeed(final int pPetCastSpeed)
 	{
-		_petCastSpeed = pPetCastSpeed;
+		petCastSpeed = pPetCastSpeed;
 	}
 	
 	// Feed
@@ -374,34 +354,34 @@ public class L2PetData
 	// MaxFeed
 	public int getPetMaxFeed()
 	{
-		return _petMaxFeed;
+		return petMaxFeed;
 	}
 	
 	public void setPetMaxFeed(final int pPetMaxFeed)
 	{
-		_petMaxFeed = pPetMaxFeed;
+		petMaxFeed = pPetMaxFeed;
 	}
 	
 	// Normal Feed
 	public int getPetFeedNormal()
 	{
-		return _petFeedNormal;
+		return petFeedNormal;
 	}
 	
 	public void setPetFeedNormal(final int pPetFeedNormal)
 	{
-		_petFeedNormal = pPetFeedNormal;
+		petFeedNormal = pPetFeedNormal;
 	}
 	
 	// Battle Feed
 	public int getPetFeedBattle()
 	{
-		return _petFeedBattle;
+		return petFeedBattle;
 	}
 	
 	public void setPetFeedBattle(final int pPetFeedBattle)
 	{
-		_petFeedBattle = pPetFeedBattle;
+		petFeedBattle = pPetFeedBattle;
 	}
 	
 	// Load
@@ -411,34 +391,34 @@ public class L2PetData
 	// Max Load
 	public int getPetMaxLoad()
 	{
-		return _petMaxLoad;
+		return petMaxLoad;
 	}
 	
 	public void setPetMaxLoad(final int pPetMaxLoad)
 	{
-		_petMaxLoad = pPetMaxLoad;
+		petMaxLoad = pPetMaxLoad;
 	}
 	
 	// Regen HP
 	public int getPetRegenHP()
 	{
-		return _petRegenHP;
+		return petRegenHP;
 	}
 	
 	public void setPetRegenHP(final int pPetRegenHP)
 	{
-		_petRegenHP = pPetRegenHP;
+		petRegenHP = pPetRegenHP;
 	}
 	
 	// Regen MP
 	public int getPetRegenMP()
 	{
-		return _petRegenMP;
+		return petRegenMP;
 	}
 	
 	public void setPetRegenMP(final int pPetRegenMP)
 	{
-		_petRegenMP = pPetRegenMP;
+		petRegenMP = pPetRegenMP;
 	}
 	
 	@Override
@@ -446,15 +426,16 @@ public class L2PetData
 	{
 		return "PetID: " + getPetID() + " \t" + "PetLevel: " + getPetLevel() + " \t" +
 		// PET_EXP + ": " + getPetExp() + " \t" +
-		PET_MAX_EXP + ": " + getPetMaxExp() + " \t" +
-		// PET_HP + ": " + getPetHP() + " \t" +
-		PET_MAX_HP + ": " + getPetMaxHP() + " \t" +
-		// PET_MP + ": " + getPetMP() + " \t" +
-		PET_MAX_MP + ": " + getPetMaxMP() + " \t" + PET_PATK + ": " + getPetPAtk() + " \t" + PET_PDEF + ": " + getPetPDef() + " \t" + PET_MATK + ": " + getPetMAtk() + " \t" + PET_MDEF + ": " + getPetMDef() + " \t" + PET_ACCURACY + ": " + getPetAccuracy() + " \t" + PET_EVASION + ": " + getPetEvasion() + " \t" + PET_CRITICAL + ": " + getPetCritical() + " \t" + PET_SPEED + ": " + getPetSpeed() + " \t" + PET_ATK_SPEED + ": " + getPetAtkSpeed() + " \t" + PET_CAST_SPEED + ": " + getPetCastSpeed() + " \t" +
-		// PET_FEED + ": " + getPetFeed() + " \t" +
-		PET_MAX_FEED + ": " + getPetMaxFeed() + " \t" + PET_FEED_BATTLE + ": " + getPetFeedBattle() + " \t" + PET_FEED_NORMAL + ": " + getPetFeedNormal() + " \t" +
-		// PET_LOAD + ": " + getPetLoad() + " \t" +
-		PET_MAX_LOAD + ": " + getPetMaxLoad() + " \t" + PET_REGEN_HP + ": " + getPetRegenHP() + " \t" + PET_REGEN_MP + ": " + getPetRegenMP();
+			PET_MAX_EXP + ": " + getPetMaxExp() + " \t" +
+			// PET_HP + ": " + getPetHP() + " \t" +
+			PET_MAX_HP + ": " + getPetMaxHP() + " \t" +
+			// PET_MP + ": " + getPetMP() + " \t" +
+			PET_MAX_MP + ": " + getPetMaxMP() + " \t" + PET_PATK + ": " + getPetPAtk() + " \t" + PET_PDEF + ": " + getPetPDef() + " \t" + PET_MATK + ": " + getPetMAtk() + " \t" + PET_MDEF + ": " + getPetMDef() + " \t" + PET_ACCURACY + ": " + getPetAccuracy() + " \t" + PET_EVASION + ": " + getPetEvasion() + " \t" + PET_CRITICAL + ": " + getPetCritical() + " \t" + PET_SPEED + ": " + getPetSpeed()
+			+ " \t" + PET_ATK_SPEED + ": " + getPetAtkSpeed() + " \t" + PET_CAST_SPEED + ": " + getPetCastSpeed() + " \t" +
+			// PET_FEED + ": " + getPetFeed() + " \t" +
+			PET_MAX_FEED + ": " + getPetMaxFeed() + " \t" + PET_FEED_BATTLE + ": " + getPetFeedBattle() + " \t" + PET_FEED_NORMAL + ": " + getPetFeedNormal() + " \t" +
+			// PET_LOAD + ": " + getPetLoad() + " \t" +
+			PET_MAX_LOAD + ": " + getPetMaxLoad() + " \t" + PET_REGEN_HP + ": " + getPetRegenHP() + " \t" + PET_REGEN_MP + ": " + getPetRegenMP();
 	}
 	
 }

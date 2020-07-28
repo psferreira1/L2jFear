@@ -1,23 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.ai.special;
 
 import com.l2jfrozen.Config;
@@ -43,8 +23,8 @@ public class Orfen extends Quest implements Runnable
 	private static final int LIVE = 0;
 	private static final int DEAD = 1;
 	
-	private boolean FirstAttacked = false;
-	private boolean Teleported = false;
+	private boolean firstAttacked = false;
+	private boolean teleported = false;
 	
 	L2GrandBossInstance orfen = null;
 	
@@ -169,7 +149,7 @@ public class Orfen extends Quest implements Runnable
 				
 				double saved_hp = -1;
 				
-				if (npc.getNpcId() == ORFEN && !npc.getSpawn().is_customBossInstance())
+				if (npc.getNpcId() == ORFEN && !npc.getSpawn().isCustomRaidBoss())
 				{
 					saved_hp = GrandBossManager.getInstance().getStatsSet(ORFEN).getDouble("currentHP");
 					
@@ -180,7 +160,7 @@ public class Orfen extends Quest implements Runnable
 					}
 				}
 				
-				if ((Teleported && npc.getCurrentHp() > npc.getMaxHp() * 0.95))
+				if ((teleported && npc.getCurrentHp() > npc.getMaxHp() * 0.95))
 				{
 					cancelQuestTimer("ORFEN_REFRESH", npc, null);
 					startQuestTimer("ORFEN_RETURN", 10000, npc, null);
@@ -199,8 +179,8 @@ public class Orfen extends Quest implements Runnable
 					break;
 				}
 				
-				this.Teleported = false;
-				this.FirstAttacked = false;
+				teleported = false;
+				firstAttacked = false;
 				npc.getAI().setIntention(CtrlIntention.AI_INTENTION_IDLE);
 				npc.getSpawn().setLocx(55024);
 				npc.getSpawn().setLocy(17368);
@@ -223,13 +203,13 @@ public class Orfen extends Quest implements Runnable
 		final int npcId = npc.getNpcId();
 		if (npcId == ORFEN)
 		{
-			if (FirstAttacked)
+			if (firstAttacked)
 			{
-				if ((npc.getCurrentHp() - damage) < (npc.getMaxHp() / 2) && !Teleported)
+				if ((npc.getCurrentHp() - damage) < (npc.getMaxHp() / 2) && !teleported)
 				{
 					GrandBossManager.getInstance().getStatsSet(ORFEN).set("currentHP", npc.getCurrentHp());
 					npc.getAI().setIntention(CtrlIntention.AI_INTENTION_IDLE);
-					Teleported = true;
+					teleported = true;
 					npc.getSpawn().setLocx(43577);
 					npc.getSpawn().setLocy(15985);
 					npc.getSpawn().setLocz(-4396);
@@ -245,7 +225,7 @@ public class Orfen extends Quest implements Runnable
 			}
 			else
 			{
-				FirstAttacked = true;
+				firstAttacked = true;
 			}
 		}
 		
@@ -259,7 +239,7 @@ public class Orfen extends Quest implements Runnable
 		{
 			npc.broadcastPacket(new PlaySound(1, "BS02_D", 1, npc.getObjectId(), npc.getX(), npc.getY(), npc.getZ()));
 			
-			if (!npc.getSpawn().is_customBossInstance())
+			if (!npc.getSpawn().isCustomRaidBoss())
 			{
 				GrandBossManager.getInstance().setBossStatus(ORFEN, DEAD);
 				// time is 48hour +/- 20hour

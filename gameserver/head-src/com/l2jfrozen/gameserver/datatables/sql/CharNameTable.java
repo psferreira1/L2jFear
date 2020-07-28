@@ -1,23 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.datatables.sql;
 
 import java.sql.Connection;
@@ -28,8 +8,6 @@ import java.sql.SQLException;
 import org.apache.log4j.Logger;
 
 import com.l2jfrozen.Config;
-import com.l2jfrozen.util.CloseUtil;
-import com.l2jfrozen.util.database.DatabaseUtils;
 import com.l2jfrozen.util.database.L2DatabaseFactory;
 
 /**
@@ -39,73 +17,62 @@ import com.l2jfrozen.util.database.L2DatabaseFactory;
 public class CharNameTable
 {
 	private final static Logger LOGGER = Logger.getLogger(CharNameTable.class);
+	private static final String SELECT_CHARACTER_ACCOUNT_NAME = "SELECT account_name FROM characters WHERE char_name=? ";
+	private static final String SELECT_CHARACTERS_COUNT = "SELECT COUNT(char_name) FROM characters WHERE account_name=? ";
+	private static final String SELECT_CHARACTERS_BY_IP = "SELECT count(char_name) FROM " + Config.LOGINSERVER_DB + ".accounts a, " + Config.GAMESERVER_DB + ".characters c where a.login = c.account_name and a.lastIP=? ";
 	
-	private static CharNameTable _instance;
+	private static CharNameTable instance;
 	
 	public static CharNameTable getInstance()
 	{
-		if (_instance == null)
+		if (instance == null)
 		{
-			_instance = new CharNameTable();
+			instance = new CharNameTable();
 		}
-		return _instance;
+		return instance;
 	}
 	
 	public synchronized boolean doesCharNameExist(final String name)
 	{
 		boolean result = true;
-		Connection con = null;
 		
-		try
+		try (Connection con = L2DatabaseFactory.getInstance().getConnection();
+			PreparedStatement statement = con.prepareStatement(SELECT_CHARACTER_ACCOUNT_NAME);)
 		{
-			con = L2DatabaseFactory.getInstance().getConnection(false);
-			final PreparedStatement statement = con.prepareStatement("SELECT account_name FROM characters WHERE char_name=?");
 			statement.setString(1, name);
-			final ResultSet rset = statement.executeQuery();
-			result = rset.next();
 			
-			DatabaseUtils.close(statement);
-			DatabaseUtils.close(rset);
+			try (ResultSet rset = statement.executeQuery())
+			{
+				result = rset.next();
+			}
 		}
-		catch (final SQLException e)
+		catch (SQLException e)
 		{
 			LOGGER.error("Could not check existing charname", e);
-		}
-		finally
-		{
-			CloseUtil.close(con);
 		}
 		return result;
 	}
 	
 	public int accountCharNumber(final String account)
 	{
-		Connection con = null;
 		int number = 0;
 		
-		try
+		try (Connection con = L2DatabaseFactory.getInstance().getConnection();
+			PreparedStatement statement = con.prepareStatement(SELECT_CHARACTERS_COUNT))
 		{
-			con = L2DatabaseFactory.getInstance().getConnection(false);
-			final PreparedStatement statement = con.prepareStatement("SELECT COUNT(char_name) FROM characters WHERE account_name=?");
 			statement.setString(1, account);
-			final ResultSet rset = statement.executeQuery();
 			
-			while (rset.next())
+			try (ResultSet rset = statement.executeQuery())
 			{
-				number = rset.getInt(1);
+				while (rset.next())
+				{
+					number = rset.getInt(1);
+				}
 			}
-			
-			DatabaseUtils.close(statement);
-			DatabaseUtils.close(rset);
 		}
-		catch (final SQLException e)
+		catch (SQLException e)
 		{
 			LOGGER.error("Could not check existing char number", e);
-			e.printStackTrace();
-		}
-		finally
-		{
-			CloseUtil.close(con);
 		}
 		
 		return number;
@@ -113,32 +80,24 @@ public class CharNameTable
 	
 	public int ipCharNumber(final String ip)
 	{
-		Connection con = null;
 		int number = 0;
 		
-		try
+		try (Connection con = L2DatabaseFactory.getInstance().getConnection();
+			PreparedStatement statement = con.prepareStatement(SELECT_CHARACTERS_BY_IP))
 		{
-			con = L2DatabaseFactory.getInstance().getConnection(false);
-			final PreparedStatement statement = con.prepareStatement("SELECT count(char_name) FROM " + Config.LOGINSERVER_DB + ".accounts a, " + Config.GAMESERVER_DB + ".characters c where a.login = c.account_name and a.lastIP=?");
 			statement.setString(1, ip);
-			final ResultSet rset = statement.executeQuery();
 			
-			while (rset.next())
+			try (ResultSet rset = statement.executeQuery())
 			{
-				number = rset.getInt(1);
+				while (rset.next())
+				{
+					number = rset.getInt(1);
+				}
 			}
-			
-			DatabaseUtils.close(statement);
-			DatabaseUtils.close(rset);
 		}
-		catch (final SQLException e)
+		catch (SQLException e)
 		{
-			LOGGER.error("Could not check existing char number", e);
-			e.printStackTrace();
-		}
-		finally
-		{
-			CloseUtil.close(con);
+			LOGGER.error("CharNameTable.ipCharNumber : Could not check existing char number", e);
 		}
 		
 		return number;

@@ -1,23 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.model;
 
 import java.lang.reflect.Constructor;
@@ -44,35 +24,29 @@ import com.l2jfrozen.gameserver.network.serverpackets.GetItem;
  * <BR>
  * L2Object :<BR>
  * <BR>
- * <li>L2Character</li> <li>L2ItemInstance</li> <li>L2Potion</li>
+ * <li>L2Character</li>
+ * <li>L2ItemInstance</li>
+ * <li>L2Potion</li>
  */
 
 public abstract class L2Object
 {
 	private final Logger LOGGER = Logger.getLogger(L2Object.class);
-	// =========================================================
-	// Data Field
-	private boolean _isVisible; // Object visibility
-	private ObjectKnownList _knownList;
-	private String _name;
-	private int _objectId; // Object identifier
-	private ObjectPoly _poly;
-	private ObjectPosition _position;
+	private boolean isVisible; // Object visibility
+	private ObjectKnownList knownList;
+	private String name;
+	private int objectId; // Object identifier
+	private ObjectPoly poly;
+	private ObjectPosition position;
 	
 	// Objects can only see objects in same instancezone, instance 0 is normal world -1 the all seeing world
-	private int _instanceId = 0;
+	private int instanceId = 0;
 	
-	// =========================================================
-	// Constructor
-	// by Azagthtot
-	private BaseExtender _extender = null;
-	
-	// =========================================================
-	// Constructor
+	private BaseExtender extender = null;
 	
 	public L2Object(final int objectId)
 	{
-		_objectId = objectId;
+		this.objectId = objectId;
 		if (Config.EXTENDERS.get(this.getClass().getName()) != null)
 		{
 			for (final String className : Config.EXTENDERS.get(this.getClass().getName()))
@@ -111,50 +85,58 @@ public abstract class L2Object
 	 */
 	public void addExtender(final BaseExtender newExtender)
 	{
-		if (_extender == null)
+		if (extender == null)
 		{
-			_extender = newExtender;
+			extender = newExtender;
 		}
 		else
 		{
-			_extender.addExtender(newExtender);
+			extender.addExtender(newExtender);
 		}
 	}
 	
 	/**
-	 * @param simpleName as String<br>
-	 * @return as BaseExtender - null<br>
+	 * @param  simpleName as String<br>
+	 * @return            as BaseExtender - null<br>
 	 */
 	public BaseExtender getExtender(final String simpleName)
 	{
-		if (_extender == null)
+		if (extender == null)
+		{
 			return null;
-		return _extender.getExtender(simpleName);
+		}
+		return extender.getExtender(simpleName);
 	}
 	
 	/**
-	 * @param event as String<br>
-	 * @param params
-	 * @return as Object
+	 * @param  event  as String<br>
+	 * @param  params
+	 * @return        as Object
 	 */
 	public Object fireEvent(final String event, final Object... params)
 	{
-		if (_extender == null)
+		if (extender == null)
+		{
 			return null;
-		return _extender.onEvent(event, params);
+		}
+		return extender.onEvent(event, params);
 	}
 	
 	public void removeExtender(final BaseExtender ext)
 	{
-		if (_extender != null)
-			if (_extender == ext)
-				_extender = _extender.getNextExtender();
+		if (extender != null)
+		{
+			if (extender == ext)
+			{
+				extender = extender.getNextExtender();
+			}
 			else
-				_extender.removeExtender(ext);
+			{
+				extender.removeExtender(ext);
+			}
+		}
 	}
 	
-	// =========================================================
-	// Event - Public
 	public void onAction(final L2PcInstance player)
 	{
 		player.sendPacket(ActionFailed.STATIC_PACKET);
@@ -166,9 +148,6 @@ public abstract class L2Object
 		onActionShift(client.getActiveChar());
 	}
 	
-	/**
-	 * @param player
-	 */
 	public void onActionShift(final L2PcInstance player)
 	{
 		player.sendPacket(ActionFailed.STATIC_PACKET);
@@ -184,7 +163,8 @@ public abstract class L2Object
 	 * <BR>
 	 * <B><U> Overridden in </U> :</B><BR>
 	 * <BR>
-	 * <li>L2GuardInstance : Set the home location of its L2GuardInstance</li> <li>L2Attackable : Reset the Spoiled flag</li><BR>
+	 * <li>L2GuardInstance : Set the home location of its L2GuardInstance</li>
+	 * <li>L2Attackable : Reset the Spoiled flag</li><BR>
 	 * <BR>
 	 */
 	public void onSpawn()
@@ -208,7 +188,7 @@ public abstract class L2Object
 	{
 		if (Config.ASSERT)
 		{
-			assert getPosition().getWorldRegion() != null || _isVisible;
+			assert getPosition().getWorldRegion() != null || isVisible;
 		}
 		
 		return getPosition().getX();
@@ -218,7 +198,7 @@ public abstract class L2Object
 	{
 		if (Config.ASSERT)
 		{
-			assert getPosition().getWorldRegion() != null || _isVisible;
+			assert getPosition().getWorldRegion() != null || isVisible;
 		}
 		
 		return getPosition().getY();
@@ -228,14 +208,12 @@ public abstract class L2Object
 	{
 		if (Config.ASSERT)
 		{
-			assert getPosition().getWorldRegion() != null || _isVisible;
+			assert getPosition().getWorldRegion() != null || isVisible;
 		}
 		
 		return getPosition().getZ();
 	}
 	
-	// =========================================================
-	// Method - Public
 	/**
 	 * Remove a L2Object from the world.<BR>
 	 * <BR>
@@ -243,7 +221,7 @@ public abstract class L2Object
 	 * <BR>
 	 * <li>Remove the L2Object from the world</li><BR>
 	 * <BR>
-	 * <FONT COLOR=#FF0000><B> <U>Caution</U> : This method DOESN'T REMOVE the object from _allObjects of L2World </B></FONT><BR>
+	 * <FONT COLOR=#FF0000><B> <U>Caution</U> : This method DOESN'T REMOVE the object from allObjects of L2World </B></FONT><BR>
 	 * <FONT COLOR=#FF0000><B> <U>Caution</U> : This method DOESN'T SEND Server->Client packets to players</B></FONT><BR>
 	 * <BR>
 	 * <B><U> Assert </U> :</B><BR>
@@ -266,7 +244,7 @@ public abstract class L2Object
 		
 		synchronized (this)
 		{
-			_isVisible = false;
+			isVisible = false;
 			getPosition().setWorldRegion(null);
 		}
 		
@@ -290,13 +268,15 @@ public abstract class L2Object
 	 * <BR>
 	 * <B><U> Actions</U> :</B><BR>
 	 * <BR>
-	 * <li>Send a Server->Client Packet GetItem to player that pick up and its _knowPlayers member</li> <li>Remove the L2Object from the world</li><BR>
+	 * <li>Send a Server->Client Packet GetItem to player that pick up and its knowPlayers member</li>
+	 * <li>Remove the L2Object from the world</li><BR>
 	 * <BR>
-	 * <FONT COLOR=#FF0000><B> <U>Caution</U> : This method DOESN'T REMOVE the object from _allObjects of L2World </B></FONT><BR>
+	 * <FONT COLOR=#FF0000><B> <U>Caution</U> : This method DOESN'T REMOVE the object from allObjects of L2World </B></FONT><BR>
 	 * <BR>
 	 * <B><U> Assert </U> :</B><BR>
 	 * <BR>
-	 * <li>this instanceof L2ItemInstance</li> <li>_worldRegion != null <I>(L2Object is visible at the beginning)</I></li> <BR>
+	 * <li>this instanceof L2ItemInstance</li>
+	 * <li>_worldRegion != null <I>(L2Object is visible at the beginning)</I></li> <BR>
 	 * <BR>
 	 * <B><U> Example of use </U> :</B><BR>
 	 * <BR>
@@ -325,7 +305,7 @@ public abstract class L2Object
 		
 		synchronized (this)
 		{
-			_isVisible = false;
+			isVisible = false;
 			getPosition().setWorldRegion(null);
 		}
 		
@@ -352,7 +332,7 @@ public abstract class L2Object
 	{
 		L2World.getInstance().removeObject(this);
 		IdFactory.getInstance().releaseId(getObjectId());
-		_objectId = IdFactory.getInstance().getNextId();
+		objectId = IdFactory.getInstance().getNextId();
 	}
 	
 	/**
@@ -360,7 +340,10 @@ public abstract class L2Object
 	 * <BR>
 	 * <B><U> Actions</U> :</B><BR>
 	 * <BR>
-	 * <li>Set the x,y,z position of the L2Object spawn and update its _worldregion</li> <li>Add the L2Object spawn in the _allobjects of L2World</li> <li>Add the L2Object spawn to _visibleObjects of its L2WorldRegion</li> <li>Add the L2Object spawn in the world as a <B>visible</B> object</li><BR>
+	 * <li>Set the x,y,z position of the L2Object spawn and update its worldregion</li>
+	 * <li>Add the L2Object spawn in the allobjects of L2World</li>
+	 * <li>Add the L2Object spawn to visibleObjects of its L2WorldRegion</li>
+	 * <li>Add the L2Object spawn in the world as a <B>visible</B> object</li><BR>
 	 * <BR>
 	 * <B><U> Assert </U> :</B><BR>
 	 * <BR>
@@ -368,7 +351,8 @@ public abstract class L2Object
 	 * <BR>
 	 * <B><U> Example of use </U> :</B><BR>
 	 * <BR>
-	 * <li>Create Door</li> <li>Spawn : Monster, Minion, CTs, Summon...</li><BR>
+	 * <li>Create Door</li>
+	 * <li>Spawn : Monster, Minion, CTs, Summon...</li><BR>
 	 */
 	public final void spawnMe()
 	{
@@ -379,14 +363,14 @@ public abstract class L2Object
 		
 		synchronized (this)
 		{
-			// Set the x,y,z position of the L2Object spawn and update its _worldregion
-			_isVisible = true;
+			// Set the x,y,z position of the L2Object spawn and update its worldregion
+			isVisible = true;
 			getPosition().setWorldRegion(L2World.getInstance().getRegion(getPosition().getWorldPosition()));
 			
-			// Add the L2Object spawn in the _allobjects of L2World
+			// Add the L2Object spawn in the allobjects of L2World
 			L2World.getInstance().storeObject(this);
 			
-			// Add the L2Object spawn to _visibleObjects and if necessary to _allplayers of its L2WorldRegion
+			// Add the L2Object spawn to visibleObjects and if necessary to allplayers of its L2WorldRegion
 			getPosition().getWorldRegion().addVisibleObject(this);
 		}
 		
@@ -407,8 +391,8 @@ public abstract class L2Object
 		
 		synchronized (this)
 		{
-			// Set the x,y,z position of the L2Object spawn and update its _worldregion
-			_isVisible = true;
+			// Set the x,y,z position of the L2Object spawn and update its worldregion
+			isVisible = true;
 			
 			if (x > L2World.MAP_MAX_X)
 			{
@@ -433,16 +417,18 @@ public abstract class L2Object
 		
 		// these can synchronize on others instances, so they're out of
 		// synchronized, to avoid deadlocks
-		// Add the L2Object spawn in the _allobjects of L2World
+		// Add the L2Object spawn in the allobjects of L2World
 		L2World.getInstance().storeObject(this);
 		
-		// Add the L2Object spawn to _visibleObjects and if necessary to _allplayers of its L2WorldRegion
+		// Add the L2Object spawn to visibleObjects and if necessary to allplayers of its L2WorldRegion
 		final L2WorldRegion region = getPosition().getWorldRegion();
 		if (region != null)
+		{
 			region.addVisibleObject(this);
+		}
 		else
 		{
-			LOGGER.info("ATTENTION: no region found for location " + x + "," + y + "," + z + ". It's not possible to spawn object " + _objectId + " here...");
+			LOGGER.info("ATTENTION: no region found for location " + x + "," + y + "," + z + ". It's not possible to spawn object " + getName() + "(" + objectId + ")...");
 			return;
 		}
 		// this can synchronize on others instances, so it's out of
@@ -465,11 +451,6 @@ public abstract class L2Object
 		}
 	}
 	
-	// =========================================================
-	// Method - Private
-	
-	// =========================================================
-	// Property - Public
 	public boolean isAttackable()
 	{
 		return false;
@@ -491,15 +472,15 @@ public abstract class L2Object
 	 */
 	public final boolean isVisible()
 	{
-		// return getPosition().getWorldRegion() != null && _IsVisible;
+		// return getPosition().getWorldRegion() != null && isVisible;
 		return getPosition().getWorldRegion() != null;
 	}
 	
 	public final void setIsVisible(final boolean value)
 	{
-		_isVisible = value;
+		isVisible = value;
 		
-		if (!_isVisible)
+		if (!isVisible)
 		{
 			getPosition().setWorldRegion(null);
 		}
@@ -507,52 +488,52 @@ public abstract class L2Object
 	
 	public ObjectKnownList getKnownList()
 	{
-		if (_knownList == null)
+		if (knownList == null)
 		{
-			_knownList = new ObjectKnownList(this);
+			knownList = new ObjectKnownList(this);
 		}
 		
-		return _knownList;
+		return knownList;
 	}
 	
 	public final void setKnownList(final ObjectKnownList value)
 	{
-		_knownList = value;
+		knownList = value;
 	}
 	
 	public final String getName()
 	{
-		return _name;
+		return name;
 	}
 	
 	public final void setName(final String value)
 	{
-		_name = value;
+		name = value;
 	}
 	
 	public final int getObjectId()
 	{
-		return _objectId;
+		return objectId;
 	}
 	
 	public final ObjectPoly getPoly()
 	{
-		if (_poly == null)
+		if (poly == null)
 		{
-			_poly = new ObjectPoly(this);
+			poly = new ObjectPoly(this);
 		}
 		
-		return _poly;
+		return poly;
 	}
 	
 	public final ObjectPosition getPosition()
 	{
-		if (_position == null)
+		if (position == null)
 		{
-			_position = new ObjectPosition(this);
+			position = new ObjectPosition(this);
 		}
 		
-		return _position;
+		return position;
 	}
 	
 	/**
@@ -568,7 +549,7 @@ public abstract class L2Object
 	 */
 	public int getInstanceId()
 	{
-		return _instanceId;
+		return instanceId;
 	}
 	
 	/**
@@ -576,10 +557,10 @@ public abstract class L2Object
 	 */
 	public void setInstanceId(final int instanceId)
 	{
-		_instanceId = instanceId;
+		this.instanceId = instanceId;
 		
 		// If we change it for visible objects, me must clear & revalidates knownlists
-		if (_isVisible && _knownList != null)
+		if (isVisible && knownList != null)
 		{
 			if (this instanceof L2PcInstance)
 			{
@@ -618,7 +599,7 @@ public abstract class L2Object
 	
 	public boolean isPlayer()
 	{
-		return false;
+		return this instanceof L2PcInstance;
 	}
 	
 	public boolean isPet()

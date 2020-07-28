@@ -1,30 +1,10 @@
-/* L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.model.multisell;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.xml.parsers.DocumentBuilderFactory;
-
-import javolution.util.FastList;
 
 import org.apache.log4j.Logger;
 import org.w3c.dom.Document;
@@ -46,17 +26,19 @@ import com.l2jfrozen.gameserver.templates.L2Weapon;
 public class L2Multisell
 {
 	private static Logger LOGGER = Logger.getLogger(L2Multisell.class);
-	private final List<MultiSellListContainer> _entries = new FastList<>();
-	private static L2Multisell _instance;/* = new L2Multisell(); */
+	private static L2Multisell instance;/* = new L2Multisell(); */
+	private final List<MultiSellListContainer> entries = new ArrayList<>();
 	
 	public MultiSellListContainer getList(final int id)
 	{
-		synchronized (_entries)
+		synchronized (entries)
 		{
-			for (final MultiSellListContainer list : _entries)
+			for (final MultiSellListContainer list : entries)
 			{
 				if (list.getListId() == id)
+				{
 					return list;
+				}
 			}
 		}
 		
@@ -76,27 +58,29 @@ public class L2Multisell
 	
 	public static L2Multisell getInstance()
 	{
-		if (_instance == null)
-			_instance = new L2Multisell();
-		return _instance;
+		if (instance == null)
+		{
+			instance = new L2Multisell();
+		}
+		return instance;
 	}
 	
 	private void parseData()
 	{
-		_entries.clear();
+		entries.clear();
 		parse();
 	}
 	
 	/**
 	 * This will generate the multisell list for the items. There exist various parameters in multisells that affect the way they will appear: 1) inventory only: * if true, only show items of the multisell for which the "primary" ingredients are already in the player's inventory. By "primary"
 	 * ingredients we mean weapon and armor. * if false, show the entire list. 2) maintain enchantment: presumably, only lists with "inventory only" set to true should sometimes have this as true. This makes no sense otherwise... * If true, then the product will match the enchantment level of the
-	 * ingredient. if the player has multiple items that match the ingredient list but the enchantment levels differ, then the entries need to be duplicated to show the products and ingredients for each enchantment level. For example: If the player has a crystal staff +1 and a crystal staff +3 and
-	 * goes to exchange it at the mammon, the list should have all exchange possibilities for the +1 staff, followed by all possibilities for the +3 staff. * If false, then any level ingredient will be considered equal and product will always be at +0 3) apply taxes: Uses the "taxIngredient" entry
-	 * in order to add a certain amount of adena to the ingredients
-	 * @param listId
-	 * @param inventoryOnly
-	 * @param player
-	 * @param taxRate
+	 * ingredient. if the player has multiple items that match the ingredient list but the enchantment levels differ, then the entries need to be duplicated to show the products and ingredients for each enchantment level. For example: If the player has a crystal staff +1 and a crystal staff +3 and goes
+	 * to exchange it at the mammon, the list should have all exchange possibilities for the +1 staff, followed by all possibilities for the +3 staff. * If false, then any level ingredient will be considered equal and product will always be at +0 3) apply taxes: Uses the "taxIngredient" entry in order
+	 * to add a certain amount of adena to the ingredients
+	 * @param  listId
+	 * @param  inventoryOnly
+	 * @param  player
+	 * @param  taxRate
 	 * @return
 	 */
 	private MultiSellListContainer generateMultiSell(final int listId, final boolean inventoryOnly, final L2PcInstance player, final double taxRate)
@@ -105,7 +89,9 @@ public class L2Multisell
 		MultiSellListContainer list = new MultiSellListContainer();
 		
 		if (listTemplate == null)
+		{
 			return list;
+		}
 		
 		list = new MultiSellListContainer();
 		list.setListId(listId);
@@ -113,7 +99,9 @@ public class L2Multisell
 		if (inventoryOnly)
 		{
 			if (player == null)
+			{
 				return list;
+			}
 			
 			L2ItemInstance[] items;
 			
@@ -256,7 +244,7 @@ public class L2Multisell
 		return newEntry;
 	}
 	
-	public void SeparateAndSend(final int listId, final L2PcInstance player, final boolean inventoryOnly, final double taxRate)
+	public void separateAndSend(final int listId, final L2PcInstance player, final boolean inventoryOnly, final double taxRate)
 	{
 		MultiSellListContainer list = generateMultiSell(listId, inventoryOnly, player, taxRate);
 		MultiSellListContainer temp = new MultiSellListContainer();
@@ -282,8 +270,10 @@ public class L2Multisell
 		
 		player.sendPacket(new MultiSellList(temp, page, 1));
 		
-		list = null;
-		temp = null;
+		if (player.isGM())
+		{
+			player.sendMessage("MULTISELL: " + listId + ".xml");
+		}
 	}
 	
 	private void hashFiles(final String dirname, final List<File> hash)
@@ -314,7 +304,7 @@ public class L2Multisell
 		
 		int id = 0;
 		
-		List<File> files = new FastList<>();
+		List<File> files = new ArrayList<>();
 		hashFiles("multisell", files);
 		
 		for (final File f : files)
@@ -332,7 +322,9 @@ public class L2Multisell
 			catch (final Exception e)
 			{
 				if (Config.ENABLE_ALL_EXCEPTIONS)
+				{
 					e.printStackTrace();
+				}
 				
 				LOGGER.error("Error loading file " + f, e);
 			}
@@ -343,17 +335,21 @@ public class L2Multisell
 				
 				updateReferencePrice(list);
 				
-				_entries.add(list);
+				entries.add(list);
 				list = null;
 			}
 			catch (final Exception e)
 			{
 				if (Config.ENABLE_ALL_EXCEPTIONS)
+				{
 					e.printStackTrace();
+				}
 				
 				LOGGER.error("Error in file " + f, e);
 			}
 		}
+		
+		LOGGER.info("Multisell : Loaded " + entries.size() + " multisell lists.");
 		
 		files = null;
 		doc = null;

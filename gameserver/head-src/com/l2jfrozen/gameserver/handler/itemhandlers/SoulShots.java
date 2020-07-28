@@ -1,23 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.handler.itemhandlers;
 
 import com.l2jfrozen.Config;
@@ -37,7 +17,7 @@ import com.l2jfrozen.gameserver.util.Broadcast;
 /**
  * This class ...
  * @version $Revision: 1.2.4.5 $ $Date: 2009/04/13 03:12:07 $
- * @author programmos
+ * @author  programmos
  */
 
 public class SoulShots implements IItemHandler
@@ -63,15 +43,13 @@ public class SoulShots implements IItemHandler
 		2154
 	};
 	
-	/*
-	 * (non-Javadoc)
-	 * @see com.l2jfrozen.gameserver.handler.IItemHandler#useItem(com.l2jfrozen.gameserver.model.L2PcInstance, com.l2jfrozen.gameserver.model.L2ItemInstance)
-	 */
 	@Override
 	public void useItem(final L2PlayableInstance playable, final L2ItemInstance item)
 	{
 		if (!(playable instanceof L2PcInstance))
+		{
 			return;
+		}
 		
 		L2PcInstance activeChar = (L2PcInstance) playable;
 		L2ItemInstance weaponInst = activeChar.getActiveWeaponInstance();
@@ -104,7 +82,9 @@ public class SoulShots implements IItemHandler
 		{
 			// Check if Soulshot is already active
 			if (weaponInst.getChargedSoulshot() != L2ItemInstance.CHARGED_NONE)
+			{
 				return;
+			}
 			
 			// Consume Soulshots if player has enough of them
 			final int saSSCount = (int) activeChar.getStat().calcStat(Stats.SOULSHOT_COUNT, 0, null, null);

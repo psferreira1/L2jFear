@@ -1,22 +1,3 @@
-/* L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.model.zone.type;
 
 import com.l2jfrozen.gameserver.datatables.csv.MapRegionTable;
@@ -32,34 +13,28 @@ import com.l2jfrozen.gameserver.network.serverpackets.SystemMessage;
  */
 public class L2ArenaZone extends L2ZoneType
 {
-	// private String _arenaName;
-	private final int[] _spawnLoc;
+	private final int[] spawnLoc;
 	
-	public L2ArenaZone(final int id)
+	public L2ArenaZone(int id)
 	{
 		super(id);
 		
-		_spawnLoc = new int[3];
+		spawnLoc = new int[3];
 	}
 	
 	@Override
-	public void setParameter(final String name, final String value)
+	public void setParameter(String name, String value)
 	{
-		// if(name.equals("name"))
-		// {
-		// _arenaName = value;
-		// }
-		/* else */
 		switch (name)
 		{
 			case "spawnX":
-				_spawnLoc[0] = Integer.parseInt(value);
+				spawnLoc[0] = Integer.parseInt(value);
 				break;
 			case "spawnY":
-				_spawnLoc[1] = Integer.parseInt(value);
+				spawnLoc[1] = Integer.parseInt(value);
 				break;
 			case "spawnZ":
-				_spawnLoc[2] = Integer.parseInt(value);
+				spawnLoc[2] = Integer.parseInt(value);
 				break;
 			default:
 				super.setParameter(name, value);
@@ -68,7 +43,7 @@ public class L2ArenaZone extends L2ZoneType
 	}
 	
 	@Override
-	protected void onEnter(final L2Character character)
+	protected void onEnter(L2Character character)
 	{
 		character.setInsideZone(L2Character.ZONE_PVP, true);
 		
@@ -79,7 +54,7 @@ public class L2ArenaZone extends L2ZoneType
 	}
 	
 	@Override
-	protected void onExit(final L2Character character)
+	protected void onExit(L2Character character)
 	{
 		character.setInsideZone(L2Character.ZONE_PVP, false);
 		
@@ -90,24 +65,28 @@ public class L2ArenaZone extends L2ZoneType
 	}
 	
 	@Override
-	protected void onDieInside(final L2Character character)
+	protected void onDieInside(L2Character character)
 	{
 	}
 	
 	@Override
-	protected void onReviveInside(final L2Character character)
+	protected void onReviveInside(L2Character character)
 	{
 	}
 	
 	public void oustAllPlayers()
 	{
-		if (_characterList == null)
+		if (characterList == null)
+		{
 			return;
+		}
 		
-		if (_characterList.isEmpty())
+		if (characterList.isEmpty())
+		{
 			return;
+		}
 		
-		for (final L2Character character : _characterList.values())
+		for (L2Character character : characterList.values())
 		{
 			if (character == null)
 			{
@@ -118,18 +97,16 @@ public class L2ArenaZone extends L2ZoneType
 			{
 				L2PcInstance player = (L2PcInstance) character;
 				
-				if (player.isOnline() == 1)
+				if (player.isOnline())
 				{
 					player.teleToLocation(MapRegionTable.TeleportWhereType.Town);
 				}
-				
-				player = null;
 			}
 		}
 	}
 	
 	public final int[] getSpawnLoc()
 	{
-		return _spawnLoc;
+		return spawnLoc;
 	}
 }

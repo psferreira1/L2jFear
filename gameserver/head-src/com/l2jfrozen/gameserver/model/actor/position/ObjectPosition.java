@@ -1,22 +1,3 @@
-/* L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.model.actor.position;
 
 import org.apache.log4j.Logger;
@@ -29,48 +10,28 @@ import com.l2jfrozen.gameserver.model.L2WorldRegion;
 import com.l2jfrozen.gameserver.model.actor.instance.L2PcInstance;
 import com.l2jfrozen.util.Point3D;
 
-/**
- * The Class ObjectPosition.
- */
 public class ObjectPosition
 {
-	
-	/** The Constant LOGGER. */
 	private static final Logger LOGGER = Logger.getLogger(ObjectPosition.class);
 	
-	// =========================================================
-	// Data Field
-	/** The _active object. */
-	private final L2Object _activeObject;
+	private final L2Object activeObject;
+	private int heading = 0;
+	private Point3D worldPosition;
+	private L2WorldRegion worldRegion; // Object localization : Used for items/chars that are seen in the world
+	private Boolean changingRegion = false;
 	
-	/** The _heading. */
-	private int _heading = 0;
-	
-	/** The _world position. */
-	private Point3D _worldPosition;
-	
-	/** The _world region. */
-	private L2WorldRegion _worldRegion; // Object localization : Used for items/chars that are seen in the world
-	
-	/** The _changing region. */
-	private Boolean _changingRegion = false;
-	
-	// =========================================================
-	// Constructor
 	/**
 	 * Instantiates a new object position.
 	 * @param activeObject the active object
 	 */
 	public ObjectPosition(final L2Object activeObject)
 	{
-		_activeObject = activeObject;
+		this.activeObject = activeObject;
 		setWorldRegion(L2World.getInstance().getRegion(getWorldPosition()));
 	}
 	
-	// =========================================================
-	// Method - Public
 	/**
-	 * Set the x,y,z position of the L2Object and if necessary modify its _worldRegion.<BR>
+	 * Set the x,y,z position of the L2Object and if necessary modify its worldRegion.<BR>
 	 * <BR>
 	 * <B><U> Assert </U> :</B><BR>
 	 * <BR>
@@ -102,7 +63,9 @@ public class ObjectPosition
 		catch (final Exception e)
 		{
 			if (Config.ENABLE_ALL_EXCEPTIONS)
+			{
 				e.printStackTrace();
+			}
 			
 			LOGGER.warn("Object Id at bad coords: (x: " + getX() + ", y: " + getY() + ", z: " + getZ() + ").");
 			
@@ -134,7 +97,8 @@ public class ObjectPosition
 	 * <BR>
 	 * <B><U> Example of use </U> :</B><BR>
 	 * <BR>
-	 * <li>Create a Door</li> <li>Restore L2PcInstance</li><BR>
+	 * <li>Create a Door</li>
+	 * <li>Restore L2PcInstance</li><BR>
 	 * @param x the x
 	 * @param y the y
 	 * @param z the z
@@ -175,7 +139,9 @@ public class ObjectPosition
 	public void updateWorldRegion()
 	{
 		if (!getActiveObject().isVisible())
+		{
 			return;
+		}
 		
 		L2WorldRegion newRegion = L2World.getInstance().getRegion(getWorldPosition());
 		if (newRegion != getWorldRegion())
@@ -184,25 +150,20 @@ public class ObjectPosition
 			
 			setWorldRegion(newRegion);
 			
-			// Add the L2Oject spawn to _visibleObjects and if necessary to _allplayers of its L2WorldRegion
+			// Add the L2Oject spawn to visibleObjects and if necessary to_allplayers of its L2WorldRegion
 			getWorldRegion().addVisibleObject(getActiveObject());
 		}
 		
 		newRegion = null;
 	}
 	
-	// =========================================================
-	// Method - Private
-	
-	// =========================================================
-	// Property - Public
 	/**
 	 * Gets the active object.
 	 * @return the active object
 	 */
 	public final L2Object getActiveObject()
 	{
-		return _activeObject;
+		return activeObject;
 	}
 	
 	/**
@@ -211,7 +172,7 @@ public class ObjectPosition
 	 */
 	public final int getHeading()
 	{
-		return _heading;
+		return heading;
 	}
 	
 	/**
@@ -220,7 +181,7 @@ public class ObjectPosition
 	 */
 	public final void setHeading(final int value)
 	{
-		_heading = value;
+		heading = value;
 	}
 	
 	/**
@@ -283,12 +244,12 @@ public class ObjectPosition
 	 */
 	public final Point3D getWorldPosition()
 	{
-		if (_worldPosition == null)
+		if (worldPosition == null)
 		{
-			_worldPosition = new Point3D(0, 0, 0);
+			worldPosition = new Point3D(0, 0, 0);
 		}
 		
-		return _worldPosition;
+		return worldPosition;
 	}
 	
 	/**
@@ -317,10 +278,10 @@ public class ObjectPosition
 	 */
 	public final L2WorldRegion getWorldRegion()
 	{
-		synchronized (_changingRegion)
+		synchronized (changingRegion)
 		{
-			_changingRegion = false;
-			return _worldRegion;
+			changingRegion = false;
+			return worldRegion;
 		}
 	}
 	
@@ -330,10 +291,10 @@ public class ObjectPosition
 	 */
 	public final void setWorldRegion(final L2WorldRegion value)
 	{
-		synchronized (_changingRegion)
+		synchronized (changingRegion)
 		{
-			_changingRegion = true;
-			_worldRegion = value;
+			changingRegion = true;
+			worldRegion = value;
 		}
 	}
 }

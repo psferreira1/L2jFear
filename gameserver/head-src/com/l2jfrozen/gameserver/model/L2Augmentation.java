@@ -1,29 +1,9 @@
-/* L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 
 package com.l2jfrozen.gameserver.model;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
-
-import javolution.util.FastList;
+import java.util.List;
 
 import org.apache.log4j.Logger;
 
@@ -35,8 +15,6 @@ import com.l2jfrozen.gameserver.model.actor.instance.L2PcInstance;
 import com.l2jfrozen.gameserver.skills.Stats;
 import com.l2jfrozen.gameserver.skills.funcs.FuncAdd;
 import com.l2jfrozen.gameserver.skills.funcs.LambdaConst;
-import com.l2jfrozen.util.CloseUtil;
-import com.l2jfrozen.util.database.DatabaseUtils;
 import com.l2jfrozen.util.database.L2DatabaseFactory;
 
 /**
@@ -46,18 +24,19 @@ import com.l2jfrozen.util.database.L2DatabaseFactory;
 public final class L2Augmentation
 {
 	private static final Logger LOGGER = Logger.getLogger(L2Augmentation.class);
-	
-	private final L2ItemInstance _item;
-	private int _effectsId = 0;
-	private augmentationStatBoni _boni = null;
-	private L2Skill _skill = null;
+	private static final String INSERT_AUGMENTATION = "INSERT INTO augmentations (item_object_id,attributes,skill,level) VALUES (?,?,?,?)";
+	private static final String DELETE_AUGMENTATION_BY_ITEM_OBJECT_ID = "DELETE FROM augmentations WHERE item_object_id=?";
+	private final L2ItemInstance item;
+	private int effectsId = 0;
+	private AugmentationStatBoni boni = null;
+	private L2Skill skill = null;
 	
 	public L2Augmentation(final L2ItemInstance item, final int effects, final L2Skill skill, final boolean save)
 	{
-		_item = item;
-		_effectsId = effects;
-		_boni = new augmentationStatBoni(_effectsId);
-		_skill = skill;
+		this.item = item;
+		effectsId = effects;
+		boni = new AugmentationStatBoni(effectsId);
+		this.skill = skill;
 		
 		// write to DB if save is true
 		if (save)
@@ -74,25 +53,25 @@ public final class L2Augmentation
 	// =========================================================
 	// Nested Class
 	
-	public class augmentationStatBoni
+	public class AugmentationStatBoni
 	{
-		private final Stats _stats[];
-		private final float _values[];
-		private boolean _active;
+		private final Stats stats[];
+		private final float values[];
+		private boolean active;
 		
-		public augmentationStatBoni(final int augmentationId)
+		public AugmentationStatBoni(final int augmentationId)
 		{
-			_active = false;
-			FastList<AugmentationData.AugStat> as = AugmentationData.getInstance().getAugStatsById(augmentationId);
+			active = false;
+			List<AugmentationData.AugStat> as = AugmentationData.getInstance().getAugStatsById(augmentationId);
 			
-			_stats = new Stats[as.size()];
-			_values = new float[as.size()];
+			stats = new Stats[as.size()];
+			values = new float[as.size()];
 			
 			int i = 0;
 			for (final AugmentationData.AugStat aStat : as)
 			{
-				_stats[i] = aStat.getStat();
-				_values[i] = aStat.getValue();
+				stats[i] = aStat.getStat();
+				values[i] = aStat.getValue();
 				i++;
 			}
 			
@@ -102,44 +81,45 @@ public final class L2Augmentation
 		public void applyBoni(final L2PcInstance player)
 		{
 			// make sure the boni are not applyed twice..
-			if (_active)
-				return;
-			
-			for (int i = 0; i < _stats.length; i++)
+			if (active)
 			{
-				player.addStatFunc(new FuncAdd(_stats[i], 0x40, this, new LambdaConst(_values[i])));
+				return;
 			}
 			
-			_active = true;
+			for (int i = 0; i < stats.length; i++)
+			{
+				player.addStatFunc(new FuncAdd(stats[i], 0x40, this, new LambdaConst(values[i])));
+			}
+			
+			active = true;
 		}
 		
 		public void removeBoni(final L2PcInstance player)
 		{
 			// make sure the boni is not removed twice
-			if (!_active)
+			if (!active)
+			{
 				return;
+			}
 			
 			player.removeStatsOwner(this);
 			
-			_active = false;
+			active = false;
 		}
 	}
 	
 	private void saveAugmentationData()
 	{
-		Connection con = null;
-		try
+		try (Connection con = L2DatabaseFactory.getInstance().getConnection();
+			PreparedStatement statement = con.prepareStatement(INSERT_AUGMENTATION))
 		{
-			con = L2DatabaseFactory.getInstance().getConnection(false);
+			statement.setInt(1, item.getObjectId());
+			statement.setInt(2, effectsId);
 			
-			PreparedStatement statement = con.prepareStatement("INSERT INTO augmentations (item_id,attributes,skill,level) VALUES (?,?,?,?)");
-			statement.setInt(1, _item.getObjectId());
-			statement.setInt(2, _effectsId);
-			
-			if (_skill != null)
+			if (skill != null)
 			{
-				statement.setInt(3, _skill.getId());
-				statement.setInt(4, _skill.getLevel());
+				statement.setInt(3, skill.getId());
+				statement.setInt(4, skill.getLevel());
 			}
 			else
 			{
@@ -148,44 +128,31 @@ public final class L2Augmentation
 			}
 			
 			statement.executeUpdate();
-			DatabaseUtils.close(statement);
-			statement = null;
 		}
 		catch (final Exception e)
 		{
-			LOGGER.error("Could not save augmentation for item: " + _item.getObjectId() + " from DB:", e);
-		}
-		finally
-		{
-			CloseUtil.close(con);
-			con = null;
+			LOGGER.error("Could not save augmentation for item: " + item.getObjectId() + " from DB:", e);
 		}
 	}
 	
 	public void deleteAugmentationData()
 	{
-		if (!_item.isAugmented())
+		if (!item.isAugmented())
+		{
 			return;
+		}
 		
 		// delete the augmentation from the database
-		Connection con = null;
-		try
+		try (Connection con = L2DatabaseFactory.getInstance().getConnection();
+			PreparedStatement statement = con.prepareStatement(DELETE_AUGMENTATION_BY_ITEM_OBJECT_ID);)
 		{
-			con = L2DatabaseFactory.getInstance().getConnection(false);
-			PreparedStatement statement = con.prepareStatement("DELETE FROM augmentations WHERE item_id=?");
-			statement.setInt(1, _item.getObjectId());
+			
+			statement.setInt(1, item.getObjectId());
 			statement.executeUpdate();
-			DatabaseUtils.close(statement);
-			statement = null;
 		}
 		catch (final Exception e)
 		{
-			LOGGER.error("Could not delete augmentation for item: " + _item.getObjectId() + " from DB:", e);
-		}
-		finally
-		{
-			CloseUtil.close(con);
-			con = null;
+			LOGGER.error("Could not delete augmentation for item: " + item.getObjectId() + " from DB:", e);
 		}
 	}
 	
@@ -195,12 +162,12 @@ public final class L2Augmentation
 	 */
 	public int getAugmentationId()
 	{
-		return _effectsId;
+		return effectsId;
 	}
 	
 	public L2Skill getSkill()
 	{
-		return _skill;
+		return skill;
 	}
 	
 	/**
@@ -209,18 +176,18 @@ public final class L2Augmentation
 	 */
 	public void applyBoni(final L2PcInstance player)
 	{
-		_boni.applyBoni(player);
+		boni.applyBoni(player);
 		
 		// add the skill if any
-		if (_skill != null)
+		if (skill != null)
 		{
 			
-			player.addSkill(_skill);
+			player.addSkill(skill);
 			
-			if (_skill.isActive() && Config.ACTIVE_AUGMENTS_START_REUSE_TIME > 0)
+			if (skill.isActive() && Config.ACTIVE_AUGMENTS_START_REUSE_TIME > 0)
 			{
-				player.disableSkill(_skill, Config.ACTIVE_AUGMENTS_START_REUSE_TIME);
-				player.addTimeStamp(_skill, Config.ACTIVE_AUGMENTS_START_REUSE_TIME);
+				player.disableSkill(skill, Config.ACTIVE_AUGMENTS_START_REUSE_TIME);
+				player.addTimeStamp(skill, Config.ACTIVE_AUGMENTS_START_REUSE_TIME);
 			}
 			
 			player.sendSkillList();
@@ -233,21 +200,21 @@ public final class L2Augmentation
 	 */
 	public void removeBoni(final L2PcInstance player)
 	{
-		_boni.removeBoni(player);
+		boni.removeBoni(player);
 		
 		// remove the skill if any
-		if (_skill != null)
+		if (skill != null)
 		{
-			if (_skill.isPassive())
+			if (skill.isPassive())
 			{
-				player.removeSkill(_skill);
+				player.removeSkill(skill);
 			}
 			else
 			{
-				player.removeSkill(_skill, false);
+				player.removeSkill(skill, false);
 			}
 			
-			if ((_skill.isPassive() && Config.DELETE_AUGM_PASSIVE_ON_CHANGE) || (_skill.isActive() && Config.DELETE_AUGM_ACTIVE_ON_CHANGE))
+			if ((skill.isPassive() && Config.DELETE_AUGM_PASSIVE_ON_CHANGE) || (skill.isActive() && Config.DELETE_AUGM_ACTIVE_ON_CHANGE))
 			{
 				
 				// Iterate through all effects currently on the character.
@@ -257,7 +224,7 @@ public final class L2Augmentation
 				{
 					final L2Skill effectSkill = currenteffect.getSkill();
 					
-					if (effectSkill.getId() == _skill.getId())
+					if (effectSkill.getId() == skill.getId())
 					{
 						player.sendMessage("You feel the power of " + effectSkill.getName() + " leaving yourself.");
 						currenteffect.exit(false);
@@ -265,9 +232,7 @@ public final class L2Augmentation
 				}
 				
 			}
-			
 			player.sendSkillList();
-			
 		}
 	}
 }

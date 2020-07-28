@@ -1,28 +1,7 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.templates;
 
+import java.util.ArrayList;
 import java.util.List;
-
-import javolution.util.FastList;
 
 import com.l2jfrozen.Config;
 import com.l2jfrozen.gameserver.model.L2Character;
@@ -36,7 +15,10 @@ import com.l2jfrozen.gameserver.skills.funcs.FuncTemplate;
 
 /**
  * This class contains all informations concerning the item (weapon, armor, etc).<BR>
- * Mother class of : <LI>L2Armor</LI> <LI>L2EtcItem</LI> <LI>L2Weapon</LI>
+ * Mother class of :
+ * <LI>L2Armor</LI>
+ * <LI>L2EtcItem</LI>
+ * <LI>L2Weapon</LI>
  * @version $Revision: 1.7.2.2.2.5 $ $Date: 2005/04/06 18:25:18 $
  */
 public abstract class L2Item
@@ -116,59 +98,70 @@ public abstract class L2Item
 		250
 	};
 	
-	private final int _itemId;
-	private final String _name;
-	private final int _type1; // needed for item list (inventory)
-	private final int _type2; // different lists for armor, weapon, etc
-	private final int _weight;
-	private final boolean _crystallizable;
-	private final boolean _stackable;
-	private final int _crystalType; // default to none-grade
-	private final int _duration;
-	private final int _bodyPart;
-	private final int _referencePrice;
-	private final int _crystalCount;
-	private final boolean _sellable;
-	private final boolean _dropable;
-	private final boolean _destroyable;
-	private final boolean _tradeable;
+	private final int itemId;
+	private final String name;
+	private final int type1; // needed for item list (inventory)
+	private final int type2; // different lists for armor, weapon, etc
+	private final int weight;
+	private final boolean crystallizable;
+	private final boolean stackable;
+	private final int crystalType; // default to none-grade
+	private final int duration;
+	private final int bodyPart;
+	private final int referencePrice;
+	private final int crystalCount;
+	private final boolean sellable;
+	private final boolean dropable;
+	private final boolean destroyable;
+	private final boolean tradeable;
 	
-	protected final Enum<?> _type;
+	protected final Enum<?> type;
 	
-	protected FuncTemplate[] _funcTemplates;
-	protected EffectTemplate[] _effectTemplates;
-	protected L2Skill[] _skills;
+	protected FuncTemplate[] funcTemplates;
+	protected EffectTemplate[] effectTemplates;
+	protected L2Skill[] skills;
 	
-	private static final Func[] _emptyFunctionSet = new Func[0];
-	protected static final L2Effect[] _emptyEffectSet = new L2Effect[0];
+	private static final Func[] emptyFunctionSet = new Func[0];
+	protected static final L2Effect[] emptyEffectSet = new L2Effect[0];
 	
 	/**
 	 * Constructor of the L2Item that fill class variables.<BR>
 	 * <BR>
 	 * <U><I>Variables filled :</I></U><BR>
-	 * <LI>type</LI> <LI>_itemId</LI> <LI>_name</LI> <LI>_type1 & _type2</LI> <LI>_weight</LI> <LI>_crystallizable</LI> <LI>_stackable</LI> <LI>_crystalType & _crystlaCount</LI> <LI>_duration</LI> <LI>_bodypart</LI> <LI>_referencePrice</LI> <LI>_sellable</LI>
+	 * <LI>type</LI>
+	 * <LI>itemId</LI>
+	 * <LI>name</LI>
+	 * <LI>type1 & type2</LI>
+	 * <LI>weight</LI>
+	 * <LI>crystallizable</LI>
+	 * <LI>stackable</LI>
+	 * <LI>crystalType & crystlaCount</LI>
+	 * <LI>duration</LI>
+	 * <LI>bodypart</LI>
+	 * <LI>referencePrice</LI>
+	 * <LI>sellable</LI>
 	 * @param type : Enum designating the type of the item
-	 * @param set : StatsSet corresponding to a set of couples (key,value) for description of the item
+	 * @param set  : StatsSet corresponding to a set of couples (key,value) for description of the item
 	 */
 	protected L2Item(final Enum<?> type, final StatsSet set)
 	{
-		_type = type;
-		_itemId = set.getInteger("item_id");
-		_name = set.getString("name");
-		_type1 = set.getInteger("type1"); // needed for item list (inventory)
-		_type2 = set.getInteger("type2"); // different lists for armor, weapon, etc
-		_weight = set.getInteger("weight");
-		_crystallizable = set.getBool("crystallizable");
-		_stackable = set.getBool("stackable", false);
-		_crystalType = set.getInteger("crystal_type", CRYSTAL_NONE); // default to none-grade
-		_duration = set.getInteger("duration");
-		_bodyPart = set.getInteger("bodypart");
-		_referencePrice = set.getInteger("price");
-		_crystalCount = set.getInteger("crystal_count", 0);
-		_sellable = set.getBool("sellable", true);
-		_dropable = set.getBool("dropable", true);
-		_destroyable = set.getBool("destroyable", true);
-		_tradeable = set.getBool("tradeable", true);
+		this.type = type;
+		itemId = set.getInteger("item_id");
+		name = set.getString("name");
+		type1 = set.getInteger("type1"); // needed for item list (inventory)
+		type2 = set.getInteger("type2"); // different lists for armor, weapon, etc
+		weight = set.getInteger("weight");
+		crystallizable = set.getBool("crystallizable");
+		stackable = set.getBool("stackable", false);
+		crystalType = set.getInteger("crystal_type", CRYSTAL_NONE); // default to none-grade
+		duration = set.getInteger("duration");
+		bodyPart = set.getInteger("bodypart");
+		referencePrice = set.getInteger("price");
+		crystalCount = set.getInteger("crystal_count", 0);
+		sellable = set.getBool("sellable", true);
+		dropable = set.getBool("dropable", true);
+		destroyable = set.getBool("destroyable", true);
+		tradeable = set.getBool("tradeable", true);
 	}
 	
 	/**
@@ -177,7 +170,7 @@ public abstract class L2Item
 	 */
 	public Enum<?> getItemType()
 	{
-		return _type;
+		return type;
 	}
 	
 	/**
@@ -186,7 +179,7 @@ public abstract class L2Item
 	 */
 	public final int getDuration()
 	{
-		return _duration;
+		return duration;
 	}
 	
 	/**
@@ -195,7 +188,7 @@ public abstract class L2Item
 	 */
 	public final int getItemId()
 	{
-		return _itemId;
+		return itemId;
 	}
 	
 	public abstract int getItemMask();
@@ -206,7 +199,7 @@ public abstract class L2Item
 	 */
 	public final int getType2()
 	{
-		return _type2;
+		return type2;
 	}
 	
 	/**
@@ -215,7 +208,7 @@ public abstract class L2Item
 	 */
 	public final int getWeight()
 	{
-		return _weight;
+		return weight;
 	}
 	
 	/**
@@ -224,7 +217,7 @@ public abstract class L2Item
 	 */
 	public final boolean isCrystallizable()
 	{
-		return _crystallizable;
+		return crystallizable;
 	}
 	
 	/**
@@ -233,7 +226,7 @@ public abstract class L2Item
 	 */
 	public final int getCrystalType()
 	{
-		return _crystalType;
+		return crystalType;
 	}
 	
 	/**
@@ -242,7 +235,7 @@ public abstract class L2Item
 	 */
 	public final int getCrystalItemId()
 	{
-		return crystalItemId[_crystalType];
+		return crystalItemId[crystalType];
 	}
 	
 	/**
@@ -263,44 +256,46 @@ public abstract class L2Item
 	 */
 	public final int getCrystalCount()
 	{
-		return _crystalCount;
+		return crystalCount;
 	}
 	
 	/**
 	 * Returns the quantity of crystals for crystallization on specific enchant level
-	 * @param enchantLevel
-	 * @return int
+	 * @param  enchantLevel
+	 * @return              int
 	 */
 	public final int getCrystalCount(final int enchantLevel)
 	{
 		if (enchantLevel > 3)
 		{
-			switch (_type2)
+			switch (type2)
 			{
 				case TYPE2_SHIELD_ARMOR:
 				case TYPE2_ACCESSORY:
-					return _crystalCount + crystalEnchantBonusArmor[getCrystalType()] * (3 * enchantLevel - 6);
+					return crystalCount + crystalEnchantBonusArmor[getCrystalType()] * (3 * enchantLevel - 6);
 				case TYPE2_WEAPON:
-					return _crystalCount + crystalEnchantBonusWeapon[getCrystalType()] * (2 * enchantLevel - 3);
+					return crystalCount + crystalEnchantBonusWeapon[getCrystalType()] * (2 * enchantLevel - 3);
 				default:
-					return _crystalCount;
+					return crystalCount;
 			}
 		}
 		else if (enchantLevel > 0)
 		{
-			switch (_type2)
+			switch (type2)
 			{
 				case TYPE2_SHIELD_ARMOR:
 				case TYPE2_ACCESSORY:
-					return _crystalCount + crystalEnchantBonusArmor[getCrystalType()] * enchantLevel;
+					return crystalCount + crystalEnchantBonusArmor[getCrystalType()] * enchantLevel;
 				case TYPE2_WEAPON:
-					return _crystalCount + crystalEnchantBonusWeapon[getCrystalType()] * enchantLevel;
+					return crystalCount + crystalEnchantBonusWeapon[getCrystalType()] * enchantLevel;
 				default:
-					return _crystalCount;
+					return crystalCount;
 			}
 		}
 		else
-			return _crystalCount;
+		{
+			return crystalCount;
+		}
 	}
 	
 	/**
@@ -309,7 +304,7 @@ public abstract class L2Item
 	 */
 	public final String getName()
 	{
-		return _name;
+		return name;
 	}
 	
 	/**
@@ -318,7 +313,7 @@ public abstract class L2Item
 	 */
 	public final int getBodyPart()
 	{
-		return _bodyPart;
+		return bodyPart;
 	}
 	
 	/**
@@ -327,7 +322,7 @@ public abstract class L2Item
 	 */
 	public final int getType1()
 	{
-		return _type1;
+		return type1;
 	}
 	
 	/**
@@ -336,7 +331,7 @@ public abstract class L2Item
 	 */
 	public final boolean isStackable()
 	{
-		return _stackable;
+		return stackable;
 	}
 	
 	/**
@@ -354,7 +349,7 @@ public abstract class L2Item
 	 */
 	public final int getReferencePrice()
 	{
-		return isConsumable() ? (int) (_referencePrice * Config.RATE_CONSUMABLE_COST) : _referencePrice;
+		return isConsumable() ? (int) (referencePrice * Config.RATE_CONSUMABLE_COST) : referencePrice;
 	}
 	
 	/**
@@ -363,7 +358,7 @@ public abstract class L2Item
 	 */
 	public final boolean isSellable()
 	{
-		return _sellable;
+		return sellable;
 	}
 	
 	/**
@@ -372,7 +367,7 @@ public abstract class L2Item
 	 */
 	public final boolean isDropable()
 	{
-		return _dropable;
+		return dropable;
 	}
 	
 	/**
@@ -381,7 +376,7 @@ public abstract class L2Item
 	 */
 	public final boolean isDestroyable()
 	{
-		return _destroyable;
+		return destroyable;
 	}
 	
 	/**
@@ -390,7 +385,7 @@ public abstract class L2Item
 	 */
 	public final boolean isTradeable()
 	{
-		return _tradeable;
+		return tradeable;
 	}
 	
 	public boolean isPotion()
@@ -404,7 +399,7 @@ public abstract class L2Item
 	 */
 	public boolean isForHatchling()
 	{
-		return _type2 == TYPE2_PET_HATCHLING;
+		return type2 == TYPE2_PET_HATCHLING;
 	}
 	
 	/**
@@ -413,7 +408,7 @@ public abstract class L2Item
 	 */
 	public boolean isForStrider()
 	{
-		return _type2 == TYPE2_PET_STRIDER;
+		return type2 == TYPE2_PET_STRIDER;
 	}
 	
 	/**
@@ -422,7 +417,7 @@ public abstract class L2Item
 	 */
 	public boolean isForWolf()
 	{
-		return _type2 == TYPE2_PET_WOLF;
+		return type2 == TYPE2_PET_WOLF;
 	}
 	
 	/**
@@ -431,21 +426,23 @@ public abstract class L2Item
 	 */
 	public boolean isForBabyPet()
 	{
-		return _type2 == TYPE2_PET_BABY;
+		return type2 == TYPE2_PET_BABY;
 	}
 	
 	/**
 	 * Returns array of Func objects containing the list of functions used by the item
-	 * @param instance : L2ItemInstance pointing out the item
-	 * @param player : L2Character pointing out the player
-	 * @return Func[] : array of functions
+	 * @param  instance : L2ItemInstance pointing out the item
+	 * @param  player   : L2Character pointing out the player
+	 * @return          Func[] : array of functions
 	 */
 	public Func[] getStatFuncs(final L2ItemInstance instance, final L2Character player)
 	{
-		if (_funcTemplates == null)
-			return _emptyFunctionSet;
-		final List<Func> funcs = new FastList<>();
-		for (final FuncTemplate t : _funcTemplates)
+		if (funcTemplates == null)
+		{
+			return emptyFunctionSet;
+		}
+		final List<Func> funcs = new ArrayList<>();
+		for (final FuncTemplate t : funcTemplates)
 		{
 			final Env env = new Env();
 			env.player = player;
@@ -458,22 +455,26 @@ public abstract class L2Item
 			}
 		}
 		if (funcs.size() == 0)
-			return _emptyFunctionSet;
+		{
+			return emptyFunctionSet;
+		}
 		return funcs.toArray(new Func[funcs.size()]);
 	}
 	
 	/**
 	 * Returns the effects associated with the item.
-	 * @param instance : L2ItemInstance pointing out the item
-	 * @param player : L2Character pointing out the player
-	 * @return L2Effect[] : array of effects generated by the item
+	 * @param  instance : L2ItemInstance pointing out the item
+	 * @param  player   : L2Character pointing out the player
+	 * @return          L2Effect[] : array of effects generated by the item
 	 */
 	public L2Effect[] getEffects(final L2ItemInstance instance, final L2Character player)
 	{
-		if (_effectTemplates == null)
-			return _emptyEffectSet;
-		final List<L2Effect> effects = new FastList<>();
-		for (final EffectTemplate et : _effectTemplates)
+		if (effectTemplates == null)
+		{
+			return emptyEffectSet;
+		}
+		final List<L2Effect> effects = new ArrayList<>();
+		for (final EffectTemplate et : effectTemplates)
 		{
 			final Env env = new Env();
 			env.player = player;
@@ -486,23 +487,27 @@ public abstract class L2Item
 			}
 		}
 		if (effects.size() == 0)
-			return _emptyEffectSet;
+		{
+			return emptyEffectSet;
+		}
 		return effects.toArray(new L2Effect[effects.size()]);
 	}
 	
 	/**
 	 * Returns effects of skills associated with the item.
-	 * @param caster : L2Character pointing out the caster
-	 * @param target : L2Character pointing out the target
-	 * @return L2Effect[] : array of effects generated by the skill
+	 * @param  caster : L2Character pointing out the caster
+	 * @param  target : L2Character pointing out the target
+	 * @return        L2Effect[] : array of effects generated by the skill
 	 */
 	public L2Effect[] getSkillEffects(final L2Character caster, final L2Character target)
 	{
-		if (_skills == null)
-			return _emptyEffectSet;
-		final List<L2Effect> effects = new FastList<>();
+		if (skills == null)
+		{
+			return emptyEffectSet;
+		}
+		final List<L2Effect> effects = new ArrayList<>();
 		
-		for (final L2Skill skill : _skills)
+		for (final L2Skill skill : skills)
 		{
 			if (!skill.checkCondition(caster, target, true))
 			{
@@ -519,7 +524,9 @@ public abstract class L2Item
 			}
 		}
 		if (effects.size() == 0)
-			return _emptyEffectSet;
+		{
+			return emptyEffectSet;
+		}
 		return effects.toArray(new L2Effect[effects.size()]);
 	}
 	
@@ -529,23 +536,23 @@ public abstract class L2Item
 	 */
 	public void attach(final FuncTemplate f)
 	{
-		// If _functTemplates is empty, create it and add the FuncTemplate f in it
-		if (_funcTemplates == null)
+		// If functTemplates is empty, create it and add the FuncTemplate f in it
+		if (funcTemplates == null)
 		{
-			_funcTemplates = new FuncTemplate[]
+			funcTemplates = new FuncTemplate[]
 			{
 				f
 			};
 		}
 		else
 		{
-			final int len = _funcTemplates.length;
+			final int len = funcTemplates.length;
 			final FuncTemplate[] tmp = new FuncTemplate[len + 1];
 			// Definition : arraycopy(array source, begins copy at this position of source, array destination, begins copy at this position in dest,
 			// number of components to be copied)
-			System.arraycopy(_funcTemplates, 0, tmp, 0, len);
+			System.arraycopy(funcTemplates, 0, tmp, 0, len);
 			tmp[len] = f;
-			_funcTemplates = tmp;
+			funcTemplates = tmp;
 		}
 	}
 	
@@ -555,22 +562,22 @@ public abstract class L2Item
 	 */
 	public void attach(final EffectTemplate effect)
 	{
-		if (_effectTemplates == null)
+		if (effectTemplates == null)
 		{
-			_effectTemplates = new EffectTemplate[]
+			effectTemplates = new EffectTemplate[]
 			{
 				effect
 			};
 		}
 		else
 		{
-			final int len = _effectTemplates.length;
+			final int len = effectTemplates.length;
 			final EffectTemplate[] tmp = new EffectTemplate[len + 1];
 			// Definition : arraycopy(array source, begins copy at this position of source, array destination, begins copy at this position in dest,
 			// number of components to be copied)
-			System.arraycopy(_effectTemplates, 0, tmp, 0, len);
+			System.arraycopy(effectTemplates, 0, tmp, 0, len);
 			tmp[len] = effect;
-			_effectTemplates = tmp;
+			effectTemplates = tmp;
 		}
 	}
 	
@@ -580,22 +587,22 @@ public abstract class L2Item
 	 */
 	public void attach(final L2Skill skill)
 	{
-		if (_skills == null)
+		if (skills == null)
 		{
-			_skills = new L2Skill[]
+			skills = new L2Skill[]
 			{
 				skill
 			};
 		}
 		else
 		{
-			final int len = _skills.length;
+			final int len = skills.length;
 			final L2Skill[] tmp = new L2Skill[len + 1];
 			// Definition : arraycopy(array source, begins copy at this position of source, array destination, begins copy at this position in dest,
 			// number of components to be copied)
-			System.arraycopy(_skills, 0, tmp, 0, len);
+			System.arraycopy(skills, 0, tmp, 0, len);
 			tmp[len] = skill;
-			_skills = tmp;
+			skills = tmp;
 		}
 	}
 	
@@ -606,6 +613,6 @@ public abstract class L2Item
 	@Override
 	public String toString()
 	{
-		return _name;
+		return name + "(" + getItemId() + ")";
 	}
 }

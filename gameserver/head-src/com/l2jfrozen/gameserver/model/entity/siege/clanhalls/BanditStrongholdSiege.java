@@ -1,30 +1,11 @@
-/* L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.model.entity.siege.clanhalls;
 
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ScheduledFuture;
-
-import javolution.util.FastList;
 
 import org.apache.log4j.Logger;
 
@@ -54,23 +35,23 @@ import com.l2jfrozen.gameserver.thread.ThreadPoolManager;
 public class BanditStrongholdSiege extends ClanHallSiege
 {
 	protected static Logger LOGGER = Logger.getLogger(BanditStrongholdSiege.class);
-	private static BanditStrongholdSiege _instance;
-	private boolean _registrationPeriod = false;
-	private int _clanCounter = 0;
-	protected Map<Integer, clanPlayersInfo> _clansInfo = new HashMap<>();
+	private static BanditStrongholdSiege instance;
+	private boolean registrationPeriod = false;
+	private int clanCounter = 0;
+	protected Map<Integer, ClanPlayersInfo> clansInfo = new HashMap<>();
 	private L2ClanHallZone zone;
 	public ClanHall clanhall = ClanHallManager.getInstance().getClanHallById(35);
-	protected clanPlayersInfo _ownerClanInfo = new clanPlayersInfo();
-	protected boolean _finalStage = false;
-	protected ScheduledFuture<?> _midTimer;
+	protected ClanPlayersInfo ownerClanInfo = new ClanPlayersInfo();
+	protected boolean finalStage = false;
+	protected ScheduledFuture<?> midTimer;
 	
 	public static final BanditStrongholdSiege getInstance()
 	{
-		if (_instance == null)
+		if (instance == null)
 		{
-			_instance = new BanditStrongholdSiege();
+			instance = new BanditStrongholdSiege();
 		}
-		return _instance;
+		return instance;
 	}
 	
 	private BanditStrongholdSiege()
@@ -82,7 +63,7 @@ public class BanditStrongholdSiege extends ClanHallSiege
 		setSiegeDate(tmpDate);
 		setNewSiegeDate(siegeDate, 35, 22);
 		// Schedule siege auto start
-		_startSiegeTask.schedule(1000);
+		startSiegeTask.schedule(1000);
 	}
 	
 	public void startSiege()
@@ -90,30 +71,30 @@ public class BanditStrongholdSiege extends ClanHallSiege
 		// if (GameServer._instanceOk)
 		{
 			setRegistrationPeriod(false);
-			if (_clansInfo.size() == 0)
+			if (clansInfo.size() == 0)
 			{
 				endSiege(false);
 				return;
 			}
 			
-			if (_clansInfo.size() == 1 && clanhall.getOwnerClan() == null)
+			if (clansInfo.size() == 1 && clanhall.getOwnerClan() == null)
 			{
 				endSiege(false);
 				return;
 			}
 			
-			if (_clansInfo.size() == 1 && clanhall.getOwnerClan() != null)
+			if (clansInfo.size() == 1 && clanhall.getOwnerClan() != null)
 			{
 				L2Clan clan = null;
-				for (final clanPlayersInfo a : _clansInfo.values())
+				for (final ClanPlayersInfo a : clansInfo.values())
 				{
-					clan = ClanTable.getInstance().getClanByName(a._clanName);
+					clan = ClanTable.getInstance().getClanByName(a.clanName);
 				}
 				setIsInProgress(true);
 				startSecondStep(clan);
-				_siegeEndDate = Calendar.getInstance();
-				_siegeEndDate.add(Calendar.MINUTE, 20);
-				_endSiegeTask.schedule(1000);
+				siegeEndDate = Calendar.getInstance();
+				siegeEndDate.add(Calendar.MINUTE, 20);
+				endSiegeTask.schedule(1000);
 				return;
 			}
 			setIsInProgress(true);
@@ -121,35 +102,35 @@ public class BanditStrongholdSiege extends ClanHallSiege
 			gateControl(1);
 			anonce("Take place at the siege of his headquarters.", 1);
 			ThreadPoolManager.getInstance().scheduleGeneral(new startFirstStep(), 5 * 60000);
-			_midTimer = ThreadPoolManager.getInstance().scheduleGeneral(new midSiegeStep(), 25 * 60000);
+			midTimer = ThreadPoolManager.getInstance().scheduleGeneral(new midSiegeStep(), 25 * 60000);
 			
-			_siegeEndDate = Calendar.getInstance();
-			_siegeEndDate.add(Calendar.MINUTE, 60);
-			_endSiegeTask.schedule(1000);
+			siegeEndDate = Calendar.getInstance();
+			siegeEndDate.add(Calendar.MINUTE, 60);
+			endSiegeTask.schedule(1000);
 		}
 	}
 	
 	public void startSecondStep(final L2Clan winner)
 	{
-		final FastList<String> winPlayers = BanditStrongholdSiege.getInstance().getRegisteredPlayers(winner);
+		List<String> winPlayers = BanditStrongholdSiege.getInstance().getRegisteredPlayers(winner);
 		unSpawnAll();
-		_clansInfo.clear();
-		final clanPlayersInfo regPlayers = new clanPlayersInfo();
-		regPlayers._clanName = winner.getName();
-		regPlayers._players = winPlayers;
-		_clansInfo.put(winner.getClanId(), regPlayers);
-		_clansInfo.put(clanhall.getOwnerClan().getClanId(), _ownerClanInfo);
+		clansInfo.clear();
+		final ClanPlayersInfo regPlayers = new ClanPlayersInfo();
+		regPlayers.clanName = winner.getName();
+		regPlayers.players = winPlayers;
+		clansInfo.put(winner.getClanId(), regPlayers);
+		clansInfo.put(clanhall.getOwnerClan().getClanId(), ownerClanInfo);
 		spawnFlags();
 		gateControl(1);
-		_finalStage = true;
+		finalStage = true;
 		anonce("Take place at the siege of his headquarters.", 1);
 		ThreadPoolManager.getInstance().scheduleGeneral(new startFirstStep(), 5 * 60000);
 	}
 	
 	public void endSiege(final boolean par)
 	{
-		_mobControlTask.cancel();
-		_finalStage = false;
+		mobControlTask.cancel();
+		finalStage = false;
 		if (par)
 		{
 			final L2Clan winner = checkHaveWinner();
@@ -165,11 +146,11 @@ public class BanditStrongholdSiege extends ClanHallSiege
 		}
 		setIsInProgress(false);
 		unSpawnAll();
-		_clansInfo.clear();
-		_clanCounter = 0;
+		clansInfo.clear();
+		clanCounter = 0;
 		teleportPlayers();
 		setNewSiegeDate(getSiegeDate().getTimeInMillis(), 35, 22);
-		_startSiegeTask.schedule(1000);
+		startSiegeTask.schedule(1000);
 	}
 	
 	public void unSpawnAll()
@@ -214,6 +195,7 @@ public class BanditStrongholdSiege extends ClanHallSiege
 	{
 		zone = clanhall.getZone();
 		for (final L2Character cha : zone.getCharactersInside().values())
+		{
 			if (cha instanceof L2PcInstance)
 			{
 				final L2Clan clan = ((L2PcInstance) cha).getClan();
@@ -222,6 +204,7 @@ public class BanditStrongholdSiege extends ClanHallSiege
 					cha.teleToLocation(88404, -21821, -2276);
 				}
 			}
+		}
 	}
 	
 	public L2Clan checkHaveWinner()
@@ -239,7 +222,9 @@ public class BanditStrongholdSiege extends ClanHallSiege
 		}
 		
 		if (questMobCount > 1)
+		{
 			return null;
+		}
 		return res;
 	}
 	
@@ -248,7 +233,7 @@ public class BanditStrongholdSiege extends ClanHallSiege
 		@Override
 		public void run()
 		{
-			_mobControlTask.cancel();
+			mobControlTask.cancel();
 			final L2Clan winner = checkHaveWinner();
 			if (winner != null)
 			{
@@ -313,11 +298,11 @@ public class BanditStrongholdSiege extends ClanHallSiege
 				{
 					questMob.spawnMe(83786, -15369, -1828);
 				}
-				final clanPlayersInfo regPlayers = _clansInfo.get(clan.getClanId());
-				regPlayers._mob = questMob;
+				final ClanPlayersInfo regPlayers = clansInfo.get(clan.getClanId());
+				regPlayers.mob = questMob;
 				mobCounter++;
 			}
-			_mobControlTask.schedule(3000);
+			mobControlTask.schedule(3000);
 			anonce("The battle began. Kill the enemy NPC", 1);
 		}
 	}
@@ -344,8 +329,8 @@ public class BanditStrongholdSiege extends ClanHallSiege
 			if (clan == clanhall.getOwnerClan())
 			{
 				flag.spawnMe(81700, -16300, -1828);
-				final clanPlayersInfo regPlayers = _clansInfo.get(clan.getClanId());
-				regPlayers._flag = flag;
+				final ClanPlayersInfo regPlayers = clansInfo.get(clan.getClanId());
+				regPlayers.flag = flag;
 				continue;
 			}
 			
@@ -369,153 +354,193 @@ public class BanditStrongholdSiege extends ClanHallSiege
 			{
 				flag.spawnMe(83486, -15069, -1828);
 			}
-			final clanPlayersInfo regPlayers = _clansInfo.get(clan.getClanId());
-			regPlayers._flag = flag;
+			final ClanPlayersInfo regPlayers = clansInfo.get(clan.getClanId());
+			regPlayers.flag = flag;
 			flagCounter++;
 		}
 	}
 	
 	public void setRegistrationPeriod(final boolean par)
 	{
-		_registrationPeriod = par;
+		registrationPeriod = par;
 	}
 	
 	public boolean isRegistrationPeriod()
 	{
-		return _registrationPeriod;
+		return registrationPeriod;
 	}
 	
 	public boolean isPlayerRegister(final L2Clan playerClan, final String playerName)
 	{
 		if (playerClan == null)
+		{
 			return false;
-		final clanPlayersInfo regPlayers = _clansInfo.get(playerClan.getClanId());
+		}
+		final ClanPlayersInfo regPlayers = clansInfo.get(playerClan.getClanId());
 		if (regPlayers != null)
-			if (regPlayers._players.contains(playerName))
+		{
+			if (regPlayers.players.contains(playerName))
+			{
 				return true;
+			}
+		}
 		return false;
 	}
 	
 	public boolean isClanOnSiege(final L2Clan playerClan)
 	{
 		if (playerClan == clanhall.getOwnerClan())
+		{
 			return true;
-		final clanPlayersInfo regPlayers = _clansInfo.get(playerClan.getClanId());
+		}
+		final ClanPlayersInfo regPlayers = clansInfo.get(playerClan.getClanId());
 		if (regPlayers == null)
+		{
 			return false;
+		}
 		return true;
 	}
 	
 	public synchronized int registerClanOnSiege(final L2PcInstance player, final L2Clan playerClan)
 	{
-		if (_clanCounter == 5)
+		if (clanCounter == 5)
+		{
 			return 2;
+		}
 		final L2ItemInstance item = player.getInventory().getItemByItemId(5009);
 		if (item != null && player.destroyItemWithoutTrace("Consume", item.getObjectId(), 1, null, false))
 		{
-			_clanCounter++;
-			clanPlayersInfo regPlayers = _clansInfo.get(playerClan.getClanId());
+			clanCounter++;
+			ClanPlayersInfo regPlayers = clansInfo.get(playerClan.getClanId());
 			if (regPlayers == null)
 			{
-				regPlayers = new clanPlayersInfo();
-				regPlayers._clanName = playerClan.getName();
-				_clansInfo.put(playerClan.getClanId(), regPlayers);
+				regPlayers = new ClanPlayersInfo();
+				regPlayers.clanName = playerClan.getName();
+				clansInfo.put(playerClan.getClanId(), regPlayers);
 			}
 		}
 		else
+		{
 			return 1;
+		}
 		return 0;
 	}
 	
 	public boolean unRegisterClan(final L2Clan playerClan)
 	{
-		if (_clansInfo.remove(playerClan.getClanId()) != null)
+		if (clansInfo.remove(playerClan.getClanId()) != null)
 		{
-			_clanCounter--;
+			clanCounter--;
 			return true;
 		}
 		return false;
 	}
 	
-	public FastList<String> getRegisteredClans()
+	public List<String> getRegisteredClans()
 	{
-		final FastList<String> clans = new FastList<>();
-		for (final clanPlayersInfo a : _clansInfo.values())
+		List<String> clans = new ArrayList<>();
+		
+		for (ClanPlayersInfo a : clansInfo.values())
 		{
-			clans.add(a._clanName);
+			clans.add(a.clanName);
 		}
+		
 		return clans;
 	}
 	
-	public FastList<String> getRegisteredPlayers(final L2Clan playerClan)
+	public List<String> getRegisteredPlayers(final L2Clan playerClan)
 	{
 		if (playerClan == clanhall.getOwnerClan())
-			return _ownerClanInfo._players;
-		final clanPlayersInfo regPlayers = _clansInfo.get(playerClan.getClanId());
+		{
+			return ownerClanInfo.players;
+		}
+		final ClanPlayersInfo regPlayers = clansInfo.get(playerClan.getClanId());
 		if (regPlayers != null)
-			return regPlayers._players;
+		{
+			return regPlayers.players;
+		}
 		return null;
 	}
 	
 	public L2DecoInstance getSiegeFlag(final L2Clan playerClan)
 	{
-		final clanPlayersInfo clanInfo = _clansInfo.get(playerClan.getClanId());
+		final ClanPlayersInfo clanInfo = clansInfo.get(playerClan.getClanId());
 		if (clanInfo != null)
-			return clanInfo._flag;
+		{
+			return clanInfo.flag;
+		}
 		return null;
 	}
 	
 	public L2MonsterInstance getQuestMob(final L2Clan clan)
 	{
-		final clanPlayersInfo clanInfo = _clansInfo.get(clan.getClanId());
+		final ClanPlayersInfo clanInfo = clansInfo.get(clan.getClanId());
 		if (clanInfo != null)
-			return clanInfo._mob;
+		{
+			return clanInfo.mob;
+		}
 		return null;
 	}
 	
 	public int getPlayersCount(final String playerClan)
 	{
-		for (final clanPlayersInfo a : _clansInfo.values())
-			if (a._clanName.equalsIgnoreCase(playerClan))
-				return a._players.size();
+		for (final ClanPlayersInfo a : clansInfo.values())
+		{
+			if (a.clanName.equalsIgnoreCase(playerClan))
+			{
+				return a.players.size();
+			}
+		}
 		return 0;
 	}
 	
 	public void addPlayer(final L2Clan playerClan, final String playerName)
 	{
 		if (playerClan == clanhall.getOwnerClan())
-			if (_ownerClanInfo._players.size() < 18)
-				if (!_ownerClanInfo._players.contains(playerName))
+		{
+			if (ownerClanInfo.players.size() < 18)
+			{
+				if (!ownerClanInfo.players.contains(playerName))
 				{
-					_ownerClanInfo._players.add(playerName);
+					ownerClanInfo.players.add(playerName);
 					return;
 				}
-		final clanPlayersInfo regPlayers = _clansInfo.get(playerClan.getClanId());
+			}
+		}
+		final ClanPlayersInfo regPlayers = clansInfo.get(playerClan.getClanId());
 		if (regPlayers != null)
-			if (regPlayers._players.size() < 18)
-				if (!regPlayers._players.contains(playerName))
+		{
+			if (regPlayers.players.size() < 18)
+			{
+				if (!regPlayers.players.contains(playerName))
 				{
-					regPlayers._players.add(playerName);
+					regPlayers.players.add(playerName);
 				}
+			}
+		}
 	}
 	
 	public void removePlayer(final L2Clan playerClan, final String playerName)
 	{
 		if (playerClan == clanhall.getOwnerClan())
-			if (_ownerClanInfo._players.contains(playerName))
+		{
+			if (ownerClanInfo.players.contains(playerName))
 			{
-				_ownerClanInfo._players.remove(playerName);
+				ownerClanInfo.players.remove(playerName);
 				return;
 			}
-		final clanPlayersInfo regPlayers = _clansInfo.get(playerClan.getClanId());
+		}
+		final ClanPlayersInfo regPlayers = clansInfo.get(playerClan.getClanId());
 		if (regPlayers != null)
-			if (regPlayers._players.contains(playerName))
+		{
+			if (regPlayers.players.contains(playerName))
 			{
-				regPlayers._players.remove(playerName);
+				regPlayers.players.remove(playerName);
 			}
+		}
 	}
 	
-	private final ExclusiveTask _startSiegeTask = new ExclusiveTask()
+	private final ExclusiveTask startSiegeTask = new ExclusiveTask()
 	{
 		@Override
 		protected void onElapsed()
@@ -537,11 +562,11 @@ public class BanditStrongholdSiege extends ClanHallSiege
 				{
 					if (clanhall.getOwnerClan() != null)
 					{
-						_ownerClanInfo._clanName = clanhall.getOwnerClan().getName();
+						ownerClanInfo.clanName = clanhall.getOwnerClan().getName();
 					}
 					else
 					{
-						_ownerClanInfo._clanName = "";
+						ownerClanInfo.clanName = "";
 					}
 					setRegistrationPeriod(true);
 					anonce("Attention! The period of registration at the siege clan hall, castle robbers.", 2);
@@ -584,7 +609,7 @@ public class BanditStrongholdSiege extends ClanHallSiege
 			{
 				if /*
 					 * (region == MapRegionManager.getInstance().getRegion(player.getX(), player.getY(), player.getZ()) &&
-					 */(player.getInstanceId() == 0/* ) */)
+					 */ (player.getInstanceId() == 0/* ) */)
 				{
 					player.sendPacket(cs);
 				}
@@ -593,7 +618,7 @@ public class BanditStrongholdSiege extends ClanHallSiege
 		
 	}
 	
-	protected final ExclusiveTask _endSiegeTask = new ExclusiveTask()
+	protected final ExclusiveTask endSiegeTask = new ExclusiveTask()
 	{
 		@Override
 		protected void onElapsed()
@@ -603,7 +628,7 @@ public class BanditStrongholdSiege extends ClanHallSiege
 				cancel();
 				return;
 			}
-			final long timeRemaining = _siegeEndDate.getTimeInMillis() - System.currentTimeMillis();
+			final long timeRemaining = siegeEndDate.getTimeInMillis() - System.currentTimeMillis();
 			if (timeRemaining <= 0)
 			{
 				endSiege(true);
@@ -614,35 +639,44 @@ public class BanditStrongholdSiege extends ClanHallSiege
 		}
 	};
 	
-	protected final ExclusiveTask _mobControlTask = new ExclusiveTask()
+	protected final ExclusiveTask mobControlTask = new ExclusiveTask()
 	{
 		@Override
 		protected void onElapsed()
 		{
 			int mobCount = 0;
-			for (final clanPlayersInfo cl : _clansInfo.values())
-				if (cl._mob.isDead())
+			for (ClanPlayersInfo cl : clansInfo.values())
+			{
+				if (cl.mob == null)
 				{
-					final L2Clan clan = ClanTable.getInstance().getClanByName(cl._clanName);
+					return;
+				}
+				
+				if (cl.mob.isDead())
+				{
+					L2Clan clan = ClanTable.getInstance().getClanByName(cl.clanName);
 					unRegisterClan(clan);
 				}
 				else
 				{
 					mobCount++;
 				}
+			}
 			teleportPlayers();
 			if (mobCount < 2)
-				if (_finalStage)
+			{
+				if (finalStage)
 				{
-					_siegeEndDate = Calendar.getInstance();
-					_endSiegeTask.cancel();
-					_endSiegeTask.schedule(5000);
+					siegeEndDate = Calendar.getInstance();
+					endSiegeTask.cancel();
+					endSiegeTask.schedule(5000);
 				}
 				else
 				{
-					_midTimer.cancel(false);
+					midTimer.cancel(false);
 					ThreadPoolManager.getInstance().scheduleGeneral(new midSiegeStep(), 5000);
 				}
+			}
 			else
 			{
 				schedule(3000);
@@ -650,11 +684,11 @@ public class BanditStrongholdSiege extends ClanHallSiege
 		}
 	};
 	
-	protected class clanPlayersInfo
+	protected class ClanPlayersInfo
 	{
-		public String _clanName;
-		public L2DecoInstance _flag = null;
-		public L2MonsterInstance _mob = null;
-		public FastList<String> _players = new FastList<>();
+		public String clanName;
+		public L2DecoInstance flag = null;
+		public L2MonsterInstance mob = null;
+		public List<String> players = new ArrayList<>();
 	}
 }

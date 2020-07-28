@@ -1,73 +1,42 @@
-/* L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.managers;
 
-import javolution.util.FastList;
-
-import org.apache.log4j.Logger;
-
 import com.l2jfrozen.gameserver.datatables.csv.MapRegionTable;
+import com.l2jfrozen.gameserver.datatables.xml.ZoneData;
 import com.l2jfrozen.gameserver.model.L2Object;
 import com.l2jfrozen.gameserver.model.entity.siege.Castle;
+import com.l2jfrozen.gameserver.model.zone.L2ZoneType;
 import com.l2jfrozen.gameserver.model.zone.type.L2TownZone;
 
 public class TownManager
 {
-	private static final Logger LOGGER = Logger.getLogger(TownManager.class);
+	public static final int DARK_ELF_VILLAGE = 1;
+	public static final int TALKIN_ISLAND_VILLAGE = 2;
+	public static final int ELVEN_VILLAGE = 3;
+	public static final int ORC_VILLAGE = 4;
+	public static final int GLUDIN = 5;
+	public static final int DWARVEN_VILLAGE = 6;
+	public static final int GLUDIO = 7;
+	public static final int DION = 8;
+	public static final int GIRAN = 9;
+	public static final int OREN = 10;
+	public static final int HUNTERS_VILLAGE = 11;
+	public static final int ADEN = 12;
+	public static final int GODDARD = 13;
+	public static final int RUNE = 14;
+	public static final int HEINE = 15;
+	public static final int FLORAN_VILLAGE = 16;
+	public static final int SCHUTTGART = 17;
+	public static final int PRIMAVERAL_ISLE = 18;
 	
-	// =========================================================
-	private static TownManager _instance;
+	private static TownManager instance;
 	
 	public static final TownManager getInstance()
 	{
-		if (_instance == null)
+		if (instance == null)
 		{
-			LOGGER.info("Initializing TownManager");
-			_instance = new TownManager();
+			instance = new TownManager();
 		}
-		return _instance;
-	}
-	
-	// =========================================================
-	
-	// =========================================================
-	// Data Field
-	private FastList<L2TownZone> _towns;
-	
-	// =========================================================
-	// Constructor
-	public TownManager()
-	{
-	}
-	
-	// =========================================================
-	// Property - Public
-	
-	public void addTown(final L2TownZone arena)
-	{
-		if (_towns == null)
-		{
-			_towns = new FastList<>();
-		}
-		
-		_towns.add(arena);
+		return instance;
 	}
 	
 	public final L2TownZone getClosestTown(final L2Object activeObject)
@@ -75,46 +44,46 @@ public class TownManager
 		switch (MapRegionTable.getInstance().getMapRegion(activeObject.getPosition().getX(), activeObject.getPosition().getY()))
 		{
 			case 0:
-				return getTown(2); // TI
+				return getTown(TALKIN_ISLAND_VILLAGE); // TI
 			case 1:
-				return getTown(3); // Elven
+				return getTown(ELVEN_VILLAGE); // Elven
 			case 2:
-				return getTown(1); // DE
+				return getTown(DARK_ELF_VILLAGE); // DE
 			case 3:
-				return getTown(4); // Orc
+				return getTown(ORC_VILLAGE); // Orc
 			case 4:
-				return getTown(6); // Dwarven
+				return getTown(DWARVEN_VILLAGE); // Dwarven
 			case 5:
-				return getTown(7); // Gludio
+				return getTown(GLUDIO); // Gludio
 			case 6:
-				return getTown(5); // Gludin
+				return getTown(GLUDIN); // Gludin
 			case 7:
-				return getTown(8); // Dion
+				return getTown(DION); // Dion
 			case 8:
-				return getTown(9); // Giran
+				return getTown(GIRAN); // Giran
 			case 9:
-				return getTown(10); // Oren
+				return getTown(OREN); // Oren
 			case 10:
-				return getTown(12); // Aden
+				return getTown(ADEN); // Aden
 			case 11:
-				return getTown(11); // HV
+				return getTown(HUNTERS_VILLAGE); // HV
 			case 12:
-				return getTown(9); // Giran Harbour
+				return getTown(GIRAN); // Giran Harbor
 			case 13:
-				return getTown(15); // Heine
+				return getTown(HEINE); // Heine
 			case 14:
-				return getTown(14); // Rune
+				return getTown(RUNE); // Rune
 			case 15:
-				return getTown(13); // Goddard
+				return getTown(GODDARD); // Goddard
 			case 16:
-				return getTown(17); // Schuttgart
+				return getTown(SCHUTTGART); // Schuttgart
 			case 17:
-				return getTown(16); // Floran
+				return getTown(FLORAN_VILLAGE); // Floran
 			case 18:
-				return getTown(19); // Primeval Isle
+				return getTown(PRIMAVERAL_ISLE); // Primeval Isle
 		}
 		
-		return getTown(16); // Default to floran
+		return getTown(FLORAN_VILLAGE); // Default to floran
 	}
 	
 	public final static int getClosestLocation(final L2Object activeObject)
@@ -190,7 +159,9 @@ public class TownManager
 		{
 			final Castle castle = CastleManager.getInstance().getCastles().get(CastleManager.getInstance().getCastleIndex(castleIndex));
 			if (castle != null)
+			{
 				return castle.getSiege().getIsInProgress();
+			}
 		}
 		return false;
 	}
@@ -227,32 +198,45 @@ public class TownManager
 		{
 			final Castle castle = CastleManager.getInstance().getCastles().get(CastleManager.getInstance().getCastleIndex(castleIndex));
 			if (castle != null)
+			{
 				return castle.getSiege().getIsInProgress();
+			}
 		}
 		return false;
 	}
 	
-	public final L2TownZone getTown(final int townId)
+	public L2TownZone getTown(int townId)
 	{
-		for (final L2TownZone temp : _towns)
-			if (temp.getTownId() == townId)
-				return temp;
+		for (L2ZoneType zone : ZoneData.getInstance().getAllZones().values())
+		{
+			if (zone instanceof L2TownZone)
+			{
+				L2TownZone temp = (L2TownZone) zone;
+				
+				if (temp.getTownId() == townId)
+				{
+					return temp;
+				}
+			}
+		}
 		
 		return null;
 	}
 	
-	/**
-	 * Returns the town at that position (if any)
-	 * @param x
-	 * @param y
-	 * @param z
-	 * @return
-	 */
-	public final L2TownZone getTown(final int x, final int y, final int z)
+	public L2TownZone getTown(int x, int y, int z)
 	{
-		for (final L2TownZone temp : _towns)
-			if (temp.isInsideZone(x, y, z))
-				return temp;
+		for (L2ZoneType zone : ZoneData.getInstance().getAllZones().values())
+		{
+			if (zone instanceof L2TownZone)
+			{
+				L2TownZone temp = (L2TownZone) zone;
+				
+				if (temp.isInsideZone(x, y, z))
+				{
+					return temp;
+				}
+			}
+		}
 		
 		return null;
 	}

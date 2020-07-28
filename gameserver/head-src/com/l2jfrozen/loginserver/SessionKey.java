@@ -1,23 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.loginserver;
 
 import com.l2jfrozen.Config;
@@ -64,14 +44,16 @@ public class SessionKey
 	 * <p>
 	 * Only checks the PlayOk part of the session key if server doesn't show the license when player logs in.
 	 * </p>
-	 * @param key
+	 * @param  key
 	 * @return
 	 */
 	public boolean equals(final SessionKey key)
 	{
 		// when server doesn't show license it doesn't send the LoginOk packet, client doesn't have this part of the key then.
 		if (Config.SHOW_LICENCE)
+		{
 			return playOkID1 == key.playOkID1 && loginOkID1 == key.loginOkID1 && playOkID2 == key.playOkID2 && loginOkID2 == key.loginOkID2;
+		}
 		return playOkID1 == key.playOkID1 && playOkID2 == key.playOkID2;
 	}
 }

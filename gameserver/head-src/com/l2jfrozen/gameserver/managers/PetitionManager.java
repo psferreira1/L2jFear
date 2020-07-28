@@ -1,33 +1,11 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.managers;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import javolution.text.TextBuilder;
-import javolution.util.FastList;
-import javolution.util.FastMap;
 
 import org.apache.log4j.Logger;
 
@@ -42,6 +20,8 @@ import com.l2jfrozen.gameserver.network.serverpackets.L2GameServerPacket;
 import com.l2jfrozen.gameserver.network.serverpackets.NpcHtmlMessage;
 import com.l2jfrozen.gameserver.network.serverpackets.SystemMessage;
 
+import javolution.text.TextBuilder;
+
 /**
  * Petition Manager
  * @author Tempy
@@ -49,10 +29,10 @@ import com.l2jfrozen.gameserver.network.serverpackets.SystemMessage;
 public final class PetitionManager
 {
 	protected static final Logger LOGGER = Logger.getLogger(PetitionManager.class);
-	private static PetitionManager _instance;
+	private static PetitionManager instance;
 	
-	private final Map<Integer, Petition> _pendingPetitions;
-	private final Map<Integer, Petition> _completedPetitions;
+	private final Map<Integer, Petition> pendingPetitions;
+	private final Map<Integer, Petition> completedPetitions;
 	
 	private static enum PetitionState
 	{
@@ -82,60 +62,60 @@ public final class PetitionManager
 	
 	public static PetitionManager getInstance()
 	{
-		if (_instance == null)
+		if (instance == null)
 		{
 			LOGGER.info("Initializing PetitionManager");
-			_instance = new PetitionManager();
+			instance = new PetitionManager();
 		}
 		
-		return _instance;
+		return instance;
 	}
 	
 	private class Petition
 	{
-		private final long _submitTime = System.currentTimeMillis();
-		// private long _endTime = -1;
+		private final long submitTime = System.currentTimeMillis();
+		// private long endTime = -1;
 		
-		private final int _id;
-		private final PetitionType _type;
-		private PetitionState _state = PetitionState.Pending;
-		private final String _content;
+		private final int id;
+		private final PetitionType type;
+		private PetitionState state = PetitionState.Pending;
+		private final String content;
 		
-		private final List<CreatureSay> _messageLogger = new FastList<>();
+		private final List<CreatureSay> messageLogger = new ArrayList<>();
 		
-		private final L2PcInstance _petitioner;
-		private L2PcInstance _responder;
+		private final L2PcInstance petitioner;
+		private L2PcInstance responder;
 		
 		public Petition(final L2PcInstance petitioner, final String petitionText, int petitionType)
 		{
 			petitionType--;
-			_id = IdFactory.getInstance().getNextId();
+			id = IdFactory.getInstance().getNextId();
 			if (petitionType >= PetitionType.values().length)
 			{
 				LOGGER.warn("PetitionManager:Petition : invalid petition type (received type was +1) : " + petitionType);
 			}
-			_type = PetitionType.values()[petitionType];
-			_content = petitionText;
+			type = PetitionType.values()[petitionType];
+			content = petitionText;
 			
-			_petitioner = petitioner;
+			this.petitioner = petitioner;
 		}
 		
 		protected boolean addLogMessage(final CreatureSay cs)
 		{
-			return _messageLogger.add(cs);
+			return messageLogger.add(cs);
 		}
 		
 		protected List<CreatureSay> getLogMessages()
 		{
-			return _messageLogger;
+			return messageLogger;
 		}
 		
 		public boolean endPetitionConsultation(final PetitionState endState)
 		{
 			setState(endState);
-			// _endTime = System.currentTimeMillis();
+			// endTime = System.currentTimeMillis();
 			
-			if (getResponder() != null && getResponder().isOnline() == 1)
+			if (getResponder() != null && getResponder().isOnline())
 			{
 				if (endState == PetitionState.Responder_Reject)
 				{
@@ -161,7 +141,7 @@ public final class PetitionManager
 			}
 			
 			// End petition consultation and inform them, if they are still online.
-			if (getPetitioner() != null && getPetitioner().isOnline() == 1)
+			if (getPetitioner() != null && getPetitioner().isOnline())
 			{
 				getPetitioner().sendPacket(new SystemMessage(SystemMessageId.THIS_END_THE_PETITION_PLEASE_PROVIDE_FEEDBACK));
 			}
@@ -172,56 +152,58 @@ public final class PetitionManager
 		
 		public String getContent()
 		{
-			return _content;
+			return content;
 		}
 		
 		public int getId()
 		{
-			return _id;
+			return id;
 		}
 		
 		public L2PcInstance getPetitioner()
 		{
-			return _petitioner;
+			return petitioner;
 		}
 		
 		public L2PcInstance getResponder()
 		{
-			return _responder;
+			return responder;
 		}
 		
 		// public long getEndTime()
 		// {
-		// return _endTime;
+		// return endTime;
 		// }
 		
 		public long getSubmitTime()
 		{
-			return _submitTime;
+			return submitTime;
 		}
 		
 		public PetitionState getState()
 		{
-			return _state;
+			return state;
 		}
 		
 		public String getTypeAsString()
 		{
-			return _type.toString().replace("_", " ");
+			return type.toString().replace("_", " ");
 		}
 		
 		public void sendPetitionerPacket(final L2GameServerPacket responsePacket)
 		{
-			if (getPetitioner() == null || getPetitioner().isOnline() == 0)
+			if (getPetitioner() == null || !getPetitioner().isOnline())
+			{
 				// endPetitionConsultation(PetitionState.Petitioner_Missing);
 				return;
+			}
 			
 			getPetitioner().sendPacket(responsePacket);
 		}
 		
 		public void sendResponderPacket(final L2GameServerPacket responsePacket)
 		{
-			if (getResponder() == null || getResponder().isOnline() == 0)
+			if (getResponder() == null || !getResponder().isOnline())
 			{
 				endPetitionConsultation(PetitionState.Responder_Missing);
 				return;
@@ -232,22 +214,24 @@ public final class PetitionManager
 		
 		public void setState(final PetitionState state)
 		{
-			_state = state;
+			this.state = state;
 		}
 		
 		public void setResponder(final L2PcInstance respondingAdmin)
 		{
 			if (getResponder() != null)
+			{
 				return;
+			}
 			
-			_responder = respondingAdmin;
+			responder = respondingAdmin;
 		}
 	}
 	
 	private PetitionManager()
 	{
-		_pendingPetitions = new FastMap<>();
-		_completedPetitions = new FastMap<>();
+		pendingPetitions = new HashMap<>();
+		completedPetitions = new HashMap<>();
 	}
 	
 	public void clearCompletedPetitions()
@@ -269,12 +253,16 @@ public final class PetitionManager
 	public boolean acceptPetition(final L2PcInstance respondingAdmin, final int petitionId)
 	{
 		if (!isValidPetition(petitionId))
+		{
 			return false;
+		}
 		
 		Petition currPetition = getPendingPetitions().get(petitionId);
 		
 		if (currPetition.getResponder() != null)
+		{
 			return false;
+		}
 		
 		currPetition.setResponder(respondingAdmin);
 		currPetition.setState(PetitionState.In_Process);
@@ -301,10 +289,14 @@ public final class PetitionManager
 		for (final Petition currPetition : getPendingPetitions().values())
 		{
 			if (currPetition.getPetitioner() != null && currPetition.getPetitioner().getObjectId() == player.getObjectId())
+			{
 				return currPetition.endPetitionConsultation(PetitionState.Petitioner_Cancel);
+			}
 			
 			if (currPetition.getResponder() != null && currPetition.getResponder().getObjectId() == player.getObjectId())
+			{
 				return currPetition.endPetitionConsultation(PetitionState.Responder_Cancel);
+			}
 		}
 		
 		return false;
@@ -337,7 +329,9 @@ public final class PetitionManager
 	public boolean endActivePetition(final L2PcInstance player)
 	{
 		if (!player.isGM())
+		{
 			return false;
+		}
 		
 		for (final Petition currPetition : getPendingPetitions().values())
 		{
@@ -347,7 +341,9 @@ public final class PetitionManager
 			}
 			
 			if (currPetition.getResponder() != null && currPetition.getResponder().getObjectId() == player.getObjectId())
+			{
 				return currPetition.endPetitionConsultation(PetitionState.Completed);
+			}
 		}
 		
 		return false;
@@ -355,12 +351,12 @@ public final class PetitionManager
 	
 	protected Map<Integer, Petition> getCompletedPetitions()
 	{
-		return _completedPetitions;
+		return completedPetitions;
 	}
 	
 	protected Map<Integer, Petition> getPendingPetitions()
 	{
-		return _pendingPetitions;
+		return pendingPetitions;
 	}
 	
 	public int getPendingPetitionCount()
@@ -371,7 +367,9 @@ public final class PetitionManager
 	public int getPlayerTotalPetitionCount(final L2PcInstance player)
 	{
 		if (player == null)
+		{
 			return 0;
+		}
 		
 		int petitionCount = 0;
 		
@@ -414,7 +412,9 @@ public final class PetitionManager
 			}
 			
 			if (currPetition.getState() == PetitionState.In_Process)
+			{
 				return true;
+			}
 		}
 		
 		return false;
@@ -423,7 +423,9 @@ public final class PetitionManager
 	public boolean isPetitionInProcess(final int petitionId)
 	{
 		if (!isValidPetition(petitionId))
+		{
 			return false;
+		}
 		
 		final Petition currPetition = getPendingPetitions().get(petitionId);
 		return currPetition.getState() == PetitionState.In_Process;
@@ -446,7 +448,9 @@ public final class PetitionManager
 				}
 				
 				if (currPetition.getPetitioner() != null && currPetition.getPetitioner().getObjectId() == player.getObjectId() || currPetition.getResponder() != null && currPetition.getResponder().getObjectId() == player.getObjectId())
+				{
 					return true;
+				}
 			}
 		}
 		
@@ -470,7 +474,9 @@ public final class PetitionManager
 				}
 				
 				if (currPetition.getPetitioner() != null && currPetition.getPetitioner().getObjectId() == petitioner.getObjectId())
+				{
 					return true;
+				}
 			}
 		}
 		
@@ -485,12 +491,16 @@ public final class PetitionManager
 	public boolean rejectPetition(final L2PcInstance respondingAdmin, final int petitionId)
 	{
 		if (!isValidPetition(petitionId))
+		{
 			return false;
+		}
 		
 		final Petition currPetition = getPendingPetitions().get(petitionId);
 		
 		if (currPetition.getResponder() != null)
+		{
 			return false;
+		}
 		
 		currPetition.setResponder(respondingAdmin);
 		return currPetition.endPetitionConsultation(PetitionState.Responder_Reject);
@@ -598,10 +608,14 @@ public final class PetitionManager
 	public void viewPetition(final L2PcInstance activeChar, final int petitionId)
 	{
 		if (!activeChar.isGM())
+		{
 			return;
+		}
 		
 		if (!isValidPetition(petitionId))
+		{
 			return;
+		}
 		
 		Petition currPetition = getPendingPetitions().get(petitionId);
 		TextBuilder htmlContent = new TextBuilder("<html><body>");

@@ -1,22 +1,3 @@
-/* L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.model.zone.type;
 
 import java.util.Collection;
@@ -33,15 +14,15 @@ import com.l2jfrozen.gameserver.thread.ThreadPoolManager;
  */
 public class L2DamageZone extends L2ZoneType
 {
-	private int _damagePerSec;
-	private Future<?> _task;
+	private int damagePerSec;
+	private Future<?> task;
 	
 	public L2DamageZone(final int id)
 	{
 		super(id);
 		
 		// Setup default damage
-		_damagePerSec = 100;
+		damagePerSec = 100;
 	}
 	
 	@Override
@@ -49,7 +30,7 @@ public class L2DamageZone extends L2ZoneType
 	{
 		if (name.equals("dmgSec"))
 		{
-			_damagePerSec = Integer.parseInt(value);
+			damagePerSec = Integer.parseInt(value);
 		}
 		else
 		{
@@ -60,49 +41,49 @@ public class L2DamageZone extends L2ZoneType
 	@Override
 	protected void onEnter(final L2Character character)
 	{
-		if (_task == null)
+		if (task == null)
 		{
-			_task = ThreadPoolManager.getInstance().scheduleGeneralAtFixedRate(new ApplyDamage(this), 10, 1000);
+			task = ThreadPoolManager.getInstance().scheduleGeneralAtFixedRate(new ApplyDamage(this), 10, 1000);
 		}
 	}
 	
 	@Override
 	protected void onExit(final L2Character character)
 	{
-		if (_characterList.isEmpty())
+		if (characterList.isEmpty())
 		{
-			_task.cancel(true);
-			_task = null;
+			task.cancel(true);
+			task = null;
 		}
 	}
 	
 	protected Collection<L2Character> getCharacterList()
 	{
-		return _characterList.values();
+		return characterList.values();
 	}
 	
 	protected int getDamagePerSecond()
 	{
-		return _damagePerSec;
+		return damagePerSec;
 	}
 	
 	class ApplyDamage implements Runnable
 	{
-		private final L2DamageZone _dmgZone;
+		private final L2DamageZone dmgZone;
 		
 		ApplyDamage(final L2DamageZone zone)
 		{
-			_dmgZone = zone;
+			dmgZone = zone;
 		}
 		
 		@Override
 		public void run()
 		{
-			for (final L2Character temp : _dmgZone.getCharacterList())
+			for (final L2Character temp : dmgZone.getCharacterList())
 			{
 				if (temp != null && !temp.isDead() && temp instanceof L2PcInstance)
 				{
-					temp.reduceCurrentHp(_dmgZone.getDamagePerSecond(), null);
+					temp.reduceCurrentHp(dmgZone.getDamagePerSecond(), null);
 				}
 			}
 		}

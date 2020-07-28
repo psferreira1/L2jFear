@@ -1,23 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.cache;
 
 import javolution.context.ObjectFactory;
@@ -29,8 +9,8 @@ import javolution.util.FastMap;
 
 /**
  * @author Layane
- * @param <K>
- * @param <V>
+ * @param  <K>
+ * @param  <V>
  */
 @SuppressWarnings("rawtypes")
 public class FastMRUCache<K, V> extends FastCollection implements Reusable
@@ -42,27 +22,27 @@ public class FastMRUCache<K, V> extends FastCollection implements Reusable
 	private static final int DEFAULT_CAPACITY = 50;
 	private static final int DEFAULT_FORGET_TIME = 300000; // 5 Minutes
 	
-	private final FastMap<K, CacheNode> _cache = new FastMap<K, CacheNode>().setKeyComparator(FastComparator.DIRECT);
-	private FastMap<K, V> _map;
-	private final FastList<K> _mruList = new FastList<>();
-	private int _cacheSize;
-	private int _forgetTime;
+	private final FastMap<K, CacheNode> cache = new FastMap<K, CacheNode>().setKeyComparator(FastComparator.DIRECT);
+	private FastMap<K, V> fMap;
+	private final FastList<K> mruList = new FastList<>();
+	private int cacheSize;
+	private int forgetTime;
 	
 	class CacheNode
 	{
-		long _lastModified;
-		V _node;
+		long lastModified;
+		V node;
 		
 		public CacheNode(final V object)
 		{
-			_lastModified = System.currentTimeMillis();
-			_node = object;
+			lastModified = System.currentTimeMillis();
+			node = object;
 		}
 		
 		@Override
 		public boolean equals(final Object object)
 		{
-			return _node == object;
+			return node == object;
 		}
 	}
 	
@@ -111,56 +91,56 @@ public class FastMRUCache<K, V> extends FastCollection implements Reusable
 	
 	public FastMRUCache(final FastMap<K, V> map, final int max, final int forgetTime)
 	{
-		_map = map;
-		_cacheSize = max;
-		_forgetTime = forgetTime;
-		_map.setKeyComparator(FastComparator.DIRECT);
+		fMap = map;
+		cacheSize = max;
+		this.forgetTime = forgetTime;
+		fMap.setKeyComparator(FastComparator.DIRECT);
 	}
 	
 	// Implements Reusable.
 	@Override
 	public synchronized void reset()
 	{
-		_map.reset();
-		_cache.reset();
-		_mruList.reset();
-		_map.setKeyComparator(FastComparator.DIRECT);
-		_cache.setKeyComparator(FastComparator.DIRECT);
+		fMap.reset();
+		cache.reset();
+		mruList.reset();
+		fMap.setKeyComparator(FastComparator.DIRECT);
+		cache.setKeyComparator(FastComparator.DIRECT);
 	}
 	
 	public synchronized V get(final K key)
 	{
 		V result;
 		
-		if (!_cache.containsKey(key))
+		if (!cache.containsKey(key))
 		{
-			if (_mruList.size() >= _cacheSize)
+			if (mruList.size() >= cacheSize)
 			{
 				
-				_cache.remove(_mruList.getLast());
-				_mruList.removeLast();
+				cache.remove(mruList.getLast());
+				mruList.removeLast();
 			}
 			
-			result = _map.get(key);
+			result = fMap.get(key);
 			
-			_cache.put(key, new CacheNode(result));
-			_mruList.addFirst(key);
+			cache.put(key, new CacheNode(result));
+			mruList.addFirst(key);
 		}
 		else
 		{
-			final CacheNode current = _cache.get(key);
+			final CacheNode current = cache.get(key);
 			
-			if (current._lastModified + _forgetTime <= System.currentTimeMillis())
+			if (current.lastModified + forgetTime <= System.currentTimeMillis())
 			{
-				current._lastModified = System.currentTimeMillis();
-				current._node = _map.get(key);
-				_cache.put(key, current);
+				current.lastModified = System.currentTimeMillis();
+				current.node = fMap.get(key);
+				cache.put(key, current);
 			}
 			
-			_mruList.remove(key);
-			_mruList.addFirst(key);
+			mruList.remove(key);
+			mruList.addFirst(key);
 			
-			result = current._node;
+			result = current.node;
 		}
 		
 		return result;
@@ -169,51 +149,51 @@ public class FastMRUCache<K, V> extends FastCollection implements Reusable
 	@Override
 	public synchronized boolean remove(final Object key)
 	{
-		_cache.remove(key);
-		_mruList.remove(key);
-		return _map.remove(key) == key;
+		cache.remove(key);
+		mruList.remove(key);
+		return fMap.remove(key) == key;
 	}
 	
 	public FastMap<K, V> getContentMap()
 	{
-		return _map;
+		return fMap;
 	}
 	
 	@Override
 	public int size()
 	{
-		return _mruList.size();
+		return mruList.size();
 	}
 	
 	public int capacity()
 	{
-		return _cacheSize;
+		return cacheSize;
 	}
 	
 	public int getForgetTime()
 	{
-		return _forgetTime;
+		return forgetTime;
 	}
 	
 	@Override
 	public synchronized void clear()
 	{
-		_cache.clear();
-		_mruList.clear();
-		_map.clear();
+		cache.clear();
+		mruList.clear();
+		fMap.clear();
 	}
 	
 	// Implements FastCollection abstract method.
 	@Override
 	public final Record head()
 	{
-		return _mruList.head();
+		return mruList.head();
 	}
 	
 	@Override
 	public final Record tail()
 	{
-		return _mruList.tail();
+		return mruList.tail();
 	}
 	
 	@Override

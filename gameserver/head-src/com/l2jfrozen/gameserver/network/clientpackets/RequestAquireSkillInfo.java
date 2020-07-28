@@ -1,23 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.network.clientpackets;
 
 import org.apache.log4j.Logger;
@@ -38,16 +18,16 @@ public class RequestAquireSkillInfo extends L2GameClientPacket
 {
 	private static Logger LOGGER = Logger.getLogger(RequestAquireSkillInfo.class);
 	
-	private int _id;
-	private int _level;
-	private int _skillType;
+	private int id;
+	private int level;
+	private int skillType;
 	
 	@Override
 	protected void readImpl()
 	{
-		_id = readD();
-		_level = readD();
-		_skillType = readD();
+		id = readD();
+		level = readD();
+		skillType = readD();
 	}
 	
 	@Override
@@ -55,7 +35,9 @@ public class RequestAquireSkillInfo extends L2GameClientPacket
 	{
 		final L2PcInstance activeChar = getClient().getActiveChar();
 		if (activeChar == null)
+		{
 			return;
+		}
 		
 		final L2FolkInstance trainer = activeChar.getLastFolkNPC();
 		if (trainer == null)
@@ -69,26 +51,28 @@ public class RequestAquireSkillInfo extends L2GameClientPacket
 		}
 		
 		boolean canteach = false;
-		final L2Skill skill = SkillTable.getInstance().getInfo(_id, _level);
+		final L2Skill skill = SkillTable.getInstance().getInfo(id, level);
 		if (skill == null)
 		{
 			if (Config.DEBUG)
 			{
-				LOGGER.warn("skill id " + _id + " level " + _level + " is undefined. aquireSkillInfo failed.");
+				LOGGER.warn("skill id " + id + " level " + level + " is undefined. aquireSkillInfo failed.");
 			}
 			return;
 		}
 		
-		if (_skillType == 0)
+		if (skillType == 0)
 		{
 			if (!trainer.getTemplate().canTeach(activeChar.getSkillLearningClassId()))
+			{
 				return; // cheater
-				
+			}
+			
 			final L2SkillLearn[] skills = SkillTreeTable.getInstance().getAvailableSkills(activeChar, activeChar.getSkillLearningClassId());
 			
 			for (final L2SkillLearn s : skills)
 			{
-				if (s.getId() == _id && s.getLevel() == _level)
+				if (s.getId() == id && s.getLevel() == level)
 				{
 					canteach = true;
 					break;
@@ -96,15 +80,17 @@ public class RequestAquireSkillInfo extends L2GameClientPacket
 			}
 			
 			if (!canteach)
+			{
 				return; // cheater
-				
+			}
+			
 			final int requiredSp = SkillTreeTable.getInstance().getSkillCost(activeChar, skill);
 			final AquireSkillInfo asi = new AquireSkillInfo(skill.getId(), skill.getLevel(), requiredSp, 0);
 			
 			int spbId = -1;
 			if (Config.DIVINE_SP_BOOK_NEEDED && skill.getId() == L2Skill.SKILL_DIVINE_INSPIRATION)
 			{
-				spbId = SkillSpellbookTable.getInstance().getBookForSkill(skill, _level);
+				spbId = SkillSpellbookTable.getInstance().getBookForSkill(skill, level);
 			}
 			else if (Config.SP_BOOK_NEEDED && skill.getLevel() == 1)
 			{
@@ -118,7 +104,7 @@ public class RequestAquireSkillInfo extends L2GameClientPacket
 			
 			sendPacket(asi);
 		}
-		else if (_skillType == 2)
+		else if (skillType == 2)
 		{
 			int requiredRep = 0;
 			int itemId = 0;
@@ -126,7 +112,7 @@ public class RequestAquireSkillInfo extends L2GameClientPacket
 			
 			for (final L2PledgeSkillLearn s : skills)
 			{
-				if (s.getId() == _id && s.getLevel() == _level)
+				if (s.getId() == id && s.getLevel() == level)
 				{
 					canteach = true;
 					requiredRep = s.getRepCost();
@@ -136,8 +122,10 @@ public class RequestAquireSkillInfo extends L2GameClientPacket
 			}
 			
 			if (!canteach)
+			{
 				return; // cheater
-				
+			}
+			
 			final AquireSkillInfo asi = new AquireSkillInfo(skill.getId(), skill.getLevel(), requiredRep, 2);
 			
 			if (Config.LIFE_CRYSTAL_NEEDED)

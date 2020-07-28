@@ -1,19 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any later
- * version.
- * 
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
- * 
- * You should have received a copy of the GNU General Public License along with
- * this program. If not, see <http://www.gnu.org/licenses/>.
- */
 package com.l2jfrozen.gameserver.network.serverpackets;
 
 import com.l2jfrozen.gameserver.managers.TownManager;
@@ -25,15 +9,15 @@ import com.l2jfrozen.gameserver.model.actor.instance.L2PcInstance;
  */
 public class ExManagePartyRoomMember extends L2GameServerPacket
 {
-	private final L2PcInstance _activeChar;
-	private final PartyMatchRoom _room;
-	private final int _mode;
+	private final L2PcInstance activeChar;
+	private final PartyMatchRoom room;
+	private final int mode;
 	
 	public ExManagePartyRoomMember(final L2PcInstance player, final PartyMatchRoom room, final int mode)
 	{
-		_activeChar = player;
-		_room = room;
-		_mode = mode;
+		activeChar = player;
+		this.room = room;
+		this.mode = mode;
 	}
 	
 	@Override
@@ -41,20 +25,26 @@ public class ExManagePartyRoomMember extends L2GameServerPacket
 	{
 		writeC(0xfe);
 		writeH(0x10);
-		writeD(_mode);
-		writeD(_activeChar.getObjectId());
-		writeS(_activeChar.getName());
-		writeD(_activeChar.getActiveClass());
-		writeD(_activeChar.getLevel());
-		writeD(TownManager.getClosestLocation(_activeChar));
-		if (_room.getOwner().equals(_activeChar))
+		writeD(mode);
+		writeD(activeChar.getObjectId());
+		writeS(activeChar.getName());
+		writeD(activeChar.getActiveClass());
+		writeD(activeChar.getLevel());
+		writeD(TownManager.getClosestLocation(activeChar));
+		if (room.getOwner().equals(activeChar))
+		{
 			writeD(1);
+		}
 		else
 		{
-			if ((_room.getOwner().isInParty() && _activeChar.isInParty()) && (_room.getOwner().getParty().getPartyLeaderOID() == _activeChar.getParty().getPartyLeaderOID()))
+			if ((room.getOwner().isInParty() && activeChar.isInParty()) && (room.getOwner().getParty().getPartyLeaderOID() == activeChar.getParty().getPartyLeaderOID()))
+			{
 				writeD(2);
+			}
 			else
+			{
 				writeD(0);
+			}
 		}
 	}
 	

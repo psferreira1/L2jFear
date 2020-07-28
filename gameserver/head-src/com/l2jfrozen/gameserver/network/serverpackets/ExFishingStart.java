@@ -1,23 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.network.serverpackets;
 
 import com.l2jfrozen.gameserver.model.L2Character;
@@ -28,50 +8,41 @@ import com.l2jfrozen.gameserver.model.L2Character;
  */
 public class ExFishingStart extends L2GameServerPacket
 {
-	private static final String _S__FE_13_EXFISHINGSTART = "[S] FE:13 ExFishingStart";
-	private final L2Character _activeChar;
-	private final int _x, _y, _z, _fishType;
+	private final L2Character activeChar;
+	private final int x, y, z, fishType;
 	@SuppressWarnings("unused")
-	private final boolean _isNightLure;
+	private final boolean isNightLure;
 	
 	public ExFishingStart(final L2Character character, final int fishType, final int x, final int y, final int z, final boolean isNightLure)
 	{
-		_activeChar = character;
-		_fishType = fishType;
-		_x = x;
-		_y = y;
-		_z = z;
-		_isNightLure = isNightLure;
+		activeChar = character;
+		this.fishType = fishType;
+		this.x = x;
+		this.y = y;
+		this.z = z;
+		this.isNightLure = isNightLure;
 	}
 	
-	/*
-	 * (non-Javadoc)
-	 * @see com.l2jfrozen.gameserver.serverpackets.ServerBasePacket#writeImpl()
-	 */
 	@Override
 	protected void writeImpl()
 	{
 		writeC(0xfe);
 		writeH(0x13);
-		writeD(_activeChar.getObjectId());
-		writeD(_fishType); // fish type
-		writeD(_x); // x poisson
-		writeD(_y); // y poisson
-		writeD(_z); // z poisson
+		writeD(activeChar.getObjectId());
+		writeD(fishType); // fish type
+		writeD(x); // x poisson
+		writeD(y); // y poisson
+		writeD(z); // z poisson
 		writeC(0x00); // night lure
 		writeC(0x00); // ??
-		writeC(_fishType >= 7 && _fishType <= 9 ? 0x01 : 0x00); // 0 = day lure 1 = night lure
+		writeC(fishType >= 7 && fishType <= 9 ? 0x01 : 0x00); // 0 = day lure 1 = night lure
 		writeC(0x00);
 	}
 	
-	/*
-	 * (non-Javadoc)
-	 * @see com.l2jfrozen.gameserver.BasePacket#getType()
-	 */
 	@Override
 	public String getType()
 	{
-		return _S__FE_13_EXFISHINGSTART;
+		return "[S] FE:13 ExFishingStart";
 	}
 	
 }

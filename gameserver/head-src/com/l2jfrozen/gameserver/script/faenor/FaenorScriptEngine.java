@@ -1,23 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.script.faenor;
 
 import java.io.File;
@@ -51,41 +31,31 @@ public class FaenorScriptEngine extends ScriptEngine
 	public final static String PACKAGE_DIRECTORY = "data/faenor/";
 	public final static boolean DEBUG = true;
 	
-	private LinkedList<ScriptDocument> _scripts;
+	private LinkedList<ScriptDocument> scripts;
 	
 	public static FaenorScriptEngine getInstance()
 	{
-		return SingletonHolder._instance;
+		return SingletonHolder.instance;
 	}
 	
-	private FaenorScriptEngine()
+	public FaenorScriptEngine()
 	{
-		_scripts = new LinkedList<>();
+		scripts = new LinkedList<>();
 		loadPackages();
 		parsePackages();
-		
 	}
 	
 	public void reloadPackages()
 	{
-		_scripts = new LinkedList<>();
+		scripts = new LinkedList<>();
 		parsePackages();
 	}
 	
 	private void loadPackages()
 	{
-		LOGGER.info("[FeanorScriptEngine] Loading Packages ...");
-		
 		final File packDirectory = new File(Config.DATAPACK_ROOT, PACKAGE_DIRECTORY);// LOGGER.sss(packDirectory.getAbsolutePath());
 		
-		final FileFilter fileFilter = new FileFilter()
-		{
-			@Override
-			public boolean accept(final File file)
-			{
-				return file.getName().endsWith(".zip");
-			}
-		};
+		final FileFilter fileFilter = file -> file.getName().endsWith(".zip");
 		
 		final File[] files = packDirectory.listFiles(fileFilter);
 		if (files == null)
@@ -119,7 +89,7 @@ public class FaenorScriptEngine extends ScriptEngine
 			final List<ScriptDocument> scrpts = module.getScriptFiles();
 			for (final ScriptDocument script : scrpts)
 			{
-				_scripts.add(script);
+				scripts.add(script);
 			}
 			try
 			{
@@ -128,28 +98,29 @@ public class FaenorScriptEngine extends ScriptEngine
 			catch (final IOException e)
 			{
 				if (Config.ENABLE_ALL_EXCEPTIONS)
+				{
 					e.printStackTrace();
+				}
 			}
 		}
 		
-		LOGGER.info("[FeanorScriptEngine] Loaded " + _scripts.size() + " scripts ...");
-		
-		/*
-		 * for (ScriptDocument script : scripts) { LOGGER.sss("Script: "+script); } LOGGER.sss("Sorting"); orderScripts(); for (ScriptDocument script : scripts) { LOGGER.sss("Script: "+script); }
-		 */
+		if (!scripts.isEmpty())
+		{
+			LOGGER.info("[FeanorScriptEngine] Loaded " + scripts.size() + " scripts ...");
+		}
 	}
 	
 	public void orderScripts()
 	{
-		if (_scripts.size() > 1)
+		if (scripts.size() > 1)
 		{
 			// ScriptDocument npcInfo = null;
 			
-			for (int i = 0; i < _scripts.size();)
+			for (int i = 0; i < scripts.size();)
 			{
-				if (_scripts.get(i).getName().contains("NpcStatData"))
+				if (scripts.get(i).getName().contains("NpcStatData"))
 				{
-					_scripts.addFirst(_scripts.remove(i));
+					scripts.addFirst(scripts.remove(i));
 					// scripts.set(i, scripts.get(0));
 					// scripts.set(0, npcInfo);
 				}
@@ -170,7 +141,7 @@ public class FaenorScriptEngine extends ScriptEngine
 			sem.eval("beanshell", "double log1p(double d) { return Math.log1p(d); }");
 			sem.eval("beanshell", "double pow(double d, double p) { return Math.pow(d,p); }");
 			
-			for (final ScriptDocument script : _scripts)
+			for (final ScriptDocument script : scripts)
 			{
 				parseScript(script, context);
 			}
@@ -223,21 +194,22 @@ public class FaenorScriptEngine extends ScriptEngine
 	@Override
 	public String toString()
 	{
-		if (_scripts.isEmpty())
+		if (scripts.isEmpty())
+		{
 			return "No Packages Loaded.";
+		}
 		
 		String out = "Script Packages currently loaded:\n";
 		
-		for (final ScriptDocument script : _scripts)
+		for (final ScriptDocument script : scripts)
 		{
 			out += script;
 		}
 		return out;
 	}
 	
-	@SuppressWarnings("synthetic-access")
 	private static class SingletonHolder
 	{
-		protected static final FaenorScriptEngine _instance = new FaenorScriptEngine();
+		protected static final FaenorScriptEngine instance = new FaenorScriptEngine();
 	}
 }

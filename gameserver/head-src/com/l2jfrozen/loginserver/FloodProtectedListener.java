@@ -1,31 +1,11 @@
-/* L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.loginserver;
 
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.HashMap;
 import java.util.Map;
-
-import javolution.util.FastMap;
 
 import org.apache.log4j.Logger;
 
@@ -37,23 +17,23 @@ import com.l2jfrozen.Config;
 public abstract class FloodProtectedListener extends Thread
 {
 	private final Logger LOGGER = Logger.getLogger(FloodProtectedListener.class);
-	private final Map<String, ForeignConnection> _floodProtection = new FastMap<>();
-	private final String _listenIp;
-	private final int _port;
-	private ServerSocket _serverSocket;
+	private final Map<String, ForeignConnection> floodProtection = new HashMap<>();
+	private final String listenIp;
+	private final int port;
+	private ServerSocket serverSocket;
 	
 	public FloodProtectedListener(final String listenIp, final int port) throws IOException
 	{
-		_port = port;
-		_listenIp = listenIp;
+		this.port = port;
+		this.listenIp = listenIp;
 		
-		if (_listenIp.equals("*"))
+		if (this.listenIp.equals("*"))
 		{
-			_serverSocket = new ServerSocket(_port);
+			serverSocket = new ServerSocket(this.port);
 		}
 		else
 		{
-			_serverSocket = new ServerSocket(_port, 50, InetAddress.getByName(_listenIp));
+			serverSocket = new ServerSocket(this.port, 50, InetAddress.getByName(this.listenIp));
 		}
 	}
 	
@@ -66,10 +46,10 @@ public abstract class FloodProtectedListener extends Thread
 		{
 			try
 			{
-				connection = _serverSocket.accept();
+				connection = serverSocket.accept();
 				if (Config.FLOOD_PROTECTION)
 				{
-					ForeignConnection fConnection = _floodProtection.get(connection.getInetAddress().getHostAddress());
+					ForeignConnection fConnection = floodProtection.get(connection.getInetAddress().getHostAddress());
 					
 					if (fConnection != null)
 					{
@@ -102,7 +82,7 @@ public abstract class FloodProtectedListener extends Thread
 					else
 					{
 						fConnection = new ForeignConnection(System.currentTimeMillis());
-						_floodProtection.put(connection.getInetAddress().getHostAddress(), fConnection);
+						floodProtection.put(connection.getInetAddress().getHostAddress(), fConnection);
 						fConnection = null;
 					}
 				}
@@ -111,7 +91,9 @@ public abstract class FloodProtectedListener extends Thread
 			catch (final Exception e)
 			{
 				if (Config.ENABLE_ALL_EXCEPTIONS)
+				{
 					e.printStackTrace();
+				}
 				try
 				{
 					if (connection != null)
@@ -122,7 +104,9 @@ public abstract class FloodProtectedListener extends Thread
 				catch (final Exception e2)
 				{
 					if (Config.ENABLE_ALL_EXCEPTIONS)
+					{
 						e2.printStackTrace();
+					}
 					
 				}
 				if (isInterrupted())
@@ -130,7 +114,7 @@ public abstract class FloodProtectedListener extends Thread
 					// shutdown?
 					try
 					{
-						_serverSocket.close();
+						serverSocket.close();
 					}
 					catch (final IOException io)
 					{
@@ -163,9 +147,11 @@ public abstract class FloodProtectedListener extends Thread
 	public void removeFloodProtection(final String ip)
 	{
 		if (!Config.FLOOD_PROTECTION)
+		{
 			return;
+		}
 		
-		ForeignConnection fConnection = _floodProtection.get(ip);
+		ForeignConnection fConnection = floodProtection.get(ip);
 		
 		if (fConnection != null)
 		{
@@ -173,7 +159,7 @@ public abstract class FloodProtectedListener extends Thread
 			
 			if (fConnection.connectionNumber == 0)
 			{
-				_floodProtection.remove(ip);
+				floodProtection.remove(ip);
 			}
 		}
 		else
@@ -188,7 +174,7 @@ public abstract class FloodProtectedListener extends Thread
 	{
 		try
 		{
-			_serverSocket.close();
+			serverSocket.close();
 		}
 		catch (final IOException e)
 		{

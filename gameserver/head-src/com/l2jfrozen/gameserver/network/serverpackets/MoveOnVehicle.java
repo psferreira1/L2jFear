@@ -1,23 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.network.serverpackets;
 
 import com.l2jfrozen.gameserver.model.actor.instance.L2PcInstance;
@@ -34,18 +14,17 @@ import com.l2jfrozen.gameserver.model.actor.instance.L2PcInstance;
  */
 public class MoveOnVehicle extends L2GameServerPacket
 {
-	private static final String _S__71_MOVEONVEICLE = "[S] 71 MoveOnVehicle";
-	private final int _id;
-	private final int _x, _y, _z;
-	private final L2PcInstance _activeChar;
+	private final int id;
+	private final int x, y, z;
+	private final L2PcInstance activeChar;
 	
 	public MoveOnVehicle(final int vehicleID, final L2PcInstance player, final int x, final int y, final int z)
 	{
-		_id = vehicleID;
-		_activeChar = player;
-		_x = x;
-		_y = y;
-		_z = z;
+		id = vehicleID;
+		activeChar = player;
+		this.x = x;
+		this.y = y;
+		this.z = z;
 	}
 	
 	@Override
@@ -53,23 +32,19 @@ public class MoveOnVehicle extends L2GameServerPacket
 	{
 		writeC(0x71);
 		
-		writeD(_activeChar.getObjectId());
-		writeD(_id);
-		writeD(_x);
-		writeD(_y);
-		writeD(_z);
-		writeD(_activeChar.getX());
-		writeD(_activeChar.getY());
-		writeD(_activeChar.getZ());
+		writeD(activeChar.getObjectId());
+		writeD(id);
+		writeD(x);
+		writeD(y);
+		writeD(z);
+		writeD(activeChar.getX());
+		writeD(activeChar.getY());
+		writeD(activeChar.getZ());
 	}
 	
-	/*
-	 * (non-Javadoc)
-	 * @see com.l2jfrozen.gameserver.serverpackets.ServerBasePacket#getType()
-	 */
 	@Override
 	public String getType()
 	{
-		return _S__71_MOVEONVEICLE;
+		return "[S] 71 MoveOnVehicle";
 	}
 }

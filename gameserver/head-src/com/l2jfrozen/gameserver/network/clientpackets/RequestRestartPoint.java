@@ -1,23 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.network.clientpackets;
 
 import org.apache.log4j.Logger;
@@ -46,34 +26,35 @@ import com.l2jfrozen.gameserver.util.Util;
  */
 public final class RequestRestartPoint extends L2GameClientPacket
 {
-	private static Logger LOGGER = Logger.getLogger(RequestRestartPoint.class);
+	static final Logger LOGGER = Logger.getLogger(RequestRestartPoint.class);
 	
-	protected int _requestedPointType;
-	protected boolean _continuation;
+	protected int requestedPointType;
+	protected boolean continuation;
 	
 	@Override
 	protected void readImpl()
 	{
-		_requestedPointType = readD();
+		requestedPointType = readD();
 	}
 	
 	class DeathTask implements Runnable
 	{
 		L2PcInstance activeChar;
 		
-		DeathTask(final L2PcInstance _activeChar)
+		DeathTask(final L2PcInstance activeChar)
 		{
-			activeChar = _activeChar;
+			this.activeChar = activeChar;
 		}
 		
 		@Override
 		public void run()
 		{
-			if ((activeChar._inEventTvT && TvT.is_started()) || (activeChar._inEventDM && DM.is_started()) || (activeChar._inEventCTF && CTF.is_started()))
+			if ((activeChar.inEventTvT && TvT.isStarted()) || (activeChar.inEventDM && DM.isStarted()) || (activeChar.inEventCTF && CTF.isStarted()))
 			{
 				activeChar.sendMessage("You can't restart in Event!");
 				return;
 			}
+			
 			try
 			{
 				Location loc = null;
@@ -82,23 +63,24 @@ public final class RequestRestartPoint extends L2GameClientPacket
 				
 				if (activeChar.isInJail())
 				{
-					_requestedPointType = 27;
+					requestedPointType = 27;
 				}
 				else if (activeChar.isFestivalParticipant())
 				{
-					_requestedPointType = 4;
+					requestedPointType = 4;
 				}
 				
 				if (activeChar.isPhoenixBlessed())
+				{
 					activeChar.stopPhoenixBlessing(null);
+				}
 				
-				switch (_requestedPointType)
+				switch (requestedPointType)
 				{
 					case 1: // to clanhall
 						
 						if (activeChar.getClan() != null)
 						{
-							
 							if (activeChar.getClan().getHasHideout() == 0)
 							{
 								// cheater
@@ -106,6 +88,7 @@ public final class RequestRestartPoint extends L2GameClientPacket
 								Util.handleIllegalPlayerAction(activeChar, "Player " + activeChar.getName() + " used respawn cheat.", IllegalPlayerAction.PUNISH_KICK);
 								return;
 							}
+							
 							loc = MapRegionTable.getInstance().getTeleToLocation(activeChar, MapRegionTable.TeleportWhereType.ClanHall);
 							
 							if (ClanHallManager.getInstance().getClanHallByOwner(activeChar.getClan()) != null && ClanHallManager.getInstance().getClanHallByOwner(activeChar.getClan()).getFunction(ClanHall.FUNC_RESTORE_EXP) != null)
@@ -119,6 +102,7 @@ public final class RequestRestartPoint extends L2GameClientPacket
 						loc = MapRegionTable.getInstance().getTeleToLocation(activeChar, MapRegionTable.TeleportWhereType.Town);
 						break;
 					case 2: // to castle
+						
 						Boolean isInDefense = false;
 						castle = CastleManager.getInstance().getCastle(activeChar);
 						fort = FortManager.getInstance().getFort(activeChar);
@@ -142,7 +126,7 @@ public final class RequestRestartPoint extends L2GameClientPacket
 							}
 						}
 						
-						if (activeChar.getClan().getHasCastle() == 0 && activeChar.getClan().getHasFort() == 0 && !isInDefense)
+						if (activeChar.getClan().getCastleId() == 0 && activeChar.getClan().getHasFort() == 0 && !isInDefense)
 						{
 							// cheater
 							activeChar.sendMessage("You may not use this respawn point!");
@@ -151,14 +135,19 @@ public final class RequestRestartPoint extends L2GameClientPacket
 						}
 						
 						if (CastleManager.getInstance().getCastleByOwner(activeChar.getClan()) != null)
+						{
 							teleportWhere = MapRegionTable.TeleportWhereType.Castle;
+						}
 						else if (FortManager.getInstance().getFortByOwner(activeChar.getClan()) != null)
+						{
 							teleportWhere = MapRegionTable.TeleportWhereType.Fortress;
+						}
 						
 						loc = MapRegionTable.getInstance().getTeleToLocation(activeChar, teleportWhere);
 						break;
 					
 					case 3: // to siege HQ
+						
 						L2SiegeClan siegeClan = null;
 						castle = CastleManager.getInstance().getCastle(activeChar);
 						fort = FortManager.getInstance().getFort(activeChar);
@@ -184,6 +173,7 @@ public final class RequestRestartPoint extends L2GameClientPacket
 						break;
 					
 					case 4: // Fixed or Player is a festival participant
+						
 						if (!activeChar.isGM() && !activeChar.isFestivalParticipant())
 						{
 							// cheater
@@ -196,17 +186,23 @@ public final class RequestRestartPoint extends L2GameClientPacket
 						break;
 					
 					case 27: // to jail
+						
 						if (!activeChar.isInJail())
+						{
 							return;
+						}
+						
 						loc = new Location(-114356, -249645, -2984);
 						break;
 					
 					default:
+						
 						if (activeChar.getKarma() > 0 && Config.ALT_KARMA_TELEPORT_TO_FLORAN)
 						{
 							loc = new Location(17836, 170178, -3507);// Floran Village
 							break;
 						}
+						
 						loc = MapRegionTable.getInstance().getTeleToLocation(activeChar, MapRegionTable.TeleportWhereType.Town);
 						break;
 				}
@@ -216,10 +212,9 @@ public final class RequestRestartPoint extends L2GameClientPacket
 				activeChar.setIsPendingRevive(true);
 				activeChar.teleToLocation(loc, true);
 			}
-			catch (final Throwable e)
+			catch (Exception e)
 			{
-				e.printStackTrace();
-				// LOGGER.error( "", e);
+				LOGGER.error("DeathTask.run : Error while trying to determinate a point to revive a player.", e);
 			}
 		}
 	}
@@ -230,7 +225,9 @@ public final class RequestRestartPoint extends L2GameClientPacket
 		final L2PcInstance activeChar = getClient().getActiveChar();
 		
 		if (activeChar == null)
+		{
 			return;
+		}
 		
 		if (activeChar.isFakeDeath())
 		{

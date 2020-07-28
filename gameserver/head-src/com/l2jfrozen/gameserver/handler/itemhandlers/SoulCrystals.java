@@ -1,23 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.handler.itemhandlers;
 
 import com.l2jfrozen.gameserver.datatables.SkillTable;
@@ -94,7 +74,9 @@ public class SoulCrystals implements IItemHandler
 	public void useItem(final L2PlayableInstance playable, final L2ItemInstance item)
 	{
 		if (!(playable instanceof L2PcInstance))
+		{
 			return;
+		}
 		
 		L2PcInstance activeChar = (L2PcInstance) playable;
 		L2Object target = activeChar.getTarget();
@@ -143,27 +125,29 @@ public class SoulCrystals implements IItemHandler
 	
 	static class CrystalFinalizer implements Runnable
 	{
-		private final L2PcInstance _activeChar;
-		private final L2Attackable _target;
-		private final int _crystalId;
+		private final L2PcInstance activeChar;
+		private final L2Attackable target;
+		private final int crystalId;
 		
 		CrystalFinalizer(final L2PcInstance activeChar, final L2Object target, final int crystalId)
 		{
-			_activeChar = activeChar;
-			_target = (L2Attackable) target;
-			_crystalId = crystalId;
+			this.activeChar = activeChar;
+			this.target = (L2Attackable) target;
+			this.crystalId = crystalId;
 		}
 		
 		@Override
 		public void run()
 		{
-			if (_activeChar.isDead() || _target.isDead())
+			if (activeChar.isDead() || target.isDead())
+			{
 				return;
-			_activeChar.enableAllSkills();
+			}
+			activeChar.enableAllSkills();
 			try
 			{
-				_target.addAbsorber(_activeChar, _crystalId);
-				_activeChar.setTarget(_target);
+				target.addAbsorber(activeChar, crystalId);
+				activeChar.setTarget(target);
 			}
 			catch (final Throwable e)
 			{

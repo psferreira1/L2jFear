@@ -1,25 +1,3 @@
-/*
- *@author Julian
- *
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.model.actor.instance;
 
 import com.l2jfrozen.gameserver.datatables.SkillTable;
@@ -32,47 +10,47 @@ import com.l2jfrozen.gameserver.templates.L2NpcTemplate;
 import com.l2jfrozen.util.random.Rnd;
 
 /**
- * This class manages all chest.
+ * @author Julian
  */
 public final class L2ChestInstance extends L2MonsterInstance
 {
-	private volatile boolean _isInteracted;
-	private volatile boolean _specialDrop;
+	private volatile boolean isInteracted;
+	private volatile boolean specialDrop;
 	
 	public L2ChestInstance(final int objectId, final L2NpcTemplate template)
 	{
 		super(objectId, template);
-		_isInteracted = false;
-		_specialDrop = false;
+		isInteracted = false;
+		specialDrop = false;
 	}
 	
 	@Override
 	public void onSpawn()
 	{
 		super.onSpawn();
-		_isInteracted = false;
-		_specialDrop = false;
+		isInteracted = false;
+		specialDrop = false;
 		setMustRewardExpSp(true);
 	}
 	
 	public synchronized boolean isInteracted()
 	{
-		return _isInteracted;
+		return isInteracted;
 	}
 	
 	public synchronized void setInteracted()
 	{
-		_isInteracted = true;
+		isInteracted = true;
 	}
 	
 	public synchronized boolean isSpecialDrop()
 	{
-		return _specialDrop;
+		return specialDrop;
 	}
 	
 	public synchronized void setSpecialDrop()
 	{
-		_specialDrop = true;
+		specialDrop = true;
 	}
 	
 	@Override
@@ -80,7 +58,7 @@ public final class L2ChestInstance extends L2MonsterInstance
 	{
 		int id = getTemplate().npcId;
 		
-		if (!_specialDrop)
+		if (!specialDrop)
 		{
 			if (id >= 18265 && id <= 18286)
 			{
@@ -219,7 +197,9 @@ public final class L2ChestInstance extends L2MonsterInstance
 		}
 		
 		if (player.isDead() || !player.isVisible() || !player.isInsideRadius(this, getDistanceToWatchObject(player), false, false))
+		{
 			return false;
+		}
 		
 		L2Skill skill = SkillTable.getInstance().getInfo(skillId, skillLevel);
 		
@@ -237,10 +217,14 @@ public final class L2ChestInstance extends L2MonsterInstance
 	public boolean isMovementDisabled()
 	{
 		if (super.isMovementDisabled())
+		{
 			return true;
+		}
 		
 		if (isInteracted())
+		{
 			return false;
+		}
 		
 		return true;
 	}

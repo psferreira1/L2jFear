@@ -1,26 +1,7 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.network.serverpackets;
 
-import javolution.util.FastList;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.log4j.Logger;
 
@@ -34,37 +15,36 @@ import com.l2jfrozen.gameserver.model.actor.instance.L2PcInstance;
  */
 public class WareHouseDepositList extends L2GameServerPacket
 {
+	private static Logger LOGGER = Logger.getLogger(WareHouseDepositList.class);
 	public static final int PRIVATE = 1;
 	public static final int CLAN = 2;
 	public static final int CASTLE = 3; // not sure
 	public static final int FREIGHT = 4; // not sure
-	private static Logger LOGGER = Logger.getLogger(WareHouseDepositList.class);
-	private static final String _S__53_WAREHOUSEDEPOSITLIST = "[S] 41 WareHouseDepositList";
-	private final L2PcInstance _activeChar;
-	private final int _playerAdena;
-	private final FastList<L2ItemInstance> _items;
-	private final int _whType;
+	private final L2PcInstance activeChar;
+	private final int playerAdena;
+	private final List<L2ItemInstance> items;
+	private final int whType;
 	
 	public WareHouseDepositList(final L2PcInstance player, final int type)
 	{
-		_activeChar = player;
-		_whType = type;
-		_playerAdena = _activeChar.getAdena();
-		_items = new FastList<>();
+		activeChar = player;
+		whType = type;
+		playerAdena = activeChar.getAdena();
+		items = new ArrayList<>();
 		
-		for (final L2ItemInstance temp : _activeChar.getInventory().getAvailableItems(true))
+		for (final L2ItemInstance temp : activeChar.getInventory().getAvailableItems(true))
 		{
-			_items.add(temp);
+			items.add(temp);
 		}
 		
 		// augmented and shadow items can be stored in private wh
-		if (_whType == PRIVATE)
+		if (whType == PRIVATE)
 		{
 			for (final L2ItemInstance temp : player.getInventory().getItems())
 			{
 				if (temp != null && !temp.isEquipped() && (temp.isShadowItem() || temp.isAugmented()))
 				{
-					_items.add(temp);
+					items.add(temp);
 				}
 			}
 		}
@@ -77,16 +57,16 @@ public class WareHouseDepositList extends L2GameServerPacket
 		/*
 		 * 0x01-Private Warehouse 0x02-Clan Warehouse 0x03-Castle Warehouse 0x04-Warehouse
 		 */
-		writeH(_whType);
-		writeD(_playerAdena);
-		final int count = _items.size();
+		writeH(whType);
+		writeD(playerAdena);
+		final int count = items.size();
 		if (Config.DEBUG)
 		{
 			LOGGER.debug("count:" + count);
 		}
 		writeH(count);
 		
-		for (final L2ItemInstance item : _items)
+		for (final L2ItemInstance item : items)
 		{
 			writeH(item.getItem().getType1()); // item type1 //unconfirmed, works
 			writeD(item.getObjectId()); // unconfirmed, works
@@ -111,13 +91,9 @@ public class WareHouseDepositList extends L2GameServerPacket
 		}
 	}
 	
-	/*
-	 * (non-Javadoc)
-	 * @see com.l2jfrozen.gameserver.serverpackets.ServerBasePacket#getType()
-	 */
 	@Override
 	public String getType()
 	{
-		return _S__53_WAREHOUSEDEPOSITLIST;
+		return "[S] 41 WareHouseDepositList";
 	}
 }

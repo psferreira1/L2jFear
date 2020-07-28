@@ -1,23 +1,9 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any later
- * version.
- * 
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
- * 
- * You should have received a copy of the GNU General Public License along with
- * this program. If not, see <http://www.gnu.org/licenses/>.
- */
 package com.l2jfrozen.gameserver.ai.special;
 
-import javolution.util.FastList;
-import javolution.util.FastMap;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import com.l2jfrozen.gameserver.ai.CtrlIntention;
 import com.l2jfrozen.gameserver.model.L2Attackable;
@@ -36,7 +22,7 @@ public class ZombieGatekeepers extends Quest implements Runnable
 		super.addAggroRangeEnterId(22136);
 	}
 	
-	private final FastMap<Integer, FastList<L2Character>> _attackersList = new FastMap<>();
+	private final Map<Integer, List<L2Character>> attackersList = new HashMap<>();
 	
 	@Override
 	public String onAttack(final L2NpcInstance npc, final L2PcInstance attacker, final int damage, final boolean isPet)
@@ -45,15 +31,15 @@ public class ZombieGatekeepers extends Quest implements Runnable
 		
 		final L2Character target = isPet ? attacker.getPet() : attacker;
 		
-		if (_attackersList.get(npcObjId) == null)
+		if (attackersList.get(npcObjId) == null)
 		{
-			final FastList<L2Character> player = new FastList<>();
+			List<L2Character> player = new ArrayList<>();
 			player.add(target);
-			_attackersList.put(npcObjId, player);
+			attackersList.put(npcObjId, player);
 		}
-		else if (!_attackersList.get(npcObjId).contains(target))
+		else if (!attackersList.get(npcObjId).contains(target))
 		{
-			_attackersList.get(npcObjId).add(target);
+			attackersList.get(npcObjId).add(target);
 		}
 		
 		return super.onAttack(npc, attacker, damage, isPet);
@@ -81,7 +67,7 @@ public class ZombieGatekeepers extends Quest implements Runnable
 		}
 		else
 		{
-			if (_attackersList.get(npcObjId) == null || !_attackersList.get(npcObjId).contains(target))
+			if (attackersList.get(npcObjId) == null || !attackersList.get(npcObjId).contains(target))
 			{
 				((L2Attackable) npc).getAggroList().remove(target);
 			}
@@ -99,9 +85,9 @@ public class ZombieGatekeepers extends Quest implements Runnable
 	public String onKill(final L2NpcInstance npc, final L2PcInstance killer, final boolean isPet)
 	{
 		final int npcObjId = npc.getObjectId();
-		if (_attackersList.get(npcObjId) != null)
+		if (attackersList.get(npcObjId) != null)
 		{
-			_attackersList.get(npcObjId).clear();
+			attackersList.get(npcObjId).clear();
 		}
 		
 		return super.onKill(npc, killer, isPet);

@@ -1,58 +1,33 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.model;
 
+import java.util.ArrayList;
 import java.util.List;
 
-import javolution.util.FastList;
-
-/**
- * This class ...
- * @version $Revision: 1.1.2.1.2.2 $ $Date: 2005/03/27 15:29:33 $
- */
 public class L2ManufactureList
 {
-	private List<L2ManufactureItem> _list;
-	private boolean _confirmed;
-	private String _manufactureStoreName;
+	private List<L2ManufactureItem> list;
+	private boolean confirmed;
+	private String manufactureStoreName;
 	
 	public L2ManufactureList()
 	{
-		_list = new FastList<>();
-		_confirmed = false;
+		list = new ArrayList<>();
+		confirmed = false;
 	}
 	
 	public int size()
 	{
-		return _list.size();
+		return list.size();
 	}
 	
 	public void setConfirmedTrade(final boolean x)
 	{
-		_confirmed = x;
+		confirmed = x;
 	}
 	
 	public boolean hasConfirmed()
 	{
-		return _confirmed;
+		return confirmed;
 	}
 	
 	/**
@@ -60,30 +35,27 @@ public class L2ManufactureList
 	 */
 	public void setStoreName(final String manufactureStoreName)
 	{
-		_manufactureStoreName = manufactureStoreName;
+		this.manufactureStoreName = manufactureStoreName;
 	}
 	
-	/**
-	 * @return Returns the _manufactureStoreName.
-	 */
 	public String getStoreName()
 	{
-		return _manufactureStoreName;
+		return manufactureStoreName;
 	}
 	
 	public void add(final L2ManufactureItem item)
 	{
-		_list.add(item);
+		list.add(item);
 	}
 	
 	public List<L2ManufactureItem> getList()
 	{
-		return _list;
+		return list;
 	}
 	
 	public void setList(final List<L2ManufactureItem> list)
 	{
-		_list = list;
+		this.list = list;
 	}
 	
 }

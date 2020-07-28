@@ -1,26 +1,4 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.model.actor.instance;
-
-import javolution.text.TextBuilder;
 
 import com.l2jfrozen.Config;
 import com.l2jfrozen.gameserver.ai.CtrlIntention;
@@ -38,15 +16,15 @@ import com.l2jfrozen.gameserver.network.serverpackets.SystemMessage;
 import com.l2jfrozen.gameserver.network.serverpackets.ValidateLocation;
 import com.l2jfrozen.gameserver.templates.L2NpcTemplate;
 
+import javolution.text.TextBuilder;
+
 /**
  * This class ...
  * @version $Revision: 1.4.2.1.2.7 $ $Date: 2005/03/27 15:29:32 $
  */
 public final class L2ClassMasterInstance extends L2FolkInstance
 {
-	
-	/** The _instance. */
-	private static L2ClassMasterInstance _instance;
+	private static L2ClassMasterInstance instance;
 	
 	/**
 	 * Instantiates a new l2 class master instance.
@@ -56,7 +34,7 @@ public final class L2ClassMasterInstance extends L2FolkInstance
 	public L2ClassMasterInstance(final int objectId, final L2NpcTemplate template)
 	{
 		super(objectId, template);
-		_instance = this;
+		instance = this;
 	}
 	
 	/**
@@ -65,18 +43,18 @@ public final class L2ClassMasterInstance extends L2FolkInstance
 	 */
 	public static L2ClassMasterInstance getInstance()
 	{
-		
-		return _instance;
-		
+		return instance;
 	}
 	
-	/*
-	 * (non-Javadoc)
-	 * @see com.l2jfrozen.gameserver.model.actor.instance.L2FolkInstance#onAction(com.l2jfrozen.gameserver.model.actor.instance.L2PcInstance)
-	 */
 	@Override
 	public void onAction(final L2PcInstance player)
 	{
+		if (!Config.ALLOW_CLASS_MASTERS)
+		{
+			player.sendMessage("Class Master is disabled.");
+			return;
+		}
+		
 		if (Config.DEBUG)
 		{
 			LOGGER.info("Class master activated!");
@@ -112,6 +90,7 @@ public final class L2ClassMasterInstance extends L2FolkInstance
 				int jobLevel = 0;
 				final int level = player.getLevel();
 				ClassLevel lvl = PlayerClass.values()[classId.getId()].getLevel();
+				
 				switch (lvl)
 				{
 					case First:
@@ -126,11 +105,7 @@ public final class L2ClassMasterInstance extends L2FolkInstance
 					default:
 						jobLevel = 4;
 				}
-				if (player.isAio() && !Config.ALLOW_AIO_USE_CM)
-				{
-					player.sendMessage("Aio Buffers Can't Speak To Class Masters.");
-					return;
-				}
+				
 				if (player.isGM())
 				{
 					showChatWindowChooseClass(player);
@@ -146,19 +121,21 @@ public final class L2ClassMasterInstance extends L2FolkInstance
 						sb.append("<font color=AAAAAA>Please choose from the list of classes below...</font><br><br>");
 						
 						for (final ClassId child : ClassId.values())
+						{
 							if (child.childOf(classId) && child.level() == jobLevel)
 							{
 								sb.append("<br><a action=\"bypass -h npc_" + getObjectId() + "_change_class " + child.getId() + "\"> " + CharTemplateTable.getClassNameById(child.getId()) + "</a>");
 							}
+						}
 						
 						if (Config.CLASS_MASTER_SETTINGS.getRequireItems(jobLevel) != null && Config.CLASS_MASTER_SETTINGS.getRequireItems(jobLevel).size() > 0)
 						{
 							sb.append("<br><br>Item(s) required for class change:");
 							sb.append("<table width=220>");
-							for (final Integer _itemId : Config.CLASS_MASTER_SETTINGS.getRequireItems(jobLevel).keySet())
+							for (final Integer itemId : Config.CLASS_MASTER_SETTINGS.getRequireItems(jobLevel).keySet())
 							{
-								final int _count = Config.CLASS_MASTER_SETTINGS.getRequireItems(jobLevel).get(_itemId);
-								sb.append("<tr><td><font color=\"LEVEL\">" + _count + "</font></td><td>" + ItemTable.getInstance().getTemplate(_itemId).getName() + "</td></tr>");
+								final int count = Config.CLASS_MASTER_SETTINGS.getRequireItems(jobLevel).get(itemId);
+								sb.append("<tr><td><font color=\"LEVEL\">" + count + "</font></td><td>" + ItemTable.getInstance().getTemplate(itemId).getName() + "</td></tr>");
 							}
 							sb.append("</table>");
 						}
@@ -210,13 +187,16 @@ public final class L2ClassMasterInstance extends L2FolkInstance
 		player.sendPacket(ActionFailed.STATIC_PACKET);
 	}
 	
-	/*
-	 * (non-Javadoc)
-	 * @see com.l2jfrozen.gameserver.model.actor.instance.L2FolkInstance#onBypassFeedback(com.l2jfrozen.gameserver.model.actor.instance.L2PcInstance, java.lang.String)
-	 */
 	@Override
-	public void onBypassFeedback(final L2PcInstance player, final String command)
+	public void onBypassFeedback(L2PcInstance player, String command)
 	{
+		if (player.isAio())
+		{
+			player.sendMessage("AIO cant not change to new class.");
+			player.sendPacket(ActionFailed.STATIC_PACKET);
+			return;
+		}
+		
 		if (command.startsWith("1stClass"))
 		{
 			if (player.isGM())
@@ -301,8 +281,10 @@ public final class L2ClassMasterInstance extends L2FolkInstance
 			}
 			
 			if (jobLevel == 4)
+			{
 				return; // no more job changes
-				
+			}
+			
 			ClassLevel lvlnext = PlayerClass.values()[val].getLevel();
 			switch (lvlnext)
 			{
@@ -322,30 +304,44 @@ public final class L2ClassMasterInstance extends L2FolkInstance
 			lvlnext = null;
 			// prevents changing between same level jobs
 			if (newJobLevel != jobLevel + 1)
+			{
 				return;
+			}
 			
 			if (level < 20 && newJobLevel > 1)
+			{
 				return;
+			}
 			if (level < 40 && newJobLevel > 2)
+			{
 				return;
+			}
 			if (level < 76 && newJobLevel > 3)
+			{
 				return;
-			// -- prevention ends
+				// -- prevention ends
+			}
 			
 			if (newJobLevel == 2 && !Config.ALLOW_CLASS_MASTERS_FIRST_CLASS)
+			{
 				return;
+			}
 			
 			if (newJobLevel == 3 && !Config.ALLOW_CLASS_MASTERS_SECOND_CLASS)
+			{
 				return;
+			}
 			
 			if (newJobLevel == 4 && !Config.ALLOW_CLASS_MASTERS_THIRD_CLASS)
+			{
 				return;
+			}
 			
 			// check if player have all required items for class transfer
-			for (final Integer _itemId : Config.CLASS_MASTER_SETTINGS.getRequireItems(jobLevel).keySet())
+			for (final Integer itemId : Config.CLASS_MASTER_SETTINGS.getRequireItems(jobLevel).keySet())
 			{
-				final int _count = Config.CLASS_MASTER_SETTINGS.getRequireItems(jobLevel).get(_itemId);
-				if (player.getInventory().getInventoryItemCount(_itemId, -1) < _count)
+				final int count = Config.CLASS_MASTER_SETTINGS.getRequireItems(jobLevel).get(itemId);
+				if (player.getInventory().getInventoryItemCount(itemId, -1) < count)
 				{
 					player.sendPacket(new SystemMessage(SystemMessageId.NOT_ENOUGH_ITEMS));
 					return;
@@ -353,17 +349,17 @@ public final class L2ClassMasterInstance extends L2FolkInstance
 			}
 			
 			// get all required items for class transfer
-			for (final Integer _itemId : Config.CLASS_MASTER_SETTINGS.getRequireItems(jobLevel).keySet())
+			for (final Integer itemId : Config.CLASS_MASTER_SETTINGS.getRequireItems(jobLevel).keySet())
 			{
-				final int _count = Config.CLASS_MASTER_SETTINGS.getRequireItems(jobLevel).get(_itemId);
-				player.destroyItemByItemId("ClassMaster", _itemId, _count, player, true);
+				final int count = Config.CLASS_MASTER_SETTINGS.getRequireItems(jobLevel).get(itemId);
+				player.destroyItemByItemId("ClassMaster", itemId, count, player, true);
 			}
 			
 			// reward player with items
-			for (final Integer _itemId : Config.CLASS_MASTER_SETTINGS.getRewardItems(jobLevel).keySet())
+			for (final Integer itemId : Config.CLASS_MASTER_SETTINGS.getRewardItems(jobLevel).keySet())
 			{
-				final int _count = Config.CLASS_MASTER_SETTINGS.getRewardItems(jobLevel).get(_itemId);
-				player.addItem("ClassMaster", _itemId, _count, player, true);
+				final int count = Config.CLASS_MASTER_SETTINGS.getRewardItems(jobLevel).get(itemId);
+				player.addItem("ClassMaster", itemId, count, player, true);
 			}
 			
 			changeClass(player, val);
@@ -372,7 +368,9 @@ public final class L2ClassMasterInstance extends L2FolkInstance
 			
 			// Check player skills
 			if (Config.CHECK_SKILLS_ON_ENTER && !Config.ALT_GAME_SKILL_LEARN)
+			{
 				player.checkAllowedSkills();
+			}
 			
 			if (val >= 88)
 			{
@@ -424,7 +422,9 @@ public final class L2ClassMasterInstance extends L2FolkInstance
 			}
 			
 			if (!canUpgrade)
+			{
 				return;
+			}
 			
 			final int[] hatchCollar =
 			{
@@ -672,7 +672,7 @@ public final class L2ClassMasterInstance extends L2FolkInstance
 	/**
 	 * Change class.
 	 * @param player the player
-	 * @param val the val
+	 * @param val    the val
 	 */
 	private void changeClass(final L2PcInstance player, final int val)
 	{
@@ -688,7 +688,7 @@ public final class L2ClassMasterInstance extends L2FolkInstance
 		}
 		else
 		{
-			ClassId classId = ClassId.getClassIdByOrdinal(player.getActiveClass());
+			ClassId classId = ClassId.getClassIdById(player.getActiveClass());
 			
 			if (classId.getParent() != null)
 			{

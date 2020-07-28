@@ -1,30 +1,9 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.loginserver.network.serverpackets;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 import java.util.List;
-
-import javolution.util.FastList;
 
 import com.l2jfrozen.gameserver.datatables.GameServerTable;
 import com.l2jfrozen.gameserver.datatables.GameServerTable.GameServerInfo;
@@ -38,41 +17,41 @@ import com.l2jfrozen.loginserver.network.gameserverpackets.ServerStatus;
  */
 public final class ServerList extends L2LoginServerPacket
 {
-	private final List<ServerData> _servers;
-	private final int _lastServer;
+	private final List<ServerData> servers;
+	private final int lastServer;
 	
 	class ServerData
 	{
-		protected String _ip;
-		protected int _port;
-		protected boolean _pvp;
-		protected int _currentPlayers;
-		protected int _maxPlayers;
-		protected boolean _testServer;
-		protected boolean _brackets;
-		protected boolean _clock;
-		protected int _status;
-		protected int _serverId;
+		protected String ip;
+		protected int port;
+		protected boolean pvp;
+		protected int currentPlayers;
+		protected int maxPlayers;
+		protected boolean testServer;
+		protected boolean brackets;
+		protected boolean clock;
+		protected int status;
+		protected int serverId;
 		
 		ServerData(final String pIp, final int pPort, final boolean pPvp, final boolean pTestServer, final int pCurrentPlayers, final int pMaxPlayers, final boolean pBrackets, final boolean pClock, final int pStatus, final int pServer_id)
 		{
-			_ip = pIp;
-			_port = pPort;
-			_pvp = pPvp;
-			_testServer = pTestServer;
-			_currentPlayers = pCurrentPlayers;
-			_maxPlayers = pMaxPlayers;
-			_brackets = pBrackets;
-			_clock = pClock;
-			_status = pStatus;
-			_serverId = pServer_id;
+			ip = pIp;
+			port = pPort;
+			pvp = pPvp;
+			testServer = pTestServer;
+			currentPlayers = pCurrentPlayers;
+			maxPlayers = pMaxPlayers;
+			brackets = pBrackets;
+			clock = pClock;
+			status = pStatus;
+			serverId = pServer_id;
 		}
 	}
 	
 	public ServerList(final L2LoginClient client)
 	{
-		_servers = new FastList<>();
-		_lastServer = client.getLastServer();
+		servers = new ArrayList<>();
+		lastServer = client.getLastServer();
 		
 		for (final GameServerInfo gsi : GameServerTable.getInstance().getRegisteredGameServers().values())
 		{
@@ -96,23 +75,23 @@ public final class ServerList extends L2LoginServerPacket
 	
 	public void addServer(final String ip, final int port, final boolean pvp, final boolean testServer, final int currentPlayer, final int maxPlayer, final boolean brackets, final boolean clock, final int status, final int server_id)
 	{
-		_servers.add(new ServerData(ip, port, pvp, testServer, currentPlayer, maxPlayer, brackets, clock, status, server_id));
+		servers.add(new ServerData(ip, port, pvp, testServer, currentPlayer, maxPlayer, brackets, clock, status, server_id));
 	}
 	
 	@Override
 	public void write()
 	{
 		writeC(0x04);
-		writeC(_servers.size());
-		writeC(_lastServer);
+		writeC(servers.size());
+		writeC(lastServer);
 		
-		for (final ServerData server : _servers)
+		for (final ServerData server : servers)
 		{
-			writeC(server._serverId); // server id
+			writeC(server.serverId); // server id
 			
 			try
 			{
-				final InetAddress i4 = InetAddress.getByName(server._ip);
+				final InetAddress i4 = InetAddress.getByName(server.ip);
 				
 				byte[] raw = i4.getAddress();
 				
@@ -131,34 +110,30 @@ public final class ServerList extends L2LoginServerPacket
 				writeC(1);
 			}
 			
-			writeD(server._port);
+			writeD(server.port);
 			writeC(0x00); // age limit
-			writeC(server._pvp ? 0x01 : 0x00);
-			writeH(server._currentPlayers);
-			writeH(server._maxPlayers);
-			writeC(server._status == ServerStatus.STATUS_DOWN ? 0x00 : 0x01);
+			writeC(server.pvp ? 0x01 : 0x00);
+			writeH(server.currentPlayers);
+			writeH(server.maxPlayers);
+			writeC(server.status == ServerStatus.STATUS_DOWN ? 0x00 : 0x01);
 			
 			int bits = 0;
 			
-			if (server._testServer)
+			if (server.testServer)
 			{
 				bits |= 0x04;
 			}
 			
-			if (server._clock)
+			if (server.clock)
 			{
 				bits |= 0x02;
 			}
 			
 			writeD(bits);
-			writeC(server._brackets ? 0x01 : 0x00);
+			writeC(server.brackets ? 0x01 : 0x00);
 		}
 	}
 	
-	/*
-	 * (non-Javadoc)
-	 * @see com.l2jfrozen.loginserver.network.serverpackets.L2LoginServerPacket#getType()
-	 */
 	@Override
 	public String getType()
 	{

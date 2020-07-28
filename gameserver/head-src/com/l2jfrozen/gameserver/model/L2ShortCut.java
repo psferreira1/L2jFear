@@ -1,23 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.model;
 
 /**
@@ -32,44 +12,44 @@ public class L2ShortCut
 	public final static int TYPE_MACRO = 4;
 	public final static int TYPE_RECIPE = 5;
 	
-	private final int _slot;
-	private final int _page;
-	private final int _type;
-	private final int _id;
-	private final int _level;
+	private final int slot;
+	private final int page;
+	private final int type;
+	private final int id;
+	private final int level;
 	
 	public L2ShortCut(final int slotId, final int pageId, final int shortcutType, final int shortcutId, final int shortcutLevel, final int unknown)
 	{
-		_slot = slotId;
-		_page = pageId;
-		_type = shortcutType;
-		_id = shortcutId;
-		_level = shortcutLevel;
-		// _unk = unknown;
+		slot = slotId;
+		page = pageId;
+		type = shortcutType;
+		id = shortcutId;
+		level = shortcutLevel;
+		// unk = unknown;
 	}
 	
 	public int getId()
 	{
-		return _id;
+		return id;
 	}
 	
 	public int getLevel()
 	{
-		return _level;
+		return level;
 	}
 	
 	public int getPage()
 	{
-		return _page;
+		return page;
 	}
 	
 	public int getSlot()
 	{
-		return _slot;
+		return slot;
 	}
 	
 	public int getType()
 	{
-		return _type;
+		return type;
 	}
 }

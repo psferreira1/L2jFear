@@ -1,41 +1,20 @@
-/* L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.managers;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.StringTokenizer;
 
-import javolution.util.FastList;
-import javolution.util.FastMap;
-
 import org.apache.log4j.Logger;
 
-import com.l2jfrozen.Config;
 import com.l2jfrozen.FService;
 import com.l2jfrozen.gameserver.datatables.SkillTable;
 import com.l2jfrozen.gameserver.model.L2Character;
@@ -47,50 +26,42 @@ import com.l2jfrozen.gameserver.model.entity.siege.Castle;
 import com.l2jfrozen.gameserver.model.entity.siege.Siege;
 import com.l2jfrozen.gameserver.network.SystemMessageId;
 import com.l2jfrozen.gameserver.network.serverpackets.SystemMessage;
-import com.l2jfrozen.util.CloseUtil;
-import com.l2jfrozen.util.database.DatabaseUtils;
 import com.l2jfrozen.util.database.L2DatabaseFactory;
 
 public class SiegeManager
 {
 	private static final Logger LOGGER = Logger.getLogger(SiegeManager.class);
 	
+	private static final String SELECT_CLAN_ID_FROM_SIEGE_CLANS = "SELECT clan_id FROM siege_clans WHERE clan_id=? AND castle_id=?";
+	
 	public static final SiegeManager getInstance()
 	{
-		return SingletonHolder._instance;
+		return SingletonHolder.instance;
 	}
 	
-	// =========================================================
-	// Data Field
-	private int _attackerMaxClans = 500; // Max number of clans
-	private int _attackerRespawnDelay = 20000; // Time in ms. Changeable in siege.config
-	private int _defenderMaxClans = 500; // Max number of clans
-	private int _defenderRespawnDelay = 10000; // Time in ms. Changeable in siege.config
+	private int attackerMaxClans = 500; // Max number of clans
+	private int attackerRespawnDelay = 20000; // Time in ms. Changeable in siege.config
+	private int defenderMaxClans = 500; // Max number of clans
+	private int defenderRespawnDelay = 10000; // Time in ms. Changeable in siege.config
 	
 	// Siege settings
-	private FastMap<Integer, FastList<SiegeSpawn>> _artefactSpawnList;
-	private FastMap<Integer, FastList<SiegeSpawn>> _controlTowerSpawnList;
+	private Map<Integer, List<SiegeSpawn>> artefactSpawnList;
+	private Map<Integer, List<SiegeSpawn>> controlTowerSpawnList;
 	
-	private int _controlTowerLosePenalty = 20000; // Time in ms. Changeable in siege.config
-	private int _flagMaxCount = 1; // Changeable in siege.config
-	private int _siegeClanMinLevel = 4; // Changeable in siege.config
-	private int _siegeLength = 120; // Time in minute. Changeable in siege.config
+	private int controlTowerLosePenalty = 20000; // Time in ms. Changeable in siege.config
+	private int flagMaxCount = 1; // Changeable in siege.config
+	private int siegeClanMinLevel = 4; // Changeable in siege.config
+	private int siegeLength = 120; // Time in minute. Changeable in siege.config
 	
-	private boolean _teleport_to_siege = false;
-	private boolean _teleport_to_siege_town = false;
+	private boolean teleport_to_siege = false;
+	private boolean teleport_to_siege_town = false;
 	
-	// private List<Siege> _sieges;
-	
-	// =========================================================
-	// Constructor
-	private SiegeManager()
+	public SiegeManager()
 	{
 		load();
 	}
 	
-	// =========================================================
-	// Method - Public
-	public final void addSiegeSkills(final L2PcInstance character)
+	public final void addSiegeSkills(L2PcInstance character)
 	{
 		character.addSkill(SkillTable.getInstance().getInfo(246, 1), false);
 		character.addSkill(SkillTable.getInstance().getInfo(247, 1), false);
@@ -99,14 +70,16 @@ public class SiegeManager
 	/**
 	 * Return true if character summon<BR>
 	 * <BR>
-	 * @param activeChar The L2Character of the character can summon
-	 * @param isCheckOnly
+	 * @param  activeChar  The L2Character of the character can summon
+	 * @param  isCheckOnly
 	 * @return
 	 */
 	public final boolean checkIfOkToSummon(final L2Character activeChar, final boolean isCheckOnly)
 	{
 		if (activeChar == null || !(activeChar instanceof L2PcInstance))
+		{
 			return false;
+		}
 		
 		SystemMessage sm = new SystemMessage(SystemMessageId.S1_S2);
 		L2PcInstance player = (L2PcInstance) activeChar;
@@ -125,7 +98,9 @@ public class SiegeManager
 			sm.addString("You can only summon this as a registered attacker.");
 		}
 		else
+		{
 			return true;
+		}
 		
 		if (!isCheckOnly)
 		{
@@ -154,49 +129,42 @@ public class SiegeManager
 	/**
 	 * Return true if the clan is registered or owner of a castle<BR>
 	 * <BR>
-	 * @param clan The L2Clan of the player
-	 * @param castleid
+	 * @param  clan     The L2Clan of the player
+	 * @param  castleid
 	 * @return
 	 */
 	public final boolean checkIsRegistered(final L2Clan clan, final int castleid)
 	{
 		if (clan == null)
+		{
 			return false;
+		}
 		
-		if (clan.getHasCastle() > 0)
+		if (clan.getCastleId() > 0)
+		{
 			return true;
+		}
 		
-		Connection con = null;
 		boolean register = false;
 		
-		try
+		try (Connection con = L2DatabaseFactory.getInstance().getConnection();
+			PreparedStatement statement = con.prepareStatement(SELECT_CLAN_ID_FROM_SIEGE_CLANS))
 		{
-			con = L2DatabaseFactory.getInstance().getConnection(false);
-			PreparedStatement statement = con.prepareStatement("SELECT clan_id FROM siege_clans where clan_id=? and castle_id=?");
 			statement.setInt(1, clan.getClanId());
 			statement.setInt(2, castleid);
-			ResultSet rs = statement.executeQuery();
 			
-			while (rs.next())
+			try (ResultSet rs = statement.executeQuery())
 			{
-				register = true;
-				break;
+				while (rs.next())
+				{
+					register = true;
+					break;
+				}
 			}
-			
-			rs.close();
-			DatabaseUtils.close(statement);
-			statement = null;
-			rs = null;
 		}
-		catch (final Exception e)
+		catch (Exception e)
 		{
-			LOGGER.info("Exception: checkIsRegistered(): " + e.getMessage());
-			e.printStackTrace();
-		}
-		finally
-		{
-			CloseUtil.close(con);
-			con = null;
+			LOGGER.error("SiegeManager.checkIsRegistered : Could not select from siege_clans table", e);
 		}
 		return register;
 	}
@@ -207,185 +175,149 @@ public class SiegeManager
 		character.removeSkill(SkillTable.getInstance().getInfo(247, 1));
 	}
 	
-	// =========================================================
-	// Method - Private
-	private final void load()
+	private void load()
 	{
 		LOGGER.info("Initializing SiegeManager");
-		InputStream is = null;
-		try
+		
+		try (InputStream is = new FileInputStream(new File(FService.SIEGE_CONFIGURATION_FILE)))
 		{
-			is = new FileInputStream(new File(FService.SIEGE_CONFIGURATION_FILE));
 			Properties siegeSettings = new Properties();
 			siegeSettings.load(is);
 			
 			// Siege setting
-			_attackerMaxClans = Integer.decode(siegeSettings.getProperty("AttackerMaxClans", "500"));
-			_attackerRespawnDelay = Integer.decode(siegeSettings.getProperty("AttackerRespawn", "30000"));
-			_controlTowerLosePenalty = Integer.decode(siegeSettings.getProperty("CTLossPenalty", "20000"));
-			_defenderMaxClans = Integer.decode(siegeSettings.getProperty("DefenderMaxClans", "500"));
-			_defenderRespawnDelay = Integer.decode(siegeSettings.getProperty("DefenderRespawn", "20000"));
-			_flagMaxCount = Integer.decode(siegeSettings.getProperty("MaxFlags", "1"));
-			_siegeClanMinLevel = Integer.decode(siegeSettings.getProperty("SiegeClanMinLevel", "4"));
-			_siegeLength = Integer.decode(siegeSettings.getProperty("SiegeLength", "120"));
+			attackerMaxClans = Integer.decode(siegeSettings.getProperty("AttackerMaxClans", "500"));
+			attackerRespawnDelay = Integer.decode(siegeSettings.getProperty("AttackerRespawn", "30000"));
+			controlTowerLosePenalty = Integer.decode(siegeSettings.getProperty("CTLossPenalty", "20000"));
+			defenderMaxClans = Integer.decode(siegeSettings.getProperty("DefenderMaxClans", "500"));
+			defenderRespawnDelay = Integer.decode(siegeSettings.getProperty("DefenderRespawn", "20000"));
+			flagMaxCount = Integer.decode(siegeSettings.getProperty("MaxFlags", "1"));
+			siegeClanMinLevel = Integer.decode(siegeSettings.getProperty("SiegeClanMinLevel", "4"));
+			siegeLength = Integer.decode(siegeSettings.getProperty("SiegeLength", "120"));
 			
 			// Siege Teleports
-			_teleport_to_siege = Boolean.parseBoolean(siegeSettings.getProperty("AllowTeleportToSiege", "false"));
-			_teleport_to_siege_town = Boolean.parseBoolean(siegeSettings.getProperty("AllowTeleportToSiegeTown", "false"));
+			teleport_to_siege = Boolean.parseBoolean(siegeSettings.getProperty("AllowTeleportToSiege", "false"));
+			teleport_to_siege_town = Boolean.parseBoolean(siegeSettings.getProperty("AllowTeleportToSiegeTown", "false"));
 			
 			// Siege spawns settings
-			_controlTowerSpawnList = new FastMap<>();
-			_artefactSpawnList = new FastMap<>();
+			controlTowerSpawnList = new HashMap<>();
+			artefactSpawnList = new HashMap<>();
 			
 			for (final Castle castle : CastleManager.getInstance().getCastles())
 			{
-				FastList<SiegeSpawn> _controlTowersSpawns = new FastList<>();
+				List<SiegeSpawn> controlTowersSpawns = new ArrayList<>();
 				
-				for (int i = 1; i < 0xFF; i++)
+				for (int i = 1; i < 20; i++)
 				{
-					String _spawnParams = siegeSettings.getProperty(castle.getName() + "ControlTower" + Integer.toString(i), "");
+					String spawnParams = siegeSettings.getProperty(castle.getName() + "ControlTower" + i, "");
 					
-					if (_spawnParams.length() == 0)
+					if (spawnParams.length() == 0)
 					{
 						break;
 					}
 					
-					StringTokenizer st = new StringTokenizer(_spawnParams.trim(), ",");
-					
-					_spawnParams = null;
+					StringTokenizer st = new StringTokenizer(spawnParams.trim(), ",");
 					
 					try
 					{
-						final int x = Integer.parseInt(st.nextToken());
-						final int y = Integer.parseInt(st.nextToken());
-						final int z = Integer.parseInt(st.nextToken());
-						final int npc_id = Integer.parseInt(st.nextToken());
-						final int hp = Integer.parseInt(st.nextToken());
+						int x = Integer.parseInt(st.nextToken());
+						int y = Integer.parseInt(st.nextToken());
+						int z = Integer.parseInt(st.nextToken());
+						int hp = Integer.parseInt(st.nextToken());
 						
-						_controlTowersSpawns.add(new SiegeSpawn(castle.getCastleId(), x, y, z, 0, npc_id, hp));
-						
-						st = null;
+						// NPC ID 13002 is Life Control Tower
+						controlTowersSpawns.add(new SiegeSpawn(castle.getCastleId(), x, y, z, 0, 13002, hp));
 					}
-					catch (final Exception e)
+					catch (Exception e)
 					{
-						if (Config.ENABLE_ALL_EXCEPTIONS)
-							e.printStackTrace();
-						LOGGER.warn("Error while loading control tower(s) for " + castle.getName() + " castle.");
+						LOGGER.error("SiegeManager.load : Error while loading control tower(s) for " + castle.getName() + " castle from siege.properties", e);
 					}
 				}
 				
-				FastList<SiegeSpawn> _artefactSpawns = new FastList<>();
+				List<SiegeSpawn> artefactSpawns = new ArrayList<>();
 				
-				for (int i = 1; i < 0xFF; i++)
+				for (int i = 1; i < 20; i++)
 				{
-					String _spawnParams = siegeSettings.getProperty(castle.getName() + "Artefact" + Integer.toString(i), "");
+					String spawnParams = siegeSettings.getProperty(castle.getName() + "Artefact" + i, "");
 					
-					if (_spawnParams.length() == 0)
+					if (spawnParams.length() == 0)
 					{
 						break;
 					}
 					
-					StringTokenizer st = new StringTokenizer(_spawnParams.trim(), ",");
-					
-					_spawnParams = null;
+					StringTokenizer st = new StringTokenizer(spawnParams.trim(), ",");
 					
 					try
 					{
-						final int x = Integer.parseInt(st.nextToken());
-						final int y = Integer.parseInt(st.nextToken());
-						final int z = Integer.parseInt(st.nextToken());
-						final int heading = Integer.parseInt(st.nextToken());
-						final int npc_id = Integer.parseInt(st.nextToken());
+						int x = Integer.parseInt(st.nextToken());
+						int y = Integer.parseInt(st.nextToken());
+						int z = Integer.parseInt(st.nextToken());
+						int heading = Integer.parseInt(st.nextToken());
+						int npc_id = Integer.parseInt(st.nextToken());
 						
-						st = null;
-						_artefactSpawns.add(new SiegeSpawn(castle.getCastleId(), x, y, z, heading, npc_id));
+						artefactSpawns.add(new SiegeSpawn(castle.getCastleId(), x, y, z, heading, npc_id));
 					}
-					catch (final Exception e)
+					catch (Exception e)
 					{
-						if (Config.ENABLE_ALL_EXCEPTIONS)
-							e.printStackTrace();
-						LOGGER.warn("Error while loading artefact(s) for " + castle.getName() + " castle.");
+						LOGGER.warn("SiegeManager.load : Error while loading artefact(s) for " + castle.getName() + " castle.", e);
 					}
 				}
 				
-				_controlTowerSpawnList.put(castle.getCastleId(), _controlTowersSpawns);
-				_artefactSpawnList.put(castle.getCastleId(), _artefactSpawns);
-				
-				_artefactSpawns = null;
-				_controlTowersSpawns = null;
+				controlTowerSpawnList.put(castle.getCastleId(), controlTowersSpawns);
+				artefactSpawnList.put(castle.getCastleId(), artefactSpawns);
 			}
-			
-			siegeSettings = null;
-			
 		}
-		catch (final Exception e)
+		catch (Exception e)
 		{
-			// _initialized = false;
-			LOGGER.error("Error while loading siege data.");
-			e.printStackTrace();
-			
-		}
-		finally
-		{
-			
-			if (is != null)
-			{
-				try
-				{
-					is.close();
-				}
-				catch (final IOException e)
-				{
-					e.printStackTrace();
-				}
-			}
+			LOGGER.error("SiegeManager.load : Error while loading siege data.", e);
 		}
 	}
 	
-	// =========================================================
-	// Property - Public
-	public final FastList<SiegeSpawn> getArtefactSpawnList(final int _castleId)
+	public final List<SiegeSpawn> getArtefactSpawnList(final int castleId)
 	{
-		if (_artefactSpawnList.containsKey(_castleId))
-			return _artefactSpawnList.get(_castleId);
+		if (artefactSpawnList.containsKey(castleId))
+		{
+			return artefactSpawnList.get(castleId);
+		}
 		return null;
 	}
 	
-	public final FastList<SiegeSpawn> getControlTowerSpawnList(final int _castleId)
+	public final List<SiegeSpawn> getControlTowerSpawnList(final int castleId)
 	{
-		if (_controlTowerSpawnList.containsKey(_castleId))
-			return _controlTowerSpawnList.get(_castleId);
+		if (controlTowerSpawnList.containsKey(castleId))
+		{
+			return controlTowerSpawnList.get(castleId);
+		}
 		return null;
 	}
 	
 	public final int getAttackerMaxClans()
 	{
-		return _attackerMaxClans;
+		return attackerMaxClans;
 	}
 	
 	public final int getAttackerRespawnDelay()
 	{
-		return _attackerRespawnDelay;
+		return attackerRespawnDelay;
 	}
 	
 	public final int getControlTowerLosePenalty()
 	{
-		return _controlTowerLosePenalty;
+		return controlTowerLosePenalty;
 	}
 	
 	public final int getDefenderMaxClans()
 	{
-		return _defenderMaxClans;
+		return defenderMaxClans;
 	}
 	
 	public final int getDefenderRespawnDelay()
 	{
-		return _defenderRespawnDelay;
+		return defenderRespawnDelay;
 	}
 	
 	public final int getFlagMaxCount()
 	{
-		return _flagMaxCount;
+		return flagMaxCount;
 	}
 	
 	public final Siege getSiege(final L2Object activeObject)
@@ -396,101 +328,104 @@ public class SiegeManager
 	public final Siege getSiege(final int x, final int y, final int z)
 	{
 		for (final Castle castle : CastleManager.getInstance().getCastles())
+		{
 			if (castle.getSiege().checkIfInZone(x, y, z))
+			{
 				return castle.getSiege();
+			}
+		}
 		return null;
 	}
 	
 	public final int getSiegeClanMinLevel()
 	{
-		return _siegeClanMinLevel;
+		return siegeClanMinLevel;
 	}
 	
 	public final int getSiegeLength()
 	{
-		return _siegeLength;
+		return siegeLength;
 	}
 	
 	public final List<Siege> getSieges()
 	{
-		final FastList<Siege> _sieges = new FastList<>();
+		final List<Siege> sieges = new ArrayList<>();
 		for (final Castle castle : CastleManager.getInstance().getCastles())
 		{
-			_sieges.add(castle.getSiege());
+			sieges.add(castle.getSiege());
 		}
-		return _sieges;
+		return sieges;
 	}
 	
 	/**
-	 * @return the _teleport_to_siege
+	 * @return the teleport_to_siege
 	 */
 	public boolean is_teleport_to_siege_allowed()
 	{
-		return _teleport_to_siege;
+		return teleport_to_siege;
 	}
 	
 	/**
-	 * @return the _teleport_to_siege_town
+	 * @return the teleport_to_siege_town
 	 */
 	public boolean is_teleport_to_siege_town_allowed()
 	{
-		return _teleport_to_siege_town;
+		return teleport_to_siege_town;
 	}
 	
 	public class SiegeSpawn
 	{
-		Location _location;
-		private final int _npcId;
-		private final int _heading;
-		private final int _castleId;
-		private int _hp;
+		Location location;
+		private final int npcId;
+		private final int heading;
+		private final int castleId;
+		private int hp;
 		
 		public SiegeSpawn(final int castle_id, final int x, final int y, final int z, final int heading, final int npc_id)
 		{
-			_castleId = castle_id;
-			_location = new Location(x, y, z, heading);
-			_heading = heading;
-			_npcId = npc_id;
+			castleId = castle_id;
+			location = new Location(x, y, z, heading);
+			this.heading = heading;
+			npcId = npc_id;
 		}
 		
 		public SiegeSpawn(final int castle_id, final int x, final int y, final int z, final int heading, final int npc_id, final int hp)
 		{
-			_castleId = castle_id;
-			_location = new Location(x, y, z, heading);
-			_heading = heading;
-			_npcId = npc_id;
-			_hp = hp;
+			castleId = castle_id;
+			location = new Location(x, y, z, heading);
+			this.heading = heading;
+			npcId = npc_id;
+			this.hp = hp;
 		}
 		
 		public int getCastleId()
 		{
-			return _castleId;
+			return castleId;
 		}
 		
 		public int getNpcId()
 		{
-			return _npcId;
+			return npcId;
 		}
 		
 		public int getHeading()
 		{
-			return _heading;
+			return heading;
 		}
 		
 		public int getHp()
 		{
-			return _hp;
+			return hp;
 		}
 		
 		public Location getLocation()
 		{
-			return _location;
+			return location;
 		}
 	}
 	
-	@SuppressWarnings("synthetic-access")
 	private static class SingletonHolder
 	{
-		protected static final SiegeManager _instance = new SiegeManager();
+		protected static final SiegeManager instance = new SiegeManager();
 	}
 }

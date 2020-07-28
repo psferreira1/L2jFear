@@ -1,23 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.network.clientpackets;
 
 import java.sql.Connection;
@@ -36,22 +16,21 @@ import com.l2jfrozen.gameserver.network.serverpackets.ItemList;
 import com.l2jfrozen.gameserver.network.serverpackets.StatusUpdate;
 import com.l2jfrozen.gameserver.network.serverpackets.SystemMessage;
 import com.l2jfrozen.gameserver.util.Util;
-import com.l2jfrozen.util.CloseUtil;
-import com.l2jfrozen.util.database.DatabaseUtils;
 import com.l2jfrozen.util.database.L2DatabaseFactory;
 
 public final class RequestDestroyItem extends L2GameClientPacket
 {
 	private static Logger LOGGER = Logger.getLogger(RequestDestroyItem.class);
+	private static final String DELETE_PET = "DELETE FROM pets WHERE item_obj_id=?";
 	
-	private int _objectId;
-	private int _count;
+	private int objectId;
+	private int destroyCount;
 	
 	@Override
 	protected void readImpl()
 	{
-		_objectId = readD();
-		_count = readD();
+		objectId = readD();
+		destroyCount = readD();
 	}
 	
 	@Override
@@ -59,13 +38,15 @@ public final class RequestDestroyItem extends L2GameClientPacket
 	{
 		final L2PcInstance activeChar = getClient().getActiveChar();
 		if (activeChar == null)
-			return;
-		
-		if (_count <= 0)
 		{
-			if (_count < 0)
+			return;
+		}
+		
+		if (destroyCount <= 0)
+		{
+			if (destroyCount < 0)
 			{
-				Util.handleIllegalPlayerAction(activeChar, "[RequestDestroyItem] count < 0! ban! oid: " + _objectId + " owner: " + activeChar.getName(), Config.DEFAULT_PUNISH);
+				Util.handleIllegalPlayerAction(activeChar, "[RequestDestroyItem] count < 0! ban! oid: " + objectId + " owner: " + activeChar.getName(), Config.DEFAULT_PUNISH);
 			}
 			return;
 		}
@@ -76,19 +57,21 @@ public final class RequestDestroyItem extends L2GameClientPacket
 			return;
 		}
 		
-		int count = _count;
+		int count = destroyCount;
 		
-		if (activeChar.getPrivateStoreType() != 0)
+		if (activeChar.isInStoreMode())
 		{
 			activeChar.sendPacket(new SystemMessage(SystemMessageId.CANNOT_TRADE_DISCARD_DROP_ITEM_WHILE_IN_SHOPMODE));
 			return;
 		}
 		
-		final L2ItemInstance itemToRemove = activeChar.getInventory().getItemByObjectId(_objectId);
+		final L2ItemInstance itemToRemove = activeChar.getInventory().getItemByObjectId(objectId);
 		
 		// if we cant find requested item, its actualy a cheat!
 		if (itemToRemove == null)
+		{
 			return;
+		}
 		if (itemToRemove.fireEvent("DESTROY", (Object[]) null) != null)
 		{
 			activeChar.sendPacket(new SystemMessage(SystemMessageId.CANNOT_DISCARD_THIS_ITEM));
@@ -115,11 +98,11 @@ public final class RequestDestroyItem extends L2GameClientPacket
 		
 		if (!itemToRemove.isStackable() && count > 1)
 		{
-			Util.handleIllegalPlayerAction(activeChar, "[RequestDestroyItem] count > 1 but item is not stackable! oid: " + _objectId + " owner: " + activeChar.getName(), Config.DEFAULT_PUNISH);
+			Util.handleIllegalPlayerAction(activeChar, "[RequestDestroyItem] count > 1 but item is not stackable! oid: " + objectId + " owner: " + activeChar.getName(), Config.DEFAULT_PUNISH);
 			return;
 		}
 		
-		if (_count > itemToRemove.getCount())
+		if (destroyCount > itemToRemove.getCount())
 		{
 			count = itemToRemove.getCount();
 		}
@@ -145,41 +128,29 @@ public final class RequestDestroyItem extends L2GameClientPacket
 		
 		if (L2PetDataTable.isPetItem(itemId))
 		{
-			Connection con = null;
-			try
+			if (activeChar.getPet() != null && activeChar.getPet().getControlItemId() == objectId)
 			{
-				if (activeChar.getPet() != null && activeChar.getPet().getControlItemId() == _objectId)
-				{
-					activeChar.getPet().unSummon(activeChar);
-				}
-				
-				// if it's a pet control item, delete the pet
-				con = L2DatabaseFactory.getInstance().getConnection(false);
-				PreparedStatement statement = con.prepareStatement("DELETE FROM pets WHERE item_obj_id=?");
-				statement.setInt(1, _objectId);
-				statement.execute();
-				DatabaseUtils.close(statement);
-				
-				statement = null;
+				activeChar.getPet().unSummon(activeChar);
 			}
-			catch (final Exception e)
+			
+			try (Connection con = L2DatabaseFactory.getInstance().getConnection();
+				PreparedStatement statement = con.prepareStatement(DELETE_PET))
 			{
-				if (Config.ENABLE_ALL_EXCEPTIONS)
-					e.printStackTrace();
-				
-				LOGGER.warn("could not delete pet objectid: ", e);
+				statement.setInt(1, objectId);
+				statement.executeUpdate();
 			}
-			finally
+			catch (Exception e)
 			{
-				CloseUtil.close(con);
-				con = null;
+				LOGGER.error("RequestDestroyItem.runImpl : Could not delete pet with object id " + objectId, e);
 			}
 		}
 		
-		final L2ItemInstance removedItem = activeChar.getInventory().destroyItem("Destroy", _objectId, count, activeChar, null);
+		final L2ItemInstance removedItem = activeChar.getInventory().destroyItem("Destroy", objectId, count, activeChar, null);
 		
 		if (removedItem == null)
+		{
 			return;
+		}
 		
 		if (!Config.FORCE_INVENTORY_UPDATE)
 		{

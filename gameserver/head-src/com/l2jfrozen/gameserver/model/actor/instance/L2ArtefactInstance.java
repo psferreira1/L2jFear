@@ -1,23 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.model.actor.instance;
 
 import com.l2jfrozen.gameserver.ai.CtrlIntention;
@@ -39,8 +19,9 @@ public final class L2ArtefactInstance extends L2NpcInstance
 	 * <BR>
 	 * <B><U> Actions</U> :</B><BR>
 	 * <BR>
-	 * <li>Call the L2Character constructor to set the _template of the L2ArtefactInstance (copy skills from template to object and link _calculators to NPC_STD_CALCULATOR)</li> <li>Set the name of the L2ArtefactInstance</li> <li>Create a RandomAnimation Task that will be launched after the
-	 * calculated delay if the server allow it</li><BR>
+	 * <li>Call the L2Character constructor to set the template of the L2ArtefactInstance (copy skills from template to object and link calculators to NPC_STD_CALCULATOR)</li>
+	 * <li>Set the name of the L2ArtefactInstance</li>
+	 * <li>Create a RandomAnimation Task that will be launched after the calculated delay if the server allow it</li><BR>
 	 * <BR>
 	 * @param objectId Identifier of the object to initialized
 	 * @param template
@@ -71,8 +52,9 @@ public final class L2ArtefactInstance extends L2NpcInstance
 	 * <BR>
 	 * <B><U> Actions</U> :</B><BR>
 	 * <BR>
-	 * <li>Set the L2NpcInstance as target of the L2PcInstance player (if necessary)</li> <li>Send a Server->Client packet MyTargetSelected to the L2PcInstance player (display the select window)</li> <li>Send a Server->Client packet ValidateLocation to correct the L2NpcInstance position and heading
-	 * on the client</li><BR>
+	 * <li>Set the L2NpcInstance as target of the L2PcInstance player (if necessary)</li>
+	 * <li>Send a Server->Client packet MyTargetSelected to the L2PcInstance player (display the select window)</li>
+	 * <li>Send a Server->Client packet ValidateLocation to correct the L2NpcInstance position and heading on the client</li><BR>
 	 * <BR>
 	 * <B><U> Example of use </U> :</B><BR>
 	 * <BR>
@@ -84,7 +66,9 @@ public final class L2ArtefactInstance extends L2NpcInstance
 	public void onAction(final L2PcInstance player)
 	{
 		if (!canTarget(player))
+		{
 			return;
+		}
 		
 		if (this != player.getTarget())
 		{

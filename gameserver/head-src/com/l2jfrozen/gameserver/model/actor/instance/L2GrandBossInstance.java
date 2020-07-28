@@ -1,19 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any later
- * version.
- * 
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
- * 
- * You should have received a copy of the GNU General Public License along with
- * this program. If not, see <http://www.gnu.org/licenses/>.
- */
 package com.l2jfrozen.gameserver.model.actor.instance;
 
 import com.l2jfrozen.Config;
@@ -56,14 +40,20 @@ public final class L2GrandBossInstance extends L2MonsterInstance
 	public boolean doDie(final L2Character killer)
 	{
 		if (!super.doDie(killer))
+		{
 			return false;
+		}
 		
 		L2PcInstance player = null;
 		
 		if (killer instanceof L2PcInstance)
+		{
 			player = (L2PcInstance) killer;
+		}
 		else if (killer instanceof L2Summon)
+		{
 			player = ((L2Summon) killer).getOwner();
+		}
 		
 		if (player != null)
 		{
@@ -78,7 +68,9 @@ public final class L2GrandBossInstance extends L2MonsterInstance
 				}
 			}
 			else
+			{
 				RaidBossPointsManager.addPoints(player, getNpcId(), (getLevel() / 2) + Rnd.get(-5, 5));
+			}
 		}
 		return true;
 	}
@@ -87,36 +79,34 @@ public final class L2GrandBossInstance extends L2MonsterInstance
 	public void onSpawn()
 	{
 		super.onSpawn();
-		if (!this.getSpawn().is_customBossInstance())
+		if (!getSpawn().isCustomRaidBoss())
+		{
 			GrandBossManager.getInstance().addBoss(this);
+		}
 	}
 	
 	@Override
 	protected void manageMinions()
 	{
-		_minionList.spawnMinions();
-		_minionMaintainTask = ThreadPoolManager.getInstance().scheduleGeneralAtFixedRate(new Runnable()
+		minionList.spawnMinions();
+		minionMaintainTask = ThreadPoolManager.getInstance().scheduleGeneralAtFixedRate(() ->
 		{
-			@Override
-			public void run()
+			// Teleport raid boss home if it's too far from home location
+			final L2Spawn bossSpawn = getSpawn();
+			
+			int rb_lock_range = Config.RBLOCKRAGE;
+			if (Config.RBS_SPECIFIC_LOCK_RAGE.get(bossSpawn.getNpcid()) != null)
 			{
-				// Teleport raid boss home if it's too far from home location
-				final L2Spawn bossSpawn = getSpawn();
-				
-				int rb_lock_range = Config.RBLOCKRAGE;
-				if (Config.RBS_SPECIFIC_LOCK_RAGE.get(bossSpawn.getNpcid()) != null)
-				{
-					rb_lock_range = Config.RBS_SPECIFIC_LOCK_RAGE.get(bossSpawn.getNpcid());
-				}
-				
-				if (rb_lock_range >= 100 && !isInsideRadius(bossSpawn.getLocx(), bossSpawn.getLocy(), bossSpawn.getLocz(), rb_lock_range, true, false))
-				{
-					teleToLocation(bossSpawn.getLocx(), bossSpawn.getLocy(), bossSpawn.getLocz(), true);
-					// healFull(); // Prevents minor exploiting with it
-				}
-				
-				_minionList.maintainMinions();
+				rb_lock_range = Config.RBS_SPECIFIC_LOCK_RAGE.get(bossSpawn.getNpcid());
 			}
+			
+			if (rb_lock_range >= 100 && !isInsideRadius(bossSpawn.getLocx(), bossSpawn.getLocy(), bossSpawn.getLocz(), rb_lock_range, true, false))
+			{
+				teleToLocation(bossSpawn.getLocx(), bossSpawn.getLocy(), bossSpawn.getLocz(), true);
+				// healFull(); // Prevents minor exploiting with it
+			}
+			
+			minionList.maintainMinions();
 		}, 60000, getMaintenanceInterval());
 	}
 	

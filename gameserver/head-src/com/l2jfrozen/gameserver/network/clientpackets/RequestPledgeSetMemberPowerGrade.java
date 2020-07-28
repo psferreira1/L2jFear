@@ -1,23 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.network.clientpackets;
 
 import com.l2jfrozen.gameserver.model.L2Clan;
@@ -30,14 +10,14 @@ import com.l2jfrozen.gameserver.model.actor.instance.L2PcInstance;
  */
 public final class RequestPledgeSetMemberPowerGrade extends L2GameClientPacket
 {
-	private int _powerGrade;
-	private String _member;
+	private int powerGrade;
+	private String clanMember;
 	
 	@Override
 	protected void readImpl()
 	{
-		_member = readS();
-		_powerGrade = readD();
+		clanMember = readS();
+		powerGrade = readD();
 	}
 	
 	@Override
@@ -45,15 +25,21 @@ public final class RequestPledgeSetMemberPowerGrade extends L2GameClientPacket
 	{
 		final L2PcInstance activeChar = getClient().getActiveChar();
 		if (activeChar == null)
+		{
 			return;
+		}
 		
 		final L2Clan clan = activeChar.getClan();
 		if (clan == null)
+		{
 			return;
+		}
 		
-		final L2ClanMember member = clan.getClanMember(_member);
+		final L2ClanMember member = clan.getClanMember(clanMember);
 		if (member == null)
+		{
 			return;
+		}
 		
 		if (member.getPledgeType() == L2Clan.SUBUNIT_ACADEMY)
 		{
@@ -62,7 +48,7 @@ public final class RequestPledgeSetMemberPowerGrade extends L2GameClientPacket
 			return;
 		}
 		
-		member.setPowerGrade(_powerGrade);
+		member.setPowerGrade(powerGrade);
 		clan.broadcastClanStatus();
 	}
 	

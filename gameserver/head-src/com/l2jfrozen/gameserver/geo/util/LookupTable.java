@@ -1,23 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.geo.util;
 
 import java.util.Arrays;
@@ -28,45 +8,51 @@ public class LookupTable<T> implements Iterable<T>
 {
 	private static final Object[] EMPTY_ARRAY = new Object[0];
 	
-	private Object[] _array = EMPTY_ARRAY;
+	private Object[] array = EMPTY_ARRAY;
 	
-	private int _offset = 0;
+	private int offset = 0;
 	
-	private int _size = 0;
+	private int size = 0;
 	
 	public int size()
 	{
-		return _size;
+		return size;
 	}
 	
 	public boolean isEmpty()
 	{
-		return _size == 0;
+		return size == 0;
 	}
 	
 	public void clear(final boolean force)
 	{
 		if (force)
-			_array = EMPTY_ARRAY;
+		{
+			array = EMPTY_ARRAY;
+		}
 		else
-			Arrays.fill(_array, null);
+		{
+			Arrays.fill(array, null);
+		}
 		
-		_offset = 0;
-		_size = 0;
+		offset = 0;
+		size = 0;
 	}
 	
 	/**
-	 * @param key
-	 * @return the mapped value if exists, or null if not
+	 * @param  key
+	 * @return     the mapped value if exists, or null if not
 	 */
 	public T get(final int key)
 	{
-		final int index = key + _offset;
+		final int index = key + offset;
 		
-		if (index < 0 || _array.length <= index)
+		if (index < 0 || array.length <= index)
+		{
 			return null;
+		}
 		
-		return (T) _array[index];
+		return (T) array[index];
 	}
 	
 	/**
@@ -75,55 +61,61 @@ public class LookupTable<T> implements Iterable<T>
 	 */
 	public void set(final int key, final T newValue)
 	{
-		final int index = key + _offset;
+		final int index = key + offset;
 		
-		if (0 <= index && index < _array.length)
+		if (0 <= index && index < array.length)
 		{
-			final T oldValue = (T) _array[index];
+			final T oldValue = (T) array[index];
 			
-			_array[index] = newValue;
+			array[index] = newValue;
 			
 			if (oldValue != null && oldValue != newValue)
+			{
 				replacedValue(key, oldValue, newValue);
+			}
 			
 			if (oldValue == null)
 			{
 				if (newValue != null)
-					_size++;
+				{
+					size++;
+				}
 			}
 			else
 			{
 				if (newValue == null)
-					_size--;
+				{
+					size--;
+				}
 			}
 			
 			return;
 		}
 		
-		_size++;
+		size++;
 		
-		if (_array.length == 0)
+		if (array.length == 0)
 		{
-			_array = new Object[]
+			array = new Object[]
 			{
 				newValue
 			};
-			_offset = -1 * key;
+			offset = -1 * key;
 			return;
 		}
 		
-		final int minimumKey = Math.min(0 - _offset, key);
-		final int maximumKey = Math.max((_array.length - 1) - _offset, key);
+		final int minimumKey = Math.min(0 - offset, key);
+		final int maximumKey = Math.max((array.length - 1) - offset, key);
 		
 		final Object[] newArray = new Object[maximumKey - minimumKey + 1];
 		final int newOffset = -1 * minimumKey;
 		
-		System.arraycopy(_array, 0, newArray, newOffset - _offset, _array.length);
+		System.arraycopy(array, 0, newArray, newOffset - offset, array.length);
 		
-		_array = newArray;
-		_offset = newOffset;
+		array = newArray;
+		offset = newOffset;
 		
-		_array[key + _offset] = newValue;
+		array[key + offset] = newValue;
 	}
 	
 	/**
@@ -136,13 +128,9 @@ public class LookupTable<T> implements Iterable<T>
 	{
 	}
 	
-	/*
-	 * (non-Javadoc)
-	 * @see java.lang.Iterable#iterator()
-	 */
 	@Override
 	public Iterator<T> iterator()
 	{
-		return L2Arrays.iterator(_array, false);
+		return L2Arrays.iterator(array, false);
 	}
 }

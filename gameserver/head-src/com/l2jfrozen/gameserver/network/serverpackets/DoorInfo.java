@@ -1,23 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.network.serverpackets;
 
 import com.l2jfrozen.gameserver.model.actor.instance.L2DoorInstance;
@@ -28,30 +8,33 @@ import com.l2jfrozen.gameserver.model.actor.instance.L2DoorInstance;
  */
 public class DoorInfo extends L2GameServerPacket
 {
-	private static final String _S__60_DOORINFO = "[S] 4c DoorInfo";
-	private final L2DoorInstance _door;
+	private L2DoorInstance door;
+	private boolean showHP;
 	
-	public DoorInfo(final L2DoorInstance door, final boolean showHp)
+	public DoorInfo(L2DoorInstance door)
 	{
-		_door = door;
+		this.door = door;
+		showHP = door.getCastle() != null && door.getCastle().getSiege().getIsInProgress();
 	}
 	
 	@Override
 	protected final void writeImpl()
 	{
 		writeC(0x4c);
-		writeD(_door.getObjectId());
-		writeD(_door.getDoorId());
+		writeD(door.getObjectId());
+		writeD(door.getDoorId());
+		writeD(showHP ? 1 : 0);
+		writeD(1); // ??? (can target)
+		writeD(door.isOpen() ? 0 : 1);
+		writeD((int) door.getCurrentHp());
+		writeD(0); // ??? (show HP)
+		writeD(0); // ??? (Damage)
 	}
 	
-	/*
-	 * (non-Javadoc)
-	 * @see com.l2jfrozen.gameserver.serverpackets.ServerBasePacket#getType()
-	 */
 	@Override
 	public String getType()
 	{
-		return _S__60_DOORINFO;
+		return "[S] 4c DoorInfo";
 	}
 	
 }

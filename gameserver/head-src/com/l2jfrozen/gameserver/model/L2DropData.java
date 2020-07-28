@@ -1,23 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.model;
 
 import java.util.Arrays;
@@ -30,12 +10,13 @@ public class L2DropData
 {
 	public static final int MAX_CHANCE = 1000000;
 	
-	private int _itemId;
-	private int _minDrop;
-	private int _maxDrop;
-	private int _chance;
-	private String _questID = null;
-	private String[] _stateID = null;
+	private int itemId;
+	private int minDrop;
+	private int maxDrop;
+	private int chance;
+	private String questID = null;
+	private String[] stateID = null;
+	private boolean customDrop = false;
 	
 	/**
 	 * Returns the ID of the item dropped
@@ -43,7 +24,7 @@ public class L2DropData
 	 */
 	public int getItemId()
 	{
-		return _itemId;
+		return itemId;
 	}
 	
 	/**
@@ -52,7 +33,7 @@ public class L2DropData
 	 */
 	public void setItemId(final int itemId)
 	{
-		_itemId = itemId;
+		this.itemId = itemId;
 	}
 	
 	/**
@@ -61,7 +42,7 @@ public class L2DropData
 	 */
 	public int getMinDrop()
 	{
-		return _minDrop;
+		return minDrop;
 	}
 	
 	/**
@@ -70,7 +51,7 @@ public class L2DropData
 	 */
 	public int getMaxDrop()
 	{
-		return _maxDrop;
+		return maxDrop;
 	}
 	
 	/**
@@ -79,7 +60,7 @@ public class L2DropData
 	 */
 	public int getChance()
 	{
-		return _chance;
+		return chance;
 	}
 	
 	/**
@@ -88,7 +69,7 @@ public class L2DropData
 	 */
 	public void setMinDrop(final int mindrop)
 	{
-		_minDrop = mindrop;
+		minDrop = mindrop;
 	}
 	
 	/**
@@ -97,7 +78,7 @@ public class L2DropData
 	 */
 	public void setMaxDrop(final int maxdrop)
 	{
-		_maxDrop = maxdrop;
+		maxDrop = maxdrop;
 	}
 	
 	/**
@@ -106,7 +87,7 @@ public class L2DropData
 	 */
 	public void setChance(final int chance)
 	{
-		_chance = chance;
+		this.chance = chance;
 	}
 	
 	/**
@@ -115,7 +96,7 @@ public class L2DropData
 	 */
 	public String[] getStateIDs()
 	{
-		return _stateID;
+		return stateID;
 	}
 	
 	/**
@@ -124,7 +105,7 @@ public class L2DropData
 	 */
 	public void addStates(final String[] list)
 	{
-		_stateID = list;
+		stateID = list;
 	}
 	
 	/**
@@ -133,7 +114,7 @@ public class L2DropData
 	 */
 	public String getQuestID()
 	{
-		return _questID;
+		return questID;
 	}
 	
 	/**
@@ -142,7 +123,7 @@ public class L2DropData
 	 */
 	public void setQuestID(final String questID)
 	{
-		_questID = questID;
+		this.questID = questID;
 	}
 	
 	/**
@@ -151,7 +132,17 @@ public class L2DropData
 	 */
 	public boolean isQuestDrop()
 	{
-		return _questID != null && _stateID != null;
+		return questID != null && stateID != null;
+	}
+	
+	public boolean isCustomDrop()
+	{
+		return customDrop;
+	}
+	
+	public void setIsCustomDrop(boolean custom)
+	{
+		customDrop = custom;
 	}
 	
 	/**
@@ -172,8 +163,8 @@ public class L2DropData
 	
 	/**
 	 * Returns if parameter "o" is a L2DropData and has the same itemID that the current object
-	 * @param o object to compare to the current one
-	 * @return boolean
+	 * @param  o object to compare to the current one
+	 * @return   boolean
 	 */
 	@Override
 	public boolean equals(final Object o)

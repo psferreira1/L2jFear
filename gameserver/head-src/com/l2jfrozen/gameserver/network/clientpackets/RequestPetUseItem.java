@@ -1,22 +1,3 @@
-/* L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.network.clientpackets;
 
 import org.apache.log4j.Logger;
@@ -36,12 +17,12 @@ import com.l2jfrozen.gameserver.network.serverpackets.SystemMessage;
 public final class RequestPetUseItem extends L2GameClientPacket
 {
 	private static Logger LOGGER = Logger.getLogger(RequestPetUseItem.class);
-	private int _objectId;
+	private int objectId;
 	
 	@Override
 	protected void readImpl()
 	{
-		_objectId = readD();
+		objectId = readD();
 	}
 	
 	@Override
@@ -50,23 +31,33 @@ public final class RequestPetUseItem extends L2GameClientPacket
 		final L2PcInstance activeChar = getClient().getActiveChar();
 		
 		if (activeChar == null)
+		{
 			return;
+		}
 		
 		if (!getClient().getFloodProtectors().getUseItem().tryPerformAction("pet use item"))
+		{
 			return;
+		}
 		
 		final L2PetInstance pet = (L2PetInstance) activeChar.getPet();
 		
 		if (pet == null)
+		{
 			return;
+		}
 		
-		final L2ItemInstance item = pet.getInventory().getItemByObjectId(_objectId);
+		final L2ItemInstance item = pet.getInventory().getItemByObjectId(objectId);
 		
 		if (item == null)
+		{
 			return;
+		}
 		
 		if (item.isWear())
+		{
 			return;
+		}
 		
 		final int itemId = item.getItemId();
 		
@@ -81,32 +72,32 @@ public final class RequestPetUseItem extends L2GameClientPacket
 		
 		if (Config.DEBUG)
 		{
-			LOGGER.debug(activeChar.getObjectId() + ": pet use item " + _objectId);
+			LOGGER.debug(activeChar.getObjectId() + ": pet use item " + objectId);
 		}
 		
 		// check if the item matches the pet
 		if (item.isEquipable())
 		{
 			if (L2PetDataTable.isWolf(pet.getNpcId()) && // wolf
-			item.getItem().isForWolf())
+				item.getItem().isForWolf())
 			{
 				useItem(pet, item, activeChar);
 				return;
 			}
 			else if (L2PetDataTable.isHatchling(pet.getNpcId()) && // hatchlings
-			item.getItem().isForHatchling())
+				item.getItem().isForHatchling())
 			{
 				useItem(pet, item, activeChar);
 				return;
 			}
 			else if (L2PetDataTable.isStrider(pet.getNpcId()) && // striders
-			item.getItem().isForStrider())
+				item.getItem().isForStrider())
 			{
 				useItem(pet, item, activeChar);
 				return;
 			}
 			else if (L2PetDataTable.isBaby(pet.getNpcId()) && // baby pets (buffalo, cougar, kookaboora)
-			item.getItem().isForBabyPet())
+				item.getItem().isForBabyPet())
 			{
 				useItem(pet, item, activeChar);
 				return;

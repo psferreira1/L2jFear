@@ -1,28 +1,7 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.ai.special;
 
+import java.util.ArrayList;
 import java.util.List;
-
-import javolution.util.FastList;
 
 import com.l2jfrozen.Config;
 import com.l2jfrozen.gameserver.managers.GrandBossManager;
@@ -56,9 +35,9 @@ public class Core extends Quest implements Runnable
 	private static final byte ALIVE = 0; // Core is spawned.
 	private static final byte DEAD = 1; // Core has been killed.
 	
-	private static boolean _FirstAttacked;
+	private static boolean firstAttacked;
 	
-	List<L2Attackable> Minions = new FastList<>();
+	List<L2Attackable> minions = new ArrayList<>();
 	
 	// private static final Logger LOGGER = Logger.getLogger(Core.class);
 	
@@ -80,7 +59,7 @@ public class Core extends Quest implements Runnable
 			addEventId(mob, Quest.QuestEventType.ON_ATTACK);
 		}
 		
-		_FirstAttacked = false;
+		firstAttacked = false;
 		final StatsSet info = GrandBossManager.getInstance().getStatsSet(CORE);
 		
 		final Integer status = GrandBossManager.getInstance().getBossStatus(CORE);
@@ -110,7 +89,7 @@ public class Core extends Quest implements Runnable
 			final String test = loadGlobalQuestVar("Core_Attacked");
 			if (test.equalsIgnoreCase("true"))
 			{
-				_FirstAttacked = true;
+				firstAttacked = true;
 			}
 			/*
 			 * int loc_x = info.getInteger("loc_x"); int loc_y = info.getInteger("loc_y"); int loc_z = info.getInteger("loc_z"); int heading = info.getInteger("heading"); int hp = info.getInteger("currentHP"); int mp = info.getInteger("currentMP"); L2GrandBossInstance core = (L2GrandBossInstance)
@@ -128,7 +107,7 @@ public class Core extends Quest implements Runnable
 	@Override
 	public void saveGlobalData()
 	{
-		final String val = "" + _FirstAttacked;
+		final String val = "" + firstAttacked;
 		saveGlobalQuestVar("Core_Attacked", val);
 	}
 	
@@ -155,19 +134,19 @@ public class Core extends Quest implements Runnable
 		}
 		else if (event.equalsIgnoreCase("spawn_minion") && status == ALIVE)
 		{
-			Minions.add((L2Attackable) addSpawn(npc.getNpcId(), npc.getX(), npc.getY(), npc.getZ(), npc.getHeading(), false, 0));
+			minions.add((L2Attackable) addSpawn(npc.getNpcId(), npc.getX(), npc.getY(), npc.getZ(), npc.getHeading(), false, 0));
 		}
 		else if (event.equalsIgnoreCase("despawn_minions"))
 		{
-			for (int i = 0; i < Minions.size(); i++)
+			for (int i = 0; i < minions.size(); i++)
 			{
-				final L2Attackable mob = Minions.get(i);
+				final L2Attackable mob = minions.get(i);
 				if (mob != null)
 				{
 					mob.decayMe();
 				}
 			}
-			Minions.clear();
+			minions.clear();
 		}
 		return super.onAdvEvent(event, npc, player);
 	}
@@ -177,7 +156,7 @@ public class Core extends Quest implements Runnable
 	{
 		if (npc.getNpcId() == CORE)
 		{
-			if (_FirstAttacked)
+			if (firstAttacked)
 			{
 				if (Rnd.get(100) == 0)
 				{
@@ -186,7 +165,7 @@ public class Core extends Quest implements Runnable
 			}
 			else
 			{
-				_FirstAttacked = true;
+				firstAttacked = true;
 				npc.broadcastPacket(new CreatureSay(npc.getObjectId(), 0, npc.getName(), "A non-permitted target has been discovered."));
 				npc.broadcastPacket(new CreatureSay(npc.getObjectId(), 0, npc.getName(), "Starting intruder removal system."));
 			}
@@ -206,9 +185,9 @@ public class Core extends Quest implements Runnable
 			npc.broadcastPacket(new CreatureSay(objId, 0, name, "A fatal error has occurred."));
 			npc.broadcastPacket(new CreatureSay(objId, 0, name, "System is being shut down..."));
 			npc.broadcastPacket(new CreatureSay(objId, 0, name, "......"));
-			_FirstAttacked = false;
+			firstAttacked = false;
 			
-			if (!npc.getSpawn().is_customBossInstance())
+			if (!npc.getSpawn().isCustomRaidBoss())
 			{
 				
 				addSpawn(31842, 16502, 110165, -6394, 0, false, 900000);
@@ -231,9 +210,9 @@ public class Core extends Quest implements Runnable
 			
 			final Integer status = GrandBossManager.getInstance().getBossStatus(CORE);
 			
-			if (status == ALIVE && Minions.contains(npc))
+			if (status == ALIVE && minions.contains(npc))
 			{
-				Minions.remove(npc);
+				minions.remove(npc);
 				startQuestTimer("spawn_minion", Config.CORE_RESP_MINION * 1000, npc, null);
 			}
 		}
@@ -249,15 +228,15 @@ public class Core extends Quest implements Runnable
 		for (int i = 0; i < 5; i++)
 		{
 			final int x = 16800 + i * 360;
-			Minions.add((L2Attackable) addSpawn(DEATH_KNIGHT, x, 110000, npc.getZ(), 280 + Rnd.get(40), false, 0));
-			Minions.add((L2Attackable) addSpawn(DEATH_KNIGHT, x, 109000, npc.getZ(), 280 + Rnd.get(40), false, 0));
+			minions.add((L2Attackable) addSpawn(DEATH_KNIGHT, x, 110000, npc.getZ(), 280 + Rnd.get(40), false, 0));
+			minions.add((L2Attackable) addSpawn(DEATH_KNIGHT, x, 109000, npc.getZ(), 280 + Rnd.get(40), false, 0));
 			final int x2 = 16800 + i * 600;
-			Minions.add((L2Attackable) addSpawn(DOOM_WRAITH, x2, 109300, npc.getZ(), 280 + Rnd.get(40), false, 0));
+			minions.add((L2Attackable) addSpawn(DOOM_WRAITH, x2, 109300, npc.getZ(), 280 + Rnd.get(40), false, 0));
 		}
 		for (int i = 0; i < 4; i++)
 		{
 			final int x = 16800 + i * 450;
-			Minions.add((L2Attackable) addSpawn(SUSCEPTOR, x, 110300, npc.getZ(), 280 + Rnd.get(40), false, 0));
+			minions.add((L2Attackable) addSpawn(SUSCEPTOR, x, 110300, npc.getZ(), 280 + Rnd.get(40), false, 0));
 		}
 	}
 	

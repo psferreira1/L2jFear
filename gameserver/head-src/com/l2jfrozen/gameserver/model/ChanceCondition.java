@@ -1,19 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any later
- * version.
- * 
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
- * 
- * You should have received a copy of the GNU General Public License along with
- * this program. If not, see <http://www.gnu.org/licenses/>.
- */
 package com.l2jfrozen.gameserver.model;
 
 import com.l2jfrozen.gameserver.templates.StatsSet;
@@ -67,27 +51,27 @@ public final class ChanceCondition
 		// A good skill was casted on you
 		ON_HIT_BY_GOOD_MAGIC(4096);
 		
-		private int _mask;
+		private int mask;
 		
 		private TriggerType(final int mask)
 		{
-			_mask = mask;
+			this.mask = mask;
 		}
 		
 		public boolean check(final int event)
 		{
-			return (_mask & event) != 0; // Trigger (sub-)type contains event (sub-)type
+			return (mask & event) != 0; // Trigger (sub-)type contains event (sub-)type
 		}
 	}
 	
-	private final TriggerType _triggerType;
+	private final TriggerType triggerType;
 	
-	private final int _chance;
+	private final int chance;
 	
 	private ChanceCondition(final TriggerType trigger, final int chance)
 	{
-		_triggerType = trigger;
-		_chance = chance;
+		triggerType = trigger;
+		this.chance = chance;
 	}
 	
 	public static ChanceCondition parse(final StatsSet set)
@@ -97,7 +81,9 @@ public final class ChanceCondition
 			final TriggerType trigger = set.getEnum("chanceType", TriggerType.class);
 			final int chance = set.getInteger("activationChance", 0);
 			if (trigger != null && chance > 0)
+			{
 				return new ChanceCondition(trigger, chance);
+			}
 		}
 		catch (final Exception e)
 		{
@@ -108,12 +94,12 @@ public final class ChanceCondition
 	
 	public boolean trigger(final int event)
 	{
-		return _triggerType.check(event) && Rnd.get(100) < _chance;
+		return triggerType.check(event) && Rnd.get(100) < chance;
 	}
 	
 	@Override
 	public String toString()
 	{
-		return "Trigger[" + _chance + ";" + _triggerType.toString() + "]";
+		return "Trigger[" + chance + ";" + triggerType.toString() + "]";
 	}
 }

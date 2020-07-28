@@ -1,23 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.network.serverpackets;
 
 /**
@@ -25,12 +5,11 @@ package com.l2jfrozen.gameserver.network.serverpackets;
  */
 public class Earthquake extends L2GameServerPacket
 {
-	private static final String _S__C4_EARTHQUAKE = "[S] C4 Earthquake";
-	private final int _x;
-	private final int _y;
-	private final int _z;
-	private final int _intensity;
-	private final int _duration;
+	private final int x;
+	private final int y;
+	private final int z;
+	private final int intensity;
+	private final int duration;
 	
 	/**
 	 * @param x
@@ -41,32 +20,28 @@ public class Earthquake extends L2GameServerPacket
 	 */
 	public Earthquake(final int x, final int y, final int z, final int intensity, final int duration)
 	{
-		_x = x;
-		_y = y;
-		_z = z;
-		_intensity = intensity;
-		_duration = duration;
+		this.x = x;
+		this.y = y;
+		this.z = z;
+		this.intensity = intensity;
+		this.duration = duration;
 	}
 	
 	@Override
 	protected final void writeImpl()
 	{
 		writeC(0xc4);
-		writeD(_x);
-		writeD(_y);
-		writeD(_z);
-		writeD(_intensity);
-		writeD(_duration);
+		writeD(x);
+		writeD(y);
+		writeD(z);
+		writeD(intensity);
+		writeD(duration);
 		writeD(0x00); // Unknown
 	}
 	
-	/*
-	 * (non-Javadoc)
-	 * @see com.l2jfrozen.gameserver.serverpackets.ServerBasePacket#getType()
-	 */
 	@Override
 	public String getType()
 	{
-		return _S__C4_EARTHQUAKE;
+		return "[S] C4 Earthquake";
 	}
 }

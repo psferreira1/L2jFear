@@ -1,23 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.handler.skillhandlers;
 
 import com.l2jfrozen.Config;
@@ -35,7 +15,7 @@ import com.l2jfrozen.gameserver.network.serverpackets.ItemList;
 import com.l2jfrozen.gameserver.network.serverpackets.SystemMessage;
 
 /**
- * @author _drunk_ TODO To change the template for this generated type comment go to Window - Preferences - Java - Code Style - Code Templates
+ * @author drunk
  */
 public class Sweep implements ISkillHandler
 {
@@ -60,7 +40,9 @@ public class Sweep implements ISkillHandler
 		for (final L2Object target1 : targets)
 		{
 			if (!(target1 instanceof L2Attackable))
+			{
 				continue;
+			}
 			
 			final L2Attackable target = (L2Attackable) target1;
 			L2Attackable.RewardItem[] items = null;
@@ -77,16 +59,22 @@ public class Sweep implements ISkillHandler
 			if (isSweeping)
 			{
 				if (items == null || items.length == 0)
+				{
 					continue;
+				}
 				for (final L2Attackable.RewardItem ritem : items)
 				{
 					if (player.isInParty())
+					{
 						player.getParty().distributeItem(player, ritem, true, target);
+					}
 					else
 					{
 						L2ItemInstance item = player.getInventory().addItem("Sweep", ritem.getItemId(), ritem.getCount(), player, target);
 						if (iu != null)
+						{
 							iu.addItem(item);
+						}
 						send = true;
 						item = null;
 						
@@ -113,9 +101,13 @@ public class Sweep implements ISkillHandler
 			if (send)
 			{
 				if (iu != null)
+				{
 					player.sendPacket(iu);
+				}
 				else
+				{
 					player.sendPacket(new ItemList(player, false));
+				}
 			}
 		}
 	}

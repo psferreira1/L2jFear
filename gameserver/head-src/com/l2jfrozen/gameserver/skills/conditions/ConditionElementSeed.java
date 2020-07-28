@@ -1,23 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.skills.conditions;
 
 import com.l2jfrozen.gameserver.skills.Env;
@@ -34,22 +14,22 @@ public class ConditionElementSeed extends Condition
 		1286,
 		1287
 	};
-	private final int[] _requiredSeeds;
+	private final int[] requiredSeeds;
 	
 	public ConditionElementSeed(final int[] seeds)
 	{
-		_requiredSeeds = seeds;
-		// if (Config.DEVELOPER) LOGGER.info("Required seeds: " + _requiredSeeds[0] + ", " + _requiredSeeds[1] + ", " + _requiredSeeds[2]+ ", " + _requiredSeeds[3]+ ", " + _requiredSeeds[4]);
+		requiredSeeds = seeds;
+		// if (Config.DEVELOPER) LOGGER.info("Required seeds: " + requiredSeeds[0] + ", " + requiredSeeds[1] + ", " + requiredSeeds[2]+ ", " + requiredSeeds[3]+ ", " + requiredSeeds[4]);
 	}
 	
 	ConditionElementSeed(final int fire, final int water, final int wind, final int various, final int any)
 	{
-		_requiredSeeds = new int[5];
-		_requiredSeeds[0] = fire;
-		_requiredSeeds[1] = water;
-		_requiredSeeds[2] = wind;
-		_requiredSeeds[3] = various;
-		_requiredSeeds[4] = any;
+		requiredSeeds = new int[5];
+		requiredSeeds[0] = fire;
+		requiredSeeds[1] = water;
+		requiredSeeds[2] = wind;
+		requiredSeeds[3] = various;
+		requiredSeeds[4] = any;
 	}
 	
 	@Override
@@ -59,19 +39,21 @@ public class ConditionElementSeed extends Condition
 		for (int i = 0; i < Seeds.length; i++)
 		{
 			Seeds[i] = env.player.getFirstEffect(seedSkills[i]) instanceof EffectSeed ? ((EffectSeed) env.player.getFirstEffect(seedSkills[i])).getPower() : 0;
-			if (Seeds[i] >= _requiredSeeds[i])
+			if (Seeds[i] >= requiredSeeds[i])
 			{
-				Seeds[i] -= _requiredSeeds[i];
+				Seeds[i] -= requiredSeeds[i];
 			}
 			else
+			{
 				return false;
+			}
 		}
 		
 		// if (Config.DEVELOPER) LOGGER.info("Seeds: " + Seeds[0] + ", " + Seeds[1] + ", " + Seeds[2]);
-		if (_requiredSeeds[3] > 0)
+		if (requiredSeeds[3] > 0)
 		{
 			int count = 0;
-			for (int i = 0; i < Seeds.length && count < _requiredSeeds[3]; i++)
+			for (int i = 0; i < Seeds.length && count < requiredSeeds[3]; i++)
 			{
 				if (Seeds[i] > 0)
 				{
@@ -79,19 +61,23 @@ public class ConditionElementSeed extends Condition
 					count++;
 				}
 			}
-			if (count < _requiredSeeds[3])
+			if (count < requiredSeeds[3])
+			{
 				return false;
+			}
 		}
 		
-		if (_requiredSeeds[4] > 0)
+		if (requiredSeeds[4] > 0)
 		{
 			int count = 0;
-			for (int i = 0; i < Seeds.length && count < _requiredSeeds[4]; i++)
+			for (int i = 0; i < Seeds.length && count < requiredSeeds[4]; i++)
 			{
 				count += Seeds[i];
 			}
-			if (count < _requiredSeeds[4])
+			if (count < requiredSeeds[4])
+			{
 				return false;
+			}
 		}
 		
 		return true;

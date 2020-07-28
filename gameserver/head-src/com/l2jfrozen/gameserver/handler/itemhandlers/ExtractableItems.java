@@ -1,23 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.handler.itemhandlers;
 
 import org.apache.log4j.Logger;
@@ -32,6 +12,7 @@ import com.l2jfrozen.gameserver.model.actor.instance.L2ItemInstance;
 import com.l2jfrozen.gameserver.model.actor.instance.L2PcInstance;
 import com.l2jfrozen.gameserver.model.actor.instance.L2PlayableInstance;
 import com.l2jfrozen.gameserver.network.SystemMessageId;
+import com.l2jfrozen.gameserver.network.serverpackets.ActionFailed;
 import com.l2jfrozen.gameserver.network.serverpackets.NpcHtmlMessage;
 import com.l2jfrozen.gameserver.network.serverpackets.SystemMessage;
 import com.l2jfrozen.util.random.Rnd;
@@ -46,25 +27,38 @@ public class ExtractableItems implements IItemHandler
 	public void doExtract(final L2PlayableInstance playable, final L2ItemInstance item, int count)
 	{
 		if (!(playable instanceof L2PcInstance))
+		{
 			return;
+		}
+		
 		final L2PcInstance activeChar = (L2PcInstance) playable;
 		final int itemID = item.getItemId();
 		
 		if (count > item.getCount())
+		{
 			return;
+		}
+		
 		while (count-- > 0)
 		{
 			L2ExtractableItem exitem = ExtractableItemsData.getInstance().getExtractableItem(itemID);
+			
 			if (exitem == null)
+			{
+				activeChar.sendPacket(ActionFailed.STATIC_PACKET);
 				return;
-			int createItemID = 0, createAmount = 0;
+			}
+			
+			int createItemID = 0;
+			int createAmount = 0;
 			final int rndNum = Rnd.get(100);
 			int chanceFrom = 0;
-			for (final L2ExtractableProductItem expi : exitem.getProductItems())
+			
+			for (L2ExtractableProductItem expi : exitem.getProductItems())
 			{
-				final int chance = expi.getChance();
+				int chance = expi.getChance();
 				
-				if (rndNum >= chanceFrom && rndNum <= chance + chanceFrom)
+				if (rndNum >= chanceFrom && rndNum <= (chance + chanceFrom))
 				{
 					createItemID = expi.getId();
 					createAmount = expi.getAmmount();
@@ -73,8 +67,6 @@ public class ExtractableItems implements IItemHandler
 				
 				chanceFrom += chance;
 			}
-			
-			exitem = null;
 			
 			if (createItemID == 0)
 			{
@@ -102,6 +94,7 @@ public class ExtractableItems implements IItemHandler
 						activeChar.addItem("Extract", createItemID, 1, item, false);
 					}
 				}
+				
 				SystemMessage sm;
 				
 				if (createAmount > 1)
@@ -116,11 +109,10 @@ public class ExtractableItems implements IItemHandler
 					sm.addItemName(createItemID);
 				}
 				activeChar.sendPacket(sm);
-				sm = null;
 			}
 			else
 			{
-				activeChar.sendMessage("Item failed to open"); // TODO: Put a more proper message here.
+				activeChar.sendPacket(SystemMessageId.NOTHING_INSIDE_THAT);
 			}
 			
 			activeChar.destroyItemByItemId("Extract", itemID, 1, activeChar.getTarget(), true);
@@ -132,7 +124,9 @@ public class ExtractableItems implements IItemHandler
 	public void useItem(final L2PlayableInstance playable, final L2ItemInstance item)
 	{
 		if (!(playable instanceof L2PcInstance))
+		{
 			return;
+		}
 		if (item.getCount() > 1)
 		{
 			String message = HtmCache.getInstance().getHtm("data/html/others/extractable.htm");

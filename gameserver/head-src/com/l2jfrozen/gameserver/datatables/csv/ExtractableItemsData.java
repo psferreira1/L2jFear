@@ -1,23 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.datatables.csv;
 
 import java.io.File;
@@ -41,29 +21,26 @@ public class ExtractableItemsData
 	private static Logger LOGGER = Logger.getLogger(ExtractableItemsData.class);
 	
 	// Map<itemid, L2ExtractableItem>
-	private Map<Integer, L2ExtractableItem> _items;
+	private Map<Integer, L2ExtractableItem> items;
 	
-	private static ExtractableItemsData _instance = null;
+	private static ExtractableItemsData instance = null;
 	
 	public static ExtractableItemsData getInstance()
 	{
-		if (_instance == null)
+		if (instance == null)
 		{
-			_instance = new ExtractableItemsData();
+			instance = new ExtractableItemsData();
 		}
 		
-		return _instance;
+		return instance;
 	}
 	
 	public ExtractableItemsData()
 	{
-		_items = new HashMap<>();
+		items = new HashMap<>();
 		
-		Scanner s = null;
-		try
+		try (Scanner s = new Scanner(new File(Config.DATAPACK_ROOT + "/data/csv/extractable_items.csv"));)
 		{
-			s = new Scanner(new File(Config.DATAPACK_ROOT + "/data/extractable_items.csv"));
-			
 			int lineCount = 0;
 			while (s.hasNextLine())
 			{
@@ -82,14 +59,17 @@ public class ExtractableItemsData
 				
 				final String[] lineSplit = line.split(";");
 				int itemID = 0;
+				
 				try
 				{
 					itemID = Integer.parseInt(lineSplit[0]);
 				}
-				catch (final Exception e)
+				catch (Exception e)
 				{
 					if (Config.ENABLE_ALL_EXCEPTIONS)
+					{
 						e.printStackTrace();
+					}
 					
 					LOGGER.info("Extractable items data: Error in line " + lineCount + " -> invalid item id or wrong seperator after item id!");
 					LOGGER.info("		" + line);
@@ -119,7 +99,9 @@ public class ExtractableItemsData
 					catch (final Exception e)
 					{
 						if (Config.ENABLE_ALL_EXCEPTIONS)
+						{
 							e.printStackTrace();
+						}
 						
 						LOGGER.info("Extractable items data: Error in line " + lineCount + " -> incomplete/invalid production data or wrong seperator!");
 						LOGGER.info("		" + line);
@@ -142,45 +124,28 @@ public class ExtractableItemsData
 					continue;
 				}
 				
-				_items.put(itemID, new L2ExtractableItem(itemID, product_temp));
+				items.put(itemID, new L2ExtractableItem(itemID, product_temp));
 			}
 			
-			LOGGER.info("Extractable items data: Loaded " + _items.size() + " extractable items!");
+			LOGGER.info("Extractable items data: Loaded " + items.size() + " extractable items!");
 		}
-		catch (final Exception e)
+		catch (Exception e)
 		{
-			// if(Config.ENABLE_ALL_EXCEPTIONS)
-			e.printStackTrace();
-			
-			LOGGER.info("Extractable items data: Can not find './data/extractable_items.csv'");
-			
-		}
-		finally
-		{
-			
-			if (s != null)
-				try
-				{
-					s.close();
-				}
-				catch (final Exception e1)
-				{
-					e1.printStackTrace();
-				}
+			LOGGER.error("ExtractableItemsData.ExtractableItemsData : Can not find data in gameserver/data/csv/extractable_items.csv", e);
 		}
 	}
 	
 	public L2ExtractableItem getExtractableItem(final int itemID)
 	{
-		return _items.get(itemID);
+		return items.get(itemID);
 	}
 	
 	public int[] itemIDs()
 	{
-		final int size = _items.size();
+		final int size = items.size();
 		final int[] result = new int[size];
 		int i = 0;
-		for (final L2ExtractableItem ei : _items.values())
+		for (final L2ExtractableItem ei : items.values())
 		{
 			result[i] = ei.getItemId();
 			i++;

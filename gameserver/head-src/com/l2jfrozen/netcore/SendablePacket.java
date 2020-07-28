@@ -1,43 +1,24 @@
-/* L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.netcore;
 
 /**
  * @author KenM
- * @param <T>
+ * @param  <T>
  */
 public abstract class SendablePacket<T extends MMOClient<?>> extends AbstractPacket<T>
 {
 	protected final void putInt(final int value)
 	{
-		_buf.putInt(value);
+		buf.putInt(value);
 	}
 	
 	protected final void putDouble(final double value)
 	{
-		_buf.putDouble(value);
+		buf.putDouble(value);
 	}
 	
 	protected final void putFloat(final float value)
 	{
-		_buf.putFloat(value);
+		buf.putFloat(value);
 	}
 	
 	/**
@@ -47,7 +28,7 @@ public abstract class SendablePacket<T extends MMOClient<?>> extends AbstractPac
 	 */
 	protected final void writeC(final int data)
 	{
-		_buf.put((byte) data);
+		buf.put((byte) data);
 	}
 	
 	/**
@@ -57,7 +38,7 @@ public abstract class SendablePacket<T extends MMOClient<?>> extends AbstractPac
 	 */
 	protected final void writeF(final double value)
 	{
-		_buf.putDouble(value);
+		buf.putDouble(value);
 	}
 	
 	/**
@@ -67,7 +48,7 @@ public abstract class SendablePacket<T extends MMOClient<?>> extends AbstractPac
 	 */
 	protected final void writeH(final int value)
 	{
-		_buf.putShort((short) value);
+		buf.putShort((short) value);
 	}
 	
 	/**
@@ -77,7 +58,7 @@ public abstract class SendablePacket<T extends MMOClient<?>> extends AbstractPac
 	 */
 	protected final void writeD(final int value)
 	{
-		_buf.putInt(value);
+		buf.putInt(value);
 	}
 	
 	/**
@@ -87,7 +68,7 @@ public abstract class SendablePacket<T extends MMOClient<?>> extends AbstractPac
 	 */
 	protected final void writeQ(final long value)
 	{
-		_buf.putLong(value);
+		buf.putLong(value);
 	}
 	
 	/**
@@ -97,7 +78,7 @@ public abstract class SendablePacket<T extends MMOClient<?>> extends AbstractPac
 	 */
 	protected final void writeB(final byte[] data)
 	{
-		_buf.put(data);
+		buf.put(data);
 	}
 	
 	/**
@@ -111,11 +92,11 @@ public abstract class SendablePacket<T extends MMOClient<?>> extends AbstractPac
 			final int len = text.length();
 			for (int i = 0; i < len; i++)
 			{
-				_buf.putChar(text.charAt(i));
+				buf.putChar(text.charAt(i));
 			}
 		}
 		
-		_buf.putChar('\000');
+		buf.putChar('\000');
 	}
 	
 	protected abstract void write();

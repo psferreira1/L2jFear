@@ -1,28 +1,7 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.handler;
 
+import java.util.HashMap;
 import java.util.Map;
-
-import javolution.util.FastMap;
 
 import org.apache.log4j.Logger;
 
@@ -43,31 +22,25 @@ import com.l2jfrozen.gameserver.handler.usercommandhandlers.PartyInfo;
 import com.l2jfrozen.gameserver.handler.usercommandhandlers.SiegeStatus;
 import com.l2jfrozen.gameserver.handler.usercommandhandlers.Time;
 
-/**
- * This class ...
- * @version $Revision: 1.1.2.1.2.5 $ $Date: 2005/03/27 15:30:09 $
- */
 public class UserCommandHandler
 {
 	private static final Logger LOGGER = Logger.getLogger(GameServer.class);
+	private static UserCommandHandler instance;
 	
-	private static UserCommandHandler _instance;
-	
-	private final Map<Integer, IUserCommandHandler> _datatable;
+	private Map<Integer, IUserCommandHandler> dataTable = new HashMap<>();
 	
 	public static UserCommandHandler getInstance()
 	{
-		if (_instance == null)
+		if (instance == null)
 		{
-			_instance = new UserCommandHandler();
+			instance = new UserCommandHandler();
 		}
 		
-		return _instance;
+		return instance;
 	}
 	
 	private UserCommandHandler()
 	{
-		_datatable = new FastMap<>();
 		registerUserCommandHandler(new Time());
 		registerUserCommandHandler(new OlympiadStat());
 		registerUserCommandHandler(new ChannelLeave());
@@ -82,8 +55,10 @@ public class UserCommandHandler
 		registerUserCommandHandler(new PartyInfo());
 		registerUserCommandHandler(new SiegeStatus());
 		if (Config.OFFLINE_TRADE_ENABLE && Config.OFFLINE_COMMAND1)
+		{
 			registerUserCommandHandler(new OfflineShop());
-		LOGGER.info("UserCommandHandler: Loaded " + _datatable.size() + " handlers.");
+		}
+		LOGGER.info("UserCommandHandler: Loaded " + dataTable.size() + " handlers.");
 	}
 	
 	public void registerUserCommandHandler(final IUserCommandHandler handler)
@@ -96,9 +71,8 @@ public class UserCommandHandler
 			{
 				LOGGER.debug("Adding handler for user command " + id);
 			}
-			_datatable.put(new Integer(id), handler);
+			dataTable.put(id, handler);
 		}
-		ids = null;
 	}
 	
 	public IUserCommandHandler getUserCommandHandler(final int userCommand)
@@ -108,14 +82,11 @@ public class UserCommandHandler
 			LOGGER.debug("getting handler for user command: " + userCommand);
 		}
 		
-		return _datatable.get(new Integer(userCommand));
+		return dataTable.get(userCommand);
 	}
 	
-	/**
-	 * @return
-	 */
 	public int size()
 	{
-		return _datatable.size();
+		return dataTable.size();
 	}
 }

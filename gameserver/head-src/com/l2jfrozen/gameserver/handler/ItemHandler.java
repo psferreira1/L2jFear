@@ -1,23 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.handler;
 
 import java.util.Map;
@@ -25,6 +5,7 @@ import java.util.TreeMap;
 
 import org.apache.log4j.Logger;
 
+import com.l2jfrozen.Config;
 import com.l2jfrozen.gameserver.GameServer;
 import com.l2jfrozen.gameserver.handler.itemhandlers.BeastSoulShot;
 import com.l2jfrozen.gameserver.handler.itemhandlers.BeastSpice;
@@ -68,6 +49,7 @@ import com.l2jfrozen.gameserver.handler.itemhandlers.SoulShots;
 import com.l2jfrozen.gameserver.handler.itemhandlers.SpecialXMas;
 import com.l2jfrozen.gameserver.handler.itemhandlers.SpiritShot;
 import com.l2jfrozen.gameserver.handler.itemhandlers.SummonItems;
+import com.l2jfrozen.gameserver.handler.itemhandlers.VIPCustomItem;
 
 /**
  * This class manages handlers of items
@@ -77,9 +59,9 @@ public class ItemHandler
 {
 	private static final Logger LOGGER = Logger.getLogger(GameServer.class);
 	
-	private static ItemHandler _instance;
+	private static ItemHandler instance;
 	
-	private final Map<Integer, IItemHandler> _datatable;
+	private final Map<Integer, IItemHandler> dataTable;
 	
 	/**
 	 * Create ItemHandler if doesn't exist and returns ItemHandler
@@ -87,12 +69,12 @@ public class ItemHandler
 	 */
 	public static ItemHandler getInstance()
 	{
-		if (_instance == null)
+		if (instance == null)
 		{
-			_instance = new ItemHandler();
+			instance = new ItemHandler();
 		}
 		
-		return _instance;
+		return instance;
 	}
 	
 	/**
@@ -101,7 +83,7 @@ public class ItemHandler
 	 */
 	public int size()
 	{
-		return _datatable.size();
+		return dataTable.size();
 	}
 	
 	/**
@@ -109,7 +91,7 @@ public class ItemHandler
 	 */
 	private ItemHandler()
 	{
-		_datatable = new TreeMap<>();
+		dataTable = new TreeMap<>();
 		registerItemHandler(new ScrollOfEscape());
 		registerItemHandler(new ScrollOfResurrection());
 		registerItemHandler(new SoulShots());
@@ -146,13 +128,26 @@ public class ItemHandler
 		registerItemHandler(new SummonItems());
 		registerItemHandler(new BeastSpice());
 		registerItemHandler(new JackpotSeed());
-		registerItemHandler(new NobleCustomItem());
-		registerItemHandler(new HeroCustomItem());
+		
+		if (Config.NOBLE_CUSTOM_ITEMS)
+		{
+			registerItemHandler(new NobleCustomItem());
+		}
+		
+		if (Config.HERO_CUSTOM_ITEMS)
+		{
+			registerItemHandler(new HeroCustomItem());
+		}
+		
+		if (Config.VIP_CUSTOM_ITEM)
+		{
+			registerItemHandler(new VIPCustomItem());
+		}
 		registerItemHandler(new MOSKey());
 		registerItemHandler(new BreakingArrow());
 		registerItemHandler(new ChristmasTree());
 		registerItemHandler(new Crystals());
-		LOGGER.info("ItemHandler: Loaded " + _datatable.size() + " handlers.");
+		LOGGER.info("ItemHandler: Loaded " + dataTable.size() + " handlers.");
 	}
 	
 	/**
@@ -170,17 +165,17 @@ public class ItemHandler
 		// Add handler for each ID found
 		for (final int id : ids)
 		{
-			_datatable.put(new Integer(id), handler);
+			dataTable.put(id, handler);
 		}
 	}
 	
 	/**
 	 * Returns the handler of the item
-	 * @param itemId : int designating the itemID
-	 * @return IItemHandler
+	 * @param  itemId : int designating the itemID
+	 * @return        IItemHandler
 	 */
 	public IItemHandler getItemHandler(final int itemId)
 	{
-		return _datatable.get(new Integer(itemId));
+		return dataTable.get(itemId);
 	}
 }

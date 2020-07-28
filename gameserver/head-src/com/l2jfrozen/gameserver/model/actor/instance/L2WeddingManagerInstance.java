@@ -1,23 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.model.actor.instance;
 
 import com.l2jfrozen.Config;
@@ -44,24 +24,22 @@ public class L2WeddingManagerInstance extends L2NpcInstance
 	
 	/**
 	 * Instantiates a new l2 wedding manager instance.
-	 * @param objectId the object id
-	 * @param template the template
-	 * @author evill33t & squeezed
+	 * @param  objectId the object id
+	 * @param  template the template
+	 * @author          evill33t & squeezed
 	 */
 	public L2WeddingManagerInstance(final int objectId, final L2NpcTemplate template)
 	{
 		super(objectId, template);
 	}
 	
-	/*
-	 * (non-Javadoc)
-	 * @see com.l2jfrozen.gameserver.model.actor.instance.L2NpcInstance#onAction(com.l2jfrozen.gameserver.model.actor.instance.L2PcInstance)
-	 */
 	@Override
 	public void onAction(final L2PcInstance player)
 	{
 		if (!canTarget(player))
+		{
 			return;
+		}
 		
 		// Check if the L2PcInstance already target the L2NpcInstance
 		if (this != player.getTarget())
@@ -112,10 +90,6 @@ public class L2WeddingManagerInstance extends L2NpcInstance
 		html = null;
 	}
 	
-	/*
-	 * (non-Javadoc)
-	 * @see com.l2jfrozen.gameserver.model.actor.instance.L2NpcInstance#onBypassFeedback(com.l2jfrozen.gameserver.model.actor.instance.L2PcInstance, java.lang.String)
-	 */
 	@Override
 	public void onBypassFeedback(final L2PcInstance player, final String command)
 	{
@@ -133,7 +107,7 @@ public class L2WeddingManagerInstance extends L2NpcInstance
 		
 		L2PcInstance ptarget = (L2PcInstance) L2World.getInstance().findObject(player.getPartnerId());
 		// partner online ?
-		if (ptarget == null || ptarget.isOnline() == 0)
+		if (ptarget == null || !ptarget.isOnline())
 		{
 			filename = "data/html/mods/Wedding_notfound.htm";
 			sendHtmlMessage(player, filename, replace);
@@ -362,9 +336,9 @@ public class L2WeddingManagerInstance extends L2NpcInstance
 	
 	/**
 	 * Send html message.
-	 * @param player the player
+	 * @param player   the player
 	 * @param filename the filename
-	 * @param replace the replace
+	 * @param replace  the replace
 	 */
 	private void sendHtmlMessage(final L2PcInstance player, final String filename, final String replace)
 	{

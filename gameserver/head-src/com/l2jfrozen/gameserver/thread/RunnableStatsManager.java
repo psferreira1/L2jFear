@@ -12,23 +12,27 @@ import org.apache.commons.lang.ArrayUtils;
 
 public final class RunnableStatsManager
 {
-	protected static final Map<Class<?>, ClassStat> _classStats = new HashMap<>();
+	protected static final Map<Class<?>, ClassStat> classStats = new HashMap<>();
 	
 	private static final class ClassStat
 	{
-		private String[] _methodNames = new String[0];
-		private MethodStat[] _methodStats = new MethodStat[0];
+		private String[] methodNames = new String[0];
+		private MethodStat[] methodStats = new MethodStat[0];
 		
 		protected ClassStat(final Class<?> clazz)
 		{
-			_classStats.put(clazz, this);
+			classStats.put(clazz, this);
 		}
 		
 		protected MethodStat getMethodStat(String methodName, final boolean synchronizedAlready)
 		{
-			for (int i = 0; i < _methodNames.length; i++)
-				if (_methodNames[i].equals(methodName))
-					return _methodStats[i];
+			for (int i = 0; i < methodNames.length; i++)
+			{
+				if (methodNames[i].equals(methodName))
+				{
+					return methodStats[i];
+				}
+			}
 			
 			if (!synchronizedAlready)
 			{
@@ -42,8 +46,8 @@ public final class RunnableStatsManager
 			
 			final MethodStat methodStat = new MethodStat();
 			
-			_methodNames = (String[]) ArrayUtils.add(_methodNames, methodName);
-			_methodStats = (MethodStat[]) ArrayUtils.add(_methodStats, methodStat);
+			methodNames = (String[]) ArrayUtils.add(methodNames, methodName);
+			methodStats = (MethodStat[]) ArrayUtils.add(methodStats, methodStat);
 			
 			return methodStat;
 		}
@@ -51,32 +55,34 @@ public final class RunnableStatsManager
 	
 	protected static final class MethodStat
 	{
-		private final ReentrantLock _lock = new ReentrantLock();
+		private final ReentrantLock lock = new ReentrantLock();
 		
-		private long _min = Long.MAX_VALUE;
-		private long _max = Long.MIN_VALUE;
+		private long min = Long.MAX_VALUE;
+		private long max = Long.MIN_VALUE;
 		
 		protected void handleStats(final long runTime)
 		{
-			_lock.lock();
+			lock.lock();
 			try
 			{
-				_min = Math.min(_min, runTime);
-				_max = Math.max(_max, runTime);
+				min = Math.min(min, runTime);
+				max = Math.max(max, runTime);
 			}
 			finally
 			{
-				_lock.unlock();
+				lock.unlock();
 			}
 		}
 	}
 	
 	private static ClassStat getClassStat(final Class<?> clazz, final boolean synchronizedAlready)
 	{
-		final ClassStat classStat = _classStats.get(clazz);
+		final ClassStat classStat = classStats.get(clazz);
 		
 		if (classStat != null)
+		{
 			return classStat;
+		}
 		
 		if (!synchronizedAlready)
 		{

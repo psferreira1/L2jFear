@@ -1,23 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.network.serverpackets;
 
 import com.l2jfrozen.gameserver.controllers.GameTimeController;
@@ -29,10 +9,8 @@ import com.l2jfrozen.gameserver.model.actor.instance.L2PcInstance;
  */
 public class CharSelected extends L2GameServerPacket
 {
-	// SdSddddddddddffddddddddddddddddddddddddddddddddddddddddd d
-	private static final String _S__21_CHARSELECTED = "[S] 15 CharSelected";
-	private final L2PcInstance _activeChar;
-	private final int _sessionId;
+	private final L2PcInstance activeChar;
+	private final int sessionId;
 	
 	/**
 	 * @param cha
@@ -40,8 +18,8 @@ public class CharSelected extends L2GameServerPacket
 	 */
 	public CharSelected(final L2PcInstance cha, final int sessionId)
 	{
-		_activeChar = cha;
-		_sessionId = sessionId;
+		activeChar = cha;
+		this.sessionId = sessionId;
 	}
 	
 	@Override
@@ -49,33 +27,33 @@ public class CharSelected extends L2GameServerPacket
 	{
 		writeC(0x15);
 		
-		writeS(_activeChar.getName());
-		writeD(_activeChar.getCharId()); // ??
-		writeS(_activeChar.getTitle());
-		writeD(_sessionId);
-		writeD(_activeChar.getClanId());
+		writeS(activeChar.getName());
+		writeD(activeChar.getCharId()); // ??
+		writeS(activeChar.getTitle());
+		writeD(sessionId);
+		writeD(activeChar.getClanId());
 		writeD(0x00); // ??
-		writeD(_activeChar.getAppearance().getSex() ? 1 : 0);
-		writeD(_activeChar.getRace().ordinal());
-		writeD(_activeChar.getClassId().getId());
+		writeD(activeChar.getAppearance().getSex() ? 1 : 0);
+		writeD(activeChar.getRace().ordinal());
+		writeD(activeChar.getClassId().getId());
 		writeD(0x01); // active ??
-		writeD(_activeChar.getX());
-		writeD(_activeChar.getY());
-		writeD(_activeChar.getZ());
+		writeD(activeChar.getX());
+		writeD(activeChar.getY());
+		writeD(activeChar.getZ());
 		
-		writeF(_activeChar.getCurrentHp());
-		writeF(_activeChar.getCurrentMp());
-		writeD(_activeChar.getSp());
-		writeQ(_activeChar.getExp());
-		writeD(_activeChar.getLevel());
-		writeD(_activeChar.getKarma()); // thx evill33t
+		writeF(activeChar.getCurrentHp());
+		writeF(activeChar.getCurrentMp());
+		writeD(activeChar.getSp());
+		writeQ(activeChar.getExp());
+		writeD(activeChar.getLevel());
+		writeD(activeChar.getKarma()); // thx evill33t
 		writeD(0x0); // ?
-		writeD(_activeChar.getINT());
-		writeD(_activeChar.getSTR());
-		writeD(_activeChar.getCON());
-		writeD(_activeChar.getMEN());
-		writeD(_activeChar.getDEX());
-		writeD(_activeChar.getWIT());
+		writeD(activeChar.getINT());
+		writeD(activeChar.getSTR());
+		writeD(activeChar.getCON());
+		writeD(activeChar.getMEN());
+		writeD(activeChar.getDEX());
+		writeD(activeChar.getWIT());
 		for (int i = 0; i < 30; i++)
 		{
 			writeD(0x00);
@@ -109,13 +87,9 @@ public class CharSelected extends L2GameServerPacket
 		writeD(0x00); // c3
 	}
 	
-	/*
-	 * (non-Javadoc)
-	 * @see com.l2jfrozen.gameserver.serverpackets.ServerBasePacket#getType()
-	 */
 	@Override
 	public String getType()
 	{
-		return _S__21_CHARSELECTED;
+		return "[S] 15 CharSelected";
 	}
 }

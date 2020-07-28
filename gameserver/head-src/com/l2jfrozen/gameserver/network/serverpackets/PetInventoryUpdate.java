@@ -1,28 +1,7 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.network.serverpackets;
 
+import java.util.ArrayList;
 import java.util.List;
-
-import javolution.util.FastList;
 
 import org.apache.log4j.Logger;
 
@@ -32,21 +11,20 @@ import com.l2jfrozen.gameserver.model.actor.instance.L2ItemInstance;
 
 /**
  * This class ...
- * @author Yme
+ * @author  Yme
  * @version $Revision: 1.3.2.1.2.5 $ $Date: 2005/03/27 15:29:57 $ Rebuild 23.2.2006 by Advi
  */
 public class PetInventoryUpdate extends L2GameServerPacket
 {
 	private static Logger LOGGER = Logger.getLogger(InventoryUpdate.class);
-	private static final String _S__37_INVENTORYUPDATE = "[S] b3 InventoryUpdate";
-	private final List<ItemInfo> _items;
+	private final List<ItemInfo> items;
 	
 	/**
 	 * @param items
 	 */
 	public PetInventoryUpdate(final List<ItemInfo> items)
 	{
-		_items = items;
+		this.items = items;
 		if (Config.DEBUG)
 		{
 			showDebug();
@@ -55,40 +33,40 @@ public class PetInventoryUpdate extends L2GameServerPacket
 	
 	public PetInventoryUpdate()
 	{
-		this(new FastList<ItemInfo>());
+		this(new ArrayList<ItemInfo>());
 	}
 	
 	public void addItem(final L2ItemInstance item)
 	{
-		_items.add(new ItemInfo(item));
+		items.add(new ItemInfo(item));
 	}
 	
 	public void addNewItem(final L2ItemInstance item)
 	{
-		_items.add(new ItemInfo(item, 1));
+		items.add(new ItemInfo(item, 1));
 	}
 	
 	public void addModifiedItem(final L2ItemInstance item)
 	{
-		_items.add(new ItemInfo(item, 2));
+		items.add(new ItemInfo(item, 2));
 	}
 	
 	public void addRemovedItem(final L2ItemInstance item)
 	{
-		_items.add(new ItemInfo(item, 3));
+		items.add(new ItemInfo(item, 3));
 	}
 	
 	public void addItems(final List<L2ItemInstance> items)
 	{
 		for (final L2ItemInstance item : items)
 		{
-			_items.add(new ItemInfo(item));
+			this.items.add(new ItemInfo(item));
 		}
 	}
 	
 	private void showDebug()
 	{
-		for (final ItemInfo item : _items)
+		for (final ItemInfo item : items)
 		{
 			LOGGER.debug("oid:" + Integer.toHexString(item.getObjectId()) + " item:" + item.getItem().getName() + " last change:" + item.getChange());
 		}
@@ -98,9 +76,9 @@ public class PetInventoryUpdate extends L2GameServerPacket
 	protected final void writeImpl()
 	{
 		writeC(0xb3);
-		final int count = _items.size();
+		final int count = items.size();
 		writeH(count);
-		for (final ItemInfo item : _items)
+		for (final ItemInfo item : items)
 		{
 			writeH(item.getChange());
 			writeH(item.getItem().getType1()); // item type1
@@ -117,13 +95,9 @@ public class PetInventoryUpdate extends L2GameServerPacket
 		}
 	}
 	
-	/*
-	 * (non-Javadoc)
-	 * @see com.l2jfrozen.gameserver.serverpackets.ServerBasePacket#getType()
-	 */
 	@Override
 	public String getType()
 	{
-		return _S__37_INVENTORYUPDATE;
+		return "[S] b3 InventoryUpdate";
 	}
 }

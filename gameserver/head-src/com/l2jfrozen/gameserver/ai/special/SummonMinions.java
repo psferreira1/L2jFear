@@ -1,24 +1,10 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any later
- * version.
- * 
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
- * 
- * You should have received a copy of the GNU General Public License along with
- * this program. If not, see <http://www.gnu.org/licenses/>.
- */
 package com.l2jfrozen.gameserver.ai.special;
 
-import javolution.util.FastList;
-import javolution.util.FastMap;
-import javolution.util.FastSet;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import com.l2jfrozen.gameserver.ai.CtrlIntention;
 import com.l2jfrozen.gameserver.model.L2Attackable;
@@ -30,10 +16,10 @@ import com.l2jfrozen.util.random.Rnd;
 
 public class SummonMinions extends Quest implements Runnable
 {
-	private static int HasSpawned;
-	private static FastSet<Integer> myTrackingSet = new FastSet<>(); // Used to track instances of npcs
-	private final FastMap<Integer, FastList<L2PcInstance>> _attackersList = new FastMap<Integer, FastList<L2PcInstance>>().shared();
-	private static final FastMap<Integer, Integer[]> MINIONS = new FastMap<>();
+	private static int hasSpawned;
+	private static List<Integer> myTrackingSet = new ArrayList<>(); // Used to track instances of npcs
+	private final Map<Integer, List<L2PcInstance>> attackersList = new ConcurrentHashMap<>();
+	private static final Map<Integer, Integer[]> MINIONS = new HashMap<>();
 	
 	static
 	{
@@ -148,15 +134,15 @@ public class SummonMinions extends Quest implements Runnable
 			if (!myTrackingSet.contains(npcObjId)) // this allows to handle multiple instances of npc
 			{
 				myTrackingSet.add(npcObjId);
-				HasSpawned = npcObjId;
+				hasSpawned = npcObjId;
 			}
-			if (HasSpawned == npcObjId)
+			if (hasSpawned == npcObjId)
 			{
 				if (npcId == 22030 || npcId == 22032 || npcId == 22038) // mobs that summon minions only on certain hp
 				{
 					if (npc.getStatus().getCurrentHp() < npc.getMaxHp() / 2)
 					{
-						HasSpawned = 0;
+						hasSpawned = 0;
 						if (Rnd.get(100) < 33) // mobs that summon minions only on certain chance
 						{
 							Integer[] minions = MINIONS.get(npcId);
@@ -181,34 +167,34 @@ public class SummonMinions extends Quest implements Runnable
 					{
 						for (final L2PcInstance member : attacker.getParty().getPartyMembers())
 						{
-							if (_attackersList.get(npcObjId) == null)
+							if (attackersList.get(npcObjId) == null)
 							{
-								final FastList<L2PcInstance> player = new FastList<>();
+								List<L2PcInstance> player = new ArrayList<>();
 								player.add(member);
-								_attackersList.put(npcObjId, player);
+								attackersList.put(npcObjId, player);
 							}
-							else if (!_attackersList.get(npcObjId).contains(member))
+							else if (!attackersList.get(npcObjId).contains(member))
 							{
-								_attackersList.get(npcObjId).add(member);
+								attackersList.get(npcObjId).add(member);
 							}
 						}
 					}
 					else
 					{
-						if (_attackersList.get(npcObjId) == null)
+						if (attackersList.get(npcObjId) == null)
 						{
-							final FastList<L2PcInstance> player = new FastList<>();
+							List<L2PcInstance> player = new ArrayList<>();
 							player.add(attacker);
-							_attackersList.put(npcObjId, player);
+							attackersList.put(npcObjId, player);
 						}
-						else if (!_attackersList.get(npcObjId).contains(attacker))
+						else if (!attackersList.get(npcObjId).contains(attacker))
 						{
-							_attackersList.get(npcObjId).add(attacker);
+							attackersList.get(npcObjId).add(attacker);
 						}
 					}
-					if ((attacker.getParty() != null) && attacker.getParty().getMemberCount() > 2 || _attackersList.get(npcObjId).size() > 2) // Just to make sure..
+					if ((attacker.getParty() != null) && attacker.getParty().getMemberCount() > 2 || attackersList.get(npcObjId).size() > 2) // Just to make sure..
 					{
-						HasSpawned = 0;
+						hasSpawned = 0;
 						Integer[] minions = MINIONS.get(npcId);
 						for (final Integer minion : minions)
 						{
@@ -223,7 +209,7 @@ public class SummonMinions extends Quest implements Runnable
 				else
 				// mobs without special conditions
 				{
-					HasSpawned = 0;
+					hasSpawned = 0;
 					Integer[] minions = MINIONS.get(npcId);
 					if (npcId != 20767)
 					{
@@ -250,9 +236,9 @@ public class SummonMinions extends Quest implements Runnable
 				}
 			}
 		}
-		if (_attackersList.get(npcObjId) != null)
+		if (attackersList.get(npcObjId) != null)
 		{
-			_attackersList.get(npcObjId).clear();
+			attackersList.get(npcObjId).clear();
 		}
 		
 		return super.onAttack(npc, attacker, damage, isPet);

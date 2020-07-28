@@ -1,19 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any later
- * version.
- * 
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
- * 
- * You should have received a copy of the GNU General Public License along with
- * this program. If not, see <http://www.gnu.org/licenses/>.
- */
 package com.l2jfrozen.gameserver.network.clientpackets;
 
 import com.l2jfrozen.Config;
@@ -25,24 +9,28 @@ import com.l2jfrozen.gameserver.network.serverpackets.SystemMessage;
 
 public final class AllyDismiss extends L2GameClientPacket
 {
-	private String _clanName;
+	private String clanName;
 	
 	@Override
 	protected void readImpl()
 	{
-		_clanName = readS();
+		clanName = readS();
 	}
 	
 	@Override
 	protected void runImpl()
 	{
-		if (_clanName == null)
+		if (clanName == null)
+		{
 			return;
+		}
 		
 		final L2PcInstance player = getClient().getActiveChar();
 		
 		if (player == null)
+		{
 			return;
+		}
 		
 		if (player.getClan() == null)
 		{
@@ -64,7 +52,7 @@ public final class AllyDismiss extends L2GameClientPacket
 			return;
 		}
 		
-		final L2Clan clan = ClanTable.getInstance().getClanByName(_clanName);
+		final L2Clan clan = ClanTable.getInstance().getClanByName(clanName);
 		
 		if (clan == null)
 		{

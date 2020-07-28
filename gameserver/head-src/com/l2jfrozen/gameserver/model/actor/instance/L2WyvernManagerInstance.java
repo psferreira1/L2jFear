@@ -1,22 +1,3 @@
-/* L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.model.actor.instance;
 
 import com.l2jfrozen.gameserver.ai.CtrlIntention;
@@ -42,8 +23,8 @@ public class L2WyvernManagerInstance extends L2CastleChamberlainInstance
 	/** The Constant COND_CLAN_OWNER. */
 	protected static final int COND_CLAN_OWNER = 3;
 	
-	/** The _clan hall id. */
-	private int _clanHallId = -1;
+	/** The clan hall id. */
+	private int clanHallId = -1;
 	
 	/**
 	 * Instantiates a new l2 wyvern manager instance.
@@ -55,10 +36,6 @@ public class L2WyvernManagerInstance extends L2CastleChamberlainInstance
 		super(objectId, template);
 	}
 	
-	/*
-	 * (non-Javadoc)
-	 * @see com.l2jfrozen.gameserver.model.actor.instance.L2CastleChamberlainInstance#onBypassFeedback(com.l2jfrozen.gameserver.model.actor.instance.L2PcInstance, java.lang.String)
-	 */
 	@Override
 	public void onBypassFeedback(final L2PcInstance player, final String command)
 	{
@@ -98,7 +75,9 @@ public class L2WyvernManagerInstance extends L2CastleChamberlainInstance
 					else
 					{
 						if (!player.disarmWeapons())
+						{
 							return;
+						}
 						player.getPet().unSummon(player);
 						player.getInventory().destroyItemByItemId("Wyvern", 1460, 10, player, player.getTarget());
 						final Ride mount = new Ride(player.getObjectId(), Ride.ACTION_MOUNT, 12621);
@@ -132,15 +111,13 @@ public class L2WyvernManagerInstance extends L2CastleChamberlainInstance
 		}
 	}
 	
-	/*
-	 * (non-Javadoc)
-	 * @see com.l2jfrozen.gameserver.model.actor.instance.L2CastleChamberlainInstance#onAction(com.l2jfrozen.gameserver.model.actor.instance.L2PcInstance)
-	 */
 	@Override
 	public void onAction(final L2PcInstance player)
 	{
 		if (!canTarget(player))
+		{
 			return;
+		}
 		
 		// Check if the L2PcInstance already target the L2NpcInstance
 		if (this != player.getTarget())
@@ -211,33 +188,33 @@ public class L2WyvernManagerInstance extends L2CastleChamberlainInstance
 	 */
 	public final ClanHall getClanHall()
 	{
-		if (_clanHallId < 0)
+		if (clanHallId < 0)
 		{
 			ClanHall temp = ClanHallManager.getInstance().getNearbyClanHall(getX(), getY(), 500);
 			
 			if (temp != null)
 			{
-				_clanHallId = temp.getId();
+				clanHallId = temp.getId();
 				temp = null;
 			}
 			
-			if (_clanHallId < 0)
+			if (clanHallId < 0)
+			{
 				return null;
+			}
 		}
-		return ClanHallManager.getInstance().getClanHallById(_clanHallId);
+		return ClanHallManager.getInstance().getClanHallById(clanHallId);
 	}
 	
-	/*
-	 * (non-Javadoc)
-	 * @see com.l2jfrozen.gameserver.model.actor.instance.L2CastleChamberlainInstance#validateCondition(com.l2jfrozen.gameserver.model.actor.instance.L2PcInstance)
-	 */
 	@Override
 	protected int validateCondition(final L2PcInstance player)
 	{
 		if (getClanHall() != null && player.getClan() != null)
 		{
 			if (getClanHall().getOwnerId() == player.getClanId() && player.isClanLeader())
+			{
 				return COND_CLAN_OWNER; // Owner of the clanhall
+			}
 		}
 		else if (super.getCastle() != null && super.getCastle().getCastleId() > 0)
 		{
@@ -245,10 +222,14 @@ public class L2WyvernManagerInstance extends L2CastleChamberlainInstance
 			{
 				// Checks if player is in Sieage Zone, he can't use wyvern!!
 				if (super.isInsideZone(L2Character.ZONE_SIEGE) || super.getCastle().getSiege().getIsInProgress())
+				{
 					return COND_BUSY_BECAUSE_OF_SIEGE; // Busy because of siege
+				}
 				else if (super.getCastle().getOwnerId() == player.getClanId() // Clan owns castle
-					&& player.isClanLeader()) // Leader of clan
+					&& player.isClanLeader())
+				{
 					return COND_OWNER; // Owner
+				}
 			}
 		}
 		

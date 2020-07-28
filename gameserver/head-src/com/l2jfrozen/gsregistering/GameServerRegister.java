@@ -1,25 +1,10 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any later
- * version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
- *
- * You should have received a copy of the GNU General Public License along with
- * this program. If not, see <http://www.gnu.org/licenses/>.
- */
 package com.l2jfrozen.gsregistering;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.LineNumberReader;
 import java.math.BigInteger;
+import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.Map;
@@ -32,30 +17,28 @@ import com.l2jfrozen.FService;
 import com.l2jfrozen.ServerType;
 import com.l2jfrozen.gameserver.datatables.GameServerTable;
 import com.l2jfrozen.gameserver.thread.LoginServerThread;
-import com.l2jfrozen.util.CloseUtil;
-import com.l2jfrozen.util.database.DatabaseUtils;
 import com.l2jfrozen.util.database.L2DatabaseFactory;
 
 public class GameServerRegister
 {
 	private static final Logger LOGGER = Logger.getLogger(GameServerRegister.class);
-	private static String _choice;
-	private static boolean _choiceOk;
+	private static final String DELETE_ALL_GAMESERVERS = "DELETE FROM gameservers";
+	private static String choice;
+	private static boolean choiceOk;
 	
 	public static void main(final String[] args) throws IOException
 	{
 		PropertyConfigurator.configure(FService.LOG_CONF_FILE);
 		ServerType.serverMode = ServerType.MODE_LOGINSERVER;
 		Config.load();
-		final LineNumberReader _in = new LineNumberReader(new InputStreamReader(System.in));
+		final LineNumberReader in = new LineNumberReader(new InputStreamReader(System.in));
 		try
 		{
 			GameServerTable.load();
 		}
 		catch (final Exception e)
 		{
-			LOGGER.info("FATAL: Failed loading GameServerTable. Reason: " + e.getMessage());
-			e.printStackTrace();
+			LOGGER.info("FATAL: Failed loading gameservers table. Reason: ", e);
 			System.exit(1);
 		}
 		final GameServerTable gameServerTable = GameServerTable.getInstance();
@@ -63,11 +46,12 @@ public class GameServerRegister
 		LOGGER.info("Enter The id of the server you want to register");
 		LOGGER.info("Type 'help' to get a list of ids.");
 		LOGGER.info("Type 'clean' to unregister all currently registered gameservers on this LoginServer.");
-		while (!_choiceOk)
+		LOGGER.info("Type 'exit' to unregister all currently registered gameservers on this LoginServer.");
+		while (!choiceOk)
 		{
-			LOGGER.info("Your choice:");
-			_choice = _in.readLine();
-			if (_choice.equalsIgnoreCase("help"))
+			System.out.print("Your choice: ");
+			choice = in.readLine();
+			if (choice.equalsIgnoreCase("help"))
 			{
 				for (final Map.Entry<Integer, String> entry : gameServerTable.getServerNames().entrySet())
 				{
@@ -75,11 +59,11 @@ public class GameServerRegister
 				}
 				LOGGER.info("You can also see servername.xml");
 			}
-			else if (_choice.equalsIgnoreCase("clean"))
+			else if (choice.equalsIgnoreCase("clean"))
 			{
 				System.out.print("This is going to UNREGISTER ALL servers from this LoginServer. Are you sure? (y/n) ");
-				_choice = _in.readLine();
-				if (_choice.equals("y"))
+				choice = in.readLine();
+				if (choice.equals("y"))
 				{
 					GameServerRegister.cleanRegisteredGameServersFromDB();
 					gameServerTable.getRegisteredGameServers().clear();
@@ -89,11 +73,16 @@ public class GameServerRegister
 					LOGGER.info("ABORTED");
 				}
 			}
+			else if (choice.equalsIgnoreCase("exit"))
+			{
+				System.out.println("Bye...");
+				return;
+			}
 			else
 			{
 				try
 				{
-					final int id = Integer.parseInt(_choice);
+					final int id = Integer.parseInt(choice);
 					final int size = gameServerTable.getServerNames().size();
 					if (size == 0)
 					{
@@ -101,15 +90,13 @@ public class GameServerRegister
 						System.exit(1);
 					}
 					
-					_choice = "";
+					choice = "";
 					
-					while (!_choice.equalsIgnoreCase(""))
+					while (!choice.equalsIgnoreCase(""))
 					{
 						LOGGER.info("External Server Ip:");
-						_choice = _in.readLine();
+						choice = in.readLine();
 					}
-					
-					final String ip = _choice;
 					
 					final String name = gameServerTable.getServerNameById(id);
 					if (name == null)
@@ -125,7 +112,7 @@ public class GameServerRegister
 					else
 					{
 						final byte[] hexId = LoginServerThread.generateHex(16);
-						gameServerTable.registerServerOnDB(hexId, id, ip);
+						gameServerTable.registerServerOnDB(hexId, id);
 						Config.saveHexid(id, new BigInteger(hexId).toString(16), "hexid.txt");
 						LOGGER.info("Server Registered hexid saved to 'hexid.txt'");
 						LOGGER.info("Put this file in the /config folder of your gameserver.");
@@ -135,7 +122,9 @@ public class GameServerRegister
 				catch (final NumberFormatException nfe)
 				{
 					if (Config.ENABLE_ALL_EXCEPTIONS)
+					{
 						nfe.printStackTrace();
+					}
 					
 					LOGGER.info("Please, type a number or 'help'");
 				}
@@ -145,26 +134,14 @@ public class GameServerRegister
 	
 	public static void cleanRegisteredGameServersFromDB()
 	{
-		java.sql.Connection con = null;
-		PreparedStatement statement = null;
-		try
+		try (Connection con = L2DatabaseFactory.getInstance().getConnection();
+			PreparedStatement statement = con.prepareStatement(DELETE_ALL_GAMESERVERS))
 		{
-			con = L2DatabaseFactory.getInstance().getConnection(false);
-			statement = con.prepareStatement("DELETE FROM gameservers");
 			statement.executeUpdate();
-			DatabaseUtils.close(statement);
 		}
 		catch (final SQLException e)
 		{
-			if (Config.ENABLE_ALL_EXCEPTIONS)
-				e.printStackTrace();
-			
-			LOGGER.info("SQL error while cleaning registered servers: " + e);
-		}
-		finally
-		{
-			CloseUtil.close(con);
-			con = null;
+			LOGGER.error("GameServerRegister.cleanRegisteredGameServersFromDB : Could not delete from gameservers table", e);
 		}
 	}
 }

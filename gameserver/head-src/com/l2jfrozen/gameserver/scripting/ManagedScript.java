@@ -1,23 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.scripting;
 
 import java.io.File;
@@ -32,13 +12,13 @@ import com.l2jfrozen.Config;
  */
 public abstract class ManagedScript
 {
-	private final File _scriptFile;
-	private long _lastLoadTime;
-	private boolean _isActive;
+	private final File scriptFile;
+	private long lastLoadTime;
+	private boolean isActive;
 	
 	public ManagedScript()
 	{
-		_scriptFile = L2ScriptEngineManager.getInstance().getCurrentLoadScript();
+		scriptFile = L2ScriptEngineManager.getInstance().getCurrentLoadScript();
 		setLastLoadTime(System.currentTimeMillis());
 	}
 	
@@ -57,7 +37,9 @@ public abstract class ManagedScript
 		catch (final ScriptException e)
 		{
 			if (Config.ENABLE_ALL_EXCEPTIONS)
+			{
 				e.printStackTrace();
+			}
 			
 			return false;
 		}
@@ -67,12 +49,12 @@ public abstract class ManagedScript
 	
 	public void setActive(final boolean status)
 	{
-		_isActive = status;
+		isActive = status;
 	}
 	
 	public boolean isActive()
 	{
-		return _isActive;
+		return isActive;
 	}
 	
 	/**
@@ -80,7 +62,7 @@ public abstract class ManagedScript
 	 */
 	public File getScriptFile()
 	{
-		return _scriptFile;
+		return scriptFile;
 	}
 	
 	/**
@@ -88,7 +70,7 @@ public abstract class ManagedScript
 	 */
 	protected void setLastLoadTime(final long lastLoadTime)
 	{
-		_lastLoadTime = lastLoadTime;
+		this.lastLoadTime = lastLoadTime;
 	}
 	
 	/**
@@ -96,7 +78,7 @@ public abstract class ManagedScript
 	 */
 	protected long getLastLoadTime()
 	{
-		return _lastLoadTime;
+		return lastLoadTime;
 	}
 	
 	public abstract String getScriptName();

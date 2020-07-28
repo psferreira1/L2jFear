@@ -1,19 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any later
- * version.
- * 
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
- * 
- * You should have received a copy of the GNU General Public License along with
- * this program. If not, see <http://www.gnu.org/licenses/>.
- */
 package com.l2jfrozen.gameserver.network.clientpackets;
 
 import java.util.regex.Matcher;
@@ -51,45 +35,48 @@ import com.l2jfrozen.gameserver.util.Util;
 public final class CharacterCreate extends L2GameClientPacket
 {
 	private static Logger LOGGER = Logger.getLogger(CharacterCreate.class);
-	private static final Object CREATION_LOCK = new Object();
 	
-	private String _name;
-	private byte _sex, _hairStyle, _hairColor, _face;
-	private int _race, _classId, _int, _str, _con, _men, _dex, _wit;
+	private String name;
+	private byte sex, hairStyle, hairColor, face;
+	private int race, classId, intelligence, str, con, men, dex, wit;
 	
 	@Override
 	protected void readImpl()
 	{
-		_name = readS();
-		_race = readD();
-		_sex = (byte) readD();
-		_classId = readD();
-		_int = readD();
-		_str = readD();
-		_con = readD();
-		_men = readD();
-		_dex = readD();
-		_wit = readD();
-		_hairStyle = (byte) readD();
-		_hairColor = (byte) readD();
-		_face = (byte) readD();
+		name = readS();
+		race = readD();
+		sex = (byte) readD();
+		classId = readD();
+		intelligence = readD(); // keyword int can't be used
+		str = readD();
+		con = readD();
+		men = readD();
+		dex = readD();
+		wit = readD();
+		hairStyle = (byte) readD();
+		hairColor = (byte) readD();
+		face = (byte) readD();
 	}
 	
 	@Override
 	protected void runImpl()
 	{
 		
-		if (_name.length() < 3 || _name.length() > 16 || !Util.isAlphaNumeric(_name) || !isValidName(_name))
+		if (name.length() < 3 || name.length() > 16 || !Util.isAlphaNumeric(name) || !isValidName(name))
 		{
 			if (Config.DEBUG)
-				LOGGER.debug("DEBUG " + getType() + ": charname: " + _name + " is invalid. creation failed.");
+			{
+				LOGGER.debug("DEBUG " + getType() + ": charname: " + name + " is invalid. creation failed.");
+			}
 			
 			sendPacket(new CharCreateFail(CharCreateFail.REASON_16_ENG_CHARS));
 			return;
 		}
 		
 		if (Config.DEBUG)
-			LOGGER.debug("DEBUG " + getType() + ": charname: " + _name + " classId: " + _classId);
+		{
+			LOGGER.debug("DEBUG " + getType() + ": charname: " + name + " classId: " + classId);
+		}
 		
 		L2PcInstance newChar = null;
 		L2PcTemplate template = null;
@@ -100,15 +87,19 @@ public final class CharacterCreate extends L2GameClientPacket
 			if (CharNameTable.getInstance().accountCharNumber(getClient().getAccountName()) >= Config.MAX_CHARACTERS_NUMBER_PER_ACCOUNT && Config.MAX_CHARACTERS_NUMBER_PER_ACCOUNT != 0)
 			{
 				if (Config.DEBUG)
+				{
 					LOGGER.debug("DEBUG " + getType() + ": Max number of characters reached. Creation failed.");
+				}
 				
 				sendPacket(new CharCreateFail(CharCreateFail.REASON_TOO_MANY_CHARACTERS));
 				return;
 			}
-			else if (CharNameTable.getInstance().doesCharNameExist(_name))
+			else if (CharNameTable.getInstance().doesCharNameExist(name))
 			{
 				if (Config.DEBUG)
-					LOGGER.debug("DEBUG " + getType() + ": charname: " + _name + " already exists. creation failed.");
+				{
+					LOGGER.debug("DEBUG " + getType() + ": charname: " + name + " already exists. creation failed.");
+				}
 				
 				sendPacket(new CharCreateFail(CharCreateFail.REASON_NAME_ALREADY_EXISTS));
 				return;
@@ -116,16 +107,20 @@ public final class CharacterCreate extends L2GameClientPacket
 			else if (CharNameTable.getInstance().ipCharNumber(getClient().getConnection().getInetAddress().getHostName()) >= Config.MAX_CHARACTERS_NUMBER_PER_IP && Config.MAX_CHARACTERS_NUMBER_PER_IP != 0)
 			{
 				if (Config.DEBUG)
+				{
 					LOGGER.debug("DEBUG " + getType() + ": Max number of characters reached for IP. Creation failed.");
+				}
 				
 				sendPacket(new CharCreateFail(CharCreateFail.REASON_TOO_MANY_CHARACTERS));
 				return;
 			}
 			
-			template = CharTemplateTable.getInstance().getTemplate(_classId);
+			template = CharTemplateTable.getInstance().getTemplate(classId);
 			
 			if (Config.DEBUG)
-				LOGGER.debug("DEBUG " + getType() + ": charname: " + _name + " classId: " + _classId + " template: " + template);
+			{
+				LOGGER.debug("DEBUG " + getType() + ": charname: " + name + " classId: " + classId + " template: " + template);
+			}
 			
 			if (template == null || template.classBaseLevel > 1)
 			{
@@ -134,7 +129,7 @@ public final class CharacterCreate extends L2GameClientPacket
 			}
 			
 			final int objectId = IdFactory.getInstance().getNextId();
-			newChar = L2PcInstance.create(objectId, template, getClient().getAccountName(), _name, _hairStyle, _hairColor, _face, _sex != 0);
+			newChar = L2PcInstance.create(objectId, template, getClient().getAccountName(), name, hairStyle, hairColor, face, sex != 0);
 			
 			newChar.setCurrentHp(newChar.getMaxHp());// L2Off like
 			// newChar.setCurrentCp(template.baseCpMax);
@@ -161,7 +156,9 @@ public final class CharacterCreate extends L2GameClientPacket
 		catch (final PatternSyntaxException e) // case of illegal pattern
 		{
 			if (Config.ENABLE_ALL_EXCEPTIONS)
+			{
 				e.printStackTrace();
+			}
 			
 			LOGGER.warn("ERROR " + getType() + ": Character name pattern of config is wrong!");
 			pattern = Pattern.compile(".*");
@@ -169,7 +166,9 @@ public final class CharacterCreate extends L2GameClientPacket
 		
 		final Matcher regexp = pattern.matcher(test);
 		if (!regexp.matches())
+		{
 			result = false;
+		}
 		
 		return result;
 	}
@@ -177,17 +176,23 @@ public final class CharacterCreate extends L2GameClientPacket
 	private void initNewChar(final L2GameClient client, final L2PcInstance newChar)
 	{
 		if (Config.DEBUG)
+		{
 			LOGGER.debug("DEBUG " + getType() + ": Character init start");
+		}
 		
 		L2World.getInstance().storeObject(newChar);
 		final L2PcTemplate template = newChar.getTemplate();
 		
 		// Starting Items
 		if (Config.STARTING_ADENA > 0)
+		{
 			newChar.addAdena("Init", Config.STARTING_ADENA, null, false);
+		}
 		
 		if (Config.STARTING_AA > 0)
+		{
 			newChar.addAncientAdena("Init", Config.STARTING_AA, null, false);
+		}
 		
 		if (Config.CUSTOM_STARTER_ITEMS_ENABLED)
 		{
@@ -196,10 +201,16 @@ public final class CharacterCreate extends L2GameClientPacket
 				for (final int[] reward : Config.STARTING_CUSTOM_ITEMS_M)
 				{
 					if (ItemTable.getInstance().createDummyItem(reward[0]).isStackable())
+					{
 						newChar.getInventory().addItem("Starter Items Mage", reward[0], reward[1], newChar, null);
+					}
 					else
+					{
 						for (int i = 0; i < reward[1]; ++i)
+						{
 							newChar.getInventory().addItem("Starter Items Mage", reward[0], 1, newChar, null);
+						}
+					}
 				}
 			}
 			else
@@ -207,36 +218,53 @@ public final class CharacterCreate extends L2GameClientPacket
 				for (final int[] reward : Config.STARTING_CUSTOM_ITEMS_F)
 				{
 					if (ItemTable.getInstance().createDummyItem(reward[0]).isStackable())
+					{
 						newChar.getInventory().addItem("Starter Items Fighter", reward[0], reward[1], newChar, null);
+					}
 					else
+					{
 						for (int i = 0; i < reward[1]; ++i)
+						{
 							newChar.getInventory().addItem("Starter Items Fighter", reward[0], 1, newChar, null);
+						}
+					}
 				}
 			}
 		}
 		
 		if (Config.SPAWN_CHAR)
+		{
 			newChar.setXYZInvisible(Config.SPAWN_X, Config.SPAWN_Y, Config.SPAWN_Z);
+		}
 		else
+		{
 			newChar.setXYZInvisible(template.spawnX, template.spawnY, template.spawnZ);
+		}
 		
 		if (Config.ALLOW_CREATE_LVL)
+		{
 			newChar.getStat().addExp(ExperienceData.getInstance().getExpForLevel(Config.CHAR_CREATE_LVL));
+		}
 		
 		if (Config.CHAR_TITLE)
+		{
 			newChar.setTitle(Config.ADD_CHAR_TITLE);
+		}
 		else
+		{
 			newChar.setTitle("");
+		}
 		
 		if (Config.PVP_PK_TITLE)
+		{
 			newChar.setTitle(Config.PVP_TITLE_PREFIX + "0" + Config.PK_TITLE_PREFIX + "0 ");
+		}
 		
 		// Shortcuts
 		newChar.registerShortCut(new L2ShortCut(0, 0, 3, 2, -1, 1)); // Attack
 		newChar.registerShortCut(new L2ShortCut(3, 0, 3, 5, -1, 1)); // Take
 		newChar.registerShortCut(new L2ShortCut(10, 0, 3, 0, -1, 1)); // Sit
 		
-		final ItemTable itemTable = ItemTable.getInstance();
 		final L2Item[] items = template.getItems();
 		
 		for (final L2Item item2 : items)
@@ -244,11 +272,17 @@ public final class CharacterCreate extends L2GameClientPacket
 			final L2ItemInstance item = newChar.getInventory().addItem("Init", item2.getItemId(), 1, newChar, null);
 			
 			if (item.getItemId() == 5588)
+			{
 				newChar.registerShortCut(new L2ShortCut(11, 0, 1, item.getObjectId(), -1, 1)); // Tutorial Book shortcut
-				
+			}
+			
 			if (item.isEquipable())
+			{
 				if (newChar.getActiveWeaponItem() == null || !(item.getItem().getType2() != L2Item.TYPE2_WEAPON))
+				{
 					newChar.getInventory().equipItemAndRecord(item);
+				}
+			}
 		}
 		
 		final L2SkillLearn[] startSkills = SkillTreeTable.getInstance().getAvailableSkills(newChar, newChar.getClassId());
@@ -258,13 +292,19 @@ public final class CharacterCreate extends L2GameClientPacket
 			newChar.addSkill(SkillTable.getInstance().getInfo(startSkill.getId(), startSkill.getLevel()), true);
 			
 			if (startSkill.getId() == 1001 || startSkill.getId() == 1177)
+			{
 				newChar.registerShortCut(new L2ShortCut(1, 0, 2, startSkill.getId(), 1, 1));
+			}
 			
 			if (startSkill.getId() == 1216)
+			{
 				newChar.registerShortCut(new L2ShortCut(10, 0, 2, startSkill.getId(), 1, 1));
+			}
 			
 			if (Config.DEBUG)
+			{
 				LOGGER.debug("DEBUG " + getType() + ": Adding starter skill:" + startSkill.getId() + " / " + startSkill.getLevel());
+			}
 		}
 		
 		startTutorialQuest(newChar);
@@ -284,7 +324,9 @@ public final class CharacterCreate extends L2GameClientPacket
 		client.setCharSelection(cl.getCharInfo());
 		
 		if (Config.DEBUG)
+		{
 			LOGGER.debug("DEBUG " + getType() + ": Character init end");
+		}
 	}
 	
 	public void startTutorialQuest(final L2PcInstance player)
@@ -298,7 +340,9 @@ public final class CharacterCreate extends L2GameClientPacket
 		}
 		
 		if (q != null)
+		{
 			q.newQuestState(player);
+		}
 	}
 	
 	@Override

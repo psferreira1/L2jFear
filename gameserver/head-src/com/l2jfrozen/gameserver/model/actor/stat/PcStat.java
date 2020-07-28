@@ -1,22 +1,3 @@
-/* L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.model.actor.stat;
 
 import org.apache.log4j.Logger;
@@ -43,9 +24,9 @@ public class PcStat extends PlayableStat
 {
 	private static Logger LOGGER = Logger.getLogger(PcStat.class);
 	
-	private int _oldMaxHp; // stats watch
-	private int _oldMaxMp; // stats watch
-	private int _oldMaxCp; // stats watch
+	private int oldMaxHp; // stats watch
+	private int oldMaxMp; // stats watch
+	private int oldMaxCp; // stats watch
 	
 	public PcStat(final L2PcInstance activeChar)
 	{
@@ -59,10 +40,14 @@ public class PcStat extends PlayableStat
 		
 		// Player is Gm and access level is below or equal to canGainExp and is in party, don't give Xp
 		if (!getActiveChar().getAccessLevel().canGainExp() && getActiveChar().isInParty())
+		{
 			return false;
+		}
 		
 		if (!super.addExp(value))
+		{
 			return false;
+		}
 		
 		// Set new karma
 		if (!activeChar.isCursedWeaponEquiped() && activeChar.getKarma() > 0 && (activeChar.isGM() || !activeChar.isInsideZone(L2Character.ZONE_PVP)))
@@ -90,11 +75,15 @@ public class PcStat extends PlayableStat
 	 * <BR>
 	 * <B><U> Actions </U> :</B><BR>
 	 * <BR>
-	 * <li>Remove Karma when the player kills L2MonsterInstance</li> <li>Send a Server->Client packet StatusUpdate to the L2PcInstance</li> <li>Send a Server->Client System Message to the L2PcInstance</li> <li>If the L2PcInstance increases it's level, send a Server->Client packet SocialAction
-	 * (broadcast)</li> <li>If the L2PcInstance increases it's level, manage the increase level task (Max MP, Max MP, Recommendation, Expertise and beginner skills...)</li> <li>If the L2PcInstance increases it's level, send a Server->Client packet UserInfo to the L2PcInstance</li><BR>
+	 * <li>Remove Karma when the player kills L2MonsterInstance</li>
+	 * <li>Send a Server->Client packet StatusUpdate to the L2PcInstance</li>
+	 * <li>Send a Server->Client System Message to the L2PcInstance</li>
+	 * <li>If the L2PcInstance increases it's level, send a Server->Client packet SocialAction (broadcast)</li>
+	 * <li>If the L2PcInstance increases it's level, manage the increase level task (Max MP, Max MP, Recommendation, Expertise and beginner skills...)</li>
+	 * <li>If the L2PcInstance increases it's level, send a Server->Client packet UserInfo to the L2PcInstance</li><BR>
 	 * <BR>
 	 * @param addToExp The Experience value to add
-	 * @param addToSp The SP value to add
+	 * @param addToSp  The SP value to add
 	 */
 	@Override
 	public boolean addExpAndSp(long addToExp, int addToSp)
@@ -104,7 +93,9 @@ public class PcStat extends PlayableStat
 		// Player is Gm and acces level is below or equal to GM_DONT_TAKE_EXPSP and is in party, don't give Xp/Sp
 		L2PcInstance activeChar = getActiveChar();
 		if (!activeChar.getAccessLevel().canGainExp() && activeChar.isInParty())
+		{
 			return false;
+		}
 		
 		// if this player has a pet that takes from the owner's Exp, give the pet Exp now
 		
@@ -133,7 +124,9 @@ public class PcStat extends PlayableStat
 		}
 		
 		if (!super.addExpAndSp(addToExp, addToSp))
+		{
 			return false;
+		}
 		
 		// Send a Server->Client System Message to the L2PcInstance
 		SystemMessage sm = new SystemMessage(SystemMessageId.YOU_EARNED_S1_EXP_AND_S2_SP);
@@ -151,7 +144,9 @@ public class PcStat extends PlayableStat
 	public boolean removeExpAndSp(final long addToExp, final int addToSp)
 	{
 		if (!super.removeExpAndSp(addToExp, addToSp))
+		{
 			return false;
+		}
 		
 		// Send a Server->Client System Message to the L2PcInstance
 		SystemMessage sm = new SystemMessage(SystemMessageId.EXP_DECREASED_BY_S1);
@@ -172,7 +167,9 @@ public class PcStat extends PlayableStat
 	{
 		// getActiveChar().setLocked(true);
 		if (getLevel() + value > ExperienceData.getInstance().getMaxLevel() - 1)
+		{
 			return false;
+		}
 		
 		final boolean levelIncreased = super.addLevel(value);
 		
@@ -235,8 +232,10 @@ public class PcStat extends PlayableStat
 		
 		if (getActiveChar().isInFunEvent())
 		{
-			if (getActiveChar()._inEventTvT && TvT.get_maxlvl() == getLevel() && !TvT.is_started())
+			if (getActiveChar().inEventTvT && TvT.getMaxlvl() == getLevel() && !TvT.isStarted())
+			{
 				TvT.removePlayer(getActiveChar());
+			}
 			getActiveChar().sendMessage("Your event sign up was canceled.");
 		}
 		
@@ -275,7 +274,9 @@ public class PcStat extends PlayableStat
 	public boolean addSp(final int value)
 	{
 		if (!super.addSp(value))
+		{
 			return false;
+		}
 		
 		StatusUpdate su = new StatusUpdate(getActiveChar().getObjectId());
 		su.addAttribute(StatusUpdate.SP, getSp());
@@ -308,7 +309,9 @@ public class PcStat extends PlayableStat
 			
 			SubClass player_subclass = null;
 			if ((player_subclass = player.getSubClasses().get(class_index)) != null)
+			{
 				return player_subclass.getExp();
+			}
 			
 		}
 		
@@ -326,7 +329,9 @@ public class PcStat extends PlayableStat
 			
 			SubClass player_subclass = null;
 			if ((player_subclass = player.getSubClasses().get(class_index)) != null)
+			{
 				player_subclass.setExp(value);
+			}
 			
 			// getActiveChar().getSubClasses().get(getActiveChar().getClassIndex()).setExp(value);
 		}
@@ -349,7 +354,9 @@ public class PcStat extends PlayableStat
 				
 				SubClass player_subclass = null;
 				if ((player_subclass = player.getSubClasses().get(class_index)) != null)
+				{
 					return player_subclass.getLevel();
+				}
 				
 				// getActiveChar().getSubClasses().get(getActiveChar().getClassIndex()).setExp(value);
 			}
@@ -381,7 +388,9 @@ public class PcStat extends PlayableStat
 			
 			SubClass player_subclass = null;
 			if ((player_subclass = player.getSubClasses().get(class_index)) != null)
+			{
 				player_subclass.setLevel(value);
+			}
 			
 			// if(getActiveChar().isSubClassActive())
 			// {
@@ -398,9 +407,9 @@ public class PcStat extends PlayableStat
 	{
 		final int val = super.getMaxCp();
 		
-		if (val != _oldMaxCp)
+		if (val != oldMaxCp)
 		{
-			_oldMaxCp = val;
+			oldMaxCp = val;
 			
 			final L2PcInstance player = getActiveChar();
 			
@@ -418,9 +427,9 @@ public class PcStat extends PlayableStat
 		// Get the Max HP (base+modifier) of the L2PcInstance
 		final int val = super.getMaxHp();
 		
-		if (val != _oldMaxHp)
+		if (val != oldMaxHp)
 		{
-			_oldMaxHp = val;
+			oldMaxHp = val;
 			
 			final L2PcInstance player = getActiveChar();
 			
@@ -440,9 +449,9 @@ public class PcStat extends PlayableStat
 		// Get the Max MP (base+modifier) of the L2PcInstance
 		final int val = super.getMaxMp();
 		
-		if (val != _oldMaxMp)
+		if (val != oldMaxMp)
 		{
-			_oldMaxMp = val;
+			oldMaxMp = val;
 			
 			final L2PcInstance player = getActiveChar();
 			
@@ -467,7 +476,9 @@ public class PcStat extends PlayableStat
 			
 			SubClass player_subclass = null;
 			if ((player_subclass = player.getSubClasses().get(class_index)) != null)
+			{
 				return player_subclass.getSp();
+			}
 		}
 		// if(getActiveChar().isSubClassActive())
 		// return getActiveChar().getSubClasses().get(getActiveChar().getClassIndex()).getSp();
@@ -487,7 +498,9 @@ public class PcStat extends PlayableStat
 			
 			SubClass player_subclass = null;
 			if ((player_subclass = player.getSubClasses().get(class_index)) != null)
+			{
 				player_subclass.setSp(value);
+			}
 		}
 		
 		// if(getActiveChar().isSubClassActive())

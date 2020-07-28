@@ -1,23 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.datatables.csv;
 
 import java.io.BufferedReader;
@@ -25,10 +5,9 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.LineNumberReader;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.StringTokenizer;
-
-import javolution.util.FastMap;
 
 import org.apache.log4j.Logger;
 
@@ -39,41 +18,34 @@ import com.l2jfrozen.gameserver.model.actor.instance.L2StaticObjectInstance;
 public class StaticObjects
 {
 	private static Logger LOGGER = Logger.getLogger(StaticObjects.class);
-	
-	private static StaticObjects _instance;
-	private final Map<Integer, L2StaticObjectInstance> _staticObjects;
+	private static StaticObjects instance;
+	private final Map<Integer, L2StaticObjectInstance> staticObjects;
 	
 	public static StaticObjects getInstance()
 	{
-		if (_instance == null)
+		if (instance == null)
 		{
-			_instance = new StaticObjects();
+			instance = new StaticObjects();
 		}
 		
-		return _instance;
+		return instance;
 	}
 	
 	public StaticObjects()
 	{
-		_staticObjects = new FastMap<>();
+		staticObjects = new HashMap<>();
 		parseData();
-		LOGGER.info("StaticObject: Loaded " + _staticObjects.size() + " StaticObject Templates.");
+		LOGGER.info("StaticObject: Loaded " + staticObjects.size() + " StaticObject Templates.");
 	}
 	
 	private void parseData()
 	{
-		FileReader reader = null;
-		BufferedReader buff = null;
-		LineNumberReader lnr = null;
+		File doorData = new File(Config.DATAPACK_ROOT, "data/csv/staticobjects.csv");
 		
-		try
+		try (FileReader reader = new FileReader(doorData);
+			BufferedReader buff = new BufferedReader(reader);
+			LineNumberReader lnr = new LineNumberReader(buff))
 		{
-			final File doorData = new File(Config.DATAPACK_ROOT, "data/staticobjects.csv");
-			
-			reader = new FileReader(doorData);
-			buff = new BufferedReader(reader);
-			lnr = new LineNumberReader(buff);
-			
 			String line = null;
 			while ((line = lnr.readLine()) != null)
 			{
@@ -83,56 +55,17 @@ public class StaticObjects
 				}
 				
 				L2StaticObjectInstance obj = parse(line);
-				_staticObjects.put(obj.getStaticObjectId(), obj);
+				staticObjects.put(obj.getStaticObjectId(), obj);
 				obj = null;
 			}
 		}
-		catch (final FileNotFoundException e)
+		catch (FileNotFoundException e)
 		{
-			if (Config.ENABLE_ALL_EXCEPTIONS)
-				e.printStackTrace();
-			
-			LOGGER.warn("staticobjects.csv is missing in data folder");
+			LOGGER.error("StaticObjects.parseData : staticobjects.csv file is missing in gameserver/data/csv/ folder");
 		}
-		catch (final Exception e)
+		catch (Exception e)
 		{
-			if (Config.ENABLE_ALL_EXCEPTIONS)
-				e.printStackTrace();
-			
-			LOGGER.warn("error while creating StaticObjects table " + e);
-		}
-		finally
-		{
-			if (lnr != null)
-				try
-				{
-					lnr.close();
-				}
-				catch (final Exception e1)
-				{
-					e1.printStackTrace();
-				}
-			
-			if (buff != null)
-				try
-				{
-					buff.close();
-				}
-				catch (final Exception e1)
-				{
-					e1.printStackTrace();
-				}
-			
-			if (reader != null)
-				try
-				{
-					reader.close();
-				}
-				catch (final Exception e1)
-				{
-					e1.printStackTrace();
-				}
-			
+			LOGGER.error("StaticObjects.parseData :  Error while creating StaticObjects table.", e);
 		}
 	}
 	

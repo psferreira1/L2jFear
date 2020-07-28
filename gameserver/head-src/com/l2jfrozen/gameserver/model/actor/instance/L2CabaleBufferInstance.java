@@ -1,22 +1,3 @@
-/* L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.model.actor.instance;
 
 import java.util.concurrent.ScheduledFuture;
@@ -45,7 +26,9 @@ public class L2CabaleBufferInstance extends L2NpcInstance
 	public void onAction(final L2PcInstance player)
 	{
 		if (!canTarget(player))
+		{
 			return;
+		}
 		
 		if (this != player.getTarget())
 		{
@@ -74,15 +57,15 @@ public class L2CabaleBufferInstance extends L2NpcInstance
 		player.sendPacket(ActionFailed.STATIC_PACKET);
 	}
 	
-	private ScheduledFuture<?> _aiTask;
+	private ScheduledFuture<?> aiTask;
 	
 	private class CabalaAI implements Runnable
 	{
-		private final L2CabaleBufferInstance _caster;
+		private final L2CabaleBufferInstance caster;
 		
 		protected CabalaAI(final L2CabaleBufferInstance caster)
 		{
-			_caster = caster;
+			this.caster = caster;
 		}
 		
 		@Override
@@ -119,7 +102,7 @@ public class L2CabaleBufferInstance extends L2NpcInstance
 			{
 				final int playerCabal = SevenSigns.getInstance().getPlayerCabal(player);
 				
-				if (playerCabal == winningCabal && playerCabal != SevenSigns.CABAL_NULL && _caster.getNpcId() == SevenSigns.ORATOR_NPC_ID)
+				if (playerCabal == winningCabal && playerCabal != SevenSigns.CABAL_NULL && caster.getNpcId() == SevenSigns.ORATOR_NPC_ID)
 				{
 					if (!player.isMageClass())
 					{
@@ -138,7 +121,7 @@ public class L2CabaleBufferInstance extends L2NpcInstance
 						}
 					}
 				}
-				else if (playerCabal == losingCabal && playerCabal != SevenSigns.CABAL_NULL && _caster.getNpcId() == SevenSigns.PREACHER_NPC_ID)
+				else if (playerCabal == losingCabal && playerCabal != SevenSigns.CABAL_NULL && caster.getNpcId() == SevenSigns.PREACHER_NPC_ID)
 				{
 					if (!player.isMageClass())
 					{
@@ -170,13 +153,15 @@ public class L2CabaleBufferInstance extends L2NpcInstance
 			final int skillLevel = player.getLevel() > 40 ? 1 : 2;
 			
 			if (player.isDead() || !player.isVisible() || !isInsideRadius(player, getDistanceToWatchObject(player), false, false))
+			{
 				return false;
+			}
 			
 			L2Skill skill = SkillTable.getInstance().getInfo(skillId, skillLevel);
 			if (player.getFirstEffect(skill) == null)
 			{
-				skill.getEffects(_caster, player, false, false, false);
-				broadcastPacket(new MagicSkillUser(_caster, player, skill.getId(), skillLevel, skill.getHitTime(), 0));
+				skill.getEffects(caster, player, false, false, false);
+				broadcastPacket(new MagicSkillUser(caster, player, skill.getId(), skillLevel, skill.getHitTime(), 0));
 				final SystemMessage sm = new SystemMessage(SystemMessageId.YOU_FEEL_S1_EFFECT);
 				sm.addSkillName(skillId);
 				player.sendPacket(sm);
@@ -193,21 +178,21 @@ public class L2CabaleBufferInstance extends L2NpcInstance
 	{
 		super(objectId, template);
 		
-		if (_aiTask != null)
+		if (aiTask != null)
 		{
-			_aiTask.cancel(true);
+			aiTask.cancel(true);
 		}
 		
-		_aiTask = ThreadPoolManager.getInstance().scheduleAiAtFixedRate(new CabalaAI(this), 3000, 3000);
+		aiTask = ThreadPoolManager.getInstance().scheduleAiAtFixedRate(new CabalaAI(this), 3000, 3000);
 	}
 	
 	@Override
 	public void deleteMe()
 	{
-		if (_aiTask != null)
+		if (aiTask != null)
 		{
-			_aiTask.cancel(true);
-			_aiTask = null;
+			aiTask.cancel(true);
+			aiTask = null;
 		}
 		
 		super.deleteMe();

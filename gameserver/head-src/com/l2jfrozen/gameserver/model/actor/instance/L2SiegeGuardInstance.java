@@ -1,23 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.model.actor.instance;
 
 import org.apache.log4j.Logger;
@@ -42,15 +22,15 @@ import com.l2jfrozen.util.random.Rnd;
 /**
  * This class represents all guards in the world. It inherits all methods from L2Attackable and adds some more such as tracking PK's or custom interactions.
  * @version $Revision: 1.1.3 $ $Date: 2009/04/29 01:15:40 $
- * @author programmos
+ * @author  programmos
  */
 public class L2SiegeGuardInstance extends L2Attackable
 {
 	private static Logger LOGGER = Logger.getLogger(L2GuardInstance.class);
 	
-	private int _homeX;
-	private int _homeY;
-	private int _homeZ;
+	private int homeX;
+	private int homeY;
+	private int homeZ;
 	
 	public L2SiegeGuardInstance(final int objectId, final L2NpcTemplate template)
 	{
@@ -74,12 +54,12 @@ public class L2SiegeGuardInstance extends L2Attackable
 	{
 		synchronized (this)
 		{
-			if (_ai == null)
+			if (aiCharacter == null)
 			{
-				_ai = new L2SiegeGuardAI(new AIAccessor());
+				aiCharacter = new L2SiegeGuardAI(new AIAccessor());
 			}
 		}
-		return _ai;
+		return aiCharacter;
 	}
 	
 	/**
@@ -105,24 +85,24 @@ public class L2SiegeGuardInstance extends L2Attackable
 	 */
 	public void getHomeLocation()
 	{
-		_homeX = getX();
-		_homeY = getY();
-		_homeZ = getZ();
+		homeX = getX();
+		homeY = getY();
+		homeZ = getZ();
 		
 		if (Config.DEBUG)
 		{
-			LOGGER.debug(getObjectId() + ": Home location set to" + " X:" + _homeX + " Y:" + _homeY + " Z:" + _homeZ);
+			LOGGER.debug(getObjectId() + ": Home location set to" + " X:" + homeX + " Y:" + homeY + " Z:" + homeZ);
 		}
 	}
 	
 	public int getHomeX()
 	{
-		return _homeX;
+		return homeX;
 	}
 	
 	public int getHomeY()
 	{
-		return _homeY;
+		return homeY;
 	}
 	
 	/**
@@ -130,7 +110,7 @@ public class L2SiegeGuardInstance extends L2Attackable
 	 */
 	public void returnHome()
 	{
-		if (!isInsideRadius(_homeX, _homeY, 40, false))
+		if (!isInsideRadius(homeX, homeY, 40, false))
 		{
 			if (Config.DEBUG)
 			{
@@ -141,7 +121,7 @@ public class L2SiegeGuardInstance extends L2Attackable
 			
 			if (hasAI())
 			{
-				getAI().setIntention(CtrlIntention.AI_INTENTION_MOVE_TO, new L2CharPosition(_homeX, _homeY, _homeZ, 0));
+				getAI().setIntention(CtrlIntention.AI_INTENTION_MOVE_TO, new L2CharPosition(homeX, homeY, homeZ, 0));
 			}
 		}
 	}
@@ -153,7 +133,9 @@ public class L2SiegeGuardInstance extends L2Attackable
 	public void onAction(final L2PcInstance player)
 	{
 		if (!canTarget(player))
+		{
 			return;
+		}
 		
 		// Check if the L2PcInstance already target the L2NpcInstance
 		if (this != player.getTarget())
@@ -218,7 +200,9 @@ public class L2SiegeGuardInstance extends L2Attackable
 	public void addDamageHate(final L2Character attacker, final int damage, final int aggro)
 	{
 		if (attacker == null)
+		{
 			return;
+		}
 		
 		if (!(attacker instanceof L2SiegeGuardInstance))
 		{

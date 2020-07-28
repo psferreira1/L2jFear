@@ -1,27 +1,7 @@
-/* L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.model;
 
+import java.util.ArrayList;
 import java.util.List;
-
-import javolution.util.FastList;
 
 import com.l2jfrozen.gameserver.model.actor.instance.L2ItemInstance;
 import com.l2jfrozen.gameserver.model.actor.instance.L2ItemInstance.ItemLocation;
@@ -31,18 +11,18 @@ public class PcFreight extends ItemContainer
 {
 	// private static final Logger LOGGER = Logger.getLogger(PcFreight.class);
 	
-	private final L2PcInstance _owner; // This is the L2PcInstance that owns this Freight;
-	private int _activeLocationId;
+	private final L2PcInstance owner; // This is the L2PcInstance that owns this Freight;
+	private int activeLocationId;
 	
 	public PcFreight(final L2PcInstance owner)
 	{
-		_owner = owner;
+		this.owner = owner;
 	}
 	
 	@Override
 	public L2PcInstance getOwner()
 	{
-		return _owner;
+		return owner;
 	}
 	
 	@Override
@@ -53,12 +33,12 @@ public class PcFreight extends ItemContainer
 	
 	public void setActiveLocation(final int locationId)
 	{
-		_activeLocationId = locationId;
+		activeLocationId = locationId;
 	}
 	
 	public int getactiveLocation()
 	{
-		return _activeLocationId;
+		return activeLocationId;
 	}
 	
 	/**
@@ -70,9 +50,9 @@ public class PcFreight extends ItemContainer
 	{
 		int size = 0;
 		
-		for (final L2ItemInstance item : _items)
+		for (final L2ItemInstance item : itemsList)
 		{
-			if (item.getEquipSlot() == 0 || _activeLocationId == 0 || item.getEquipSlot() == _activeLocationId)
+			if (item.getEquipSlot() == 0 || activeLocationId == 0 || item.getEquipSlot() == activeLocationId)
 			{
 				size++;
 			}
@@ -87,11 +67,11 @@ public class PcFreight extends ItemContainer
 	@Override
 	public L2ItemInstance[] getItems()
 	{
-		final List<L2ItemInstance> list = new FastList<>();
+		List<L2ItemInstance> list = new ArrayList<>();
 		
-		for (final L2ItemInstance item : _items)
+		for (L2ItemInstance item : itemsList)
 		{
-			if (item.getEquipSlot() == 0 || item.getEquipSlot() == _activeLocationId)
+			if (item.getEquipSlot() == 0 || item.getEquipSlot() == activeLocationId)
 			{
 				list.add(item);
 			}
@@ -102,15 +82,19 @@ public class PcFreight extends ItemContainer
 	
 	/**
 	 * Returns the item from inventory by using its <B>itemId</B>
-	 * @param itemId : int designating the ID of the item
-	 * @return L2ItemInstance designating the item or null if not found in inventory
+	 * @param  itemId : int designating the ID of the item
+	 * @return        L2ItemInstance designating the item or null if not found in inventory
 	 */
 	@Override
 	public L2ItemInstance getItemByItemId(final int itemId)
 	{
-		for (final L2ItemInstance item : _items)
-			if (item.getItemId() == itemId && (item.getEquipSlot() == 0 || _activeLocationId == 0 || item.getEquipSlot() == _activeLocationId))
+		for (final L2ItemInstance item : itemsList)
+		{
+			if (item.getItemId() == itemId && (item.getEquipSlot() == 0 || activeLocationId == 0 || item.getEquipSlot() == activeLocationId))
+			{
 				return item;
+			}
+		}
 		
 		return null;
 	}
@@ -123,9 +107,9 @@ public class PcFreight extends ItemContainer
 	protected void addItem(final L2ItemInstance item)
 	{
 		super.addItem(item);
-		if (_activeLocationId > 0)
+		if (activeLocationId > 0)
 		{
-			item.setLocation(item.getLocation(), _activeLocationId);
+			item.setLocation(item.getLocation(), activeLocationId);
 		}
 	}
 	
@@ -135,15 +119,15 @@ public class PcFreight extends ItemContainer
 	@Override
 	public void restore()
 	{
-		final int locationId = _activeLocationId;
-		_activeLocationId = 0;
+		final int locationId = activeLocationId;
+		activeLocationId = 0;
 		super.restore();
-		_activeLocationId = locationId;
+		activeLocationId = locationId;
 	}
 	
 	@Override
 	public boolean validateCapacity(final int slots)
 	{
-		return getSize() + slots <= _owner.GetFreightLimit();
+		return getSize() + slots <= owner.GetFreightLimit();
 	}
 }

@@ -1,23 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.handler.skillhandlers;
 
 //import org.apache.log4j.Logger;
@@ -70,17 +50,21 @@ public class Continuous implements ISkillHandler
 		L2Skill.SkillType.AGGDEBUFF,
 		L2Skill.SkillType.FORCE_BUFF
 	};
-	private L2Skill _skill;
+	private L2Skill skill;
 	
 	@Override
 	public void useSkill(final L2Character activeChar, L2Skill skill2, final L2Object[] targets)
 	{
 		if (activeChar == null)
+		{
 			return;
+		}
 		
 		L2PcInstance player = null;
 		if (activeChar instanceof L2PcInstance)
+		{
 			player = (L2PcInstance) activeChar;
+		}
 		
 		if (skill2.getEffectId() != 0)
 		{
@@ -88,15 +72,17 @@ public class Continuous implements ISkillHandler
 			final int skillEffectId = skill2.getEffectId();
 			if (skillLevel == 0)
 			{
-				_skill = SkillTable.getInstance().getInfo(skillEffectId, 1);
+				skill = SkillTable.getInstance().getInfo(skillEffectId, 1);
 			}
 			else
 			{
-				_skill = SkillTable.getInstance().getInfo(skillEffectId, skillLevel);
+				skill = SkillTable.getInstance().getInfo(skillEffectId, skillLevel);
 			}
 			
-			if (_skill != null)
-				skill2 = _skill;
+			if (skill != null)
+			{
+				skill2 = skill;
+			}
 		}
 		
 		final L2Skill skill = skill2;
@@ -120,27 +106,38 @@ public class Continuous implements ISkillHandler
 			
 			if (target instanceof L2PcInstance && activeChar instanceof L2PlayableInstance && skill.isOffensive())
 			{
-				final L2PcInstance _char = (activeChar instanceof L2PcInstance) ? (L2PcInstance) activeChar : ((L2Summon) activeChar).getOwner();
-				final L2PcInstance _attacked = (L2PcInstance) target;
-				if (_attacked.getClanId() != 0 && _char.getClanId() != 0 && _attacked.getClanId() == _char.getClanId() && _attacked.getPvpFlag() == 0)
+				final L2PcInstance character = (activeChar instanceof L2PcInstance) ? (L2PcInstance) activeChar : ((L2Summon) activeChar).getOwner();
+				final L2PcInstance attacked = (L2PcInstance) target;
+				if (attacked.getClanId() != 0 && character.getClanId() != 0 && attacked.getClanId() == character.getClanId() && attacked.getPvpFlag() == 0)
+				{
 					continue;
-				if (_attacked.getAllyId() != 0 && _char.getAllyId() != 0 && _attacked.getAllyId() == _char.getAllyId() && _attacked.getPvpFlag() == 0)
+				}
+				if (attacked.getAllyId() != 0 && character.getAllyId() != 0 && attacked.getAllyId() == character.getAllyId() && attacked.getPvpFlag() == 0)
+				{
 					continue;
+				}
 			}
 			
 			if (skill.getSkillType() != L2Skill.SkillType.BUFF && skill.getSkillType() != L2Skill.SkillType.HOT && skill.getSkillType() != L2Skill.SkillType.CPHOT && skill.getSkillType() != L2Skill.SkillType.MPHOT && skill.getSkillType() != L2Skill.SkillType.UNDEAD_DEFENSE && skill.getSkillType() != L2Skill.SkillType.AGGDEBUFF && skill.getSkillType() != L2Skill.SkillType.CONT)
 			{
 				if (target.reflectSkill(skill))
+				{
 					target = activeChar;
+				}
 			}
 			
 			// Walls and Door should not be buffed
 			if (target instanceof L2DoorInstance && (skill.getSkillType() == L2Skill.SkillType.BUFF || skill.getSkillType() == L2Skill.SkillType.HOT))
+			{
 				continue;
+			}
 			
 			// Anti-Buff Protection prevents you from getting buffs by other players
-			if (activeChar instanceof L2PlayableInstance && target != activeChar && target.isBuffProtected() && !skill.isHeroSkill() && (skill.getSkillType() == L2Skill.SkillType.BUFF || skill.getSkillType() == L2Skill.SkillType.HEAL_PERCENT || skill.getSkillType() == L2Skill.SkillType.FORCE_BUFF || skill.getSkillType() == L2Skill.SkillType.MANAHEAL_PERCENT || skill.getSkillType() == L2Skill.SkillType.COMBATPOINTHEAL || skill.getSkillType() == L2Skill.SkillType.REFLECT))
+			if (activeChar instanceof L2PlayableInstance && target != activeChar && target.isBuffProtected() && !skill.isHeroSkill()
+				&& (skill.getSkillType() == L2Skill.SkillType.BUFF || skill.getSkillType() == L2Skill.SkillType.HEAL_PERCENT || skill.getSkillType() == L2Skill.SkillType.FORCE_BUFF || skill.getSkillType() == L2Skill.SkillType.MANAHEAL_PERCENT || skill.getSkillType() == L2Skill.SkillType.COMBATPOINTHEAL || skill.getSkillType() == L2Skill.SkillType.REFLECT))
+			{
 				continue;
+			}
 			
 			// Player holding a cursed weapon can't be buffed and can't buff
 			if (skill.getSkillType() == L2Skill.SkillType.BUFF)
@@ -148,9 +145,13 @@ public class Continuous implements ISkillHandler
 				if (target != activeChar)
 				{
 					if (target instanceof L2PcInstance && ((L2PcInstance) target).isCursedWeaponEquiped())
+					{
 						continue;
+					}
 					else if (player != null && player.isCursedWeaponEquiped())
+					{
 						continue;
+					}
 				}
 			}
 			
@@ -219,21 +220,27 @@ public class Continuous implements ISkillHandler
 					for (final L2Effect e : effects)
 					{
 						if (e != null)
+						{
 							if (e.getSkill().getId() == skill.getId())
 							{
 								e.exit(false);
 								stopped = true;
 							}
+						}
 					}
 				}
 				
 				if (stopped)
+				{
 					break;
+				}
 			}
 			
 			// If target is not in game anymore...
-			if ((target instanceof L2PcInstance) && ((L2PcInstance) target).isOnline() == 0)
+			if ((target instanceof L2PcInstance) && !((L2PcInstance) target).isOnline())
+			{
 				continue;
+			}
 			
 			// if this is a debuff let the duel manager know about it
 			// so the debuff can be removed after the duel
@@ -245,25 +252,39 @@ public class Continuous implements ISkillHandler
 				{
 					final L2Effect[] effects = skill.getEffects(activeChar, target, ss, sps, bss);
 					if (effects != null)
+					{
 						for (final L2Effect buff : effects)
+						{
 							if (buff != null)
+							{
 								dm.onBuff(((L2PcInstance) target), buff);
+							}
+						}
+					}
 				}
 				dm = null;
 			}
 			else
+			{
 				skill.getEffects(activeChar, target, ss, sps, bss);
+			}
 			
 			if (skill.getSkillType() == L2Skill.SkillType.AGGDEBUFF)
 			{
 				if (target instanceof L2Attackable)
+				{
 					target.getAI().notifyEvent(CtrlEvent.EVT_AGGRESSION, activeChar, (int) skill.getPower());
+				}
 				else if (target instanceof L2PlayableInstance)
 				{
 					if (target.getTarget() == activeChar)
+					{
 						target.getAI().setIntention(CtrlIntention.AI_INTENTION_ATTACK, activeChar);
+					}
 					else
+					{
 						target.setTarget(activeChar);
+					}
 				}
 			}
 			

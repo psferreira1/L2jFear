@@ -1,22 +1,3 @@
-/* L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 
 package com.l2jfrozen.gameserver.model.zone.type;
 
@@ -37,25 +18,25 @@ import com.l2jfrozen.util.random.Rnd;
 public class L2PoisonZone extends L2ZoneType
 {
 	protected final Logger LOGGER = Logger.getLogger(L2PoisonZone.class);
-	protected int _skillId;
-	private int _chance;
-	private int _initialDelay;
-	protected int _skillLvl;
-	private int _reuse;
-	private boolean _enabled;
-	private String _target;
-	private Future<?> _task;
+	protected int skillId;
+	private int chance;
+	private int initialDelay;
+	protected int skillLvl;
+	private int reuse;
+	private boolean enabled;
+	private String target;
+	private Future<?> task;
 	
 	public L2PoisonZone(final int id)
 	{
 		super(id);
-		_skillId = 4070;
-		_skillLvl = 1;
-		_chance = 100;
-		_initialDelay = 0;
-		_reuse = 30000;
-		_enabled = true;
-		_target = "pc";
+		skillId = 4070;
+		skillLvl = 1;
+		chance = 100;
+		initialDelay = 0;
+		reuse = 30000;
+		enabled = true;
+		target = "pc";
 	}
 	
 	@Override
@@ -64,25 +45,25 @@ public class L2PoisonZone extends L2ZoneType
 		switch (name)
 		{
 			case "skillId":
-				_skillId = Integer.parseInt(value);
+				skillId = Integer.parseInt(value);
 				break;
 			case "skillLvl":
-				_skillLvl = Integer.parseInt(value);
+				skillLvl = Integer.parseInt(value);
 				break;
 			case "chance":
-				_chance = Integer.parseInt(value);
+				chance = Integer.parseInt(value);
 				break;
 			case "initialDelay":
-				_initialDelay = Integer.parseInt(value);
+				initialDelay = Integer.parseInt(value);
 				break;
 			case "default_enabled":
-				_enabled = Boolean.parseBoolean(value);
+				enabled = Boolean.parseBoolean(value);
 				break;
 			case "target":
-				_target = String.valueOf(value);
+				target = String.valueOf(value);
 				break;
 			case "reuse":
-				_reuse = Integer.parseInt(value);
+				reuse = Integer.parseInt(value);
 				break;
 			default:
 				super.setParameter(name, value);
@@ -93,66 +74,55 @@ public class L2PoisonZone extends L2ZoneType
 	@Override
 	protected void onEnter(final L2Character character)
 	{
-		if ((character instanceof L2PlayableInstance && _target.equalsIgnoreCase("pc") || character instanceof L2PcInstance && _target.equalsIgnoreCase("pc_only") || character instanceof L2MonsterInstance && _target.equalsIgnoreCase("npc")) && _task == null)
+		if ((character instanceof L2PlayableInstance && target.equalsIgnoreCase("pc") || character instanceof L2PcInstance && target.equalsIgnoreCase("pc_only") || character instanceof L2MonsterInstance && target.equalsIgnoreCase("npc")) && task == null)
 		{
-			_task = ThreadPoolManager.getInstance().scheduleGeneralAtFixedRate(new ApplySkill(/* this */), _initialDelay, _reuse);
+			task = ThreadPoolManager.getInstance().scheduleGeneralAtFixedRate(new ApplySkill(/* this */), initialDelay, reuse);
 		}
 	}
 	
 	@Override
 	protected void onExit(final L2Character character)
 	{
-		if (_characterList.isEmpty() && _task != null)
+		if (characterList.isEmpty() && task != null)
 		{
-			_task.cancel(true);
-			_task = null;
+			task.cancel(true);
+			task = null;
 		}
 	}
 	
 	public L2Skill getSkill()
 	{
-		return SkillTable.getInstance().getInfo(_skillId, _skillLvl);
+		return SkillTable.getInstance().getInfo(skillId, skillLvl);
 	}
 	
 	public String getTargetType()
 	{
-		return _target;
+		return target;
 	}
 	
 	public boolean isEnabled()
 	{
-		return _enabled;
+		return enabled;
 	}
 	
 	public int getChance()
 	{
-		return _chance;
+		return chance;
 	}
 	
 	public void setZoneEnabled(final boolean val)
 	{
-		_enabled = val;
+		enabled = val;
 	}
-	
-	/*
-	 * protected Collection getCharacterList() { return _characterList.values(); }
-	 */
 	
 	class ApplySkill implements Runnable
 	{
-		// private L2PoisonZone _poisonZone;
-		
-		// ApplySkill(/*L2PoisonZone zone*/)
-		// {
-		// _poisonZone = zone;
-		// }
-		
 		@Override
 		public void run()
 		{
 			if (isEnabled())
 			{
-				for (final L2Character temp : _characterList.values())
+				for (final L2Character temp : characterList.values())
 				{
 					if (temp != null && !temp.isDead())
 					{
@@ -161,11 +131,13 @@ public class L2PoisonZone extends L2ZoneType
 							L2Skill skill = null;
 							if ((skill = getSkill()) == null)
 							{
-								LOGGER.warn("ATTENTION: error on zone with id " + getId());
-								LOGGER.warn("Skill " + _skillId + "," + _skillLvl + " not present between skills");
+								LOGGER.warn("ATTENTION: error on zone with id " + getZoneId());
+								LOGGER.warn("Skill " + skillId + "," + skillLvl + " not present between skills");
 							}
 							else
+							{
 								skill.getEffects(temp, temp, false, false, false);
+							}
 						}
 					}
 				}

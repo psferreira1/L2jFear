@@ -1,23 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.loginserver.network.gameserverpackets;
 
 import org.apache.log4j.Logger;
@@ -31,14 +11,14 @@ import com.l2jfrozen.loginserver.network.clientpackets.ClientBasePacket;
 public class GameServerAuth extends ClientBasePacket
 {
 	protected static Logger LOGGER = Logger.getLogger(GameServerAuth.class);
-	private final byte[] _hexId;
-	private final int _desiredId;
-	private final boolean _hostReserved;
-	private final boolean _acceptAlternativeId;
-	private final int _maxPlayers;
-	private final int _port;
-	private final String _externalHost;
-	private final String _internalHost;
+	private final byte[] hexId;
+	private final int desiredId;
+	private final boolean hostReserved;
+	private final boolean acceptAlternativeId;
+	private final int maxPlayers;
+	private final int port;
+	private final String externalHost;
+	private final String internalHost;
 	
 	/**
 	 * @param decrypt
@@ -47,17 +27,17 @@ public class GameServerAuth extends ClientBasePacket
 	{
 		super(decrypt);
 		
-		_desiredId = readC();
-		_acceptAlternativeId = readC() == 0 ? false : true;
-		_hostReserved = readC() == 0 ? false : true;
-		_externalHost = readS();
-		_internalHost = readS();
-		_port = readH();
-		_maxPlayers = readD();
+		desiredId = readC();
+		acceptAlternativeId = readC() == 0 ? false : true;
+		hostReserved = readC() == 0 ? false : true;
+		externalHost = readS();
+		internalHost = readS();
+		port = readH();
+		maxPlayers = readD();
 		
 		final int size = readD();
 		
-		_hexId = readB(size);
+		hexId = readB(size);
 	}
 	
 	/**
@@ -65,22 +45,22 @@ public class GameServerAuth extends ClientBasePacket
 	 */
 	public byte[] getHexID()
 	{
-		return _hexId;
+		return hexId;
 	}
 	
 	public boolean getHostReserved()
 	{
-		return _hostReserved;
+		return hostReserved;
 	}
 	
 	public int getDesiredID()
 	{
-		return _desiredId;
+		return desiredId;
 	}
 	
 	public boolean acceptAlternateID()
 	{
-		return _acceptAlternativeId;
+		return acceptAlternativeId;
 	}
 	
 	/**
@@ -88,7 +68,7 @@ public class GameServerAuth extends ClientBasePacket
 	 */
 	public int getMaxPlayers()
 	{
-		return _maxPlayers;
+		return maxPlayers;
 	}
 	
 	/**
@@ -96,7 +76,7 @@ public class GameServerAuth extends ClientBasePacket
 	 */
 	public String getExternalHost()
 	{
-		return _externalHost;
+		return externalHost;
 	}
 	
 	/**
@@ -104,7 +84,7 @@ public class GameServerAuth extends ClientBasePacket
 	 */
 	public String getInternalHost()
 	{
-		return _internalHost;
+		return internalHost;
 	}
 	
 	/**
@@ -112,6 +92,6 @@ public class GameServerAuth extends ClientBasePacket
 	 */
 	public int getPort()
 	{
-		return _port;
+		return port;
 	}
 }

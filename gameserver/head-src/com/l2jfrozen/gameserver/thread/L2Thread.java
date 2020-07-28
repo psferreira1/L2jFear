@@ -4,9 +4,8 @@ import java.lang.management.LockInfo;
 import java.lang.management.ManagementFactory;
 import java.lang.management.MonitorInfo;
 import java.lang.management.ThreadInfo;
+import java.util.ArrayList;
 import java.util.List;
-
-import javolution.util.FastList;
 
 /**
  * @author ProGramMoS
@@ -26,11 +25,11 @@ public abstract class L2Thread extends Thread
 		super(name);
 	}
 	
-	private volatile boolean _isAlive = true;
+	private volatile boolean isAlive = true;
 	
 	public final void shutdown() throws InterruptedException
 	{
-		_isAlive = false;
+		isAlive = false;
 		
 		join();
 	}
@@ -40,7 +39,7 @@ public abstract class L2Thread extends Thread
 	{
 		try
 		{
-			while (_isAlive)
+			while (isAlive)
 			{
 				final long begin = System.nanoTime();
 				
@@ -75,7 +74,7 @@ public abstract class L2Thread extends Thread
 	
 	public static List<String> getStats(final Thread t)
 	{
-		final List<String> list = new FastList<>();
+		final List<String> list = new ArrayList<>();
 		
 		list.add(t.toString() + " - ID: " + t.getId());
 		list.add(" * State: " + t.getState());

@@ -1,19 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any later
- * version.
- * 
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
- * 
- * You should have received a copy of the GNU General Public License along with
- * this program. If not, see <http://www.gnu.org/licenses/>.
- */
 package com.l2jfrozen.gameserver.managers;
 
 import java.util.Collections;
@@ -35,47 +19,47 @@ import com.l2jfrozen.gameserver.thread.ThreadPoolManager;
 public final class AwayManager
 {
 	protected static final Logger LOGGER = Logger.getLogger(AwayManager.class);
-	private static AwayManager _instance;
-	protected Map<L2PcInstance, RestoreData> _awayPlayers;
+	private static AwayManager instance;
+	protected Map<L2PcInstance, RestoreData> awayPlayers;
 	
 	public static final AwayManager getInstance()
 	{
-		if (_instance == null)
+		if (instance == null)
 		{
-			_instance = new AwayManager();
+			instance = new AwayManager();
 			LOGGER.info("AwayManager: initialized.");
 		}
-		return _instance;
+		return instance;
 	}
 	
 	private final class RestoreData
 	{
-		private final String _originalTitle;
-		private final int _originalTitleColor;
-		private final boolean _sitForced;
+		private final String originalTitle;
+		private final int originalTitleColor;
+		private final boolean sitForced;
 		
 		public RestoreData(final L2PcInstance activeChar)
 		{
-			_originalTitle = activeChar.getTitle();
-			_originalTitleColor = activeChar.getAppearance().getTitleColor();
-			_sitForced = !activeChar.isSitting();
+			originalTitle = activeChar.getTitle();
+			originalTitleColor = activeChar.getAppearance().getTitleColor();
+			sitForced = !activeChar.isSitting();
 		}
 		
 		public boolean isSitForced()
 		{
-			return _sitForced;
+			return sitForced;
 		}
 		
 		public void restore(final L2PcInstance activeChar)
 		{
-			activeChar.getAppearance().setTitleColor(_originalTitleColor);
-			activeChar.setTitle(_originalTitle);
+			activeChar.getAppearance().setTitleColor(originalTitleColor);
+			activeChar.setTitle(originalTitle);
 		}
 	}
 	
 	private AwayManager()
 	{
-		_awayPlayers = Collections.synchronizedMap(new WeakHashMap<L2PcInstance, RestoreData>());
+		awayPlayers = Collections.synchronizedMap(new WeakHashMap<L2PcInstance, RestoreData>());
 	}
 	
 	/**
@@ -110,108 +94,120 @@ public final class AwayManager
 	public void extraBack(final L2PcInstance activeChar)
 	{
 		if (activeChar == null)
+		{
 			return;
-		RestoreData rd = _awayPlayers.get(activeChar);
+		}
+		RestoreData rd = awayPlayers.get(activeChar);
 		if (rd == null)
+		{
 			return;
+		}
 		
 		rd.restore(activeChar);
 		rd = null;
-		_awayPlayers.remove(activeChar);
+		awayPlayers.remove(activeChar);
 	}
 	
 	class setPlayerAwayTask implements Runnable
 	{
 		
-		private final L2PcInstance _activeChar;
-		private final String _awayText;
+		private final L2PcInstance activeChar;
+		private final String awayText;
 		
 		setPlayerAwayTask(final L2PcInstance activeChar, final String awayText)
 		{
-			_activeChar = activeChar;
-			_awayText = awayText;
+			this.activeChar = activeChar;
+			this.awayText = awayText;
 		}
 		
 		@Override
 		public void run()
 		{
-			if (_activeChar == null)
-				return;
-			if (_activeChar.isAttackingNow() || _activeChar.isCastingNow())
-				return;
-			
-			_awayPlayers.put(_activeChar, new RestoreData(_activeChar));
-			
-			_activeChar.disableAllSkills();
-			_activeChar.abortAttack();
-			_activeChar.abortCast();
-			_activeChar.setTarget(null);
-			_activeChar.setIsImobilised(false);
-			if (!_activeChar.isSitting())
+			if (activeChar == null)
 			{
-				_activeChar.sitDown();
+				return;
 			}
-			if (_awayText.length() <= 1)
+			if (activeChar.isAttackingNow() || activeChar.isCastingNow())
 			{
-				_activeChar.sendMessage("You are now *Away*");
+				return;
+			}
+			
+			awayPlayers.put(activeChar, new RestoreData(activeChar));
+			
+			activeChar.disableAllSkills();
+			activeChar.abortAttack();
+			activeChar.abortCast();
+			activeChar.setTarget(null);
+			activeChar.setIsImobilised(false);
+			if (!activeChar.isSitting())
+			{
+				activeChar.sitDown();
+			}
+			if (awayText.length() <= 1)
+			{
+				activeChar.sendMessage("You are now *Away*");
 			}
 			else
 			{
-				_activeChar.sendMessage("You are now Away *" + _awayText + "*");
+				activeChar.sendMessage("You are now Away *" + awayText + "*");
 			}
 			
-			_activeChar.getAppearance().setTitleColor(Config.AWAY_TITLE_COLOR);
+			activeChar.getAppearance().setTitleColor(Config.AWAY_TITLE_COLOR);
 			
-			if (_awayText.length() <= 1)
+			if (awayText.length() <= 1)
 			{
-				_activeChar.setTitle("*Away*");
+				activeChar.setTitle("*Away*");
 			}
 			else
 			{
-				_activeChar.setTitle("Away*" + _awayText + "*");
+				activeChar.setTitle("Away*" + awayText + "*");
 			}
 			
-			_activeChar.broadcastUserInfo();
-			_activeChar.setIsParalyzed(true);
-			_activeChar.setIsAway(true);
-			_activeChar.set_awaying(false);
+			activeChar.broadcastUserInfo();
+			activeChar.setIsParalyzed(true);
+			activeChar.setIsAway(true);
+			activeChar.set_awaying(false);
 		}
 	}
 	
 	class setPlayerBackTask implements Runnable
 	{
 		
-		private final L2PcInstance _activeChar;
+		private final L2PcInstance activeChar;
 		
 		setPlayerBackTask(final L2PcInstance activeChar)
 		{
-			_activeChar = activeChar;
+			this.activeChar = activeChar;
 		}
 		
 		@Override
 		public void run()
 		{
-			if (_activeChar == null)
+			if (activeChar == null)
+			{
 				return;
-			RestoreData rd = _awayPlayers.get(_activeChar);
+			}
+			RestoreData rd = awayPlayers.get(activeChar);
 			
 			if (rd == null)
+			{
 				return;
+			}
 			
-			_activeChar.setIsParalyzed(false);
-			_activeChar.enableAllSkills();
-			_activeChar.setIsAway(false);
+			activeChar.setIsParalyzed(false);
+			activeChar.enableAllSkills();
+			activeChar.setIsAway(false);
 			
 			if (rd.isSitForced())
 			{
-				_activeChar.standUp();
+				activeChar.standUp();
 			}
 			
-			rd.restore(_activeChar);
+			rd.restore(activeChar);
 			rd = null;
-			_awayPlayers.remove(_activeChar);
-			_activeChar.broadcastUserInfo();
-			_activeChar.sendMessage("You are Back now!");
+			awayPlayers.remove(activeChar);
+			activeChar.broadcastUserInfo();
+			activeChar.sendMessage("You are Back now!");
 		}
 	}
 }

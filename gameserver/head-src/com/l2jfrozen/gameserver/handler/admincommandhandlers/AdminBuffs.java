@@ -2,14 +2,14 @@ package com.l2jfrozen.gameserver.handler.admincommandhandlers;
 
 import java.util.StringTokenizer;
 
-import javolution.text.TextBuilder;
-
 import com.l2jfrozen.gameserver.handler.IAdminCommandHandler;
 import com.l2jfrozen.gameserver.model.L2Character;
 import com.l2jfrozen.gameserver.model.L2Effect;
 import com.l2jfrozen.gameserver.model.L2World;
 import com.l2jfrozen.gameserver.model.actor.instance.L2PcInstance;
 import com.l2jfrozen.gameserver.network.serverpackets.NpcHtmlMessage;
+
+import javolution.text.TextBuilder;
 
 /**
  * @author ProGramMoS
@@ -36,17 +36,14 @@ public class AdminBuffs implements IAdminCommandHandler
 	@Override
 	public boolean useAdminCommand(final String command, final L2PcInstance activeChar)
 	{
-		/*
-		 * if(!AdminCommandAccessRights.getInstance().hasAccess(command, activeChar.getAccessLevel())){ return false; } if(Config.GMAUDIT) { Logger _logAudit = Logger.getLogger("gmaudit"); LogRecord record = new LogRecord(Level.INFO, command); record.setParameters(new Object[] { "GM: " +
-		 * activeChar.getName(), " to target [" + activeChar.getTarget() + "] " }); _logAudit.LOGGER(record); }
-		 */
-		
 		StringTokenizer st = new StringTokenizer(command, " ");
 		
 		CommandEnum comm = CommandEnum.valueOf(st.nextToken());
 		
 		if (comm == null)
+		{
 			return false;
+		}
 		
 		switch (comm)
 		{
@@ -75,7 +72,9 @@ public class AdminBuffs implements IAdminCommandHandler
 					return true;
 				}
 				else
+				{
 					return true;
+				}
 				
 			case admin_stopbuff:
 				if (st.hasMoreTokens())
@@ -101,7 +100,9 @@ public class AdminBuffs implements IAdminCommandHandler
 						}
 						
 						if (SkillId > 0)
+						{
 							removeBuff(activeChar, playername, SkillId);
+						}
 						else
 						{
 							activeChar.sendMessage("Usage: //stopbuff <playername> [skillId] (skillId must be a number > 0)");
@@ -119,7 +120,7 @@ public class AdminBuffs implements IAdminCommandHandler
 				}
 				activeChar.sendMessage("Usage: //stopbuff <playername> [skillId]");
 				return false;
-				
+			
 			case admin_stopallbuffs:
 				
 				if (st.hasMoreTokens())

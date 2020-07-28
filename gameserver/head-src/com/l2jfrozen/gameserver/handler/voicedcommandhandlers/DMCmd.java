@@ -1,19 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any later
- * version.
- * 
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
- * 
- * You should have received a copy of the GNU General Public License along with
- * this program. If not, see <http://www.gnu.org/licenses/>.
- */
 package com.l2jfrozen.gameserver.handler.voicedcommandhandlers;
 
 import com.l2jfrozen.gameserver.datatables.sql.ItemTable;
@@ -68,7 +52,7 @@ public class DMCmd implements IVoicedCommandHandler
 			activeChar.sendMessage("There is no DeathMatch Event in progress.");
 			return false;
 		}
-		else if (DM.is_joining() && activeChar._inEventDM)
+		else if (DM.is_joining() && activeChar.inEventDM)
 		{
 			activeChar.sendMessage("You are already registered.");
 			return false;
@@ -98,7 +82,7 @@ public class DMCmd implements IVoicedCommandHandler
 			activeChar.sendMessage("You are not allowed to participate to the event because you have Karma.");
 			return false;
 		}
-		else if (DM.is_teleport() || DM.is_started())
+		else if (DM.is_teleport() || DM.isStarted())
 		{
 			activeChar.sendMessage("DeathMatch Event registration period is over. You can't register now.");
 			return false;
@@ -123,12 +107,12 @@ public class DMCmd implements IVoicedCommandHandler
 			activeChar.sendMessage("There is no DeathMatch Event in progress.");
 			return false;
 		}
-		else if ((DM.is_teleport() || DM.is_started()) && activeChar._inEventDM)
+		else if ((DM.is_teleport() || DM.isStarted()) && activeChar.inEventDM)
 		{
 			activeChar.sendMessage("You can not leave now because DeathMatch event has started.");
 			return false;
 		}
-		else if (DM.is_joining() && !activeChar._inEventDM)
+		else if (DM.is_joining() && !activeChar.inEventDM)
 		{
 			activeChar.sendMessage("You aren't registered in the DeathMatch Event.");
 			return false;
@@ -152,23 +136,23 @@ public class DMCmd implements IVoicedCommandHandler
 			activeChar.sendMessage("There is no DeathMatch Event in progress.");
 			return false;
 		}
-		else if (DM.is_teleport() || DM.is_started())
+		else if (DM.is_teleport() || DM.isStarted())
 		{
 			activeChar.sendMessage("I can't provide you this info. Command available only in joining period.");
 			return false;
 		}
 		else
 		{
-			if (DM._players.size() == 1)
+			if (DM.players.size() == 1)
 			{
-				activeChar.sendMessage("There is " + DM._players.size() + " player participating in this event.");
+				activeChar.sendMessage("There is " + DM.players.size() + " player participating in this event.");
 				activeChar.sendMessage("Reward: " + DM.get_rewardAmount() + " " + ItemTable.getInstance().getTemplate(DM.get_rewardId()).getName() + " !");
 				activeChar.sendMessage("Player Min lvl: " + DM.get_minlvl() + ".");
 				activeChar.sendMessage("Player Max lvl: " + DM.get_maxlvl() + ".");
 			}
 			else
 			{
-				activeChar.sendMessage("There are " + DM._players.size() + " players participating in this event.");
+				activeChar.sendMessage("There are " + DM.players.size() + " players participating in this event.");
 				activeChar.sendMessage("Reward: " + DM.get_rewardAmount() + " " + ItemTable.getInstance().getTemplate(DM.get_rewardId()).getName() + " !");
 				activeChar.sendMessage("Player Min lvl: " + DM.get_minlvl() + ".");
 				activeChar.sendMessage("Player Max lvl: " + DM.get_maxlvl() + ".");

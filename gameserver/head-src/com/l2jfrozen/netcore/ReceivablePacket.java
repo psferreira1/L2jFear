@@ -1,22 +1,3 @@
-/* L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.netcore;
 
 import java.nio.BufferUnderflowException;
@@ -26,12 +7,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * @param <T>
+ * @param  <T>
  * @author KenM
  */
 public abstract class ReceivablePacket<T extends MMOClient<?>> extends AbstractPacket<T> implements Runnable
 {
-	NioNetStringBuffer _sbuf;
+	NioNetStringBuffer sbuf;
 	protected static final Logger LOGGER = LoggerFactory.getLogger(ReceivablePacket.class);
 	
 	protected ReceivablePacket()
@@ -49,7 +30,7 @@ public abstract class ReceivablePacket<T extends MMOClient<?>> extends AbstractP
 		try
 		{
 			
-			_buf.get(dst);
+			buf.get(dst);
 			
 		}
 		catch (final BufferUnderflowException e)
@@ -66,7 +47,7 @@ public abstract class ReceivablePacket<T extends MMOClient<?>> extends AbstractP
 		try
 		{
 			
-			_buf.get(dst, offset, len);
+			buf.get(dst, offset, len);
 			
 		}
 		catch (final BufferUnderflowException e)
@@ -82,7 +63,7 @@ public abstract class ReceivablePacket<T extends MMOClient<?>> extends AbstractP
 		try
 		{
 			
-			return _buf.get() & 0xFF;
+			return buf.get() & 0xFF;
 			
 		}
 		catch (final BufferUnderflowException e)
@@ -101,7 +82,7 @@ public abstract class ReceivablePacket<T extends MMOClient<?>> extends AbstractP
 		try
 		{
 			
-			return _buf.getShort() & 0xFFFF;
+			return buf.getShort() & 0xFFFF;
 			
 		}
 		catch (final BufferUnderflowException e)
@@ -119,7 +100,7 @@ public abstract class ReceivablePacket<T extends MMOClient<?>> extends AbstractP
 		try
 		{
 			
-			return _buf.getInt();
+			return buf.getInt();
 			
 		}
 		catch (final BufferUnderflowException e)
@@ -137,7 +118,7 @@ public abstract class ReceivablePacket<T extends MMOClient<?>> extends AbstractP
 		try
 		{
 			
-			return _buf.getLong();
+			return buf.getLong();
 			
 		}
 		catch (final BufferUnderflowException e)
@@ -154,7 +135,7 @@ public abstract class ReceivablePacket<T extends MMOClient<?>> extends AbstractP
 		try
 		{
 			
-			return _buf.getDouble();
+			return buf.getDouble();
 			
 		}
 		catch (final BufferUnderflowException e)
@@ -168,15 +149,15 @@ public abstract class ReceivablePacket<T extends MMOClient<?>> extends AbstractP
 	
 	protected final String readS()
 	{
-		_sbuf.clear();
+		sbuf.clear();
 		
 		try
 		{
 			
 			char ch;
-			while ((ch = _buf.getChar()) != 0)
+			while ((ch = buf.getChar()) != 0)
 			{
-				_sbuf.append(ch);
+				sbuf.append(ch);
 			}
 			
 		}
@@ -186,7 +167,7 @@ public abstract class ReceivablePacket<T extends MMOClient<?>> extends AbstractP
 			
 		}
 		
-		return _sbuf.toString();
+		return sbuf.toString();
 	}
 	
 	/**
@@ -197,8 +178,8 @@ public abstract class ReceivablePacket<T extends MMOClient<?>> extends AbstractP
 	 */
 	public void setBuffers(final ByteBuffer data, final T client, final NioNetStringBuffer sBuffer)
 	{
-		_buf = data;
-		_client = client;
-		_sbuf = sBuffer;
+		buf = data;
+		this.client = client;
+		sbuf = sBuffer;
 	}
 }

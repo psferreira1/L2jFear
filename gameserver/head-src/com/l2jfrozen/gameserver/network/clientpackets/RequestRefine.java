@@ -1,22 +1,3 @@
-/* L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.network.clientpackets;
 
 import com.l2jfrozen.Config;
@@ -38,18 +19,18 @@ import com.l2jfrozen.gameserver.util.Util;
  */
 public final class RequestRefine extends L2GameClientPacket
 {
-	private int _targetItemObjId;
-	private int _refinerItemObjId;
-	private int _gemstoneItemObjId;
-	private int _gemstoneCount;
+	private int targetItemObjId;
+	private int refinerItemObjId;
+	private int gemstoneItemObjId;
+	private int gemstoneCount;
 	
 	@Override
 	protected void readImpl()
 	{
-		_targetItemObjId = readD();
-		_refinerItemObjId = readD();
-		_gemstoneItemObjId = readD();
-		_gemstoneCount = readD();
+		targetItemObjId = readD();
+		refinerItemObjId = readD();
+		gemstoneItemObjId = readD();
+		gemstoneCount = readD();
 	}
 	
 	@Override
@@ -57,11 +38,13 @@ public final class RequestRefine extends L2GameClientPacket
 	{
 		final L2PcInstance activeChar = getClient().getActiveChar();
 		if (activeChar == null)
+		{
 			return;
+		}
 		
-		final L2ItemInstance targetItem = (L2ItemInstance) L2World.getInstance().findObject(_targetItemObjId);
-		final L2ItemInstance refinerItem = (L2ItemInstance) L2World.getInstance().findObject(_refinerItemObjId);
-		final L2ItemInstance gemstoneItem = (L2ItemInstance) L2World.getInstance().findObject(_gemstoneItemObjId);
+		final L2ItemInstance targetItem = (L2ItemInstance) L2World.getInstance().findObject(targetItemObjId);
+		final L2ItemInstance refinerItem = (L2ItemInstance) L2World.getInstance().findObject(refinerItemObjId);
+		final L2ItemInstance gemstoneItem = (L2ItemInstance) L2World.getInstance().findObject(gemstoneItemObjId);
 		
 		if (targetItem == null || refinerItem == null || gemstoneItem == null || targetItem.getOwnerId() != activeChar.getObjectId() || refinerItem.getOwnerId() != activeChar.getObjectId() || gemstoneItem.getOwnerId() != activeChar.getObjectId() || activeChar.getLevel() < 46) // must be lvl 46
 		{
@@ -160,40 +143,54 @@ public final class RequestRefine extends L2GameClientPacket
 		
 		// is the refiner Item a life stone?
 		if (lifeStoneId < 8723 || lifeStoneId > 8762)
+		{
 			return false;
+		}
 		
 		// must be a weapon, must be > d grade
 		// TODO: can do better? : currently: using isdestroyable() as a check for hero / cursed weapons
 		if (itemGrade < L2Item.CRYSTAL_C || itemType != L2Item.TYPE2_WEAPON || !targetItem.isDestroyable())
+		{
 			return false;
+		}
 		
 		// player must be able to use augmentation
 		if (player.getPrivateStoreType() != L2PcInstance.STORE_PRIVATE_NONE || player.isDead() || player.isParalyzed() || player.isFishing() || player.isSitting())
+		{
 			return false;
+		}
 		
-		int modifyGemstoneCount = _gemstoneCount;
+		int modifyGemstoneCount = gemstoneCount;
 		final int lifeStoneLevel = getLifeStoneLevel(lifeStoneId);
 		final int lifeStoneGrade = getLifeStoneGrade(lifeStoneId);
 		switch (itemGrade)
 		{
 			case L2Item.CRYSTAL_C:
 				if (player.getLevel() < 46 || gemstoneItemId != 2130)
+				{
 					return false;
+				}
 				modifyGemstoneCount = 20;
 				break;
 			case L2Item.CRYSTAL_B:
 				if (player.getLevel() < 52 || gemstoneItemId != 2130)
+				{
 					return false;
+				}
 				modifyGemstoneCount = 30;
 				break;
 			case L2Item.CRYSTAL_A:
 				if (player.getLevel() < 61 || gemstoneItemId != 2131)
+				{
 					return false;
+				}
 				modifyGemstoneCount = 20;
 				break;
 			case L2Item.CRYSTAL_S:
 				if (player.getLevel() < 76 || gemstoneItemId != 2131)
+				{
 					return false;
+				}
 				modifyGemstoneCount = 25;
 				break;
 		}
@@ -203,56 +200,80 @@ public final class RequestRefine extends L2GameClientPacket
 		{
 			case 1:
 				if (player.getLevel() < 46)
+				{
 					return false;
+				}
 				break;
 			case 2:
 				if (player.getLevel() < 49)
+				{
 					return false;
+				}
 				break;
 			case 3:
 				if (player.getLevel() < 52)
+				{
 					return false;
+				}
 				break;
 			case 4:
 				if (player.getLevel() < 55)
+				{
 					return false;
+				}
 				break;
 			case 5:
 				if (player.getLevel() < 58)
+				{
 					return false;
+				}
 				break;
 			case 6:
 				if (player.getLevel() < 61)
+				{
 					return false;
+				}
 				break;
 			case 7:
 				if (player.getLevel() < 64)
+				{
 					return false;
+				}
 				break;
 			case 8:
 				if (player.getLevel() < 67)
+				{
 					return false;
+				}
 				break;
 			case 9:
 				if (player.getLevel() < 70)
+				{
 					return false;
+				}
 				break;
 			case 10:
 				if (player.getLevel() < 76)
+				{
 					return false;
+				}
 				break;
 		}
 		
 		// Check if player has all gemstorne on inventory
 		if (gemstoneItem.getCount() - modifyGemstoneCount < 0)
+		{
 			return false;
+		}
 		
 		// consume the life stone
 		if (!player.destroyItem("RequestRefine", refinerItem, null, false))
+		{
 			return false;
+		}
 		
 		// consume the gemstones
-		player.destroyItem("RequestRefine", _gemstoneItemObjId, modifyGemstoneCount, null, false);
+		player.destroyItem("RequestRefine", gemstoneItemObjId, modifyGemstoneCount, null, false);
 		
 		// generate augmentation
 		targetItem.setAugmentation(AugmentationData.getInstance().generateRandomAugmentation(targetItem, lifeStoneLevel, lifeStoneGrade));
@@ -273,14 +294,20 @@ public final class RequestRefine extends L2GameClientPacket
 	{
 		itemId -= 8723;
 		if (itemId < 10)
+		{
 			return 0; // normal grade
-			
+		}
+		
 		if (itemId < 20)
+		{
 			return 1; // mid grade
-			
+		}
+		
 		if (itemId < 30)
+		{
 			return 2; // high grade
-			
+		}
+		
 		return 3; // top grade
 	}
 	

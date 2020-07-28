@@ -1,31 +1,10 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.communitybbs.Manager;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.util.ArrayList;
 import java.util.List;
-
-import javolution.util.FastList;
 
 import org.apache.log4j.Logger;
 
@@ -38,38 +17,37 @@ import com.l2jfrozen.util.database.L2DatabaseFactory;
 public class ForumsBBSManager extends BaseBBSManager
 {
 	private static Logger LOGGER = Logger.getLogger(ForumsBBSManager.class);
-	private final List<Forum> _table;
-	private static ForumsBBSManager _instance;
-	private int _lastid = 1;
+	private final List<Forum> table;
+	private static ForumsBBSManager instance;
+	private int lastid = 1;
 	
-	/**
-	 * @return
-	 */
 	public static ForumsBBSManager getInstance()
 	{
-		if (_instance == null)
+		if (instance == null)
 		{
-			_instance = new ForumsBBSManager();
+			instance = new ForumsBBSManager();
 		}
-		return _instance;
+		return instance;
 	}
 	
 	public ForumsBBSManager()
 	{
-		_table = new FastList<>();
+		table = new ArrayList<>();
 		load();
 	}
 	
 	public void addForum(final Forum ff)
 	{
 		if (ff == null)
-			return;
-		
-		_table.add(ff);
-		
-		if (ff.getID() > _lastid)
 		{
-			_lastid = ff.getID();
+			return;
+		}
+		
+		table.add(ff);
+		
+		if (ff.getID() > lastid)
+		{
+			lastid = ff.getID();
 		}
 	}
 	
@@ -81,7 +59,7 @@ public class ForumsBBSManager extends BaseBBSManager
 		Connection con = null;
 		try
 		{
-			con = L2DatabaseFactory.getInstance().getConnection(false);
+			con = L2DatabaseFactory.getInstance().getConnection();
 			PreparedStatement statement = con.prepareStatement("SELECT forum_id FROM forums WHERE forum_type=0");
 			ResultSet result = statement.executeQuery();
 			while (result.next())
@@ -108,9 +86,11 @@ public class ForumsBBSManager extends BaseBBSManager
 	
 	public void initRoot()
 	{
-		for (final Forum f : _table)
+		for (final Forum f : table)
+		{
 			f.vload();
-		LOGGER.info("Loaded " + _table.size() + " forums. Last forum id used: " + _lastid);
+		}
+		LOGGER.info("Loaded " + table.size() + " forums. Last forum id used: " + lastid);
 	}
 	
 	@Override
@@ -120,26 +100,28 @@ public class ForumsBBSManager extends BaseBBSManager
 	}
 	
 	/**
-	 * @param Name
+	 * @param  Name
 	 * @return
 	 */
 	public Forum getForumByName(final String Name)
 	{
-		for (final Forum f : _table)
+		for (final Forum f : table)
 		{
 			if (f.getName().equals(Name))
+			{
 				return f;
+			}
 		}
 		
 		return null;
 	}
 	
 	/**
-	 * @param name
-	 * @param parent
-	 * @param type
-	 * @param perm
-	 * @param oid
+	 * @param  name
+	 * @param  parent
+	 * @param  type
+	 * @param  perm
+	 * @param  oid
 	 * @return
 	 */
 	public Forum createNewForum(final String name, final Forum parent, final int type, final int perm, final int oid)
@@ -154,19 +136,21 @@ public class ForumsBBSManager extends BaseBBSManager
 	 */
 	public int getANewID()
 	{
-		return ++_lastid;
+		return ++lastid;
 	}
 	
 	/**
-	 * @param idf
+	 * @param  idf
 	 * @return
 	 */
 	public Forum getForumByID(final int idf)
 	{
-		for (final Forum f : _table)
+		for (final Forum f : table)
 		{
 			if (f.getID() == idf)
+			{
 				return f;
+			}
 		}
 		return null;
 	}

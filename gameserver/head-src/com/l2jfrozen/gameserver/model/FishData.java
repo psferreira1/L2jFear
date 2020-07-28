@@ -1,66 +1,47 @@
-/* L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.model;
 
 public class FishData
 {
-	private final int _id;
-	private final int _level;
-	private final String _name;
-	private final int _hp;
-	private final int _hpRegen;
-	private int _type;
-	private final int _group;
-	private final int _fishGuts;
-	private final int _gutsCheckTime;
-	private final int _waitTime;
-	private final int _combatTime;
+	private final int id;
+	private final int level;
+	private final String name;
+	private final int hp;
+	private final int hpRegen;
+	private int type;
+	private final int group;
+	private final int fishGuts;
+	private final int gutsCheckTime;
+	private final int waitTime;
+	private final int combatTime;
 	
 	public FishData(final int id, final int lvl, final String name, final int HP, final int HpRegen, final int type, final int group, final int fish_guts, final int guts_check_time, final int wait_time, final int combat_time)
 	{
-		_id = id;
-		_level = lvl;
-		_name = name.intern();
-		_hp = HP;
-		_hpRegen = HpRegen;
-		_type = type;
-		_group = group;
-		_fishGuts = fish_guts;
-		_gutsCheckTime = guts_check_time;
-		_waitTime = wait_time;
-		_combatTime = combat_time;
+		this.id = id;
+		level = lvl;
+		this.name = name.intern();
+		hp = HP;
+		hpRegen = HpRegen;
+		this.type = type;
+		this.group = group;
+		fishGuts = fish_guts;
+		gutsCheckTime = guts_check_time;
+		waitTime = wait_time;
+		combatTime = combat_time;
 	}
 	
 	public FishData(final FishData copyOf)
 	{
-		_id = copyOf.getId();
-		_level = copyOf.getLevel();
-		_name = copyOf.getName();
-		_hp = copyOf.getHP();
-		_hpRegen = copyOf.getHpRegen();
-		_type = copyOf.getType();
-		_group = copyOf.getGroup();
-		_fishGuts = copyOf.getFishGuts();
-		_gutsCheckTime = copyOf.getGutsCheckTime();
-		_waitTime = copyOf.getWaitTime();
-		_combatTime = copyOf.getCombatTime();
+		id = copyOf.getId();
+		level = copyOf.getLevel();
+		name = copyOf.getName();
+		hp = copyOf.getHP();
+		hpRegen = copyOf.getHpRegen();
+		type = copyOf.getType();
+		group = copyOf.getGroup();
+		fishGuts = copyOf.getFishGuts();
+		gutsCheckTime = copyOf.getGutsCheckTime();
+		waitTime = copyOf.getWaitTime();
+		combatTime = copyOf.getCombatTime();
 	}
 	
 	/**
@@ -68,7 +49,7 @@ public class FishData
 	 */
 	public int getId()
 	{
-		return _id;
+		return id;
 	}
 	
 	/**
@@ -76,7 +57,7 @@ public class FishData
 	 */
 	public int getLevel()
 	{
-		return _level;
+		return level;
 	}
 	
 	/**
@@ -84,51 +65,51 @@ public class FishData
 	 */
 	public String getName()
 	{
-		return _name;
+		return name;
 	}
 	
 	public int getHP()
 	{
-		return _hp;
+		return hp;
 	}
 	
 	public int getHpRegen()
 	{
-		return _hpRegen;
+		return hpRegen;
 	}
 	
 	public int getType()
 	{
-		return _type;
+		return type;
 	}
 	
 	public int getGroup()
 	{
-		return _group;
+		return group;
 	}
 	
 	public int getFishGuts()
 	{
-		return _fishGuts;
+		return fishGuts;
 	}
 	
 	public int getGutsCheckTime()
 	{
-		return _gutsCheckTime;
+		return gutsCheckTime;
 	}
 	
 	public int getWaitTime()
 	{
-		return _waitTime;
+		return waitTime;
 	}
 	
 	public int getCombatTime()
 	{
-		return _combatTime;
+		return combatTime;
 	}
 	
 	public void setType(final int type)
 	{
-		_type = type;
+		this.type = type;
 	}
 }

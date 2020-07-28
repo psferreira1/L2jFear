@@ -1,23 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.network.serverpackets;
 
 import java.math.BigInteger;
@@ -30,7 +10,7 @@ import java.util.List;
  */
 public class AdminForgePacket extends L2GameServerPacket
 {
-	private final List<Part> _parts = new ArrayList<>();
+	private final List<Part> parts = new ArrayList<>();
 	
 	private class Part
 	{
@@ -52,7 +32,7 @@ public class AdminForgePacket extends L2GameServerPacket
 	@Override
 	protected void writeImpl()
 	{
-		for (final Part p : _parts)
+		for (final Part p : parts)
 		{
 			generate(p.b, p.str);
 		}
@@ -66,13 +46,12 @@ public class AdminForgePacket extends L2GameServerPacket
 	}
 	
 	/**
-	 * @param b
-	 * @param string
+	 * @param  b
+	 * @param  string
 	 * @return
 	 */
 	public boolean generate(final byte b, final String string)
 	{
-		// TODO Auto-generated method stub
 		if (b == 'C' || b == 'c')
 		{
 			writeC(Integer.decode(string));
@@ -108,7 +87,7 @@ public class AdminForgePacket extends L2GameServerPacket
 	
 	public void addPart(final byte b, final String string)
 	{
-		_parts.add(new Part(b, string));
+		parts.add(new Part(b, string));
 	}
 	
 }

@@ -1,19 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any later
- * version.
- * 
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
- * 
- * You should have received a copy of the GNU General Public License along with
- * this program. If not, see <http://www.gnu.org/licenses/>.
- */
 package com.l2jfrozen.gameserver.network.clientpackets;
 
 import org.apache.log4j.Logger;
@@ -30,12 +14,12 @@ import com.l2jfrozen.gameserver.network.serverpackets.CharSelectInfo;
 public final class CharacterDelete extends L2GameClientPacket
 {
 	private static Logger LOGGER = Logger.getLogger(CharacterDelete.class);
-	private int _charSlot;
+	private int charSlot;
 	
 	@Override
 	protected void readImpl()
 	{
-		_charSlot = readD();
+		charSlot = readD();
 	}
 	
 	@Override
@@ -43,14 +27,18 @@ public final class CharacterDelete extends L2GameClientPacket
 	{
 		
 		if (!getClient().getFloodProtectors().getCharacterSelect().tryPerformAction("CharacterDelete"))
+		{
 			return;
+		}
 		
 		if (Config.DEBUG)
-			LOGGER.debug("DEBUG " + getType() + ": deleting slot:" + _charSlot);
+		{
+			LOGGER.debug("DEBUG " + getType() + ": deleting slot:" + charSlot);
+		}
 		
 		try
 		{
-			final byte answer = getClient().markToDeleteChar(_charSlot);
+			final byte answer = getClient().markToDeleteChar(charSlot);
 			switch (answer)
 			{
 				default:
@@ -70,7 +58,9 @@ public final class CharacterDelete extends L2GameClientPacket
 		catch (final Exception e)
 		{
 			if (Config.ENABLE_ALL_EXCEPTIONS)
+			{
 				e.printStackTrace();
+			}
 			
 			LOGGER.error("ERROR " + getType() + ":", e);
 		}

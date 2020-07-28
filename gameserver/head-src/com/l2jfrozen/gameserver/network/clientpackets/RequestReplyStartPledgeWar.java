@@ -1,23 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.network.clientpackets;
 
 import com.l2jfrozen.gameserver.datatables.sql.ClanTable;
@@ -27,14 +7,13 @@ import com.l2jfrozen.gameserver.network.serverpackets.SystemMessage;
 
 public final class RequestReplyStartPledgeWar extends L2GameClientPacket
 {
-	private int _answer;
+	private int answer;
 	
 	@Override
 	protected void readImpl()
 	{
-		@SuppressWarnings("unused")
-		final String _reqName = readS();
-		_answer = readD();
+		readS();
+		answer = readD();
 	}
 	
 	@Override
@@ -42,15 +21,19 @@ public final class RequestReplyStartPledgeWar extends L2GameClientPacket
 	{
 		final L2PcInstance activeChar = getClient().getActiveChar();
 		if (activeChar == null)
+		{
 			return;
+		}
 		
 		final L2PcInstance requestor = activeChar.getActiveRequester();
 		if (requestor == null)
-			return;
-		
-		if (_answer == 1)
 		{
-			ClanTable.getInstance().storeclanswars(requestor.getClanId(), activeChar.getClanId());
+			return;
+		}
+		
+		if (answer == 1)
+		{
+			ClanTable.getInstance().storeClanWars(requestor.getClanId(), activeChar.getClanId());
 		}
 		else
 		{

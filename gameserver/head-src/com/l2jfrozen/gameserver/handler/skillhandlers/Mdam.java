@@ -1,23 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.handler.skillhandlers;
 
 import com.l2jfrozen.Config;
@@ -44,25 +24,19 @@ public class Mdam implements ISkillHandler
 {
 	// private static Logger LOGGER = Logger.getLogger(Mdam.class);
 	
-	/*
-	 * (non-Javadoc)
-	 * @see com.l2jfrozen.gameserver.handler.IItemHandler#useItem(com.l2jfrozen.gameserver.model.L2PcInstance, com.l2jfrozen.gameserver.model.L2ItemInstance)
-	 */
 	private static final SkillType[] SKILL_IDS =
 	{
 		SkillType.MDAM,
 		SkillType.DEATHLINK
 	};
 	
-	/*
-	 * (non-Javadoc)
-	 * @see com.l2jfrozen.gameserver.handler.IItemHandler#useItem(com.l2jfrozen.gameserver.model.L2PcInstance, com.l2jfrozen.gameserver.model.L2ItemInstance)
-	 */
 	@Override
 	public void useSkill(L2Character activeChar, final L2Skill skill, final L2Object[] targets)
 	{
 		if (activeChar.isAlikeDead())
+		{
 			return;
+		}
 		
 		final boolean bss = activeChar.checkBss();
 		final boolean sps = activeChar.checkSps();
@@ -70,7 +44,9 @@ public class Mdam implements ISkillHandler
 		for (final L2Object target2 : targets)
 		{
 			if (target2 == null)
+			{
 				continue;
+			}
 			
 			L2Character target = (L2Character) target2;
 			
@@ -81,6 +57,10 @@ public class Mdam implements ISkillHandler
 			else if (target.isAlikeDead())
 			{
 				if (skill.getTargetType() == L2Skill.SkillTargetType.TARGET_AREA_CORPSE_MOB && target instanceof L2NpcInstance)
+				{
+					((L2NpcInstance) target).endDecayTask();
+				}
+				else if (skill.getTargetType() == L2Skill.SkillTargetType.TARGET_AREA_AIM_CORPSE && target instanceof L2NpcInstance)
 				{
 					((L2NpcInstance) target).endDecayTask();
 				}
@@ -95,11 +75,17 @@ public class Mdam implements ISkillHandler
 			{
 				String name = "";
 				if (target instanceof L2RaidBossInstance)
+				{
 					name = "RaidBoss ";
+				}
 				if (target instanceof L2NpcInstance)
+				{
 					name += target.getName() + "(" + ((L2NpcInstance) target).getTemplate().npcId + ")";
+				}
 				if (target instanceof L2PcInstance)
+				{
 					name = target.getName() + "(" + target.getObjectId() + ") ";
+				}
 				name += target.getLevel() + " lvl";
 				Log.add(activeChar.getName() + "(" + activeChar.getObjectId() + ") " + activeChar.getLevel() + " lvl did damage " + damage + " with skill " + skill.getName() + "(" + skill.getId() + ") to " + name, "damage_mdam");
 			}

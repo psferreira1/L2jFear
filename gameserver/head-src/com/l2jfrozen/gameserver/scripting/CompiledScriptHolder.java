@@ -1,23 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.scripting;
 
 import java.io.File;
@@ -35,20 +15,15 @@ public class CompiledScriptHolder implements Serializable
 	 */
 	private static final long serialVersionUID = 1L;
 	
-	private long _lastModified;
-	private long _size;
-	private CompiledScript _compiledScript;
+	private long lastModified;
+	private long size;
+	private CompiledScript compiledScript;
 	
-	/**
-	 * @param compiledScript
-	 * @param lastModified
-	 * @param size
-	 */
 	public CompiledScriptHolder(final CompiledScript compiledScript, final long lastModified, final long size)
 	{
-		_compiledScript = compiledScript;
-		_lastModified = lastModified;
-		_size = size;
+		this.compiledScript = compiledScript;
+		this.lastModified = lastModified;
+		this.size = size;
 	}
 	
 	public CompiledScriptHolder(final CompiledScript compiledScript, final File scriptFile)
@@ -61,15 +36,12 @@ public class CompiledScriptHolder implements Serializable
 	 */
 	public long getLastModified()
 	{
-		return _lastModified;
+		return lastModified;
 	}
 	
-	/**
-	 * @param lastModified The lastModified to set.
-	 */
 	public void setLastModified(final long lastModified)
 	{
-		_lastModified = lastModified;
+		this.lastModified = lastModified;
 	}
 	
 	/**
@@ -77,7 +49,7 @@ public class CompiledScriptHolder implements Serializable
 	 */
 	public long getSize()
 	{
-		return _size;
+		return size;
 	}
 	
 	/**
@@ -85,7 +57,7 @@ public class CompiledScriptHolder implements Serializable
 	 */
 	public void setSize(final long size)
 	{
-		_size = size;
+		this.size = size;
 	}
 	
 	/**
@@ -93,7 +65,7 @@ public class CompiledScriptHolder implements Serializable
 	 */
 	public CompiledScript getCompiledScript()
 	{
-		return _compiledScript;
+		return compiledScript;
 	}
 	
 	/**
@@ -101,7 +73,7 @@ public class CompiledScriptHolder implements Serializable
 	 */
 	public void setCompiledScript(final CompiledScript compiledScript)
 	{
-		_compiledScript = compiledScript;
+		this.compiledScript = compiledScript;
 	}
 	
 	public boolean matches(final File f)

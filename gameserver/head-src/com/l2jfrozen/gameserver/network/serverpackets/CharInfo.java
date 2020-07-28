@@ -1,23 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.network.serverpackets;
 
 import java.util.Map;
@@ -35,6 +15,8 @@ import com.l2jfrozen.gameserver.model.actor.instance.L2PcInstance;
 import com.l2jfrozen.gameserver.templates.L2NpcTemplate;
 
 /**
+ * Send a Server->Client packet CharInfo to all L2PcInstance in knownPlayers of the L2PcInstance (Public data only)<BR>
+ * ___________________<BR>
  * 0000: 03 32 15 00 00 44 fe 00 00 80 f1 ff ff 00 00 00 .2...D..........
  * <p>
  * 0010: 00 6b b4 c0 4a 45 00 6c 00 6c 00 61 00 6d 00 69 .k..JE.l.l.a.m.i
@@ -72,44 +54,37 @@ import com.l2jfrozen.gameserver.templates.L2NpcTemplate;
 public class CharInfo extends L2GameServerPacket
 {
 	private static final Logger LOGGER = Logger.getLogger(CharInfo.class);
-	
-	private static final String _S__03_CHARINFO = "[S] 03 CharInfo";
-	private final L2PcInstance _activeChar;
-	private final Inventory _inv;
-	private final int _x, _y, _z, _heading;
-	private final int _mAtkSpd, _pAtkSpd;
-	private final int _runSpd, _walkSpd, _swimRunSpd, _swimWalkSpd;
-	
-	private int _flRunSpd;
-	
-	private int _flWalkSpd;
-	
-	private int _flyRunSpd;
-	
-	private int _flyWalkSpd;
-	private final float _moveMultiplier, _attackSpeedMultiplier;
-	private final int _maxCp;
+	private final L2PcInstance activeChar;
+	private final Inventory inv;
+	private final int x, y, z;
+	private final int mAtkSpd, pAtkSpd;
+	private final int runSpd, walkSpd, swimRunSpd, swimWalkSpd;
+	private int flRunSpd;
+	private int flWalkSpd;
+	private int flyRunSpd;
+	private int flyWalkSpd;
+	private final float moveMultiplier, attackSpeedMultiplier;
+	private final int maxCp;
 	
 	/**
 	 * @param cha
 	 */
 	public CharInfo(final L2PcInstance cha)
 	{
-		_activeChar = cha;
-		_inv = cha.getInventory();
-		_x = _activeChar.getX();
-		_y = _activeChar.getY();
-		_z = _activeChar.getZ();
-		_heading = _activeChar.getHeading();
-		_mAtkSpd = _activeChar.getMAtkSpd();
-		_pAtkSpd = _activeChar.getPAtkSpd();
-		_moveMultiplier = _activeChar.getMovementSpeedMultiplier();
-		_attackSpeedMultiplier = _activeChar.getAttackSpeedMultiplier();
-		_runSpd = (int) (_activeChar.getRunSpeed() / _moveMultiplier);
-		_walkSpd = (int) (_activeChar.getWalkSpeed() / _moveMultiplier);
-		_swimRunSpd = _flRunSpd = _flyRunSpd = _runSpd;
-		_swimWalkSpd = _flWalkSpd = _flyWalkSpd = _walkSpd;
-		_maxCp = _activeChar.getMaxCp();
+		activeChar = cha;
+		inv = cha.getInventory();
+		x = activeChar.getX();
+		y = activeChar.getY();
+		z = activeChar.getZ();
+		mAtkSpd = activeChar.getMAtkSpd();
+		pAtkSpd = activeChar.getPAtkSpd();
+		moveMultiplier = activeChar.getMovementSpeedMultiplier();
+		attackSpeedMultiplier = activeChar.getAttackSpeedMultiplier();
+		runSpd = (int) (activeChar.getRunSpeed() / moveMultiplier);
+		walkSpd = (int) (activeChar.getWalkSpeed() / moveMultiplier);
+		swimRunSpd = flRunSpd = flyRunSpd = runSpd;
+		swimWalkSpd = flWalkSpd = flyWalkSpd = walkSpd;
+		maxCp = activeChar.getMaxCp();
 	}
 	
 	@Override
@@ -123,79 +98,74 @@ public class CharInfo extends L2GameServerPacket
 			receiver_is_gm = true;
 		}
 		
-		if (!receiver_is_gm && _activeChar.getAppearance().getInvisible())
-			return;
-		
-		if (_activeChar.getPoly().isMorphed())
+		if (!receiver_is_gm && activeChar.getAppearance().isInvisible())
 		{
-			final L2NpcTemplate template = NpcTable.getInstance().getTemplate(_activeChar.getPoly().getPolyId());
+			return;
+		}
+		
+		if (activeChar.getPoly().isMorphed())
+		{
+			final L2NpcTemplate template = NpcTable.getInstance().getTemplate(activeChar.getPoly().getPolyId());
 			
 			if (template != null)
 			{
 				writeC(0x16);
-				writeD(_activeChar.getObjectId());
-				writeD(_activeChar.getPoly().getPolyId() + 1000000); // npctype id
-				writeD(_activeChar.getKarma() > 0 ? 1 : 0);
-				writeD(_x);
-				writeD(_y);
-				writeD(_z);
-				writeD(_heading);
+				writeD(activeChar.getObjectId());
+				writeD(activeChar.getPoly().getPolyId() + 1000000); // npctype id
+				writeD(activeChar.getKarma() > 0 ? 1 : 0);
+				writeD(x);
+				writeD(y);
+				writeD(z);
+				writeD(activeChar.getHeading());
 				writeD(0x00);
-				writeD(_mAtkSpd);
-				writeD(_pAtkSpd);
-				writeD(_runSpd);
-				writeD(_walkSpd);
-				writeD(_swimRunSpd/* 0x32 */); // swimspeed
-				writeD(_swimWalkSpd/* 0x32 */); // swimspeed
-				writeD(_flRunSpd);
-				writeD(_flWalkSpd);
-				writeD(_flyRunSpd);
-				writeD(_flyWalkSpd);
-				writeF(_moveMultiplier);
-				writeF(_attackSpeedMultiplier);
+				writeD(mAtkSpd);
+				writeD(pAtkSpd);
+				writeD(runSpd);
+				writeD(walkSpd);
+				writeD(swimRunSpd/* 0x32 */); // swimspeed
+				writeD(swimWalkSpd/* 0x32 */); // swimspeed
+				writeD(flRunSpd);
+				writeD(flWalkSpd);
+				writeD(flyRunSpd);
+				writeD(flyWalkSpd);
+				writeF(moveMultiplier);
+				writeF(attackSpeedMultiplier);
 				writeF(template.collisionRadius);
 				writeF(template.collisionHeight);
-				writeD(_inv.getPaperdollItemId(Inventory.PAPERDOLL_RHAND)); // right hand weapon
+				writeD(inv.getPaperdollItemId(Inventory.PAPERDOLL_RHAND)); // right hand weapon
 				writeD(0);
-				writeD(_inv.getPaperdollItemId(Inventory.PAPERDOLL_LHAND)); // left hand weapon
+				writeD(inv.getPaperdollItemId(Inventory.PAPERDOLL_LHAND)); // left hand weapon
 				writeC(1); // name above char 1=true ... ??
-				writeC(_activeChar.isRunning() ? 1 : 0);
-				writeC(_activeChar.isInCombat() ? 1 : 0);
-				writeC(_activeChar.isAlikeDead() ? 1 : 0);
+				writeC(activeChar.isRunning() ? 1 : 0);
+				writeC(activeChar.isInCombat() ? 1 : 0);
+				writeC(activeChar.isAlikeDead() ? 1 : 0);
 				
-				// if(gmSeeInvis)
-				// {
 				writeC(0); // if the charinfo is written means receiver can see the char
-				// }
-				// else
-				// {
-				// writeC(_activeChar.getAppearance().getInvisible() ? 1 : 0); // invisible ?? 0=false 1=true 2=summoned (only works if model has a summon animation)
-				// }
 				
-				writeS(_activeChar.getName());
+				writeS(activeChar.getName());
 				
-				if (_activeChar.getAppearance().getInvisible())
+				if (activeChar.getAppearance().isInvisible())
 				// if(gmSeeInvis)
 				{
 					writeS("Invisible");
 				}
 				else
 				{
-					writeS(_activeChar.getTitle());
+					writeS(activeChar.getTitle());
 				}
 				
 				writeD(0);
 				writeD(0);
 				writeD(0000); // hmm karma ??
 				
-				if (_activeChar.getAppearance().getInvisible())
+				if (activeChar.getAppearance().isInvisible())
 				// if(gmSeeInvis)
 				{
-					writeD((_activeChar.getAbnormalEffect() | L2Character.ABNORMAL_EFFECT_STEALTH));
+					writeD((activeChar.getAbnormalEffect() | L2Character.ABNORMAL_EFFECT_STEALTH));
 				}
 				else
 				{
-					writeD(_activeChar.getAbnormalEffect()); // C2
+					writeD(activeChar.getAbnormalEffect()); // C2
 				}
 				
 				writeD(0); // C2
@@ -206,49 +176,49 @@ public class CharInfo extends L2GameServerPacket
 			}
 			else
 			{
-				LOGGER.warn("Character " + _activeChar.getName() + " (" + _activeChar.getObjectId() + ") morphed in a Npc (" + _activeChar.getPoly().getPolyId() + ") w/o template.");
+				LOGGER.warn("Character " + activeChar.getName() + " (" + activeChar.getObjectId() + ") morphed in a Npc (" + activeChar.getPoly().getPolyId() + ") w/o template.");
 			}
 		}
 		else
 		{
 			writeC(0x03);
-			writeD(_x);
-			writeD(_y);
-			writeD(_z);
-			writeD(_heading);
-			writeD(_activeChar.getObjectId());
-			writeS(_activeChar.getName());
-			writeD(_activeChar.getRace().ordinal());
-			writeD(_activeChar.getAppearance().getSex() ? 1 : 0);
+			writeD(x);
+			writeD(y);
+			writeD(z);
+			writeD(activeChar.getHeading()); // Why this is send it again later in line 382 of this file?
+			writeD(activeChar.getObjectId());
+			writeS(activeChar.getName());
+			writeD(activeChar.getRace().ordinal());
+			writeD(activeChar.getAppearance().getSex() ? 1 : 0);
 			
-			if (_activeChar.getClassIndex() == 0)
+			if (activeChar.getClassIndex() == 0)
 			{
-				writeD(_activeChar.getClassId().getId());
+				writeD(activeChar.getClassId().getId());
 			}
 			else
 			{
-				writeD(_activeChar.getBaseClass());
+				writeD(activeChar.getBaseClass());
 			}
 			
-			writeD(_inv.getPaperdollItemId(Inventory.PAPERDOLL_DHAIR));
-			writeD(_inv.getPaperdollItemId(Inventory.PAPERDOLL_HEAD));
-			writeD(_inv.getPaperdollItemId(Inventory.PAPERDOLL_RHAND));
-			writeD(_inv.getPaperdollItemId(Inventory.PAPERDOLL_LHAND));
-			writeD(_inv.getPaperdollItemId(Inventory.PAPERDOLL_GLOVES));
-			writeD(_inv.getPaperdollItemId(Inventory.PAPERDOLL_CHEST));
-			writeD(_inv.getPaperdollItemId(Inventory.PAPERDOLL_LEGS));
-			writeD(_inv.getPaperdollItemId(Inventory.PAPERDOLL_FEET));
-			writeD(_inv.getPaperdollItemId(Inventory.PAPERDOLL_BACK));
-			writeD(_inv.getPaperdollItemId(Inventory.PAPERDOLL_LRHAND));
-			writeD(_inv.getPaperdollItemId(Inventory.PAPERDOLL_HAIR));
-			writeD(_inv.getPaperdollItemId(Inventory.PAPERDOLL_FACE));
+			writeD(inv.getPaperdollItemId(Inventory.PAPERDOLL_DHAIR));
+			writeD(inv.getPaperdollItemId(Inventory.PAPERDOLL_HEAD));
+			writeD(inv.getPaperdollItemId(Inventory.PAPERDOLL_RHAND));
+			writeD(inv.getPaperdollItemId(Inventory.PAPERDOLL_LHAND));
+			writeD(inv.getPaperdollItemId(Inventory.PAPERDOLL_GLOVES));
+			writeD(inv.getPaperdollItemId(Inventory.PAPERDOLL_CHEST));
+			writeD(inv.getPaperdollItemId(Inventory.PAPERDOLL_LEGS));
+			writeD(inv.getPaperdollItemId(Inventory.PAPERDOLL_FEET));
+			writeD(inv.getPaperdollItemId(Inventory.PAPERDOLL_BACK));
+			writeD(inv.getPaperdollItemId(Inventory.PAPERDOLL_LRHAND));
+			writeD(inv.getPaperdollItemId(Inventory.PAPERDOLL_HAIR));
+			writeD(inv.getPaperdollItemId(Inventory.PAPERDOLL_FACE));
 			
 			// c6 new h's
 			writeH(0x00);
 			writeH(0x00);
 			writeH(0x00);
 			writeH(0x00);
-			writeD(_inv.getPaperdollAugmentationId(Inventory.PAPERDOLL_RHAND));
+			writeD(inv.getPaperdollAugmentationId(Inventory.PAPERDOLL_RHAND));
 			writeH(0x00);
 			writeH(0x00);
 			writeH(0x00);
@@ -261,74 +231,67 @@ public class CharInfo extends L2GameServerPacket
 			writeH(0x00);
 			writeH(0x00);
 			writeH(0x00);
-			writeD(_inv.getPaperdollAugmentationId(Inventory.PAPERDOLL_LRHAND));
+			writeD(inv.getPaperdollAugmentationId(Inventory.PAPERDOLL_LRHAND));
 			writeH(0x00);
 			writeH(0x00);
 			writeH(0x00);
 			writeH(0x00);
 			
-			writeD(_activeChar.getPvpFlag());
-			writeD(_activeChar.getKarma());
+			writeD(activeChar.getPvpFlag());
+			writeD(activeChar.getKarma());
 			
-			writeD(_mAtkSpd);
-			writeD(_pAtkSpd);
+			writeD(mAtkSpd);
+			writeD(pAtkSpd);
 			
-			writeD(_activeChar.getPvpFlag());
-			writeD(_activeChar.getKarma());
+			writeD(activeChar.getPvpFlag());
+			writeD(activeChar.getKarma());
 			
-			writeD(_runSpd);
-			writeD(_walkSpd);
-			writeD(_swimRunSpd/* 0x32 */); // swimspeed
-			writeD(_swimWalkSpd/* 0x32 */); // swimspeed
-			writeD(_flRunSpd);
-			writeD(_flWalkSpd);
-			writeD(_flyRunSpd);
-			writeD(_flyWalkSpd);
-			writeF(_activeChar.getMovementSpeedMultiplier()); // _activeChar.getProperMultiplier()
-			writeF(_activeChar.getAttackSpeedMultiplier()); // _activeChar.getAttackSpeedMultiplier()
-			writeF(_activeChar.getBaseTemplate().collisionRadius);
-			writeF(_activeChar.getBaseTemplate().collisionHeight);
+			writeD(runSpd);
+			writeD(walkSpd);
+			writeD(swimRunSpd/* 0x32 */); // swimspeed
+			writeD(swimWalkSpd/* 0x32 */); // swimspeed
+			writeD(flRunSpd);
+			writeD(flWalkSpd);
+			writeD(flyRunSpd);
+			writeD(flyWalkSpd);
+			writeF(activeChar.getMovementSpeedMultiplier()); // activeChar.getProperMultiplier()
+			writeF(activeChar.getAttackSpeedMultiplier()); // activeChar.getAttackSpeedMultiplier()
+			writeF(activeChar.getBaseTemplate().collisionRadius);
+			writeF(activeChar.getBaseTemplate().collisionHeight);
 			
-			writeD(_activeChar.getAppearance().getHairStyle());
-			writeD(_activeChar.getAppearance().getHairColor());
-			writeD(_activeChar.getAppearance().getFace());
+			writeD(activeChar.getAppearance().getHairStyle());
+			writeD(activeChar.getAppearance().getHairColor());
+			writeD(activeChar.getAppearance().getFace());
 			
-			if (_activeChar.getAppearance().getInvisible())
+			if (activeChar.getAppearance().isInvisible())
 			// if(gmSeeInvis)
 			{
 				writeS("Invisible");
 			}
 			else
 			{
-				writeS(_activeChar.getTitle());
+				writeS(activeChar.getTitle());
 			}
 			
-			writeD(_activeChar.getClanId());
-			writeD(_activeChar.getClanCrestId());
-			writeD(_activeChar.getAllyId());
-			writeD(_activeChar.getAllyCrestId());
+			writeD(activeChar.getClanId());
+			writeD(activeChar.getClanCrestId());
+			writeD(activeChar.getAllyId());
+			writeD(activeChar.getAllyCrestId());
 			// In UserInfo leader rights and siege flags, but here found nothing??
 			// Therefore RelationChanged packet with that info is required
 			writeD(0);
 			
-			writeC(_activeChar.isSitting() ? 0 : 1); // standing = 1 sitting = 0
-			writeC(_activeChar.isRunning() ? 1 : 0); // running = 1 walking = 0
-			writeC(_activeChar.isInCombat() ? 1 : 0);
-			writeC(_activeChar.isAlikeDead() ? 1 : 0);
+			writeC(activeChar.isSitting() ? 0 : 1); // standing = 1 sitting = 0
+			writeC(activeChar.isRunning() ? 1 : 0); // running = 1 walking = 0
+			writeC(activeChar.isInCombat() ? 1 : 0);
+			writeC(activeChar.isAlikeDead() ? 1 : 0);
 			
-			// if(gmSeeInvis)
-			// {
 			writeC(0); // if the charinfo is written means receiver can see the char
-			// }
-			// else
-			// {
-			// writeC(_activeChar.getAppearance().getInvisible() ? 1 : 0); // invisible = 1 visible =0
-			// }
 			
-			writeC(_activeChar.getMountType()); // 1 on strider 2 on wyvern 0 no mount
-			writeC(_activeChar.getPrivateStoreType()); // 1 - sellshop
+			writeC(activeChar.getMountType()); // 1 on strider 2 on wyvern 0 no mount
+			writeC(activeChar.getPrivateStoreType()); // 1 - sellshop
 			
-			final Map<Integer, L2CubicInstance> cubics = _activeChar.getCubics();
+			final Map<Integer, L2CubicInstance> cubics = activeChar.getCubics();
 			
 			final Set<Integer> cubicsIds = cubics.keySet();
 			
@@ -336,35 +299,37 @@ public class CharInfo extends L2GameServerPacket
 			for (final Integer id : cubicsIds)
 			{
 				if (id != null)
+				{
 					writeH(id);
+				}
 			}
 			
-			writeC(_activeChar.isInPartyMatchRoom() ? 1 : 0);
+			writeC(activeChar.isInPartyMatchRoom() ? 1 : 0);
 			// writeC(0x00); // find party members
 			
-			if (_activeChar.getAppearance().getInvisible())
+			if (activeChar.getAppearance().isInvisible())
 			// if(gmSeeInvis)
 			{
-				writeD((_activeChar.getAbnormalEffect() | L2Character.ABNORMAL_EFFECT_STEALTH));
+				writeD((activeChar.getAbnormalEffect() | L2Character.ABNORMAL_EFFECT_STEALTH));
 			}
 			else
 			{
-				writeD(_activeChar.getAbnormalEffect());
+				writeD(activeChar.getAbnormalEffect());
 			}
 			
-			writeC(_activeChar.getRecomLeft()); // Changed by Thorgrim
-			writeH(_activeChar.getRecomHave()); // Blue value for name (0 = white, 255 = pure blue)
-			writeD(_activeChar.getClassId().getId());
+			writeC(activeChar.getRecomLeft()); // Changed by Thorgrim
+			writeH(activeChar.getRecomHave()); // Blue value for name (0 = white, 255 = pure blue)
+			writeD(activeChar.getClassId().getId());
 			
-			writeD(_maxCp);
-			writeD((int) _activeChar.getCurrentCp());
-			writeC(_activeChar.isMounted() ? 0 : _activeChar.getEnchantEffect());
+			writeD(maxCp);
+			writeD((int) activeChar.getCurrentCp());
+			writeC(activeChar.isMounted() ? 0 : activeChar.getEnchantEffect());
 			
-			if (_activeChar.getTeam() == 1)
+			if (activeChar.getTeam() == 1)
 			{
 				writeC(0x01); // team circle around feet 1= Blue, 2 = red
 			}
-			else if (_activeChar.getTeam() == 2)
+			else if (activeChar.getTeam() == 2)
 			{
 				writeC(0x02); // team circle around feet 1= Blue, 2 = red
 			}
@@ -373,29 +338,29 @@ public class CharInfo extends L2GameServerPacket
 				writeC(0x00); // team circle around feet 1= Blue, 2 = red
 			}
 			
-			writeD(_activeChar.getClanCrestLargeId());
-			writeC(_activeChar.isNoble() ? 1 : 0); // Symbol on char menu ctrl+I
-			writeC((_activeChar.isHero() || (_activeChar.isGM() && Config.GM_HERO_AURA) || _activeChar.getIsPVPHero()) ? 1 : 0); // Hero Aura
+			writeD(activeChar.getClanCrestLargeId());
+			writeC(activeChar.isNoble() ? 1 : 0); // Symbol on char menu ctrl+I
+			writeC((activeChar.isHero() || (activeChar.isGM() && Config.GM_HERO_AURA) || activeChar.getIsPVPHero()) ? 1 : 0); // Hero Aura
 			
-			writeC(_activeChar.isFishing() ? 1 : 0); // 0x01: Fishing Mode (Cant be undone by setting back to 0)
-			writeD(_activeChar.GetFishx());
-			writeD(_activeChar.GetFishy());
-			writeD(_activeChar.GetFishz());
+			writeC(activeChar.isFishing() ? 1 : 0); // 0x01: Fishing Mode (Cant be undone by setting back to 0)
+			writeD(activeChar.getFishx());
+			writeD(activeChar.getFishy());
+			writeD(activeChar.getFishz());
 			
-			writeD(_activeChar.getAppearance().getNameColor());
+			writeD(activeChar.getAppearance().getNameColor());
 			
-			writeD(0x00); // isRunning() as in UserInfo?
+			writeD(activeChar.getHeading());
 			
-			writeD(_activeChar.getPledgeClass());
+			writeD(activeChar.getPledgeClass());
 			writeD(0x00); // ??
 			
-			writeD(_activeChar.getAppearance().getTitleColor());
+			writeD(activeChar.getAppearance().getTitleColor());
 			
 			// writeD(0x00); // ??
 			
-			if (_activeChar.isCursedWeaponEquiped())
+			if (activeChar.isCursedWeaponEquiped())
 			{
-				writeD(CursedWeaponsManager.getInstance().getLevel(_activeChar.getCursedWeaponEquipedId()));
+				writeD(CursedWeaponsManager.getInstance().getLevel(activeChar.getCursedWeaponEquipedId()));
 			}
 			else
 			{
@@ -404,13 +369,9 @@ public class CharInfo extends L2GameServerPacket
 		}
 	}
 	
-	/*
-	 * (non-Javadoc)
-	 * @see com.l2jfrozen.gameserver.serverpackets.ServerBasePacket#getType()
-	 */
 	@Override
 	public String getType()
 	{
-		return _S__03_CHARINFO;
+		return "[S] 03 CharInfo";
 	}
 }

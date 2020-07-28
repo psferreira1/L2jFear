@@ -1,35 +1,13 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.communitybbs.Manager;
 
 import java.text.DateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
-
-import javolution.text.TextBuilder;
-import javolution.util.FastList;
-import javolution.util.FastMap;
 
 import com.l2jfrozen.gameserver.communitybbs.BB.Forum;
 import com.l2jfrozen.gameserver.communitybbs.BB.Post;
@@ -38,30 +16,32 @@ import com.l2jfrozen.gameserver.datatables.sql.ClanTable;
 import com.l2jfrozen.gameserver.model.actor.instance.L2PcInstance;
 import com.l2jfrozen.gameserver.network.serverpackets.ShowBoard;
 
+import javolution.text.TextBuilder;
+
 public class TopicBBSManager extends BaseBBSManager
 {
-	private final List<Topic> _table;
-	private final Map<Forum, Integer> _maxId;
-	private static TopicBBSManager _instance;
+	private final List<Topic> table;
+	private final Map<Forum, Integer> maxId;
+	private static TopicBBSManager instance;
 	
 	public static TopicBBSManager getInstance()
 	{
-		if (_instance == null)
+		if (instance == null)
 		{
-			_instance = new TopicBBSManager();
+			instance = new TopicBBSManager();
 		}
-		return _instance;
+		return instance;
 	}
 	
 	private TopicBBSManager()
 	{
-		_table = new FastList<>();
-		_maxId = new FastMap<>();
+		table = new ArrayList<>();
+		maxId = new HashMap<>();
 	}
 	
 	public void addTopic(final Topic tt)
 	{
-		_table.add(tt);
+		table.add(tt);
 	}
 	
 	/**
@@ -69,31 +49,35 @@ public class TopicBBSManager extends BaseBBSManager
 	 */
 	public void delTopic(final Topic topic)
 	{
-		_table.remove(topic);
+		table.remove(topic);
 	}
 	
 	public void setMaxID(final int id, final Forum f)
 	{
-		_maxId.remove(f);
-		_maxId.put(f, id);
+		maxId.remove(f);
+		maxId.put(f, id);
 	}
 	
 	public int getMaxID(final Forum f)
 	{
-		final Integer i = _maxId.get(f);
+		final Integer i = maxId.get(f);
 		
 		if (i == null)
+		{
 			return 0;
+		}
 		
 		return i;
 	}
 	
 	public Topic getTopicByID(final int idf)
 	{
-		for (final Topic t : _table)
+		for (final Topic t : table)
 		{
 			if (t.getID() == idf)
+			{
 				return t;
+			}
 		}
 		return null;
 	}

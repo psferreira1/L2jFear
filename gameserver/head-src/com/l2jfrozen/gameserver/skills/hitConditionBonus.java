@@ -1,23 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.skills;
 
 import java.io.File;
@@ -35,9 +15,9 @@ import com.l2jfrozen.gameserver.model.L2Character;
 /**
  * @author Nik
  */
-public class hitConditionBonus
+public class HitConditionBonus
 {
-	protected static final Logger LOGGER = Logger.getLogger(hitConditionBonus.class);
+	protected static final Logger LOGGER = Logger.getLogger(HitConditionBonus.class);
 	
 	private static int frontBonus = 0;
 	private static int sideBonus = 0;
@@ -46,41 +26,55 @@ public class hitConditionBonus
 	private static int lowBonus = 0;
 	private static int darkBonus = 0;
 	
-	// private static int rainBonus = 0;
+	public HitConditionBonus()
+	{
+		loadData();
+	}
 	
-	protected static double getConditionBonus(final L2Character attacker, final L2Character target)
+	public static double getConditionBonus(final L2Character attacker, final L2Character target)
 	{
 		double mod = 100;
+		
 		// Get high or low bonus
 		if (attacker.getZ() - target.getZ() > 50)
-			mod += hitConditionBonus.highBonus;
+		{
+			mod += HitConditionBonus.highBonus;
+		}
 		else if (attacker.getZ() - target.getZ() < -50)
-			mod += hitConditionBonus.lowBonus;
+		{
+			mod += HitConditionBonus.lowBonus;
+		}
 		
 		// Get weather bonus
 		if (GameTimeController.getInstance().isNowNight())
-			mod += hitConditionBonus.darkBonus;
-		// else if () No rain support yet.
-		// chance += hitConditionBonus.rainBonus;
+		{
+			mod += HitConditionBonus.darkBonus;
+		}
 		
 		// Get side bonus
 		if (attacker.isBehindTarget())
-			mod += hitConditionBonus.backBonus;
+		{
+			mod += HitConditionBonus.backBonus;
+		}
 		else if (attacker.isFrontTarget())
-			mod += hitConditionBonus.frontBonus;
+		{
+			mod += HitConditionBonus.frontBonus;
+		}
 		else
-			mod += hitConditionBonus.sideBonus;
+		{
+			mod += HitConditionBonus.sideBonus;
+		}
 		
 		// If (mod / 10) is less than 0, return 0, because we cant lower more than 100%.
 		return Math.max(mod / 100, 0);
 	}
 	
-	static
+	public void loadData()
 	{
 		final DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 		factory.setIgnoringElementContentWhitespace(true);
 		factory.setIgnoringComments(true);
-		final File file = new File(Config.DATAPACK_ROOT, "data/stats/hitConditionBonus.xml");
+		final File file = new File(Config.DATAPACK_ROOT, "data/xml/hitConditionBonus.xml");
 		Document doc = null;
 		
 		if (file.exists())
@@ -89,14 +83,14 @@ public class hitConditionBonus
 			{
 				doc = factory.newDocumentBuilder().parse(file);
 			}
-			catch (final Exception e)
+			catch (Exception e)
 			{
-				LOGGER.warn("[hitConditionBonus] Could not parse file: " + e.getMessage(), e);
+				LOGGER.warn("[HitConditionBonus] Could not parse file hitConditionBonus. ", e);
+				return;
 			}
 			
 			String name;
-			for (@SuppressWarnings("null")
-			Node list = doc.getFirstChild(); list != null; list = list.getNextSibling())
+			for (Node list = doc.getFirstChild(); list != null; list = list.getNextSibling())
 			{
 				if ("hitConditionBonus".equalsIgnoreCase(list.getNodeName()) || "list".equalsIgnoreCase(list.getNodeName()))
 				{
@@ -107,11 +101,13 @@ public class hitConditionBonus
 						try
 						{
 							if (cond.hasAttributes())
+							{
 								bonus = Integer.parseInt(cond.getAttributes().getNamedItem("val").getNodeValue());
+							}
 						}
 						catch (final Exception e)
 						{
-							LOGGER.warn("[hitConditionBonus] Could not parse condition: " + e.getMessage(), e);
+							LOGGER.warn("[HitConditionBonus] Could not parse condition: " + e.getMessage(), e);
 						}
 						finally
 						{
@@ -136,17 +132,24 @@ public class hitConditionBonus
 									darkBonus = bonus;
 									break;
 							}
-							// else if ("rain".equals(name))
-							// rainBonus = bonus;
 						}
-						
 					}
 				}
 			}
 		}
 		else
 		{
-			throw new Error("[hitConditionBonus] File not found: " + file.getName());
+			LOGGER.error("[HitConditionBonus] File not found " + file.getName());
 		}
+	}
+	
+	public static HitConditionBonus getInstance()
+	{
+		return SingletonHolder.instance;
+	}
+	
+	private static class SingletonHolder
+	{
+		protected static final HitConditionBonus instance = new HitConditionBonus();
 	}
 }

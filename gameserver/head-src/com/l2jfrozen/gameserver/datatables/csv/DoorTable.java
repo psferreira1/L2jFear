@@ -1,23 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.datatables.csv;
 
 import java.io.BufferedReader;
@@ -26,10 +6,9 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.LineNumberReader;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.StringTokenizer;
-
-import javolution.util.FastMap;
 
 import org.apache.log4j.Logger;
 
@@ -46,24 +25,23 @@ public class DoorTable
 {
 	private static Logger LOGGER = Logger.getLogger(DoorTable.class);
 	
-	private Map<Integer, L2DoorInstance> _staticItems;
+	private Map<Integer, L2DoorInstance> staticItems;
 	
-	private static DoorTable _instance;
+	private static DoorTable instance;
 	
 	public static DoorTable getInstance()
 	{
-		if (_instance == null)
+		if (instance == null)
 		{
-			_instance = new DoorTable();
+			instance = new DoorTable();
 		}
 		
-		return _instance;
+		return instance;
 	}
 	
 	public DoorTable()
 	{
-		_staticItems = new FastMap<>();
-		// parseData();
+		staticItems = new HashMap<>();
 	}
 	
 	public void reloadAll()
@@ -73,25 +51,18 @@ public class DoorTable
 	
 	public void respawn()
 	{
-		// L2DoorInstance[] currentDoors = getDoors();
-		_staticItems = null;
-		_instance = new DoorTable();
+		staticItems = null;
+		instance = new DoorTable();
 	}
 	
 	public void parseData()
 	{
-		FileReader reader = null;
-		BufferedReader buff = null;
-		LineNumberReader lnr = null;
+		File doorData = new File(Config.DATAPACK_ROOT, "data/csv/door.csv");
 		
-		try
+		try (FileReader reader = new FileReader(doorData);
+			BufferedReader buff = new BufferedReader(reader);
+			LineNumberReader lnr = new LineNumberReader(buff))
 		{
-			final File doorData = new File(Config.DATAPACK_ROOT, "data/door.csv");
-			
-			reader = new FileReader(doorData);
-			buff = new BufferedReader(reader);
-			lnr = new LineNumberReader(buff);
-			
 			String line = null;
 			LOGGER.info("Searching clan halls doors:");
 			
@@ -103,13 +74,15 @@ public class DoorTable
 				}
 				
 				final L2DoorInstance door = parseList(line);
-				_staticItems.put(door.getDoorId(), door);
+				staticItems.put(door.getDoorId(), door);
 				door.spawnMe(door.getX(), door.getY(), door.getZ());
 				final ClanHall clanhall = ClanHallManager.getInstance().getNearbyClanHall(door.getX(), door.getY(), 500);
+				
 				if (clanhall != null)
 				{
 					clanhall.getDoors().add(door);
 					door.setClanHall(clanhall);
+					
 					if (Config.DEBUG)
 					{
 						LOGGER.warn("door " + door.getDoorName() + " attached to ch " + clanhall.getName());
@@ -118,56 +91,17 @@ public class DoorTable
 				
 			}
 			
-			LOGGER.info("DoorTable: Loaded " + _staticItems.size() + " Door Templates.");
+			LOGGER.info("DoorTable: Loaded " + staticItems.size() + " Door Templates.");
 		}
-		catch (final FileNotFoundException e)
+		catch (FileNotFoundException e)
 		{
-			if (Config.ENABLE_ALL_EXCEPTIONS)
-				e.printStackTrace();
-			
-			_initialized = false;
-			LOGGER.warn("door.csv is missing in data folder");
+			initialized = false;
+			LOGGER.warn("DootTable.parseData: door.csv file is missing in gameserver/data/csv/ folder");
 		}
-		catch (final IOException e)
+		catch (IOException e)
 		{
-			if (Config.ENABLE_ALL_EXCEPTIONS)
-				e.printStackTrace();
-			
-			_initialized = false;
-			LOGGER.warn("error while creating door table " + e);
-		}
-		finally
-		{
-			if (lnr != null)
-				try
-				{
-					lnr.close();
-				}
-				catch (final Exception e1)
-				{
-					e1.printStackTrace();
-				}
-			
-			if (buff != null)
-				try
-				{
-					buff.close();
-				}
-				catch (final Exception e1)
-				{
-					e1.printStackTrace();
-				}
-			
-			if (reader != null)
-				try
-				{
-					reader.close();
-				}
-				catch (final Exception e1)
-				{
-					e1.printStackTrace();
-				}
-			
+			initialized = false;
+			LOGGER.error("DootTable.parseData : Error while creating door table. ", e);
 		}
 	}
 	
@@ -291,7 +225,7 @@ public class DoorTable
 			LOGGER.error("Error in door data, ID:" + id, e);
 		}
 		door.setCurrentHpMp(door.getMaxHp(), door.getMaxMp());
-		door.setOpen(autoOpen);
+		door.setIsOpen(autoOpen);
 		door.setXYZInvisible(x, y, z);
 		
 		return door;
@@ -299,25 +233,25 @@ public class DoorTable
 	
 	public boolean isInitialized()
 	{
-		return _initialized;
+		return initialized;
 	}
 	
-	private boolean _initialized = true;
+	private boolean initialized = true;
 	
 	public L2DoorInstance getDoor(final Integer id)
 	{
-		return _staticItems.get(id);
+		return staticItems.get(id);
 	}
 	
 	public void putDoor(final L2DoorInstance door)
 	{
-		_staticItems.put(door.getDoorId(), door);
+		staticItems.put(door.getDoorId(), door);
 	}
 	
 	public L2DoorInstance[] getDoors()
 	{
-		final L2DoorInstance[] _allTemplates = _staticItems.values().toArray(new L2DoorInstance[_staticItems.size()]);
-		return _allTemplates;
+		final L2DoorInstance[] allTemplates = staticItems.values().toArray(new L2DoorInstance[staticItems.size()]);
+		return allTemplates;
 	}
 	
 	/**
@@ -326,6 +260,7 @@ public class DoorTable
 	public void checkAutoOpen()
 	{
 		for (final L2DoorInstance doorInst : getDoors())
+		{
 			// Garden of Eva (every 7 minutes)
 			if (doorInst.getDoorName().startsWith("goe"))
 			{
@@ -341,6 +276,7 @@ public class DoorTable
 			{
 				doorInst.setAutoActionDelay(1200000);
 			}
+		}
 	}
 	
 	public boolean checkIfDoorsBetween(final Node start, final Node end)
@@ -358,7 +294,9 @@ public class DoorTable
 		catch (final Exception e)
 		{
 			if (Config.ENABLE_ALL_EXCEPTIONS)
+			{
 				e.printStackTrace();
+			}
 			
 			return false;
 		}
@@ -386,7 +324,7 @@ public class DoorTable
 					// phase 3, basically only z remains but now we calculate it with another formula (by rage)
 					// in some cases the direct line check (only) in the beginning isn't sufficient,
 					// when char z changes a lot along the path
-					if (doorInst.getStatus().getCurrentHp() > 0 && !doorInst.getOpen())
+					if (doorInst.getStatus().getCurrentHp() > 0 && !doorInst.isOpen())
 					{
 						final int px1 = doorInst.getXMin();
 						final int py1 = doorInst.getYMin();
@@ -402,8 +340,10 @@ public class DoorTable
 						int dk;
 						
 						if ((dk = (doorInst.getA() * l + doorInst.getB() * m + doorInst.getC() * n)) == 0)
+						{
 							continue; // Parallel
-							
+						}
+						
 						final float p = (float) (doorInst.getA() * x + doorInst.getB() * y + doorInst.getC() * z + doorInst.getD()) / (float) dk;
 						
 						final int fx = (int) (x - l * p);
@@ -414,7 +354,9 @@ public class DoorTable
 						{
 							
 							if (((fx >= px1 && fx <= px2) || (fx >= px2 && fx <= px1)) && ((fy >= py1 && fy <= py2) || (fy >= py2 && fy <= py1)) && ((fz >= pz1 && fz <= pz2) || (fz >= pz2 && fz <= pz1)))
+							{
 								return true; // Door between
+							}
 						}
 					}
 				}

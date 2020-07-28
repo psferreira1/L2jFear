@@ -1,23 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.network.serverpackets;
 
 import com.l2jfrozen.gameserver.datatables.sql.ClanTable;
@@ -35,88 +15,93 @@ import com.l2jfrozen.gameserver.model.actor.instance.L2PcInstance;
  */
 public class PledgeShowMemberListAll extends L2GameServerPacket
 {
-	private static final String _S__68_PLEDGESHOWMEMBERLISTALL = "[S] 53 PledgeShowMemberListAll";
-	private final L2Clan _clan;
-	private final L2PcInstance _activeChar;
-	private final L2ClanMember[] _members;
-	private int _pledgeType;
+	private final L2Clan clan;
+	private final L2PcInstance activeChar;
+	private final L2ClanMember[] members;
+	private int pledgeType;
 	
 	// private static Logger LOGGER = Logger.getLogger(PledgeShowMemberListAll.class);
 	
 	public PledgeShowMemberListAll(final L2Clan clan, final L2PcInstance activeChar)
 	{
-		_clan = clan;
-		_activeChar = activeChar;
-		_members = _clan.getMembers();
+		this.clan = clan;
+		this.activeChar = activeChar;
+		members = this.clan.getMembers();
 	}
 	
 	@Override
 	protected final void writeImpl()
 	{
 		
-		_pledgeType = 0;
+		pledgeType = 0;
 		writePledge(0);
 		
-		final SubPledge[] subPledge = _clan.getAllSubPledges();
+		final SubPledge[] subPledge = clan.getAllSubPledges();
 		for (final SubPledge element : subPledge)
 		{
-			_activeChar.sendPacket(new PledgeReceiveSubPledgeCreated(element));
+			activeChar.sendPacket(new PledgeReceiveSubPledgeCreated(element));
 		}
 		
-		for (final L2ClanMember m : _members)
+		for (final L2ClanMember m : members)
 		{
 			if (m.getPledgeType() == 0)
 			{
 				continue;
 			}
-			_activeChar.sendPacket(new PledgeShowMemberListAdd(m));
+			activeChar.sendPacket(new PledgeShowMemberListAdd(m));
 		}
 		
 		// unless this is sent sometimes, the client doesn't recognise the player as the leader
-		_activeChar.sendPacket(new UserInfo(_activeChar));
+		activeChar.sendPacket(new UserInfo(activeChar));
 		
 	}
 	
 	void writePledge(final int mainOrSubpledge)
 	{
-		final int TOP = ClanTable.getInstance().getTopRate(_clan.getClanId());
+		final int TOP = ClanTable.getInstance().getTopRate(clan.getClanId());
 		
 		writeC(0x53);
 		
 		writeD(mainOrSubpledge); // c5 main clan 0 or any subpledge 1?
-		writeD(_clan.getClanId());
-		writeD(_pledgeType); // c5 - possibly pledge type?
-		writeS(_clan.getName());
-		writeS(_clan.getLeaderName());
+		writeD(clan.getClanId());
+		writeD(pledgeType); // c5 - possibly pledge type?
+		writeS(clan.getName());
+		writeS(clan.getLeaderName());
 		
-		writeD(_clan.getCrestId()); // crest id .. is used again
-		writeD(_clan.getLevel());
-		writeD(_clan.getHasCastle());
-		writeD(_clan.getHasHideout());
+		writeD(clan.getCrestId()); // crest id .. is used again
+		writeD(clan.getLevel());
+		writeD(clan.getCastleId());
+		writeD(clan.getHasHideout());
 		writeD(TOP);
-		writeD(_clan.getReputationScore()); // was activechar lvl
+		writeD(clan.getReputationScore()); // was activechar lvl
 		writeD(0); // 0
 		writeD(0); // 0
 		
-		writeD(_clan.getAllyId());
-		writeS(_clan.getAllyName());
-		writeD(_clan.getAllyCrestId());
-		writeD(_clan.isAtWar());
-		writeD(_clan.getSubPledgeMembersCount(_pledgeType));
+		writeD(clan.getAllyId());
+		writeS(clan.getAllyName());
+		writeD(clan.getAllyCrestId());
+		writeD(clan.isAtWar());
+		writeD(clan.getSubPledgeMembersCount(pledgeType));
 		
 		int yellow;
-		for (final L2ClanMember m : _members)
+		for (final L2ClanMember m : members)
 		{
-			if (m.getPledgeType() != _pledgeType)
+			if (m.getPledgeType() != pledgeType)
 			{
 				continue;
 			}
 			if (m.getPledgeType() == -1)
+			{
 				yellow = m.getSponsor() != 0 ? 1 : 0;
+			}
 			else if (m.getPlayerInstance() != null)
+			{
 				yellow = m.getPlayerInstance().isClanLeader() ? 1 : 0;
+			}
 			else
+			{
 				yellow = 0;
+			}
 			writeS(m.getName());
 			writeD(m.getLevel());
 			writeD(m.getClassId());
@@ -127,14 +112,10 @@ public class PledgeShowMemberListAll extends L2GameServerPacket
 		}
 	}
 	
-	/*
-	 * (non-Javadoc)
-	 * @see com.l2jfrozen.gameserver.serverpackets.ServerBasePacket#getType()
-	 */
 	@Override
 	public String getType()
 	{
-		return _S__68_PLEDGESHOWMEMBERLISTALL;
+		return "[S] 53 PledgeShowMemberListAll";
 	}
 	
 }

@@ -1,23 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.network.serverpackets;
 
 import com.l2jfrozen.gameserver.model.L2Character;
@@ -28,41 +8,36 @@ import com.l2jfrozen.gameserver.model.L2Character;
  */
 public class TargetUnselected extends L2GameServerPacket
 {
-	private static final String _S__3A_TARGETUNSELECTED = "[S] 2A TargetUnselected";
-	private final int _targetObjId;
-	private final int _x;
-	private final int _y;
-	private final int _z;
+	private final int targetObjId;
+	private final int x;
+	private final int y;
+	private final int z;
 	
 	/**
 	 * @param character
 	 */
 	public TargetUnselected(final L2Character character)
 	{
-		_targetObjId = character.getObjectId();
-		_x = character.getX();
-		_y = character.getY();
-		_z = character.getZ();
+		targetObjId = character.getObjectId();
+		x = character.getX();
+		y = character.getY();
+		z = character.getZ();
 	}
 	
 	@Override
 	protected final void writeImpl()
 	{
 		writeC(0x2a);
-		writeD(_targetObjId);
-		writeD(_x);
-		writeD(_y);
-		writeD(_z);
+		writeD(targetObjId);
+		writeD(x);
+		writeD(y);
+		writeD(z);
 		// writeD(_target.getTargetId()); //?? probably not used in client
 	}
 	
-	/*
-	 * (non-Javadoc)
-	 * @see com.l2jfrozen.gameserver.serverpackets.ServerBasePacket#getType()
-	 */
 	@Override
 	public String getType()
 	{
-		return _S__3A_TARGETUNSELECTED;
+		return "[S] 2A TargetUnselected";
 	}
 }

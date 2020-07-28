@@ -1,23 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.handler.itemhandlers;
 
 import com.l2jfrozen.Config;
@@ -37,7 +17,6 @@ import com.l2jfrozen.gameserver.model.actor.instance.L2PlayableInstance;
 import com.l2jfrozen.gameserver.model.entity.event.CTF;
 import com.l2jfrozen.gameserver.model.entity.event.DM;
 import com.l2jfrozen.gameserver.model.entity.event.TvT;
-import com.l2jfrozen.gameserver.model.entity.event.VIP;
 import com.l2jfrozen.gameserver.network.SystemMessageId;
 import com.l2jfrozen.gameserver.network.serverpackets.MagicSkillUser;
 import com.l2jfrozen.gameserver.network.serverpackets.SetupGauge;
@@ -90,20 +69,20 @@ public class ScrollOfEscape implements IItemHandler
 		7619
 	};
 	
-	/*
-	 * (non-Javadoc)
-	 * @see com.l2jfrozen.gameserver.handler.IItemHandler#useItem(com.l2jfrozen.gameserver.model.L2PcInstance, com.l2jfrozen.gameserver.model.L2ItemInstance)
-	 */
 	@Override
 	public void useItem(final L2PlayableInstance playable, final L2ItemInstance item)
 	{
 		if (!(playable instanceof L2PcInstance))
+		{
 			return;
+		}
 		
 		L2PcInstance activeChar = (L2PcInstance) playable;
 		
 		if (checkConditions(activeChar))
+		{
 			return;
+		}
 		
 		// Check to see if player is sitting
 		if (activeChar.isSitting())
@@ -113,37 +92,25 @@ public class ScrollOfEscape implements IItemHandler
 		}
 		
 		// if(activeChar._inEventTvT && TvT._started)
-		if (activeChar._inEventTvT && TvT.is_started())
+		if (activeChar.inEventTvT && TvT.isStarted())
 		{
 			activeChar.sendMessage("You can't use Scroll of Escape in TvT.");
 			return;
 		}
 		
 		// if(activeChar._inEventDM && DM._started)
-		if (activeChar._inEventDM && DM.is_started())
+		if (activeChar.inEventDM && DM.isStarted())
 		{
 			activeChar.sendMessage("You can't use Scroll of Escape in DM.");
 			return;
 		}
 		
 		// if(activeChar._inEventCTF && CTF._started)
-		if (activeChar._inEventCTF && CTF.is_started())
+		if (activeChar.inEventCTF && CTF.isStarted())
 		{
 			activeChar.sendMessage("You can't use Scroll of Escape in CTF.");
 			return;
 		}
-		
-		// if(activeChar._inEventVIP && VIP._started)
-		if (activeChar._inEventVIP && VIP._started)
-		{
-			activeChar.sendMessage("You can't use Scroll of Escape in VIP.");
-			return;
-		}
-		
-		// not usefull
-		/*
-		 * if(GrandBossManager.getInstance().getZone(activeChar) != null && !activeChar.isGM()) { activeChar.sendMessage("You Can't Use SOE In Grand boss zone!"); return; }
-		 */
 		
 		// Check to see if player is on olympiad
 		if (activeChar.isInOlympiadMode())
@@ -198,7 +165,9 @@ public class ScrollOfEscape implements IItemHandler
 		final int escapeSkill = itemId == 1538 || itemId == 5858 || itemId == 5859 || itemId == 3958 || itemId == 10130 ? 2036 : 2013;
 		
 		if (!activeChar.destroyItem("Consume", item.getObjectId(), 1, null, false))
+		{
 			return;
+		}
 		
 		activeChar.disableAllSkills();
 		
@@ -233,151 +202,161 @@ public class ScrollOfEscape implements IItemHandler
 	
 	static class EscapeFinalizer implements Runnable
 	{
-		private final L2PcInstance _activeChar;
-		private final int _itemId;
+		private final L2PcInstance activeChar;
+		private final int itemId;
 		
 		EscapeFinalizer(final L2PcInstance activeChar, final int itemId)
 		{
-			_activeChar = activeChar;
-			_itemId = itemId;
+			this.activeChar = activeChar;
+			this.itemId = itemId;
 		}
 		
 		@Override
 		public void run()
 		{
-			if (_activeChar.isDead())
+			if (activeChar.isDead())
+			{
 				return;
+			}
 			
-			_activeChar.enableAllSkills();
+			activeChar.enableAllSkills();
 			
-			_activeChar.setIsIn7sDungeon(false);
+			activeChar.setIsIn7sDungeon(false);
 			
 			try
 			{
 				
 				// escape to castle if own's one
-				if ((_itemId == 1830 || _itemId == 5859))
+				if ((itemId == 1830 || itemId == 5859))
 				{
-					if (CastleManager.getInstance().getCastleByOwner(_activeChar.getClan()) != null)
-						_activeChar.teleToLocation(MapRegionTable.TeleportWhereType.Castle);
+					if (CastleManager.getInstance().getCastleByOwner(activeChar.getClan()) != null)
+					{
+						activeChar.teleToLocation(MapRegionTable.TeleportWhereType.Castle);
+					}
 					else
-						_activeChar.teleToLocation(MapRegionTable.TeleportWhereType.Town);
+					{
+						activeChar.teleToLocation(MapRegionTable.TeleportWhereType.Town);
+					}
 				}
 				// escape to fortress if own's one if own's one
-				else if ((_itemId == 1830 || _itemId == 5859))
+				else if ((itemId == 1830 || itemId == 5859))
 				{
-					if (FortManager.getInstance().getFortByOwner(_activeChar.getClan()) != null)
-						_activeChar.teleToLocation(MapRegionTable.TeleportWhereType.Fortress);
+					if (FortManager.getInstance().getFortByOwner(activeChar.getClan()) != null)
+					{
+						activeChar.teleToLocation(MapRegionTable.TeleportWhereType.Fortress);
+					}
 					else
-						_activeChar.teleToLocation(MapRegionTable.TeleportWhereType.Town);
+					{
+						activeChar.teleToLocation(MapRegionTable.TeleportWhereType.Town);
+					}
 				}
-				else if ((_itemId == 1829 || _itemId == 5858) && _activeChar.getClan() != null && ClanHallManager.getInstance().getClanHallByOwner(_activeChar.getClan()) != null) // escape to clan hall if own's one
+				else if ((itemId == 1829 || itemId == 5858) && activeChar.getClan() != null && ClanHallManager.getInstance().getClanHallByOwner(activeChar.getClan()) != null) // escape to clan hall if own's one
 				{
-					_activeChar.teleToLocation(MapRegionTable.TeleportWhereType.ClanHall);
+					activeChar.teleToLocation(MapRegionTable.TeleportWhereType.ClanHall);
 				}
-				else if (_itemId == 5858) // do nothing
+				else if (itemId == 5858) // do nothing
 				{
-					_activeChar.sendPacket(new SystemMessage(SystemMessageId.CLAN_HAS_NO_CLAN_HALL));
+					activeChar.sendPacket(new SystemMessage(SystemMessageId.CLAN_HAS_NO_CLAN_HALL));
 					return;
 				}
-				else if (_activeChar.getKarma() > 0 && Config.ALT_KARMA_TELEPORT_TO_FLORAN)
+				else if (activeChar.getKarma() > 0 && Config.ALT_KARMA_TELEPORT_TO_FLORAN)
 				{
-					_activeChar.teleToLocation(17836, 170178, -3507, true); // Floran
+					activeChar.teleToLocation(17836, 170178, -3507, true); // Floran
 					return;
 				}
 				else
 				{
-					if (_itemId < 7117)
+					if (itemId < 7117)
 					{
-						_activeChar.teleToLocation(MapRegionTable.TeleportWhereType.Town);
+						activeChar.teleToLocation(MapRegionTable.TeleportWhereType.Town);
 					}
 					else
 					{
-						switch (_itemId)
+						switch (itemId)
 						{
 							case 7117:
-								_activeChar.teleToLocation(-84318, 244579, -3730, true); // Talking Island
+								activeChar.teleToLocation(-84318, 244579, -3730, true); // Talking Island
 								break;
 							case 7554:
-								_activeChar.teleToLocation(-84318, 244579, -3730, true); // Talking Island quest scroll
+								activeChar.teleToLocation(-84318, 244579, -3730, true); // Talking Island quest scroll
 								break;
 							case 7118:
-								_activeChar.teleToLocation(46934, 51467, -2977, true); // Elven Village
+								activeChar.teleToLocation(46934, 51467, -2977, true); // Elven Village
 								break;
 							case 7555:
-								_activeChar.teleToLocation(46934, 51467, -2977, true); // Elven Village quest scroll
+								activeChar.teleToLocation(46934, 51467, -2977, true); // Elven Village quest scroll
 								break;
 							case 7119:
-								_activeChar.teleToLocation(9745, 15606, -4574, true); // Dark Elven Village
+								activeChar.teleToLocation(9745, 15606, -4574, true); // Dark Elven Village
 								break;
 							case 7556:
-								_activeChar.teleToLocation(9745, 15606, -4574, true); // Dark Elven Village quest scroll
+								activeChar.teleToLocation(9745, 15606, -4574, true); // Dark Elven Village quest scroll
 								break;
 							case 7120:
-								_activeChar.teleToLocation(-44836, -112524, -235, true); // Orc Village
+								activeChar.teleToLocation(-44836, -112524, -235, true); // Orc Village
 								break;
 							case 7557:
-								_activeChar.teleToLocation(-44836, -112524, -235, true); // Orc Village quest scroll
+								activeChar.teleToLocation(-44836, -112524, -235, true); // Orc Village quest scroll
 								break;
 							case 7121:
-								_activeChar.teleToLocation(115113, -178212, -901, true); // Dwarven Village
+								activeChar.teleToLocation(115113, -178212, -901, true); // Dwarven Village
 								break;
 							case 7558:
-								_activeChar.teleToLocation(115113, -178212, -901, true); // Dwarven Village quest scroll
+								activeChar.teleToLocation(115113, -178212, -901, true); // Dwarven Village quest scroll
 								break;
 							case 7122:
-								_activeChar.teleToLocation(-80826, 149775, -3043, true); // Gludin Village
+								activeChar.teleToLocation(-80826, 149775, -3043, true); // Gludin Village
 								break;
 							case 7123:
-								_activeChar.teleToLocation(-12678, 122776, -3116, true); // Gludio Castle Town
+								activeChar.teleToLocation(-12678, 122776, -3116, true); // Gludio Castle Town
 								break;
 							case 7124:
-								_activeChar.teleToLocation(15670, 142983, -2705, true); // Dion Castle Town
+								activeChar.teleToLocation(15670, 142983, -2705, true); // Dion Castle Town
 								break;
 							case 7125:
-								_activeChar.teleToLocation(17836, 170178, -3507, true); // Floran
+								activeChar.teleToLocation(17836, 170178, -3507, true); // Floran
 								break;
 							case 7126:
-								_activeChar.teleToLocation(83400, 147943, -3404, true); // Giran Castle Town
+								activeChar.teleToLocation(83400, 147943, -3404, true); // Giran Castle Town
 								break;
 							case 7559:
-								_activeChar.teleToLocation(83400, 147943, -3404, true); // Giran Castle Town quest scroll
+								activeChar.teleToLocation(83400, 147943, -3404, true); // Giran Castle Town quest scroll
 								break;
 							case 7127:
-								_activeChar.teleToLocation(105918, 109759, -3207, true); // Hardin's Private Academy
+								activeChar.teleToLocation(105918, 109759, -3207, true); // Hardin's Private Academy
 								break;
 							case 7128:
-								_activeChar.teleToLocation(111409, 219364, -3545, true); // Heine
+								activeChar.teleToLocation(111409, 219364, -3545, true); // Heine
 								break;
 							case 7129:
-								_activeChar.teleToLocation(82956, 53162, -1495, true); // Oren Castle Town
+								activeChar.teleToLocation(82956, 53162, -1495, true); // Oren Castle Town
 								break;
 							case 7130:
-								_activeChar.teleToLocation(85348, 16142, -3699, true); // Ivory Tower
+								activeChar.teleToLocation(85348, 16142, -3699, true); // Ivory Tower
 								break;
 							case 7131:
-								_activeChar.teleToLocation(116819, 76994, -2714, true); // Hunters Village
+								activeChar.teleToLocation(116819, 76994, -2714, true); // Hunters Village
 								break;
 							case 7132:
-								_activeChar.teleToLocation(146331, 25762, -2018, true); // Aden Castle Town
+								activeChar.teleToLocation(146331, 25762, -2018, true); // Aden Castle Town
 								break;
 							case 7133:
-								_activeChar.teleToLocation(147928, -55273, -2734, true); // Goddard Castle Town
+								activeChar.teleToLocation(147928, -55273, -2734, true); // Goddard Castle Town
 								break;
 							case 7134:
-								_activeChar.teleToLocation(43799, -47727, -798, true); // Rune Castle Town
+								activeChar.teleToLocation(43799, -47727, -798, true); // Rune Castle Town
 								break;
 							case 7135:
-								_activeChar.teleToLocation(87331, -142842, -1317, true); // Schuttgart Castle Town
+								activeChar.teleToLocation(87331, -142842, -1317, true); // Schuttgart Castle Town
 								break;
 							case 7618:
-								_activeChar.teleToLocation(149864, -81062, -5618, true); // Ketra Orc Village
+								activeChar.teleToLocation(149864, -81062, -5618, true); // Ketra Orc Village
 								break;
 							case 7619:
-								_activeChar.teleToLocation(108275, -53785, -2524, true); // Varka Silenos Village
+								activeChar.teleToLocation(108275, -53785, -2524, true); // Varka Silenos Village
 								break;
 							default:
-								_activeChar.teleToLocation(MapRegionTable.TeleportWhereType.Town);
+								activeChar.teleToLocation(MapRegionTable.TeleportWhereType.Town);
 								break;
 						}
 					}
@@ -386,7 +365,9 @@ public class ScrollOfEscape implements IItemHandler
 			catch (final Throwable e)
 			{
 				if (Config.ENABLE_ALL_EXCEPTIONS)
+				{
 					e.printStackTrace();
+				}
 			}
 		}
 	}

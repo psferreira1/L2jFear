@@ -26,12 +26,18 @@ public class ClanGate implements ISkillHandler
 	public void useSkill(final L2Character activeChar, final L2Skill skill, final L2Object[] targets)
 	{
 		L2PcInstance player = null;
+		
 		if (activeChar instanceof L2PcInstance)
+		{
 			player = (L2PcInstance) activeChar;
+		}
 		else
+		{
 			return;
+		}
+		
 		// need more checking...
-		if (player.isInFunEvent() || player.isInsideZone(L2Character.ZONE_NOLANDING) || player.isInOlympiadMode() || player.isInsideZone(L2Character.ZONE_PVP) || GrandBossManager.getInstance().getZone(player) != null)
+		if (player.isInFunEvent() || player.isDead() || player.isAlikeDead() || player.isInsideZone(L2Character.ZONE_NOLANDING) || player.isInOlympiadMode() || player.isInsideZone(L2Character.ZONE_PVP) || GrandBossManager.getInstance().getZone(player) != null)
 		{
 			player.sendMessage("Cannot open the portal here.");
 			return;
@@ -57,7 +63,9 @@ public class ClanGate implements ISkillHandler
 		
 		final L2Effect effect = player.getFirstEffect(skill.getId());
 		if (effect != null && effect.isSelfEffect())
+		{
 			effect.exit(false);
+		}
 		skill.getEffectsSelf(player);
 		
 		player = null;

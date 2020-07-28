@@ -1,23 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.handler.admincommandhandlers;
 
 import java.util.StringTokenizer;
@@ -37,7 +17,8 @@ import com.l2jfrozen.gameserver.network.serverpackets.SystemMessage;
 /**
  * <B>Pledge Manipulation:</B><BR>
  * <LI>With target in a character without clan:<BR>
- * //pledge create clanname <LI>With target in a clan leader:<BR>
+ * //pledge create clanname
+ * <LI>With target in a clan leader:<BR>
  * //pledge info<BR>
  * //pledge dismiss<BR>
  * //pledge setlevel level<BR>
@@ -69,17 +50,14 @@ public class AdminPledge implements IAdminCommandHandler
 	@Override
 	public boolean useAdminCommand(final String command, final L2PcInstance activeChar)
 	{
-		/*
-		 * if(!AdminCommandAccessRights.getInstance().hasAccess(command, activeChar.getAccessLevel())){ return false; } if(Config.GMAUDIT) { Logger _logAudit = Logger.getLogger("gmaudit"); LogRecord record = new LogRecord(Level.INFO, command); record.setParameters(new Object[] { "GM: " +
-		 * activeChar.getName(), " to target [" + activeChar.getTarget() + "] " }); _logAudit.LOGGER(record); }
-		 */
-		
 		final StringTokenizer st = new StringTokenizer(command);
 		
 		final CommandEnum comm = CommandEnum.valueOf(st.nextToken());
 		
 		if (comm == null)
+		{
 			return false;
+		}
 		
 		switch (comm)
 		{
@@ -133,7 +111,7 @@ public class AdminPledge implements IAdminCommandHandler
 				{
 					switch (action)
 					{
-					
+						
 						case create:
 						{
 							
@@ -272,7 +250,9 @@ public class AdminPledge implements IAdminCommandHandler
 					}
 				}
 				if (Config.DEBUG)
+				{
 					LOGGER.debug("fixme:action is null");
+				}
 			}
 			default:
 			{

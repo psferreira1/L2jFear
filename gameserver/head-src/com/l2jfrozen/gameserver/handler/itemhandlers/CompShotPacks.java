@@ -1,23 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.handler.itemhandlers;
 
 import com.l2jfrozen.gameserver.handler.IItemHandler;
@@ -49,16 +29,18 @@ public class CompShotPacks implements IItemHandler
 		5253,
 		5254,
 		5255
-	// SS
-	// 5140, 5141, 5142, 5143, 5144, 5145, /**/ 5256, 5257, 5258, 5259, 5260, 5261, // SpS
-	// 5146, 5147, 5148, 5149, 5150, 5151, /**/ 5262, 5263, 5264, 5265, 5266, 5267 // BSpS
+		// SS
+		// 5140, 5141, 5142, 5143, 5144, 5145, /**/ 5256, 5257, 5258, 5259, 5260, 5261, // SpS
+		// 5146, 5147, 5148, 5149, 5150, 5151, /**/ 5262, 5263, 5264, 5265, 5266, 5267 // BSpS
 	};
 	
 	@Override
 	public void useItem(final L2PlayableInstance playable, final L2ItemInstance item)
 	{
 		if (!(playable instanceof L2PcInstance))
+		{
 			return;
+		}
 		
 		L2PcInstance activeChar = (L2PcInstance) playable;
 		

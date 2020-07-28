@@ -1,68 +1,46 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.network.serverpackets;
 
 import java.util.List;
 
 public class ShowBoard extends L2GameServerPacket
 {
-	private static final String _S__6E_SHOWBOARD = "[S] 6e ShowBoard";
-	
-	private final String _htmlCode;
-	private final String _id;
-	private List<String> _arg;
+	private final String htmlCode;
+	private final String id;
+	private List<String> arg;
 	
 	public ShowBoard(final String htmlCode, final String id)
 	{
-		_id = id;
-		_htmlCode = htmlCode; // html code must not exceed 8192 bytes
+		this.id = id;
+		this.htmlCode = htmlCode; // html code must not exceed 8192 bytes
 	}
 	
 	public ShowBoard(final List<String> arg)
 	{
-		_id = "1002";
-		_htmlCode = null;
-		_arg = arg;
+		id = "1002";
+		htmlCode = null;
+		this.arg = arg;
 		
 	}
 	
 	private byte[] get1002()
 	{
-		int len = _id.getBytes().length * 2 + 2;
-		for (final String arg : _arg)
+		int len = id.getBytes().length * 2 + 2;
+		for (final String arg : arg)
 		{
 			len += (arg.getBytes().length + 4) * 2;
 		}
 		final byte data[] = new byte[len];
 		int i = 0;
-		for (int j = 0; j < _id.getBytes().length; j++, i += 2)
+		for (int j = 0; j < id.getBytes().length; j++, i += 2)
 		{
-			data[i] = _id.getBytes()[j];
+			data[i] = id.getBytes()[j];
 			data[i + 1] = 0;
 		}
 		data[i] = 8;
 		i++;
 		data[i] = 0;
 		i++;
-		for (final String arg : _arg)
+		for (final String arg : arg)
 		{
 			for (int j = 0; j < arg.getBytes().length; j++, i += 2)
 			{
@@ -94,19 +72,19 @@ public class ShowBoard extends L2GameServerPacket
 		writeS("bypass _bbsmail"); // mail
 		writeS("bypass _bbsfriends"); // friends
 		writeS("bypass bbs_add_fav"); // add fav.
-		if (!_id.equals("1002"))
+		if (!id.equals("1002"))
 		{
 			// getBytes is a very costy operation, and should only be called once
 			byte htmlBytes[] = null;
-			if (_htmlCode != null)
+			if (htmlCode != null)
 			{
-				htmlBytes = _htmlCode.getBytes();
+				htmlBytes = htmlCode.getBytes();
 			}
-			final byte data[] = new byte[2 + 2 + 2 + _id.getBytes().length * 2 + 2 * (htmlBytes != null ? htmlBytes.length : 0)];
+			final byte data[] = new byte[2 + 2 + 2 + id.getBytes().length * 2 + 2 * (htmlBytes != null ? htmlBytes.length : 0)];
 			int i = 0;
-			for (int j = 0; j < _id.getBytes().length; j++, i += 2)
+			for (int j = 0; j < id.getBytes().length; j++, i += 2)
 			{
-				data[i] = _id.getBytes()[j];
+				data[i] = id.getBytes()[j];
 				data[i + 1] = 0;
 			}
 			data[i] = 8;
@@ -133,13 +111,9 @@ public class ShowBoard extends L2GameServerPacket
 		}
 	}
 	
-	/*
-	 * (non-Javadoc)
-	 * @see com.l2jfrozen.gameserver.serverpackets.ServerBasePacket#getType()
-	 */
 	@Override
 	public String getType()
 	{
-		return _S__6E_SHOWBOARD;
+		return "[S] 6e ShowBoard";
 	}
 }

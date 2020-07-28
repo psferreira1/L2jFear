@@ -1,23 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.network.clientpackets;
 
 import com.l2jfrozen.gameserver.ai.CtrlIntention;
@@ -29,22 +9,24 @@ import com.l2jfrozen.gameserver.network.serverpackets.ActionFailed;
 
 public final class RequestPetGetItem extends L2GameClientPacket
 {
-	private int _objectId;
+	private int objectId;
 	
 	@Override
 	protected void readImpl()
 	{
-		_objectId = readD();
+		objectId = readD();
 	}
 	
 	@Override
 	protected void runImpl()
 	{
 		final L2World world = L2World.getInstance();
-		final L2ItemInstance item = (L2ItemInstance) world.findObject(_objectId);
+		final L2ItemInstance item = (L2ItemInstance) world.findObject(objectId);
 		
 		if (item == null || getClient().getActiveChar() == null)
+		{
 			return;
+		}
 		
 		if (getClient().getActiveChar().getPet() instanceof L2SummonInstance)
 		{

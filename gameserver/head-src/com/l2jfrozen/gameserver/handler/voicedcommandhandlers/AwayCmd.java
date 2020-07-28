@@ -1,25 +1,10 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any later
- * version.
- * 
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
- * 
- * You should have received a copy of the GNU General Public License along with
- * this program. If not, see <http://www.gnu.org/licenses/>.
- */
 package com.l2jfrozen.gameserver.handler.voicedcommandhandlers;
 
 import com.l2jfrozen.Config;
 import com.l2jfrozen.gameserver.handler.IVoicedCommandHandler;
 import com.l2jfrozen.gameserver.managers.AwayManager;
 import com.l2jfrozen.gameserver.managers.SiegeManager;
+import com.l2jfrozen.gameserver.model.L2Character;
 import com.l2jfrozen.gameserver.model.actor.instance.L2PcInstance;
 import com.l2jfrozen.gameserver.model.entity.siege.Siege;
 
@@ -34,26 +19,19 @@ public class AwayCmd implements IVoicedCommandHandler
 		"back"
 	};
 	
-	/*
-	 * (non-Javadoc)
-	 * @see com.l2jfrozen.gameserver.handler.IVoicedCommandHandler#useVoicedCommand(String, com.l2jfrozen.gameserver.model.L2PcInstance), String)
-	 */
 	@Override
 	public boolean useVoicedCommand(final String command, final L2PcInstance activeChar, final String text)
 	{
 		if (command.startsWith("away"))
+		{
 			return away(activeChar, text);
+		}
 		else if (command.startsWith("back"))
+		{
 			return back(activeChar);
+		}
 		return false;
 	}
-	
-	public static final int ZONE_PEACE = 2;
-	
-	/*
-	 * (non-Javadoc)
-	 * @see com.l2jfrozen.gameserver.handler.IVoicedCommandHandler#getVoicedCommandList()
-	 */
 	
 	private boolean away(final L2PcInstance activeChar, String text)
 	{
@@ -66,7 +44,7 @@ public class AwayCmd implements IVoicedCommandHandler
 			return false;
 		}
 		
-		if (!activeChar.isInsideZone(ZONE_PEACE) && Config.AWAY_PEACE_ZONE)
+		if (!activeChar.isInsideZone(L2Character.ZONE_PEACE) && Config.AWAY_PEACE_ZONE)
 		{
 			activeChar.sendMessage("You can only Away in peace zone.");
 			return false;
@@ -74,7 +52,9 @@ public class AwayCmd implements IVoicedCommandHandler
 		
 		// check player is death/fake death and movement disable
 		if (activeChar.isMovementDisabled() || activeChar.isAlikeDead())
+		{
 			return false;
+		}
 		
 		// Check if player is in Siege
 		if (siege != null && siege.getIsInProgress())
@@ -156,17 +136,17 @@ public class AwayCmd implements IVoicedCommandHandler
 			return false;
 		}
 		
-		siege = null;
 		return true;
 	}
 	
-	private boolean back(final L2PcInstance activeChar)
+	private boolean back(L2PcInstance activeChar)
 	{
 		if (!activeChar.isAway())
 		{
 			activeChar.sendMessage("You are not Away!");
 			return false;
 		}
+		
 		AwayManager.getInstance().setBack(activeChar);
 		return true;
 	}

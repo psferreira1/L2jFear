@@ -1,23 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.network.serverpackets;
 
 import com.l2jfrozen.gameserver.model.actor.instance.L2ItemInstance;
@@ -28,46 +8,41 @@ import com.l2jfrozen.gameserver.model.actor.instance.L2ItemInstance;
  */
 public class SpawnItem extends L2GameServerPacket
 {
-	private static final String _S__15_SPAWNITEM = "[S] 15 SpawnItem";
-	private final int _objectId;
-	private final int _itemId;
-	private final int _x, _y, _z;
-	private final int _stackable, _count;
+	private final int objectId;
+	private final int itemId;
+	private final int x, y, z;
+	private final int stackable, count;
 	
 	public SpawnItem(final L2ItemInstance item)
 	{
-		_objectId = item.getObjectId();
-		_itemId = item.getItemId();
-		_x = item.getX();
-		_y = item.getY();
-		_z = item.getZ();
-		_stackable = item.isStackable() ? 0x01 : 0x00;
-		_count = item.getCount();
+		objectId = item.getObjectId();
+		itemId = item.getItemId();
+		x = item.getX();
+		y = item.getY();
+		z = item.getZ();
+		stackable = item.isStackable() ? 0x01 : 0x00;
+		count = item.getCount();
 	}
 	
 	@Override
 	protected final void writeImpl()
 	{
 		writeC(0x0b);
-		writeD(_objectId);
-		writeD(_itemId);
+		writeD(objectId);
+		writeD(itemId);
 		
-		writeD(_x);
-		writeD(_y);
-		writeD(_z);
+		writeD(x);
+		writeD(y);
+		writeD(z);
 		// only show item count if it is a stackable item
-		writeD(_stackable);
-		writeD(_count);
+		writeD(stackable);
+		writeD(count);
 		writeD(0x00); // c2
 	}
 	
-	/*
-	 * (non-Javadoc)
-	 * @see com.l2jfrozen.gameserver.serverpackets.ServerBasePacket#getType()
-	 */
 	@Override
 	public String getType()
 	{
-		return _S__15_SPAWNITEM;
+		return "[S] 15 SpawnItem";
 	}
 }

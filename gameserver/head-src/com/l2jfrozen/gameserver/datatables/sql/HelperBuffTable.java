@@ -1,39 +1,16 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.datatables.sql;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.util.ArrayList;
 import java.util.List;
-
-import javolution.util.FastList;
 
 import org.apache.log4j.Logger;
 
 import com.l2jfrozen.gameserver.datatables.csv.HennaTable;
 import com.l2jfrozen.gameserver.templates.L2HelperBuff;
 import com.l2jfrozen.gameserver.templates.StatsSet;
-import com.l2jfrozen.util.CloseUtil;
-import com.l2jfrozen.util.database.DatabaseUtils;
 import com.l2jfrozen.util.database.L2DatabaseFactory;
 
 /**
@@ -43,41 +20,42 @@ import com.l2jfrozen.util.database.L2DatabaseFactory;
 public class HelperBuffTable
 {
 	private final static Logger LOGGER = Logger.getLogger(HennaTable.class);
+	private static HelperBuffTable instance;
 	
-	private static HelperBuffTable _instance;
+	private static final String SELECT_HELPER_BUFF_LIST = "SELECT id,skill_id,name,skill_level,lower_level,upper_level,is_magic_class FROM helper_buff_list";
 	
 	/** The table containing all Buff of the Newbie Helper */
 	public List<L2HelperBuff> helperBuff;
 	
-	private final boolean _initialized = true;
+	private final boolean initialized = true;
 	
 	/**
 	 * The player level since Newbie Helper can give the fisrt buff <BR>
 	 * Used to generate message : "Come back here when you have reached level ...")
 	 */
-	private int _magicClassLowestLevel = 100;
-	private int _physicClassLowestLevel = 100;
+	private int magicClassLowestLevel = 100;
+	private int physicClassLowestLevel = 100;
 	
 	/**
 	 * The player level above which Newbie Helper won't give any buff <BR>
 	 * Used to generate message : "Only novice character of level ... or less can receive my support magic.")
 	 */
-	private int _magicClassHighestLevel = 1;
-	private int _physicClassHighestLevel = 1;
+	private int magicClassHighestLevel = 1;
+	private int physicClassHighestLevel = 1;
 	
 	public static HelperBuffTable getInstance()
 	{
-		if (_instance == null)
+		if (instance == null)
 		{
-			_instance = new HelperBuffTable();
+			instance = new HelperBuffTable();
 		}
 		
-		return _instance;
+		return instance;
 	}
 	
 	public static void reload()
 	{
-		_instance = null;
+		instance = null;
 		getInstance();
 	}
 	
@@ -86,7 +64,7 @@ public class HelperBuffTable
 	 */
 	private HelperBuffTable()
 	{
-		helperBuff = new FastList<>();
+		helperBuff = new ArrayList<>();
 		restoreHelperBuffData();
 	}
 	
@@ -95,85 +73,65 @@ public class HelperBuffTable
 	 */
 	private void restoreHelperBuffData()
 	{
-		Connection con = null;
-		try
+		try (Connection con = L2DatabaseFactory.getInstance().getConnection();
+			PreparedStatement statement = con.prepareStatement(SELECT_HELPER_BUFF_LIST);
+			ResultSet helperbuffdata = statement.executeQuery())
 		{
-			con = L2DatabaseFactory.getInstance().getConnection(false);
-			final PreparedStatement statement = con.prepareStatement("SELECT * FROM helper_buff_list");
-			final ResultSet helperbuffdata = statement.executeQuery();
-			
-			fillHelperBuffTable(helperbuffdata);
-			helperbuffdata.close();
-			DatabaseUtils.close(statement);
-		}
-		catch (final Exception e)
-		{
-			LOGGER.error("Table helper_buff_list not found: Update your database", e);
-		}
-		finally
-		{
-			CloseUtil.close(con);
-		}
-		
-	}
-	
-	/**
-	 * Load the Newbie Helper Buff list from SQL Table helper_buff_list
-	 * @param HelperBuffData
-	 * @throws Exception
-	 */
-	private void fillHelperBuffTable(final ResultSet HelperBuffData) throws Exception
-	{
-		while (HelperBuffData.next())
-		{
-			final StatsSet helperBuffDat = new StatsSet();
-			final int id = HelperBuffData.getInt("id");
-			
-			helperBuffDat.set("id", id);
-			helperBuffDat.set("skillID", HelperBuffData.getInt("skill_id"));
-			helperBuffDat.set("skillLevel", HelperBuffData.getInt("skill_level"));
-			helperBuffDat.set("lowerLevel", HelperBuffData.getInt("lower_level"));
-			helperBuffDat.set("upperLevel", HelperBuffData.getInt("upper_level"));
-			helperBuffDat.set("isMagicClass", HelperBuffData.getString("is_magic_class"));
-			
-			// Calulate the range level in wich player must be to obtain buff from Newbie Helper
-			if ("false".equals(HelperBuffData.getString("is_magic_class")))
+			while (helperbuffdata.next())
 			{
-				if (HelperBuffData.getInt("lower_level") < _physicClassLowestLevel)
+				StatsSet helperBuffDat = new StatsSet();
+				int id = helperbuffdata.getInt("id");
+				
+				helperBuffDat.set("id", id);
+				helperBuffDat.set("skillID", helperbuffdata.getInt("skill_id"));
+				helperBuffDat.set("skillLevel", helperbuffdata.getInt("skill_level"));
+				helperBuffDat.set("lowerLevel", helperbuffdata.getInt("lower_level"));
+				helperBuffDat.set("upperLevel", helperbuffdata.getInt("upper_level"));
+				helperBuffDat.set("isMagicClass", helperbuffdata.getString("is_magic_class"));
+				
+				// Calulate the range level in wich player must be to obtain buff from Newbie Helper
+				if ("false".equals(helperbuffdata.getString("is_magic_class")))
 				{
-					_physicClassLowestLevel = HelperBuffData.getInt("lower_level");
+					if (helperbuffdata.getInt("lower_level") < physicClassLowestLevel)
+					{
+						physicClassLowestLevel = helperbuffdata.getInt("lower_level");
+					}
+					
+					if (helperbuffdata.getInt("upper_level") > physicClassHighestLevel)
+					{
+						physicClassHighestLevel = helperbuffdata.getInt("upper_level");
+					}
+				}
+				else
+				{
+					if (helperbuffdata.getInt("lower_level") < magicClassLowestLevel)
+					{
+						magicClassLowestLevel = helperbuffdata.getInt("lower_level");
+					}
+					
+					if (helperbuffdata.getInt("upper_level") > magicClassHighestLevel)
+					{
+						magicClassHighestLevel = helperbuffdata.getInt("upper_level");
+					}
 				}
 				
-				if (HelperBuffData.getInt("upper_level") > _physicClassHighestLevel)
-				{
-					_physicClassHighestLevel = HelperBuffData.getInt("upper_level");
-				}
-			}
-			else
-			{
-				if (HelperBuffData.getInt("lower_level") < _magicClassLowestLevel)
-				{
-					_magicClassLowestLevel = HelperBuffData.getInt("lower_level");
-				}
-				
-				if (HelperBuffData.getInt("upper_level") > _magicClassHighestLevel)
-				{
-					_magicClassHighestLevel = HelperBuffData.getInt("upper_level");
-				}
+				// Add this Helper Buff to the Helper Buff List
+				L2HelperBuff template = new L2HelperBuff(helperBuffDat);
+				helperBuff.add(template);
 			}
 			
-			// Add this Helper Buff to the Helper Buff List
-			final L2HelperBuff template = new L2HelperBuff(helperBuffDat);
-			helperBuff.add(template);
+			LOGGER.info("Helper Buff Table: Loaded " + helperBuff.size() + " templates");
 		}
-		
-		LOGGER.info("Helper Buff Table: Loaded " + helperBuff.size() + " templates");
+		catch (Exception e)
+		{
+			LOGGER.error("HelperBuffTable.restoreHelperBuffData : Could not select data from helper_buff_list table", e);
+		}
 		
 	}
 	
 	public boolean isInitialized()
 	{
-		return _initialized;
+		return initialized;
 	}
 	
 	public L2HelperBuff getHelperBuffTableItem(final int id)
@@ -194,7 +152,7 @@ public class HelperBuffTable
 	 */
 	public int getMagicClassHighestLevel()
 	{
-		return _magicClassHighestLevel;
+		return magicClassHighestLevel;
 	}
 	
 	/**
@@ -202,7 +160,7 @@ public class HelperBuffTable
 	 */
 	public void setMagicClassHighestLevel(final int magicClassHighestLevel)
 	{
-		_magicClassHighestLevel = magicClassHighestLevel;
+		this.magicClassHighestLevel = magicClassHighestLevel;
 	}
 	
 	/**
@@ -210,7 +168,7 @@ public class HelperBuffTable
 	 */
 	public int getMagicClassLowestLevel()
 	{
-		return _magicClassLowestLevel;
+		return magicClassLowestLevel;
 	}
 	
 	/**
@@ -218,7 +176,7 @@ public class HelperBuffTable
 	 */
 	public void setMagicClassLowestLevel(final int magicClassLowestLevel)
 	{
-		_magicClassLowestLevel = magicClassLowestLevel;
+		this.magicClassLowestLevel = magicClassLowestLevel;
 	}
 	
 	/**
@@ -226,7 +184,7 @@ public class HelperBuffTable
 	 */
 	public int getPhysicClassHighestLevel()
 	{
-		return _physicClassHighestLevel;
+		return physicClassHighestLevel;
 	}
 	
 	/**
@@ -234,7 +192,7 @@ public class HelperBuffTable
 	 */
 	public void setPhysicClassHighestLevel(final int physicClassHighestLevel)
 	{
-		_physicClassHighestLevel = physicClassHighestLevel;
+		this.physicClassHighestLevel = physicClassHighestLevel;
 	}
 	
 	/**
@@ -242,7 +200,7 @@ public class HelperBuffTable
 	 */
 	public int getPhysicClassLowestLevel()
 	{
-		return _physicClassLowestLevel;
+		return physicClassLowestLevel;
 	}
 	
 	/**
@@ -250,7 +208,7 @@ public class HelperBuffTable
 	 */
 	public void setPhysicClassLowestLevel(final int physicClassLowestLevel)
 	{
-		_physicClassLowestLevel = physicClassLowestLevel;
+		this.physicClassLowestLevel = physicClassLowestLevel;
 	}
 	
 }

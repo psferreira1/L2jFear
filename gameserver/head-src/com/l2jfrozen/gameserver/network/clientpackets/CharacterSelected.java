@@ -1,19 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any later
- * version.
- * 
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
- * 
- * You should have received a copy of the GNU General Public License along with
- * this program. If not, see <http://www.gnu.org/licenses/>.
- */
 package com.l2jfrozen.gameserver.network.clientpackets;
 
 import org.apache.log4j.Logger;
@@ -29,17 +13,17 @@ import com.l2jfrozen.gameserver.network.serverpackets.CharSelected;
 public class CharacterSelected extends L2GameClientPacket
 {
 	private static Logger LOGGER = Logger.getLogger(CharacterSelected.class);
-	private int _charSlot;
-	private int _unk1, _unk2, _unk3, _unk4; // new in C4
-		
+	private int charSlot;
+	private int unk1, unk2, unk3, unk4; // new in C4
+	
 	@Override
 	protected void readImpl()
 	{
-		_charSlot = readD();
-		_unk1 = readH();
-		_unk2 = readD();
-		_unk3 = readD();
-		_unk4 = readD();
+		charSlot = readD();
+		unk1 = readH();
+		unk2 = readD();
+		unk3 = readD();
+		unk4 = readD();
 	}
 	
 	@Override
@@ -51,7 +35,9 @@ public class CharacterSelected extends L2GameClientPacket
 		// playLogFile(getConnection()); // try to play LOGGER file
 		
 		if (!getClient().getFloodProtectors().getCharacterSelect().tryPerformAction("CharacterSelect"))
+		{
 			return;
+		}
 		
 		// we should always be abble to acquire the lock but if we cant lock then nothing should be done (ie repeated packet)
 		if (getClient().getActiveCharLock().tryLock())
@@ -63,14 +49,16 @@ public class CharacterSelected extends L2GameClientPacket
 				{
 					// The L2PcInstance must be created here, so that it can be attached to the L2GameClient
 					if (Config.DEBUG)
-						LOGGER.debug("DEBUG " + getType() + ": selected slot:" + _charSlot);
+					{
+						LOGGER.debug("DEBUG " + getType() + ": selected slot:" + charSlot);
+					}
 					
 					// Load up character from disk
-					final L2PcInstance cha = getClient().loadCharFromDisk(_charSlot);
+					final L2PcInstance cha = getClient().loadCharFromDisk(charSlot);
 					
 					if (cha == null)
 					{
-						LOGGER.warn(getType() + ": Character could not be loaded (slot:" + _charSlot + ")");
+						LOGGER.warn(getType() + ": Character could not be loaded (slot:" + charSlot + ")");
 						sendPacket(ActionFailed.STATIC_PACKET);
 						return;
 					}

@@ -1,23 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.network.clientpackets;
 
 import com.l2jfrozen.Config;
@@ -45,28 +25,28 @@ import com.l2jfrozen.gameserver.util.Util;
  */
 public class RequestProcureCropList extends L2GameClientPacket
 {
-	private int _size;
+	private int size;
 	
-	private int[] _items; // count*4
+	private int[] items; // count*4
 	
 	@Override
 	protected void readImpl()
 	{
-		_size = readD();
-		if (_size * 16 > _buf.remaining() || _size > 500 || _size < 1)
+		size = readD();
+		if (size * 16 > buf.remaining() || size > 500 || size < 1)
 		{
-			_size = 0;
+			size = 0;
 			return;
 		}
-		_items = new int[_size * 4];
-		for (int i = 0; i < _size; i++)
+		items = new int[size * 4];
+		for (int i = 0; i < size; i++)
 		{
 			final int objId = readD();
-			_items[i * 4 + 0] = objId;
+			items[i * 4 + 0] = objId;
 			final int itemId = readD();
-			_items[i * 4 + 1] = itemId;
+			items[i * 4 + 1] = itemId;
 			final int manorId = readD();
-			_items[i * 4 + 2] = manorId;
+			items[i * 4 + 2] = manorId;
 			long count = readD();
 			
 			if (count > Integer.MAX_VALUE)
@@ -74,7 +54,7 @@ public class RequestProcureCropList extends L2GameClientPacket
 				count = Integer.MAX_VALUE;
 			}
 			
-			_items[i * 4 + 3] = (int) count;
+			items[i * 4 + 3] = (int) count;
 		}
 	}
 	
@@ -83,7 +63,9 @@ public class RequestProcureCropList extends L2GameClientPacket
 	{
 		final L2PcInstance player = getClient().getActiveChar();
 		if (player == null)
+		{
 			return;
+		}
 		
 		L2Object target = player.getTarget();
 		
@@ -93,9 +75,11 @@ public class RequestProcureCropList extends L2GameClientPacket
 		}
 		
 		if (!player.isGM() && (target == null || !(target instanceof L2ManorManagerInstance) || !player.isInsideRadius(target, L2NpcInstance.INTERACTION_DISTANCE, false, false)))
+		{
 			return;
+		}
 		
-		if (_size < 1)
+		if (size < 1)
 		{
 			sendPacket(ActionFailed.STATIC_PACKET);
 			return;
@@ -109,11 +93,11 @@ public class RequestProcureCropList extends L2GameClientPacket
 		int slots = 0;
 		int weight = 0;
 		
-		for (int i = 0; i < _size; i++)
+		for (int i = 0; i < size; i++)
 		{
-			final int itemId = _items[i * 4 + 1];
-			final int manorId = _items[i * 4 + 2];
-			final int count = _items[i * 4 + 3];
+			final int itemId = items[i * 4 + 1];
+			final int manorId = items[i * 4 + 2];
+			final int count = items[i * 4 + 3];
 			
 			if (itemId == 0 || manorId == 0 || count == 0)
 			{
@@ -152,7 +136,9 @@ public class RequestProcureCropList extends L2GameClientPacket
 			catch (final NullPointerException e)
 			{
 				if (Config.ENABLE_ALL_EXCEPTIONS)
+				{
 					e.printStackTrace();
+				}
 				
 				continue;
 			}
@@ -173,12 +159,12 @@ public class RequestProcureCropList extends L2GameClientPacket
 		// Proceed the purchase
 		final InventoryUpdate playerIU = new InventoryUpdate();
 		
-		for (int i = 0; i < _size; i++)
+		for (int i = 0; i < size; i++)
 		{
-			final int objId = _items[i * 4 + 0];
-			final int cropId = _items[i * 4 + 1];
-			final int manorId = _items[i * 4 + 2];
-			final int count = _items[i * 4 + 3];
+			final int objId = items[i * 4 + 0];
+			final int cropId = items[i * 4 + 1];
+			final int manorId = items[i * 4 + 2];
+			final int count = items[i * 4 + 3];
 			
 			if (objId == 0 || cropId == 0 || manorId == 0 || count == 0)
 			{
@@ -199,7 +185,9 @@ public class RequestProcureCropList extends L2GameClientPacket
 			catch (final NullPointerException e)
 			{
 				if (Config.ENABLE_ALL_EXCEPTIONS)
+				{
 					e.printStackTrace();
+				}
 				
 				continue;
 			}

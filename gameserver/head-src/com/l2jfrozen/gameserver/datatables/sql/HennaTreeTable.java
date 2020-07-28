@@ -1,33 +1,12 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.datatables.sql;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import javolution.util.FastList;
-import javolution.util.FastMap;
 
 import org.apache.log4j.Logger;
 
@@ -48,25 +27,25 @@ import com.l2jfrozen.util.database.L2DatabaseFactory;
 public class HennaTreeTable
 {
 	private static Logger LOGGER = Logger.getLogger(HennaTreeTable.class);
-	private static final HennaTreeTable _instance = new HennaTreeTable();
-	private final Map<ClassId, List<L2HennaInstance>> _hennaTrees;
-	private final boolean _initialized = true;
+	private static final HennaTreeTable instance = new HennaTreeTable();
+	private final Map<ClassId, List<L2HennaInstance>> hennaTrees;
+	private final boolean initialized = true;
 	
 	public static HennaTreeTable getInstance()
 	{
-		return _instance;
+		return instance;
 	}
 	
 	private HennaTreeTable()
 	{
-		_hennaTrees = new FastMap<>();
+		hennaTrees = new HashMap<>();
 		int classId = 0;
 		int count = 0;
 		
 		Connection con = null;
 		try
 		{
-			con = L2DatabaseFactory.getInstance().getConnection(false);
+			con = L2DatabaseFactory.getInstance().getConnection();
 			final PreparedStatement statement = con.prepareStatement("SELECT class_name, id, parent_id FROM class_list ORDER BY id");
 			final ResultSet classlist = statement.executeQuery();
 			List<L2HennaInstance> list;
@@ -77,7 +56,7 @@ public class HennaTreeTable
 			classlist:
 			while (classlist.next())
 			{
-				list = new FastList<>();
+				list = new ArrayList<>();
 				classId = classlist.getInt("id");
 				final PreparedStatement statement2 = con.prepareStatement("SELECT class_id, symbol_id FROM henna_trees where class_id=? ORDER BY symbol_id");
 				statement2.setInt(1, classId);
@@ -112,14 +91,16 @@ public class HennaTreeTable
 					
 					list.add(temp);
 				}
-				_hennaTrees.put(ClassId.values()[classId], list);
+				hennaTrees.put(ClassId.values()[classId], list);
 				
 				hennatree.close();
 				statement2.close();
 				
 				count += list.size();
 				if (Config.DEBUG)
+				{
 					LOGGER.info("Henna Tree for Class: " + classId + " has " + list.size() + " Henna Templates.");
+				}
 			}
 			
 			classlist.close();
@@ -141,7 +122,7 @@ public class HennaTreeTable
 	
 	public L2HennaInstance[] getAvailableHenna(final ClassId classId)
 	{
-		final List<L2HennaInstance> henna = _hennaTrees.get(classId);
+		final List<L2HennaInstance> henna = hennaTrees.get(classId);
 		if (henna == null)
 		{
 			// the hennatree for this class is undefined, so we give an empty list
@@ -154,7 +135,7 @@ public class HennaTreeTable
 	
 	public boolean isInitialized()
 	{
-		return _initialized;
+		return initialized;
 	}
 	
 }

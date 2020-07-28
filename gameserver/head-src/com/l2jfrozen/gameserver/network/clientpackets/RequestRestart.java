@@ -1,23 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.network.clientpackets;
 
 import org.apache.log4j.Logger;
@@ -29,7 +9,6 @@ import com.l2jfrozen.gameserver.datatables.SkillTable;
 import com.l2jfrozen.gameserver.model.Inventory;
 import com.l2jfrozen.gameserver.model.L2Party;
 import com.l2jfrozen.gameserver.model.actor.instance.L2PcInstance;
-import com.l2jfrozen.gameserver.model.entity.olympiad.Olympiad;
 import com.l2jfrozen.gameserver.model.entity.sevensigns.SevenSignsFestival;
 import com.l2jfrozen.gameserver.network.L2GameClient;
 import com.l2jfrozen.gameserver.network.L2GameClient.GameClientState;
@@ -91,7 +70,9 @@ public final class RequestRestart extends L2GameClientPacket
 		if (AttackStanceTaskManager.getInstance().getAttackStanceTask(player) && !(player.isGM() && Config.GM_RESTART_FIGHTING))
 		{
 			if (Config.DEBUG)
+			{
 				LOGGER.debug("Player " + player.getName() + " tried to logout while fighting.");
+			}
 			
 			player.sendPacket(new SystemMessage(SystemMessageId.CANT_RESTART_WHILE_FIGHTING));
 			sendPacket(RestartResponse.valueOf(false));
@@ -99,7 +80,7 @@ public final class RequestRestart extends L2GameClientPacket
 		}
 		
 		// Check if player is registred on olympiad
-		if (player.getOlympiadGameId() > 0 || player.isInOlympiadMode() || Olympiad.getInstance().isRegistered(player))
+		if (player.getOlympiadGameId() > 0 || player.isInOlympiadMode())
 		{
 			player.sendMessage("You can't restart while in Olympiad.");
 			sendPacket(RestartResponse.valueOf(false));
@@ -135,7 +116,7 @@ public final class RequestRestart extends L2GameClientPacket
 		}
 		
 		// Check if player is in Event
-		if (player._inEventCTF || player._inEventDM || player._inEventTvT || player._inEventVIP)
+		if (player.isInFunEvent())
 		{
 			player.sendMessage("You can't restart during Event.");
 			sendPacket(RestartResponse.valueOf(false));
@@ -175,7 +156,7 @@ public final class RequestRestart extends L2GameClientPacket
 		}
 		
 		// delete box from the world
-		if (player._active_boxes != -1)
+		if (player.activeBoxesCount != -1)
 		{
 			player.decreaseBoxes();
 		}

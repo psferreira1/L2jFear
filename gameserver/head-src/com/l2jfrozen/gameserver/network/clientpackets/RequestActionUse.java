@@ -1,23 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.network.clientpackets;
 
 import java.util.Arrays;
@@ -55,30 +35,19 @@ public final class RequestActionUse extends L2GameClientPacket
 {
 	private static Logger LOGGER = Logger.getLogger(RequestActionUse.class);
 	
-	private int _actionId;
-	private boolean _ctrlPressed;
-	private boolean _shiftPressed;
+	private int actionId;
+	private boolean ctrlPressed;
+	private boolean shiftPressed;
 	
 	// List of Pet Actions
-	private static List<Integer> _petActions = Arrays.asList(new Integer[]
-	{
-		15,
-		16,
-		17,
-		21,
-		22,
-		23,
-		52,
-		53,
-		54
-	});
+	private static List<Integer> petActions = Arrays.asList(15, 16, 17, 21, 22, 23, 52, 53, 54);
 	
 	@Override
 	protected void readImpl()
 	{
-		_actionId = readD();
-		_ctrlPressed = readD() == 1;
-		_shiftPressed = readC() == 1;
+		actionId = readD();
+		ctrlPressed = readD() == 1;
+		shiftPressed = readC() == 1;
 	}
 	
 	@Override
@@ -87,15 +56,17 @@ public final class RequestActionUse extends L2GameClientPacket
 		final L2PcInstance activeChar = getClient().getActiveChar();
 		
 		if (activeChar == null)
+		{
 			return;
+		}
 		
 		if (Config.DEBUG)
 		{
-			LOGGER.debug(activeChar.getName() + " request Action use: id " + _actionId + " 2:" + _ctrlPressed + " 3:" + _shiftPressed);
+			LOGGER.debug(activeChar.getName() + " request Action use: id " + actionId + " 2:" + ctrlPressed + " 3:" + shiftPressed);
 		}
 		
 		// dont do anything if player is dead
-		if (_actionId != 0 && activeChar.isAlikeDead())
+		if (actionId != 0 && activeChar.isAlikeDead())
 		{
 			getClient().sendPacket(ActionFailed.STATIC_PACKET);
 			return;
@@ -109,11 +80,11 @@ public final class RequestActionUse extends L2GameClientPacket
 		}
 		
 		// don't do anything if player is casting and the action is not a Pet one (skills too)
-		if ((_petActions.contains(_actionId) || _actionId >= 1000))
+		if ((petActions.contains(actionId) || actionId >= 1000))
 		{
 			if (Config.DEBUG)
 			{
-				LOGGER.debug(activeChar.getName() + " request Pet Action use: id " + _actionId + " ctrl:" + _ctrlPressed + " shift:" + _shiftPressed);
+				LOGGER.debug(activeChar.getName() + " request Pet Action use: id " + actionId + " ctrl:" + ctrlPressed + " shift:" + shiftPressed);
 			}
 		}
 		else if (activeChar.isCastingNow())
@@ -127,10 +98,10 @@ public final class RequestActionUse extends L2GameClientPacket
 		
 		if (Config.DEBUG)
 		{
-			LOGGER.info("Requested Action ID: " + String.valueOf(_actionId));
+			LOGGER.info("Requested Action ID: " + String.valueOf(actionId));
 		}
 		
-		switch (_actionId)
+		switch (actionId)
 		{
 			case 0:
 				if (activeChar.getMountType() != 0)
@@ -192,12 +163,16 @@ public final class RequestActionUse extends L2GameClientPacket
 					if (pet.isAttackingDisabled())
 					{
 						if (pet.getAttackEndTime() > GameTimeController.getGameTicks())
+						{
 							pet.getAI().setIntention(CtrlIntention.AI_INTENTION_ATTACK, target);
+						}
 						else
+						{
 							return;
+						}
 					}
 					
-					if (activeChar.isInOlympiadMode() && !activeChar.isOlympiadStart())
+					if (activeChar.isInOlympiadMode() && !activeChar.isInOlympiadFight())
 					{
 						// if L2PcInstance is in Olympia and the match isn't already start, send a Server->Client packet ActionFailed
 						activeChar.sendPacket(ActionFailed.STATIC_PACKET);
@@ -213,7 +188,7 @@ public final class RequestActionUse extends L2GameClientPacket
 						}
 					}
 					
-					if (target.isAutoAttackable(activeChar) || _ctrlPressed)
+					if (target.isAutoAttackable(activeChar) || ctrlPressed)
 					{
 						if (target instanceof L2DoorInstance)
 						{
@@ -329,10 +304,14 @@ public final class RequestActionUse extends L2GameClientPacket
 					else if (!pet.isDead() && !activeChar.isMounted())
 					{
 						if (!activeChar.disarmWeapons())
+						{
 							return;
+						}
 						
 						if (!activeChar.getFloodProtectors().getItemPetSummon().tryPerformAction("mount"))
+						{
 							return;
+						}
 						
 						final Ride mount = new Ride(activeChar.getObjectId(), Ride.ACTION_MOUNT, pet.getTemplate().npcId);
 						activeChar.broadcastPacket(mount);
@@ -423,7 +402,9 @@ public final class RequestActionUse extends L2GameClientPacket
 					activeChar.setPrivateStoreType(L2PcInstance.STORE_PRIVATE_NONE);
 					
 					if (activeChar.isSitting())
+					{
 						activeChar.standUp();
+					}
 				}
 				
 				if (activeChar.getCreateList() == null)
@@ -495,7 +476,9 @@ public final class RequestActionUse extends L2GameClientPacket
 					activeChar.setPrivateStoreType(L2PcInstance.STORE_PRIVATE_NONE);
 					
 					if (activeChar.isSitting())
+					{
 						activeChar.standUp();
+					}
 				}
 				
 				if (activeChar.getCreateList() == null)
@@ -633,7 +616,7 @@ public final class RequestActionUse extends L2GameClientPacket
 				}
 				break;
 			default:
-				LOGGER.warn(activeChar.getName() + ": unhandled action type " + _actionId);
+				LOGGER.warn(activeChar.getName() + ": unhandled action type " + actionId);
 		}
 	}
 	
@@ -644,7 +627,9 @@ public final class RequestActionUse extends L2GameClientPacket
 	{
 		final L2PcInstance activeChar = getClient().getActiveChar();
 		if (activeChar == null)
+		{
 			return;
+		}
 		
 		final L2Summon activeSummon = activeChar.getPet();
 		
@@ -656,15 +641,15 @@ public final class RequestActionUse extends L2GameClientPacket
 		
 		if (activeSummon != null && !activeChar.isBetrayed())
 		{
-			final Map<Integer, L2Skill> _skills = activeSummon.getTemplate().getSkills();
+			final Map<Integer, L2Skill> skills = activeSummon.getTemplate().getSkills();
 			
-			if (_skills.size() == 0)
+			if (skills.size() == 0)
 			{
 				activeChar.sendPacket(new SystemMessage(SystemMessageId.SKILL_NOT_AVAILABLE));
 				return;
 			}
 			
-			final L2Skill skill = _skills.get(skillId);
+			final L2Skill skill = skills.get(skillId);
 			
 			if (skill == null)
 			{
@@ -677,7 +662,7 @@ public final class RequestActionUse extends L2GameClientPacket
 			
 			activeSummon.setTarget(target);
 			
-			boolean force = _ctrlPressed;
+			boolean force = ctrlPressed;
 			
 			if (target instanceof L2Character)
 			{
@@ -687,7 +672,7 @@ public final class RequestActionUse extends L2GameClientPacket
 				}
 			}
 			
-			activeSummon.useMagic(skill, force, _shiftPressed);
+			activeSummon.useMagic(skill, force, shiftPressed);
 		}
 	}
 	
@@ -698,7 +683,9 @@ public final class RequestActionUse extends L2GameClientPacket
 	{
 		final L2PcInstance activeChar = getClient().getActiveChar();
 		if (activeChar == null)
+		{
 			return;
+		}
 		
 		useSkill(skillId, activeChar.getTarget());
 	}

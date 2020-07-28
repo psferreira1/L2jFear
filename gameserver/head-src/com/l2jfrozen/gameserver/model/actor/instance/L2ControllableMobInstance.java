@@ -1,22 +1,3 @@
-/* L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.model.actor.instance;
 
 import com.l2jfrozen.Config;
@@ -31,8 +12,8 @@ import com.l2jfrozen.gameserver.templates.L2NpcTemplate;
  */
 public class L2ControllableMobInstance extends L2MonsterInstance
 {
-	private boolean _isInvul;
-	private L2ControllableMobAI _aiBackup; // to save ai, avoiding beeing detached
+	private boolean isInvul;
+	private L2ControllableMobAI aiBackup; // to save ai, avoiding beeing detached
 	
 	protected class ControllableAIAcessor extends AIAccessor
 	{
@@ -64,40 +45,42 @@ public class L2ControllableMobInstance extends L2MonsterInstance
 	@Override
 	public L2CharacterAI getAI()
 	{
-		if (_ai == null)
+		if (aiCharacter == null)
 		{
 			synchronized (this)
 			{
-				if (_ai == null && _aiBackup == null)
+				if (aiCharacter == null && aiBackup == null)
 				{
-					_ai = new L2ControllableMobAI(new ControllableAIAcessor());
-					_aiBackup = (L2ControllableMobAI) _ai;
+					aiCharacter = new L2ControllableMobAI(new ControllableAIAcessor());
+					aiBackup = (L2ControllableMobAI) aiCharacter;
 				}
 				else
 				{
-					_ai = _aiBackup;
+					aiCharacter = aiBackup;
 				}
 			}
 		}
-		return _ai;
+		return aiCharacter;
 	}
 	
 	@Override
 	public boolean isInvul()
 	{
-		return _isInvul;
+		return isInvul;
 	}
 	
 	public void setInvul(final boolean isInvul)
 	{
-		_isInvul = isInvul;
+		this.isInvul = isInvul;
 	}
 	
 	@Override
 	public void reduceCurrentHp(double i, final L2Character attacker, final boolean awake)
 	{
 		if (isInvul() || isDead())
+		{
 			return;
+		}
 		
 		if (awake)
 		{
@@ -136,7 +119,9 @@ public class L2ControllableMobInstance extends L2MonsterInstance
 	public boolean doDie(final L2Character killer)
 	{
 		if (!super.doDie(killer))
+		{
 			return false;
+		}
 		
 		removeAI();
 		return true;
@@ -156,11 +141,11 @@ public class L2ControllableMobInstance extends L2MonsterInstance
 	{
 		synchronized (this)
 		{
-			if (_aiBackup != null)
+			if (aiBackup != null)
 			{
-				_aiBackup.setIntention(CtrlIntention.AI_INTENTION_IDLE);
-				_aiBackup = null;
-				_ai = null;
+				aiBackup.setIntention(CtrlIntention.AI_INTENTION_IDLE);
+				aiBackup = null;
+				aiCharacter = null;
 			}
 		}
 	}

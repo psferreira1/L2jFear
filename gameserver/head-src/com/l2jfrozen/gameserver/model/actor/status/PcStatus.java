@@ -1,22 +1,3 @@
-/* L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.model.actor.status;
 
 import com.l2jfrozen.Config;
@@ -34,18 +15,11 @@ import com.l2jfrozen.gameserver.util.Util;
 
 public class PcStatus extends PlayableStatus
 {
-	// =========================================================
-	// Data Field
-	
-	// =========================================================
-	// Constructor
 	public PcStatus(final L2PcInstance activeChar)
 	{
 		super(activeChar);
 	}
 	
-	// =========================================================
-	// Method - Public
 	@Override
 	public final void reduceHp(final double value, final L2Character attacker)
 	{
@@ -56,7 +30,9 @@ public class PcStatus extends PlayableStatus
 	public final void reduceHp(double value, final L2Character attacker, final boolean awake)
 	{
 		if (getActiveChar().isInvul() && getActiveChar() != attacker)
+		{
 			return;
+		}
 		
 		if (attacker instanceof L2PcInstance)
 		{
@@ -64,9 +40,13 @@ public class PcStatus extends PlayableStatus
 			{
 				// the duel is finishing - players do not recive damage
 				if (getActiveChar().getDuelState() == Duel.DUELSTATE_DEAD)
+				{
 					return;
+				}
 				else if (getActiveChar().getDuelState() == Duel.DUELSTATE_WINNER)
+				{
 					return;
+				}
 				
 				// cancel duel if player got hit by another player, that is not part of the duel
 				if (((L2PcInstance) attacker).getDuelId() != getActiveChar().getDuelId())
@@ -76,7 +56,9 @@ public class PcStatus extends PlayableStatus
 			}
 			
 			if (getActiveChar().isDead() && !getActiveChar().isFakeDeath())
+			{
 				return;
+			}
 		}
 		else
 		{
@@ -87,7 +69,9 @@ public class PcStatus extends PlayableStatus
 			}
 			
 			if (getActiveChar().isDead())
+			{
 				return;
+			}
 		}
 		
 		int fullValue = (int) value;
@@ -113,6 +97,11 @@ public class PcStatus extends PlayableStatus
 					summon.reduceCurrentHp(tDmg, attacker);
 					value -= tDmg;
 					fullValue = (int) value; // reduce the annouced value here as player will get a message about summon dammage
+					
+					SystemMessage sm = new SystemMessage(SystemMessageId.GIVEN_S1_DAMAGE_TO_YOUR_TARGET_AND_S2_DAMAGE_TO_SERVITOR);
+					sm.addNumber(fullValue);
+					sm.addNumber(tDmg);
+					attacker.sendPacket(sm);
 				}
 			}
 			
@@ -154,7 +143,7 @@ public class PcStatus extends PlayableStatus
 		if (attacker != null && attacker != getActiveChar() && fullValue > 0)
 		{
 			// Send a System Message to the L2PcInstance
-			SystemMessage smsg = new SystemMessage(SystemMessageId.S1_GAVE_YOU_S2_DMG);
+			SystemMessage smsg = new SystemMessage(SystemMessageId.S1_HIT_YOU_S2_DMG);
 			
 			if (Config.DEBUG)
 			{
@@ -189,11 +178,6 @@ public class PcStatus extends PlayableStatus
 		}
 	}
 	
-	// =========================================================
-	// Method - Private
-	
-	// =========================================================
-	// Property - Public
 	@Override
 	public L2PcInstance getActiveChar()
 	{

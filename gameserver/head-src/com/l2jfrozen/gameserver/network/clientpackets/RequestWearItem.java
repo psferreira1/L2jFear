@@ -1,23 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.network.clientpackets;
 
 import java.util.List;
@@ -48,22 +28,22 @@ public final class RequestWearItem extends L2GameClientPacket
 {
 	protected static final Logger LOGGER = Logger.getLogger(RequestWearItem.class);
 	
-	protected Future<?> _removeWearItemsTask;
+	protected Future<?> removeWearItemsTask;
 	
 	@SuppressWarnings("unused")
-	private int _unknow;
+	private int unknow;
 	
 	/** List of ItemID to Wear */
-	private int _listId;
+	private int listId;
 	
 	/** Number of Item to Wear */
-	private int _count;
+	private int count;
 	
 	/** Table of ItemId containing all Item to Wear */
-	private int[] _items;
+	private int[] items;
 	
 	/** Player that request a Try on */
-	protected L2PcInstance _activeChar;
+	protected L2PcInstance activeChar;
 	
 	class RemoveWearItemsTask implements Runnable
 	{
@@ -72,12 +52,14 @@ public final class RequestWearItem extends L2GameClientPacket
 		{
 			try
 			{
-				_activeChar.destroyWearedItems("Wear", null, true);
+				activeChar.destroyWearedItems("Wear", null, true);
 			}
 			catch (final Throwable e)
 			{
 				if (Config.ENABLE_ALL_EXCEPTIONS)
+				{
 					e.printStackTrace();
+				}
 				
 				LOGGER.error("", e);
 			}
@@ -85,36 +67,36 @@ public final class RequestWearItem extends L2GameClientPacket
 	}
 	
 	/**
-	 * Decrypt the RequestWearItem Client->Server Packet and Create _items table containing all ItemID to Wear.<BR>
+	 * Decrypt the RequestWearItem Client->Server Packet and Create items table containing all ItemID to Wear.<BR>
 	 * <BR>
 	 */
 	@Override
 	protected void readImpl()
 	{
 		// Read and Decrypt the RequestWearItem Client->Server Packet
-		_activeChar = getClient().getActiveChar();
-		_unknow = readD();
-		_listId = readD(); // List of ItemID to Wear
-		_count = readD(); // Number of Item to Wear
+		activeChar = getClient().getActiveChar();
+		unknow = readD();
+		listId = readD(); // List of ItemID to Wear
+		count = readD(); // Number of Item to Wear
 		
-		if (_count < 0)
+		if (count < 0)
 		{
-			_count = 0;
+			count = 0;
 		}
 		
-		if (_count > 100)
+		if (count > 100)
 		{
-			_count = 0; // prevent too long lists
+			count = 0; // prevent too long lists
 		}
 		
-		// Create _items table that will contain all ItemID to Wear
-		_items = new int[_count];
+		// Create items table that will contain all ItemID to Wear
+		items = new int[count];
 		
-		// Fill _items table with all ItemID to Wear
-		for (int i = 0; i < _count; i++)
+		// Fill items table with all ItemID to Wear
+		for (int i = 0; i < count; i++)
 		{
 			final int itemId = readD();
-			_items[i] = itemId;
+			items[i] = itemId;
 		}
 	}
 	
@@ -128,7 +110,9 @@ public final class RequestWearItem extends L2GameClientPacket
 		// Get the current player and return if null
 		final L2PcInstance player = getClient().getActiveChar();
 		if (player == null)
+		{
 			return;
+		}
 		
 		if (!Config.ALLOW_WEAR)
 		{
@@ -138,15 +122,19 @@ public final class RequestWearItem extends L2GameClientPacket
 		
 		// If Alternate rule Karma punishment is set to true, forbid Wear to player with Karma
 		if (!Config.ALT_GAME_KARMA_PLAYER_CAN_SHOP && player.getKarma() > 0)
+		{
 			return;
+		}
 		
 		// Check current target of the player and the INTERACTION_DISTANCE
 		final L2Object target = player.getTarget();
 		if (!player.isGM() && (target == null // No target (ie GM Shop)
 			|| !(target instanceof L2MerchantInstance || target instanceof L2MercManagerInstance) // Target not a merchant and not mercmanager
-		|| !player.isInsideRadius(target, L2NpcInstance.INTERACTION_DISTANCE, false, false)))
+			|| !player.isInsideRadius(target, L2NpcInstance.INTERACTION_DISTANCE, false, false)))
+		{
 			return; // Distance is too far
-			
+		}
+		
 		L2TradeList list = null;
 		
 		// Get the current merchant targeted by the player
@@ -166,7 +154,7 @@ public final class RequestWearItem extends L2GameClientPacket
 		
 		for (final L2TradeList tradeList : lists)
 		{
-			if (tradeList.getListId() == _listId)
+			if (tradeList.getListId() == listId)
 			{
 				list = tradeList;
 			}
@@ -178,10 +166,10 @@ public final class RequestWearItem extends L2GameClientPacket
 			return;
 		}
 		
-		_listId = list.getListId();
+		listId = list.getListId();
 		
 		// Check if the quantity of Item to Wear
-		if (_count < 1 || _listId >= 1000000)
+		if (count < 1 || listId >= 1000000)
 		{
 			sendPacket(ActionFailed.STATIC_PACKET);
 			return;
@@ -194,9 +182,9 @@ public final class RequestWearItem extends L2GameClientPacket
 		int slots = 0;
 		int weight = 0;
 		
-		for (int i = 0; i < _count; i++)
+		for (int i = 0; i < count; i++)
 		{
-			final int itemId = _items[i];
+			final int itemId = items[i];
 			
 			if (!list.containsItemId(itemId))
 			{
@@ -239,9 +227,9 @@ public final class RequestWearItem extends L2GameClientPacket
 		
 		// Proceed the wear
 		final InventoryUpdate playerIU = new InventoryUpdate();
-		for (int i = 0; i < _count; i++)
+		for (int i = 0; i < count; i++)
 		{
-			final int itemId = _items[i];
+			final int itemId = items[i];
 			
 			if (!list.containsItemId(itemId))
 			{
@@ -249,8 +237,8 @@ public final class RequestWearItem extends L2GameClientPacket
 				return;
 			}
 			
-			// If player doesn't own this item : Add this L2ItemInstance to Inventory and set properties lastchanged to ADDED and _wear to True
-			// If player already own this item : Return its L2ItemInstance (will not be destroy because property _wear set to False)
+			// If player doesn't own this item : Add this L2ItemInstance to Inventory and set properties lastchanged to ADDED and wear to True
+			// If player already own this item : Return its L2ItemInstance (will not be destroy because property wear set to False)
 			final L2ItemInstance item = player.getInventory().addWearItem("Wear", itemId, player, merchant);
 			
 			// Equip player with this item (set its location)
@@ -269,13 +257,13 @@ public final class RequestWearItem extends L2GameClientPacket
 		su.addAttribute(StatusUpdate.CUR_LOAD, player.getCurrentLoad());
 		player.sendPacket(su);
 		
-		// Send a Server->Client packet UserInfo to this L2PcInstance and CharInfo to all L2PcInstance in its _KnownPlayers
+		// Send a Server->Client packet UserInfo to this L2PcInstance and CharInfo to all L2PcInstance in its knownPlayers
 		player.broadcastUserInfo();
 		
 		// All weared items should be removed in ALLOW_WEAR_DELAY sec.
-		if (_removeWearItemsTask == null)
+		if (removeWearItemsTask == null)
 		{
-			_removeWearItemsTask = ThreadPoolManager.getInstance().scheduleGeneral(new RemoveWearItemsTask(), Config.WEAR_DELAY * 1000);
+			removeWearItemsTask = ThreadPoolManager.getInstance().scheduleGeneral(new RemoveWearItemsTask(), Config.WEAR_DELAY * 1000);
 		}
 		
 	}

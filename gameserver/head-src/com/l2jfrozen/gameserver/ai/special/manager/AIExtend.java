@@ -1,26 +1,6 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.ai.special.manager;
 
-import javolution.util.FastMap;
+import java.util.HashMap;
 
 import com.l2jfrozen.Config;
 import com.l2jfrozen.gameserver.datatables.sql.NpcTable;
@@ -34,18 +14,18 @@ import com.l2jfrozen.gameserver.templates.L2NpcTemplate;
  */
 public class AIExtend implements Runnable
 {
-	private static FastMap<Integer, AIExtend> _AI = new FastMap<>();
-	private int _idCharacter;
+	private static HashMap<Integer, AIExtend> ai = new HashMap<>();
+	private int idCharacter;
 	
 	/**
 	 * @param id
 	 */
 	public void addAI(final int id)
 	{
-		if (_AI.get(id) == null)
+		if (ai.get(id) == null)
 		{
-			_idCharacter = id;
-			_AI.put(id, this);
+			idCharacter = id;
+			ai.put(id, this);
 		}
 	}
 	
@@ -69,22 +49,22 @@ public class AIExtend implements Runnable
 		/** OnAttack (MOBGOTATTACKED) */
 		ON_ATTACK(true);
 		
-		private final boolean _isRegistred;
+		private final boolean isRegistred;
 		
 		Action(final boolean reg)
 		{
-			_isRegistred = reg;
+			isRegistred = reg;
 		}
 		
 		public boolean isRegistred()
 		{
-			return _isRegistred;
+			return isRegistred;
 		}
 	}
 	
 	public static void clearAllAI()
 	{
-		_AI.clear();
+		ai.clear();
 		L2NpcTemplate.clearAI();
 	}
 	
@@ -93,7 +73,7 @@ public class AIExtend implements Runnable
 	 */
 	public int getID()
 	{
-		return _idCharacter;
+		return idCharacter;
 	}
 	
 	public L2NpcTemplate addActionId(final int npcId, final Action actionType)
@@ -159,7 +139,9 @@ public class AIExtend implements Runnable
 		catch (final Exception e)
 		{
 			if (Config.ENABLE_ALL_EXCEPTIONS)
+			{
 				e.printStackTrace();
+			}
 			
 			return false;
 		}
@@ -175,7 +157,9 @@ public class AIExtend implements Runnable
 		catch (final Exception e)
 		{
 			if (Config.ENABLE_ALL_EXCEPTIONS)
+			{
 				e.printStackTrace();
+			}
 			return false;
 		}
 		return true;
@@ -190,7 +174,9 @@ public class AIExtend implements Runnable
 		catch (final Exception e)
 		{
 			if (Config.ENABLE_ALL_EXCEPTIONS)
+			{
 				e.printStackTrace();
+			}
 			return false;
 		}
 		
@@ -206,7 +192,9 @@ public class AIExtend implements Runnable
 		catch (final Exception e)
 		{
 			if (Config.ENABLE_ALL_EXCEPTIONS)
+			{
 				e.printStackTrace();
+			}
 			return false;
 		}
 		return true;
@@ -221,7 +209,9 @@ public class AIExtend implements Runnable
 		catch (final Exception e)
 		{
 			if (Config.ENABLE_ALL_EXCEPTIONS)
+			{
 				e.printStackTrace();
+			}
 			
 			return false;
 		}
@@ -238,7 +228,9 @@ public class AIExtend implements Runnable
 		catch (final Exception e)
 		{
 			if (Config.ENABLE_ALL_EXCEPTIONS)
+			{
 				e.printStackTrace();
+			}
 			
 			return false;
 		}

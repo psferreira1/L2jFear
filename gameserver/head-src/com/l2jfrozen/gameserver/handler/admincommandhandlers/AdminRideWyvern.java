@@ -1,23 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.handler.admincommandhandlers;
 
 import com.l2jfrozen.gameserver.datatables.SkillTable;
@@ -40,16 +20,11 @@ public class AdminRideWyvern implements IAdminCommandHandler
 		"admin_unride_strider",
 		"admin_unride",
 	};
-	private int _petRideId;
+	private int petRideId;
 	
 	@Override
 	public boolean useAdminCommand(final String command, final L2PcInstance activeChar)
 	{
-		/*
-		 * if(!AdminCommandAccessRights.getInstance().hasAccess(command, activeChar.getAccessLevel())){ return false; } if(Config.GMAUDIT) { Logger _logAudit = Logger.getLogger("gmaudit"); LogRecord record = new LogRecord(Level.INFO, command); record.setParameters(new Object[] { "GM: " +
-		 * activeChar.getName(), " to target [" + activeChar.getTarget() + "] " }); _logAudit.LOGGER(record); }
-		 */
-		
 		if (command.startsWith("admin_ride"))
 		{
 			if (activeChar.isMounted() || activeChar.getPet() != null)
@@ -64,7 +39,7 @@ public class AdminRideWyvern implements IAdminCommandHandler
 			
 			if (command.startsWith("admin_ride_wyvern"))
 			{
-				_petRideId = 12621;
+				petRideId = 12621;
 				
 				// Add skill Wyvern Breath
 				activeChar.addSkill(SkillTable.getInstance().getInfo(4289, 1));
@@ -72,7 +47,7 @@ public class AdminRideWyvern implements IAdminCommandHandler
 			}
 			else if (command.startsWith("admin_ride_strider"))
 			{
-				_petRideId = 12526;
+				petRideId = 12526;
 			}
 			else
 			{
@@ -85,9 +60,11 @@ public class AdminRideWyvern implements IAdminCommandHandler
 			}
 			
 			if (!activeChar.disarmWeapons())
+			{
 				return false;
+			}
 			
-			Ride mount = new Ride(activeChar.getObjectId(), Ride.ACTION_MOUNT, _petRideId);
+			Ride mount = new Ride(activeChar.getObjectId(), Ride.ACTION_MOUNT, petRideId);
 			activeChar.sendPacket(mount);
 			activeChar.broadcastPacket(mount);
 			activeChar.setMountType(mount.getMountType());

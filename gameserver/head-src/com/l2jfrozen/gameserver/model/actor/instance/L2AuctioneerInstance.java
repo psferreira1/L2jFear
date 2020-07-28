@@ -1,32 +1,11 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.model.actor.instance;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
-
-import javolution.util.FastMap;
 
 import com.l2jfrozen.Config;
 import com.l2jfrozen.gameserver.ai.CtrlIntention;
@@ -48,7 +27,7 @@ public final class L2AuctioneerInstance extends L2FolkInstance
 	private static final int COND_BUSY_BECAUSE_OF_SIEGE = 1;
 	private static final int COND_REGULAR = 3;
 	
-	private final Map<Integer, Auction> _pendingAuctions = new FastMap<>();
+	private final Map<Integer, Auction> pendingAuctions = new HashMap<>();
 	
 	public L2AuctioneerInstance(final int objectId, final L2NpcTemplate template)
 	{
@@ -59,7 +38,10 @@ public final class L2AuctioneerInstance extends L2FolkInstance
 	public void onAction(final L2PcInstance player)
 	{
 		if (!canTarget(player))
+		{
+			player.sendPacket(ActionFailed.STATIC_PACKET);
 			return;
+		}
 		
 		player.setLastFolkNPC(this);
 		
@@ -98,17 +80,18 @@ public final class L2AuctioneerInstance extends L2FolkInstance
 	public void onBypassFeedback(final L2PcInstance player, final String command)
 	{
 		final int condition = validateCondition(player);
+		
 		if (condition == COND_ALL_FALSE)
 		{
-			// TODO: html
 			player.sendMessage("Wrong conditions.");
+			player.sendPacket(ActionFailed.STATIC_PACKET);
 			return;
 		}
 		
 		if (condition == COND_BUSY_BECAUSE_OF_SIEGE)
 		{
-			// TODO: html
 			player.sendMessage("Busy because of siege.");
+			player.sendPacket(ActionFailed.STATIC_PACKET);
 			return;
 		}
 		else if (condition == COND_REGULAR)
@@ -117,6 +100,7 @@ public final class L2AuctioneerInstance extends L2FolkInstance
 			String actualCommand = st.nextToken(); // Get actual command
 			
 			String val = "";
+			
 			if (st.countTokens() >= 1)
 			{
 				val = st.nextToken();
@@ -125,27 +109,33 @@ public final class L2AuctioneerInstance extends L2FolkInstance
 			if (actualCommand.equalsIgnoreCase("auction"))
 			{
 				if (val == "")
+				{
+					player.sendPacket(ActionFailed.STATIC_PACKET);
 					return;
+				}
 				
 				try
 				{
-					final int days = Integer.parseInt(val);
+					int days = Integer.parseInt(val);
+					
 					try
 					{
 						SimpleDateFormat format = new SimpleDateFormat("dd/MM/yyyy HH:mm");
 						int bid = 0;
+						
 						if (st.countTokens() >= 1)
 						{
 							bid = Integer.parseInt(st.nextToken());
 						}
 						
 						Auction a = new Auction(player.getClan().getHasHideout(), player.getClan(), days * 86400000L, bid, ClanHallManager.getInstance().getClanHallByOwner(player.getClan()).getName());
-						if (_pendingAuctions.get(a.getId()) != null)
+						
+						if (pendingAuctions.get(a.getId()) != null)
 						{
-							_pendingAuctions.remove(a.getId());
+							pendingAuctions.remove(a.getId());
 						}
 						
-						_pendingAuctions.put(a.getId(), a);
+						pendingAuctions.put(a.getId(), a);
 						
 						String filename = "data/html/auction/AgitSale3.htm";
 						NpcHtmlMessage html = new NpcHtmlMessage(1);
@@ -158,16 +148,13 @@ public final class L2AuctioneerInstance extends L2FolkInstance
 						html.replace("%AGIT_LINK_BACK%", "bypass -h npc_" + getObjectId() + "_sale2");
 						html.replace("%objectId%", String.valueOf(getObjectId()));
 						player.sendPacket(html);
-						
-						html = null;
-						format = null;
-						a = null;
-						filename = null;
 					}
 					catch (final Exception e)
 					{
 						if (Config.ENABLE_ALL_EXCEPTIONS)
+						{
 							e.printStackTrace();
+						}
 						
 						player.sendMessage("Invalid bid!");
 					}
@@ -175,7 +162,9 @@ public final class L2AuctioneerInstance extends L2FolkInstance
 				catch (final Exception e)
 				{
 					if (Config.ENABLE_ALL_EXCEPTIONS)
+					{
 						e.printStackTrace();
+					}
 					
 					player.sendMessage("Invalid auction duration!");
 				}
@@ -185,15 +174,17 @@ public final class L2AuctioneerInstance extends L2FolkInstance
 			{
 				try
 				{
-					Auction a = _pendingAuctions.get(player.getClan().getHasHideout());
+					Auction a = pendingAuctions.get(player.getClan().getHasHideout());
 					a.confirmAuction();
-					_pendingAuctions.remove(player.getClan().getHasHideout());
+					pendingAuctions.remove(player.getClan().getHasHideout());
 					a = null;
 				}
 				catch (final Exception e)
 				{
 					if (Config.ENABLE_ALL_EXCEPTIONS)
+					{
 						e.printStackTrace();
+					}
 					
 					player.sendMessage("Invalid auction");
 				}
@@ -202,7 +193,9 @@ public final class L2AuctioneerInstance extends L2FolkInstance
 			else if (actualCommand.equalsIgnoreCase("bidding"))
 			{
 				if (val == "")
+				{
 					return;
+				}
 				if (Config.DEBUG)
 				{
 					player.sendMessage("bidding show successful");
@@ -254,7 +247,9 @@ public final class L2AuctioneerInstance extends L2FolkInstance
 				catch (final Exception e)
 				{
 					if (Config.ENABLE_ALL_EXCEPTIONS)
+					{
 						e.printStackTrace();
+					}
 					
 					player.sendMessage("Invalid auction!");
 				}
@@ -264,7 +259,9 @@ public final class L2AuctioneerInstance extends L2FolkInstance
 			else if (actualCommand.equalsIgnoreCase("bid"))
 			{
 				if (val == "")
+				{
 					return;
+				}
 				
 				try
 				{
@@ -286,13 +283,17 @@ public final class L2AuctioneerInstance extends L2FolkInstance
 					catch (final Exception e)
 					{
 						if (Config.ENABLE_ALL_EXCEPTIONS)
+						{
 							e.printStackTrace();
+						}
 					}
 				}
 				catch (final Exception e)
 				{
 					if (Config.ENABLE_ALL_EXCEPTIONS)
+					{
 						e.printStackTrace();
+					}
 					
 					player.sendMessage("Invalid auction!");
 				}
@@ -308,7 +309,9 @@ public final class L2AuctioneerInstance extends L2FolkInstance
 				}
 				
 				if (val == "")
+				{
 					return;
+				}
 				
 				if (player.getClan().getAuctionBiddedAt() > 0 && player.getClan().getAuctionBiddedAt() != Integer.parseInt(val) || player.getClan().getHasHideout() > 0)
 				{
@@ -341,7 +344,9 @@ public final class L2AuctioneerInstance extends L2FolkInstance
 				catch (final Exception e)
 				{
 					if (Config.ENABLE_ALL_EXCEPTIONS)
+					{
 						e.printStackTrace();
+					}
 					
 					player.sendMessage("Invalid auction!");
 				}
@@ -351,11 +356,13 @@ public final class L2AuctioneerInstance extends L2FolkInstance
 			{
 				List<Auction> auctions = AuctionManager.getInstance().getAuctions();
 				SimpleDateFormat format = new SimpleDateFormat("dd/MM/yyyy");
+				
 				/** Limit for make new page, prevent client crash **/
 				int limit = 15;
 				int start;
 				int i = 1;
-				final double npage = Math.ceil((float) auctions.size() / limit);
+				
+				double npage = Math.ceil((float) auctions.size() / limit);
 				
 				if (val == "")
 				{
@@ -373,13 +380,9 @@ public final class L2AuctioneerInstance extends L2FolkInstance
 				}
 				
 				String items = "";
-				items += "<table width=280 border=0><tr>";
-				for (int j = 1; j <= npage; j++)
-				{
-					items += "<td><center><a action=\"bypass -h npc_" + getObjectId() + "_list " + j + "\"> Page " + j + " </a></center></td>";
-				}
-				items += "</tr></table>" + "<table width=280 border=0>";
-				for (final Auction a : auctions)
+				items += "<table width=280>";
+				
+				for (Auction a : auctions)
 				{
 					if (i > limit)
 					{
@@ -395,21 +398,30 @@ public final class L2AuctioneerInstance extends L2FolkInstance
 						i++;
 					}
 					
-					items += "<tr>" + "<td>" + ClanHallManager.getInstance().getClanHallById(a.getItemId()).getLocation() + "</td>" + "<td><a action=\"bypass -h npc_" + getObjectId() + "_bidding " + a.getId() + "\">" + a.getItemName() + "</a></td>" + "<td>" + format.format(a.getEndDate()) + "</td>" + "<td>" + a.getStartingBid() + "</td>" + "</tr>";
+					items += "<tr>" + "<td><font color=\"AAAAFF\">" + ClanHallManager.getInstance().getClanHallById(a.getItemId()).getLocation() + "</font></td>" + "<td><font color=\"FFFFAA\"><a action=\"bypass -h npc_" + getObjectId() + "_bidding " + a.getId() + "\">" + a.getItemName() + "</a></font></td>" + "<td>" + format.format(a.getEndDate()) + "</td>" + "<td>" + a.getStartingBid()
+						+ "</font></td>" + "</tr>";
 				}
+				
 				items += "</table>";
+				
+				// Paginator
+				items += "<table width=280><tr>";
+				
+				for (int j = 1; j <= npage; j++)
+				{
+					items += "<td><center><a action=\"bypass -h npc_" + getObjectId() + "_list " + j + "\"> Page " + j + " </a></center></td>";
+				}
+				
+				items += "</tr></table>";
+				// Paginator end
+				
 				String filename = "data/html/auction/AgitAuctionList.htm";
 				
-				final NpcHtmlMessage html = new NpcHtmlMessage(1);
+				NpcHtmlMessage html = new NpcHtmlMessage(getObjectId());
 				html.setFile(filename);
 				html.replace("%AGIT_LINK_BACK%", "bypass -h npc_" + getObjectId() + "_start");
 				html.replace("%itemsField%", items);
 				player.sendPacket(html);
-				
-				auctions = null;
-				format = null;
-				items = null;
-				filename = null;
 				return;
 			}
 			else if (actualCommand.equalsIgnoreCase("bidlist"))
@@ -419,7 +431,9 @@ public final class L2AuctioneerInstance extends L2FolkInstance
 				if (val == "")
 				{
 					if (player.getClan().getAuctionBiddedAt() <= 0)
+					{
 						return;
+					}
 					auctionId = player.getClan().getAuctionBiddedAt();
 				}
 				else
@@ -678,7 +692,9 @@ public final class L2AuctioneerInstance extends L2FolkInstance
 				catch (final Exception e)
 				{
 					if (Config.ENABLE_ALL_EXCEPTIONS)
+					{
 						e.printStackTrace();
+					}
 					
 					player.sendMessage("Invalid auction!");
 				}
@@ -739,7 +755,9 @@ public final class L2AuctioneerInstance extends L2FolkInstance
 		if (getCastle() != null && getCastle().getCastleId() > 0)
 		{
 			if (getCastle().getSiege().getIsInProgress())
+			{
 				return COND_BUSY_BECAUSE_OF_SIEGE; // Busy because of siege
+			}
 			return COND_REGULAR;
 		}
 		return COND_ALL_FALSE;

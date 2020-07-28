@@ -1,30 +1,9 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 
 package com.l2jfrozen.gameserver.handler.voicedcommandhandlers;
 
 import com.l2jfrozen.Config;
 import com.l2jfrozen.gameserver.handler.IVoicedCommandHandler;
 import com.l2jfrozen.gameserver.model.actor.instance.L2PcInstance;
-import com.l2jfrozen.gameserver.model.entity.olympiad.Olympiad;
 import com.l2jfrozen.gameserver.network.serverpackets.SetupGauge;
 import com.l2jfrozen.gameserver.thread.ThreadPoolManager;
 
@@ -75,7 +54,9 @@ public class FarmPvpCmd implements IVoicedCommandHandler
 			message = Config.PVP2_CUSTOM_MESSAGE;
 		}
 		else
+		{
 			return false;
+		}
 		
 		if (activeChar.isInJail())
 		{
@@ -112,7 +93,7 @@ public class FarmPvpCmd implements IVoicedCommandHandler
 			activeChar.sendMessage("Sorry,you are PK");
 			return false;
 		}
-		else if (Olympiad.getInstance().isRegistered(activeChar))
+		else if (activeChar.isInOlympiadMode())
 		{
 			activeChar.sendMessage("Sorry, you can't use this command while registered in Olympiad");
 			return false;
@@ -135,30 +116,32 @@ public class FarmPvpCmd implements IVoicedCommandHandler
 	
 	class teleportTask implements Runnable
 	{
-		private final L2PcInstance _activeChar;
-		private final int _x;
-		private final int _y;
-		private final int _z;
-		private final String _message;
+		private final L2PcInstance activeChar;
+		private final int x;
+		private final int y;
+		private final int z;
+		private final String message;
 		
 		teleportTask(final L2PcInstance activeChar, final int x, final int y, final int z, final String message)
 		{
-			_activeChar = activeChar;
-			_x = x;
-			_y = y;
-			_z = z;
-			_message = message;
+			this.activeChar = activeChar;
+			this.x = x;
+			this.y = y;
+			this.z = z;
+			this.message = message;
 		}
 		
 		@Override
 		public void run()
 		{
-			if (_activeChar == null)
+			if (activeChar == null)
+			{
 				return;
+			}
 			
-			_activeChar.teleToLocation(_x, _y, _z);
-			_activeChar.sendMessage(_message);
-			_activeChar.setIsImobilised(false);
+			activeChar.teleToLocation(x, y, z);
+			activeChar.sendMessage(message);
+			activeChar.setIsImobilised(false);
 		}
 	}
 }

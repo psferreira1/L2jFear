@@ -1,23 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.model;
 
 /**
@@ -26,12 +6,12 @@ package com.l2jfrozen.gameserver.model;
  */
 public final class TradeItem
 {
-	private int _objectId;
-	private int _itemId;
-	private int _price;
-	private int _storePrice;
-	private int _count;
-	private int _enchantLevel;
+	private int objectId;
+	private int itemId;
+	private int price;
+	private int storePrice;
+	private int count;
+	private int enchantLevel;
 	
 	public TradeItem()
 	{
@@ -40,62 +20,62 @@ public final class TradeItem
 	
 	public void setObjectId(final int id)
 	{
-		_objectId = id;
+		objectId = id;
 	}
 	
 	public int getObjectId()
 	{
-		return _objectId;
+		return objectId;
 	}
 	
 	public void setItemId(final int id)
 	{
-		_itemId = id;
+		itemId = id;
 	}
 	
 	public int getItemId()
 	{
-		return _itemId;
+		return itemId;
 	}
 	
 	public void setOwnersPrice(final int price)
 	{
-		_price = price;
+		this.price = price;
 	}
 	
 	public int getOwnersPrice()
 	{
-		return _price;
+		return price;
 	}
 	
 	public void setstorePrice(final int price)
 	{
-		_storePrice = price;
+		storePrice = price;
 	}
 	
 	public int getStorePrice()
 	{
-		return _storePrice;
+		return storePrice;
 	}
 	
 	public void setCount(final int count)
 	{
-		_count = count;
+		this.count = count;
 	}
 	
 	public int getCount()
 	{
-		return _count;
+		return count;
 	}
 	
 	public void setEnchantLevel(final int enchant)
 	{
-		_enchantLevel = enchant;
+		enchantLevel = enchant;
 	}
 	
 	public int getEnchantLevel()
 	{
-		return _enchantLevel;
+		return enchantLevel;
 	}
 	
 }

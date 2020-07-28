@@ -1,23 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.network.serverpackets;
 
 import org.apache.log4j.Logger;
@@ -37,14 +17,13 @@ public class SSQStatus extends L2GameServerPacket
 {
 	private static Logger LOGGER = Logger.getLogger(SSQStatus.class);
 	
-	private static final String _S__F5_SSQStatus = "[S] F5 RecordUpdate";
-	private final L2PcInstance _activevChar;
-	private final int _page;
+	private final L2PcInstance activevChar;
+	private final int page;
 	
 	public SSQStatus(final L2PcInstance player, final int recordPage)
 	{
-		_activevChar = player;
-		_page = recordPage;
+		activevChar = player;
+		page = recordPage;
 	}
 	
 	@Override
@@ -56,13 +35,13 @@ public class SSQStatus extends L2GameServerPacket
 		
 		writeC(0xf5);
 		
-		writeC(_page);
+		writeC(page);
 		writeC(SevenSigns.getInstance().getCurrentPeriod()); // current period?
 		
 		int dawnPercent = 0;
 		int duskPercent = 0;
 		
-		switch (_page)
+		switch (page)
 		{
 			case 1:
 				// [ddd cc dd ddd c ddd c]
@@ -98,11 +77,11 @@ public class SSQStatus extends L2GameServerPacket
 						break;
 				}
 				
-				writeC(SevenSigns.getInstance().getPlayerCabal(_activevChar));
-				writeC(SevenSigns.getInstance().getPlayerSeal(_activevChar));
+				writeC(SevenSigns.getInstance().getPlayerCabal(activevChar));
+				writeC(SevenSigns.getInstance().getPlayerSeal(activevChar));
 				
-				writeD(SevenSigns.getInstance().getPlayerStoneContrib(_activevChar)); // Seal Stones Turned-In
-				writeD(SevenSigns.getInstance().getPlayerAdenaCollect(_activevChar)); // Ancient Adena to Collect
+				writeD(SevenSigns.getInstance().getPlayerStoneContrib(activevChar)); // Seal Stones Turned-In
+				writeD(SevenSigns.getInstance().getPlayerAdenaCollect(activevChar)); // Ancient Adena to Collect
 				
 				final double dawnStoneScore = SevenSigns.getInstance().getCurrentStoneScore(SevenSigns.CABAL_DAWN);
 				final int dawnFestivalScore = SevenSigns.getInstance().getCurrentFestivalScore(SevenSigns.CABAL_DAWN);
@@ -414,13 +393,9 @@ public class SSQStatus extends L2GameServerPacket
 		}
 	}
 	
-	/*
-	 * (non-Javadoc)
-	 * @see com.l2jfrozen.gameserver.serverpackets.ServerBasePacket#getType()
-	 */
 	@Override
 	public String getType()
 	{
-		return _S__F5_SSQStatus;
+		return "[S] F5 RecordUpdate";
 	}
 }

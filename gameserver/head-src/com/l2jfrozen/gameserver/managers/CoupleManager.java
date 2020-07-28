@@ -1,39 +1,16 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.managers;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-
-import javolution.util.FastList;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.log4j.Logger;
 
-import com.l2jfrozen.Config;
 import com.l2jfrozen.gameserver.model.L2World;
 import com.l2jfrozen.gameserver.model.actor.instance.L2PcInstance;
 import com.l2jfrozen.gameserver.model.entity.Wedding;
-import com.l2jfrozen.util.CloseUtil;
-import com.l2jfrozen.util.database.DatabaseUtils;
 import com.l2jfrozen.util.database.L2DatabaseFactory;
 
 /**
@@ -42,79 +19,57 @@ import com.l2jfrozen.util.database.L2DatabaseFactory;
 public class CoupleManager
 {
 	protected static final Logger LOGGER = Logger.getLogger(CoupleManager.class);
+	private static final String SELECT_COUPLES_ID = "SELECT id FROM mods_wedding ORDER BY id";
 	
-	// =========================================================
-	// Data Field
-	private final FastList<Wedding> _couples = new FastList<>();
+	private List<Wedding> couples = new ArrayList<>();
 	
 	public static final CoupleManager getInstance()
 	{
-		return SingletonHolder._instance;
+		return SingletonHolder.instance;
 	}
 	
 	public CoupleManager()
 	{
 		LOGGER.info("Initializing CoupleManager");
-		_couples.clear();
+		couples.clear();
 		load();
 	}
 	
-	// =========================================================
-	// Method - Public
 	public void reload()
 	{
-		_couples.clear();
+		couples.clear();
 		load();
 	}
 	
-	// =========================================================
-	// Method - Private
 	private final void load()
 	{
-		Connection con = null;
-		try
+		try (Connection con = L2DatabaseFactory.getInstance().getConnection();
+			PreparedStatement statement = con.prepareStatement(SELECT_COUPLES_ID);
+			ResultSet rs = statement.executeQuery())
 		{
-			PreparedStatement statement;
-			ResultSet rs;
-			
-			con = L2DatabaseFactory.getInstance().getConnection(false);
-			
-			statement = con.prepareStatement("Select id from mods_wedding order by id");
-			rs = statement.executeQuery();
-			
 			while (rs.next())
 			{
 				getCouples().add(new Wedding(rs.getInt("id")));
 			}
 			
-			DatabaseUtils.close(statement);
-			statement = null;
-			rs.close();
-			rs = null;
-			
-			LOGGER.info("Loaded: " + getCouples().size() + " couples(s)");
+			if (!getCouples().isEmpty())
+			{
+				LOGGER.info("Loaded: " + getCouples().size() + " couples(s)");
+			}
 		}
-		catch (final Exception e)
+		catch (Exception e)
 		{
-			if (Config.ENABLE_ALL_EXCEPTIONS)
-				e.printStackTrace();
-			
-			LOGGER.error("Exception: CoupleManager.load(): " + e.getMessage(), e);
-		}
-		finally
-		{
-			CloseUtil.close(con);
-			con = null;
+			LOGGER.error("CoupleManager.load : Could not select from mods_wedding table", e);
 		}
 	}
 	
-	// =========================================================
-	// Property - Public
 	public final Wedding getCouple(final int coupleId)
 	{
 		final int index = getCoupleIndex(coupleId);
 		if (index >= 0)
+		{
 			return getCouples().get(index);
+		}
 		return null;
 	}
 	
@@ -124,17 +79,17 @@ public class CoupleManager
 		{
 			if (player1.getPartnerId() == 0 && player2.getPartnerId() == 0)
 			{
-				final int _player1id = player1.getObjectId();
-				final int _player2id = player2.getObjectId();
+				final int player1id = player1.getObjectId();
+				final int player2id = player2.getObjectId();
 				
-				Wedding _new = new Wedding(player1, player2);
-				getCouples().add(_new);
-				player1.setPartnerId(_player2id);
-				player2.setPartnerId(_player1id);
-				player1.setCoupleId(_new.getId());
-				player2.setCoupleId(_new.getId());
+				Wedding newWedding = new Wedding(player1, player2);
+				getCouples().add(newWedding);
+				player1.setPartnerId(player2id);
+				player2.setPartnerId(player1id);
+				player1.setCoupleId(newWedding.getId());
+				player2.setCoupleId(newWedding.getId());
 				
-				_new = null;
+				newWedding = null;
 			}
 		}
 	}
@@ -186,13 +141,13 @@ public class CoupleManager
 		return -1;
 	}
 	
-	public final FastList<Wedding> getCouples()
+	public List<Wedding> getCouples()
 	{
-		return _couples;
+		return couples;
 	}
 	
 	private static class SingletonHolder
 	{
-		protected static final CoupleManager _instance = new CoupleManager();
+		protected static final CoupleManager instance = new CoupleManager();
 	}
 }

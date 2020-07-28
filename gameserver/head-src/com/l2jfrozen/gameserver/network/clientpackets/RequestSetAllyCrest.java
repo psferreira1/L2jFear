@@ -1,23 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.network.clientpackets;
 
 import java.sql.Connection;
@@ -26,32 +6,32 @@ import java.sql.SQLException;
 
 import org.apache.log4j.Logger;
 
-import com.l2jfrozen.Config;
 import com.l2jfrozen.gameserver.cache.CrestCache;
 import com.l2jfrozen.gameserver.datatables.sql.ClanTable;
 import com.l2jfrozen.gameserver.idfactory.IdFactory;
 import com.l2jfrozen.gameserver.model.L2Clan;
 import com.l2jfrozen.gameserver.model.actor.instance.L2PcInstance;
-import com.l2jfrozen.util.CloseUtil;
-import com.l2jfrozen.util.database.DatabaseUtils;
 import com.l2jfrozen.util.database.L2DatabaseFactory;
 
 public final class RequestSetAllyCrest extends L2GameClientPacket
 {
-	static Logger LOGGER = Logger.getLogger(RequestSetAllyCrest.class);
+	public static Logger LOGGER = Logger.getLogger(RequestSetAllyCrest.class);
+	private static final String UPDATE_CLAN_ALLY_CREST = "UPDATE clan_data SET ally_crest_id = ? WHERE ally_id=?";
 	
-	private int _length;
-	private byte[] _data;
+	private int length;
+	private byte[] data;
 	
 	@Override
 	protected void readImpl()
 	{
-		_length = readD();
-		if (_length < 0 || _length > 192)
+		length = readD();
+		if (length < 0 || length > 192)
+		{
 			return;
+		}
 		
-		_data = new byte[_length];
-		readB(_data);
+		data = new byte[length];
+		readB(data);
 	}
 	
 	@Override
@@ -59,15 +39,17 @@ public final class RequestSetAllyCrest extends L2GameClientPacket
 	{
 		final L2PcInstance activeChar = getClient().getActiveChar();
 		if (activeChar == null)
+		{
 			return;
+		}
 		
-		if (_length < 0)
+		if (length < 0)
 		{
 			activeChar.sendMessage("File transfer error.");
 			return;
 		}
 		
-		if (_length > 192)
+		if (length > 192)
 		{
 			activeChar.sendMessage("The crest file size was too big (max 192 bytes).");
 			return;
@@ -78,13 +60,15 @@ public final class RequestSetAllyCrest extends L2GameClientPacket
 			final L2Clan leaderclan = ClanTable.getInstance().getClan(activeChar.getAllyId());
 			
 			if (activeChar.getClanId() != leaderclan.getClanId() || !activeChar.isClanLeader())
+			{
 				return;
+			}
 			
 			final CrestCache crestCache = CrestCache.getInstance();
 			
 			final int newId = IdFactory.getInstance().getNextId();
 			
-			if (!crestCache.saveAllyCrest(newId, _data))
+			if (!crestCache.saveAllyCrest(newId, data))
 			{
 				LOGGER.warn("Error loading crest of ally:" + leaderclan.getAllyName());
 				return;
@@ -95,30 +79,16 @@ public final class RequestSetAllyCrest extends L2GameClientPacket
 				crestCache.removeAllyCrest(leaderclan.getAllyCrestId());
 			}
 			
-			Connection con = null;
-			
-			try
+			try (Connection con = L2DatabaseFactory.getInstance().getConnection();
+				PreparedStatement statement = con.prepareStatement(UPDATE_CLAN_ALLY_CREST))
 			{
-				con = L2DatabaseFactory.getInstance().getConnection(false);
-				PreparedStatement statement = con.prepareStatement("UPDATE clan_data SET ally_crest_id = ? WHERE ally_id = ?");
 				statement.setInt(1, newId);
 				statement.setInt(2, leaderclan.getAllyId());
 				statement.executeUpdate();
-				DatabaseUtils.close(statement);
-				
-				statement = null;
 			}
-			catch (final SQLException e)
+			catch (SQLException e)
 			{
-				if (Config.ENABLE_ALL_EXCEPTIONS)
-					e.printStackTrace();
-				
-				LOGGER.warn("could not update the ally crest id:" + e.getMessage());
-			}
-			finally
-			{
-				CloseUtil.close(con);
-				con = null;
+				LOGGER.error("RequestSetAllyCrest.runImpl : Could not update the ally crest id", e);
 			}
 			
 			for (final L2Clan clan : ClanTable.getInstance().getClans())

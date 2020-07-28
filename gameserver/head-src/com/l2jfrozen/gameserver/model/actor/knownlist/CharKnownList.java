@@ -1,29 +1,10 @@
-/* L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.model.actor.knownlist;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
-
-import javolution.util.FastList;
-import javolution.util.FastMap;
+import java.util.concurrent.ConcurrentHashMap;
 
 import com.l2jfrozen.gameserver.model.L2Character;
 import com.l2jfrozen.gameserver.model.L2Object;
@@ -34,20 +15,14 @@ import com.l2jfrozen.gameserver.util.Util;
 
 public class CharKnownList extends ObjectKnownList
 {
-	// =========================================================
-	// Data Field
-	private Map<Integer, L2PcInstance> _knownPlayers;
-	private Map<Integer, Integer> _knownRelations;
+	private Map<Integer, L2PcInstance> knownPlayers;
+	private Map<Integer, Integer> knownRelations;
 	
-	// =========================================================
-	// Constructor
 	public CharKnownList(final L2Character activeChar)
 	{
 		super(activeChar);
 	}
 	
-	// =========================================================
-	// Method - Public
 	@Override
 	public boolean addKnownObject(final L2Object object)
 	{
@@ -58,7 +33,9 @@ public class CharKnownList extends ObjectKnownList
 	public boolean addKnownObject(final L2Object object, final L2Character dropper)
 	{
 		if (!super.addKnownObject(object, dropper))
+		{
 			return false;
+		}
 		
 		if (object instanceof L2PcInstance)
 		{
@@ -69,8 +46,8 @@ public class CharKnownList extends ObjectKnownList
 	}
 	
 	/**
-	 * @param player The L2PcInstance to search in _knownPlayer
-	 * @return True if the L2PcInstance is in _knownPlayer of the L2Character.
+	 * @param  player The L2PcInstance to search in knownPlayer
+	 * @return        True if the L2PcInstance is in knownPlayer of the L2Character.
 	 */
 	public final boolean knowsThePlayer(final L2PcInstance player)
 	{
@@ -78,7 +55,7 @@ public class CharKnownList extends ObjectKnownList
 	}
 	
 	/**
-	 * Remove all L2Object from _knownObjects and _knownPlayer of the L2Character then cancel Attak or Cast and notify AI.
+	 * Remove all L2Object from knownObjects and knownPlayer of the L2Character then cancel Attak or Cast and notify AI.
 	 */
 	@Override
 	public final void removeAllKnownObjects()
@@ -87,7 +64,7 @@ public class CharKnownList extends ObjectKnownList
 		getKnownPlayers().clear();
 		getKnownRelations().clear();
 		
-		// Set _target of the L2Character to null
+		// Set target of the L2Character to null
 		// Cancel Attack or Cast
 		getActiveChar().setTarget(null);
 		
@@ -102,7 +79,9 @@ public class CharKnownList extends ObjectKnownList
 	public boolean removeKnownObject(final L2Object object)
 	{
 		if (!super.removeKnownObject(object))
+		{
 			return false;
+		}
 		
 		if (object instanceof L2PcInstance)
 		{
@@ -118,11 +97,6 @@ public class CharKnownList extends ObjectKnownList
 		return true;
 	}
 	
-	// =========================================================
-	// Method - Private
-	
-	// =========================================================
-	// Property - Public
 	public L2Character getActiveChar()
 	{
 		return (L2Character) super.getActiveObject();
@@ -142,9 +116,9 @@ public class CharKnownList extends ObjectKnownList
 	
 	public Collection<L2Character> getKnownCharacters()
 	{
-		final FastList<L2Character> result = new FastList<>();
+		List<L2Character> result = new ArrayList<>();
 		
-		for (final L2Object obj : getKnownObjects().values())
+		for (L2Object obj : getKnownObjects().values())
 		{
 			if (obj != null && obj instanceof L2Character)
 			{
@@ -157,9 +131,9 @@ public class CharKnownList extends ObjectKnownList
 	
 	public Collection<L2Character> getKnownCharactersInRadius(final long radius)
 	{
-		final FastList<L2Character> result = new FastList<>();
+		List<L2Character> result = new ArrayList<>();
 		
-		for (final L2Object obj : getKnownObjects().values())
+		for (L2Object obj : getKnownObjects().values())
 		{
 			if (obj instanceof L2PcInstance)
 			{
@@ -189,33 +163,35 @@ public class CharKnownList extends ObjectKnownList
 	
 	public final Map<Integer, L2PcInstance> getKnownPlayers()
 	{
-		if (_knownPlayers == null)
+		if (knownPlayers == null)
 		{
-			_knownPlayers = new FastMap<Integer, L2PcInstance>().shared();
+			knownPlayers = new ConcurrentHashMap<>();
 		}
 		
-		return _knownPlayers;
+		return knownPlayers;
 	}
 	
 	public final Map<Integer, Integer> getKnownRelations()
 	{
-		if (_knownRelations == null)
+		if (knownRelations == null)
 		{
-			_knownRelations = new FastMap<Integer, Integer>().shared();
+			knownRelations = new ConcurrentHashMap<>();
 		}
 		
-		return _knownRelations;
+		return knownRelations;
 	}
 	
 	public final Collection<L2PcInstance> getKnownPlayersInRadius(final long radius)
 	{
-		final FastList<L2PcInstance> result = new FastList<>();
+		List<L2PcInstance> result = new ArrayList<>();
 		
-		for (final L2PcInstance player : getKnownPlayers().values())
+		for (L2PcInstance player : getKnownPlayers().values())
+		{
 			if (Util.checkIfInRange((int) radius, getActiveChar(), player, true))
 			{
 				result.add(player);
 			}
+		}
 		
 		return result;
 	}

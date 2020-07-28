@@ -1,41 +1,16 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.model;
 
+import java.util.ArrayList;
 import java.util.List;
-
-import javolution.util.FastList;
 
 import com.l2jfrozen.gameserver.model.actor.instance.L2NpcInstance;
 
 public class L2SiegeClan
 {
-	// ==========================================================================================
-	// Instance
-	// ===============================================================
-	// Data Field
-	private int _clanId = 0;
-	private List<L2NpcInstance> _flag = new FastList<>();
-	private int _numFlagsAdded = 0;
-	private SiegeClanType _type;
+	private int clanId = 0;
+	private List<L2NpcInstance> flag = new ArrayList<>();
+	private int numFlagsAdded = 0;
+	private SiegeClanType type;
 	
 	public enum SiegeClanType
 	{
@@ -45,32 +20,29 @@ public class L2SiegeClan
 		DEFENDER_PENDING
 	}
 	
-	// =========================================================
-	// Constructor
-	
 	public L2SiegeClan(final int clanId, final SiegeClanType type)
 	{
-		_clanId = clanId;
-		_type = type;
+		this.clanId = clanId;
+		this.type = type;
 	}
 	
-	// =========================================================
-	// Method - Public
 	public int getNumFlags()
 	{
-		return _numFlagsAdded;
+		return numFlagsAdded;
 	}
 	
 	public void addFlag(final L2NpcInstance flag)
 	{
-		_numFlagsAdded++;
+		numFlagsAdded++;
 		getFlag().add(flag);
 	}
 	
 	public boolean removeFlag(final L2NpcInstance flag)
 	{
 		if (flag == null)
+		{
 			return false;
+		}
 		
 		final boolean ret = getFlag().remove(flag);
 		
@@ -109,7 +81,7 @@ public class L2SiegeClan
 			}
 		}
 		
-		_numFlagsAdded--; // remove flag count
+		numFlagsAdded--; // remove flag count
 		flag.deleteMe();
 		return ret;
 	}
@@ -122,30 +94,28 @@ public class L2SiegeClan
 		}
 	}
 	
-	// =========================================================
-	// Property
 	public final int getClanId()
 	{
-		return _clanId;
+		return clanId;
 	}
 	
 	public final List<L2NpcInstance> getFlag()
 	{
-		if (_flag == null)
+		if (flag == null)
 		{
-			_flag = new FastList<>();
+			flag = new ArrayList<>();
 		}
 		
-		return _flag;
+		return flag;
 	}
 	
 	public SiegeClanType getType()
 	{
-		return _type;
+		return type;
 	}
 	
 	public void setType(final SiegeClanType setType)
 	{
-		_type = setType;
+		type = setType;
 	}
 }

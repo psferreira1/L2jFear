@@ -20,15 +20,15 @@ public class EffectMeditation extends L2Effect
 	@Override
 	public void onStart()
 	{
-		_effected.block();
-		_effected.setMeditated(true);
+		effected.block();
+		effected.setMeditated(true);
 	}
 	
 	@Override
 	public void onExit()
 	{
-		_effected.unblock();
-		_effected.setMeditated(false);
+		effected.unblock();
+		effected.setMeditated(false);
 	}
 	
 	@Override

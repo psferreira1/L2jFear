@@ -1,28 +1,6 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.model.actor.instance;
 
 import java.util.StringTokenizer;
-
-import javolution.text.TextBuilder;
 
 import com.l2jfrozen.Config;
 import com.l2jfrozen.gameserver.controllers.TradeController;
@@ -38,6 +16,8 @@ import com.l2jfrozen.gameserver.network.serverpackets.SellList;
 import com.l2jfrozen.gameserver.network.serverpackets.StatusUpdate;
 import com.l2jfrozen.gameserver.network.serverpackets.WearList;
 import com.l2jfrozen.gameserver.templates.L2NpcTemplate;
+
+import javolution.text.TextBuilder;
 
 /**
  * This class ...
@@ -57,10 +37,6 @@ public class L2MerchantInstance extends L2FolkInstance
 		super(objectId, template);
 	}
 	
-	/*
-	 * (non-Javadoc)
-	 * @see com.l2jfrozen.gameserver.model.actor.instance.L2NpcInstance#getHtmlPath(int, int)
-	 */
 	@Override
 	public String getHtmlPath(final int npcId, final int val)
 	{
@@ -81,7 +57,7 @@ public class L2MerchantInstance extends L2FolkInstance
 	/**
 	 * Show wear window.
 	 * @param player the player
-	 * @param val the val
+	 * @param val    the val
 	 */
 	private void showWearWindow(final L2PcInstance player, final int val)
 	{
@@ -111,7 +87,7 @@ public class L2MerchantInstance extends L2FolkInstance
 	/**
 	 * Show buy window.
 	 * @param player the player
-	 * @param val the val
+	 * @param val    the val
 	 */
 	private void showBuyWindow(final L2PcInstance player, final int val)
 	{
@@ -133,6 +109,11 @@ public class L2MerchantInstance extends L2FolkInstance
 		
 		if (list != null && list.getNpcId().equals(String.valueOf(getNpcId())))
 		{
+			if (player.isGM())
+			{
+				player.sendMessage("MERCHANT BUYLIST SHOP ID: " + val);
+			}
+			
 			BuyList bl = new BuyList(list, player.getAdena(), taxRate);
 			player.sendPacket(bl);
 			list = null;
@@ -168,10 +149,6 @@ public class L2MerchantInstance extends L2FolkInstance
 		player.sendPacket(ActionFailed.STATIC_PACKET);
 	}
 	
-	/*
-	 * (non-Javadoc)
-	 * @see com.l2jfrozen.gameserver.model.actor.instance.L2FolkInstance#onBypassFeedback(com.l2jfrozen.gameserver.model.actor.instance.L2PcInstance, java.lang.String)
-	 */
 	@Override
 	public void onBypassFeedback(final L2PcInstance player, final String command)
 	{
@@ -181,7 +158,9 @@ public class L2MerchantInstance extends L2FolkInstance
 		if (actualCommand.equalsIgnoreCase("Buy"))
 		{
 			if (st.countTokens() < 1)
+			{
 				return;
+			}
 			
 			final int val = Integer.parseInt(st.nextToken());
 			showBuyWindow(player, val);
@@ -208,7 +187,9 @@ public class L2MerchantInstance extends L2FolkInstance
 		else if (actualCommand.equalsIgnoreCase("Wear") && Config.ALLOW_WEAR)
 		{
 			if (st.countTokens() < 1)
+			{
 				return;
+			}
 			
 			final int val = Integer.parseInt(st.nextToken());
 			showWearWindow(player, val);
@@ -216,18 +197,22 @@ public class L2MerchantInstance extends L2FolkInstance
 		else if (actualCommand.equalsIgnoreCase("Multisell"))
 		{
 			if (st.countTokens() < 1)
+			{
 				return;
+			}
 			
 			final int val = Integer.parseInt(st.nextToken());
-			L2Multisell.getInstance().SeparateAndSend(val, player, false, getCastle().getTaxRate());
+			L2Multisell.getInstance().separateAndSend(val, player, false, getCastle().getTaxRate());
 		}
 		else if (actualCommand.equalsIgnoreCase("Exc_Multisell"))
 		{
 			if (st.countTokens() < 1)
+			{
 				return;
+			}
 			
 			final int val = Integer.parseInt(st.nextToken());
-			L2Multisell.getInstance().SeparateAndSend(val, player, true, getCastle().getTaxRate());
+			L2Multisell.getInstance().separateAndSend(val, player, true, getCastle().getTaxRate());
 		}
 		else
 		{
@@ -247,7 +232,9 @@ public class L2MerchantInstance extends L2FolkInstance
 	public void showRentPetWindow(final L2PcInstance player)
 	{
 		if (!Config.LIST_PET_RENT_NPC.contains(getTemplate().npcId))
+		{
 			return;
+		}
 		
 		TextBuilder html1 = new TextBuilder("<html><body>Pet Manager:<br>");
 		html1.append("You can rent a wyvern or strider for adena.<br>My prices:<br1>");
@@ -267,14 +254,18 @@ public class L2MerchantInstance extends L2FolkInstance
 	/**
 	 * Try rent pet.
 	 * @param player the player
-	 * @param val the val
+	 * @param val    the val
 	 */
 	public void tryRentPet(final L2PcInstance player, int val)
 	{
 		if (player == null || player.getPet() != null || player.isMounted() || player.isRentedPet())
+		{
 			return;
+		}
 		if (!player.disarmWeapons())
+		{
 			return;
+		}
 		
 		int petId;
 		double price = 1;
@@ -305,13 +296,17 @@ public class L2MerchantInstance extends L2FolkInstance
 		}
 		
 		if (val < 1 || val > 4)
+		{
 			return;
+		}
 		
 		price *= cost[val - 1];
 		final int time = ridetime[val - 1];
 		
 		if (!player.reduceAdena("Rent", (int) price, player.getLastFolkNPC(), true))
+		{
 			return;
+		}
 		
 		Ride mount = new Ride(player.getObjectId(), Ride.ACTION_MOUNT, petId);
 		player.broadcastPacket(mount);
@@ -321,16 +316,14 @@ public class L2MerchantInstance extends L2FolkInstance
 		mount = null;
 	}
 	
-	/*
-	 * (non-Javadoc)
-	 * @see com.l2jfrozen.gameserver.model.actor.instance.L2NpcInstance#onActionShift(com.l2jfrozen.gameserver.network.L2GameClient)
-	 */
 	@Override
 	public void onActionShift(final L2GameClient client)
 	{
 		L2PcInstance player = client.getActiveChar();
 		if (player == null)
+		{
 			return;
+		}
 		
 		if (player.getAccessLevel().isGm())
 		{
@@ -350,10 +343,11 @@ public class L2MerchantInstance extends L2FolkInstance
 			}
 			
 			NpcHtmlMessage html = new NpcHtmlMessage(getObjectId());
-			TextBuilder html1 = new TextBuilder("<html><body><table border=0>");
-			html1.append("<tr><td>Current Target:</td></tr>");
-			html1.append("<tr><td><br></td></tr>");
-			
+			TextBuilder html1 = new TextBuilder("<html><body><center><font color=\"LEVEL\">NPC Information</font></center>");
+			html1.append("<br>");
+			html1.append("Instance Type: " + getClass().getSimpleName() + "<br1>");
+			html1.append("Spawn ID: " + getSpawn().getId() + " " + (getSpawn().isCustomSpawn() ? "(Custom spawn)" : "") + "<br1>");
+			html1.append("<table border=\"0\" width=\"100%\">");
 			html1.append("<tr><td>Object ID: " + getObjectId() + "</td></tr>");
 			html1.append("<tr><td>Template ID: " + getTemplate().npcId + "</td></tr>");
 			html1.append("<tr><td><br></td></tr>");
@@ -363,33 +357,25 @@ public class L2MerchantInstance extends L2FolkInstance
 			html1.append("<tr><td>Level: " + getLevel() + "</td></tr>");
 			html1.append("<tr><td><br></td></tr>");
 			
-			html1.append("<tr><td>Class: " + getClass().getName() + "</td></tr>");
-			html1.append("<tr><td><br></td></tr>");
-			
 			// changed by terry 2005-02-22 21:45
 			html1.append("</table><table><tr><td><button value=\"Edit NPC\" action=\"bypass -h admin_edit_npc " + getTemplate().npcId + "\" width=100 height=15 back=\"sek.cbui94\" fore=\"sek.cbui92\"></td>");
 			html1.append("<td><button value=\"Kill\" action=\"bypass -h admin_kill\" width=40 height=15 back=\"sek.cbui94\" fore=\"sek.cbui92\"></td></tr>");
 			html1.append("<tr><td><button value=\"Show DropList\" action=\"bypass -h admin_show_droplist " + getTemplate().npcId + "\" width=100 height=15 back=\"sek.cbui94\" fore=\"sek.cbui92\"></td></tr>");
 			html1.append("<td><button value=\"Delete\" action=\"bypass -h admin_delete\" width=40 height=15 back=\"sek.cbui94\" fore=\"sek.cbui92\"></td></tr>");
+			html1.append("<tr><td><button value=\"Show Spawnlist\" action=\"bypass -h admin_list_spawns " + getTemplate().getNpcId() + " -1 " + getSpawn().getId() + "\" width=100 height=20 back=\"sek.cbui94\" fore=\"sek.cbui92\"></td><td></td></tr>");
 			html1.append("</table>");
 			
 			if (player.isGM())
 			{
-				html1.append("<button value=\"View Shop\" action=\"bypass -h admin_showShop " + getTemplate().npcId + "\" width=100 height=15 back=\"sek.cbui94\" fore=\"sek.cbui92\"></br>");
 				html1.append("<button value=\"Lease next week\" action=\"bypass -h npc_" + getObjectId() + "_Lease\" width=100 height=15 back=\"sek.cbui94\" fore=\"sek.cbui92\">");
 				html1.append("<button value=\"Abort current leasing\" action=\"bypass -h npc_" + getObjectId() + "_Lease next\" width=100 height=15 back=\"sek.cbui94\" fore=\"sek.cbui92\">");
-				html1.append("<button value=\"Manage items\" action=\"bypass -h npc_" + getObjectId() + "_Lease manage\" width=100 height=15 back=\"sek.cbui94\" fore=\"sek.cbui92\">");
 			}
 			
 			html1.append("</body></html>");
 			
 			html.setHtml(html1.toString());
 			player.sendPacket(html);
-			html = null;
-			html1 = null;
 		}
 		player.sendPacket(ActionFailed.STATIC_PACKET);
-		player = null;
 	}
-	
 }

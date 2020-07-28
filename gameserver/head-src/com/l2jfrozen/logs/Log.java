@@ -1,28 +1,3 @@
-/* L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
-
-/**
- @author ProGramMoS, scoria dev
- version 0.1.1, 2009-04-08
- */
-
 package com.l2jfrozen.logs;
 
 import java.io.File;
@@ -33,59 +8,65 @@ import java.util.Date;
 
 import org.apache.log4j.Logger;
 
-import com.l2jfrozen.Config;
-
+/**
+ * @author ProGramMoS
+ * @author scoria dev
+ * @author ReynalDev
+ */
 public class Log
 {
 	private static final Logger LOGGER = Logger.getLogger(Log.class);
+	private static final SimpleDateFormat LOG_DATE_FORMAT = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss,SSS");
+	private static final SimpleDateFormat FILE_NAME_DATE_FORMAT = new SimpleDateFormat("dd_MM_yyyy");
 	
-	public static final void add(final String text, final String cat)
+	/**
+	 * By default path is <b>log/game/.....</b>
+	 * @param text     the text you want to include in the file
+	 * @param fileName name of file. Extension name is not need it, by default all the log files have <b>.txt</b> extension.
+	 */
+	public static final void add(String text, String fileName)
 	{
-		String date = new SimpleDateFormat("yy.MM.dd H:mm:ss").format(new Date());
+		add(text, "log/game/", fileName);
+	}
+	
+	/**
+	 * @param text     The line to add to the log file
+	 * @param path     for example <b>log/directory/subdirectory/</b>, make sure path ends with <b>/</b>
+	 * @param fileName name of file. Extension name is not need it, by default all the log files have <b>.txt</b> extension.
+	 */
+	public static final void add(String text, String path, String fileName)
+	{
+		Date now = new Date();
+		String date = LOG_DATE_FORMAT.format(now);
+		String fileDate = FILE_NAME_DATE_FORMAT.format(now);
 		
-		new File("log/game").mkdirs();
-		final File file = new File("log/game/" + (cat != null ? cat : "_all") + ".txt");
-		FileWriter save = null;
-		try
+		new File(path).mkdirs();
+		String pathName = path;
+		
+		if (fileName != null)
 		{
-			save = new FileWriter(file, true);
-			final String out = "[" + date + "] '---': " + text + "\n"; // "+char_name()+"
+			pathName += fileName;
+		}
+		else
+		{
+			pathName += "_all";
+		}
+		
+		pathName += "_";
+		pathName += fileDate;
+		pathName += ".txt";
+		
+		File file = new File(pathName);
+		
+		try (FileWriter save = new FileWriter(file, true);)
+		{
+			String out = "[" + date + "] '---': " + text + "\n";
 			save.write(out);
 			save.flush();
 		}
-		catch (final IOException e)
+		catch (IOException e)
 		{
-			LOGGER.warn("saving chat LOGGER failed: " + e);
-			e.printStackTrace();
+			LOGGER.error("Log.add : Problem during creating the file" + e);
 		}
-		finally
-		{
-			
-			if (save != null)
-				try
-				{
-					save.close();
-				}
-				catch (final IOException e)
-				{
-					e.printStackTrace();
-				}
-		}
-		
-		if (cat != null)
-		{
-			add(text, null);
-		}
-		
-		date = null;
-	}
-	
-	public static final void Assert(final boolean exp, final String cmt)
-	{
-		if (exp || !Config.ASSERT)
-			return;
-		
-		LOGGER.info("Assertion error [" + cmt + "]");
-		Thread.dumpStack();
 	}
 }

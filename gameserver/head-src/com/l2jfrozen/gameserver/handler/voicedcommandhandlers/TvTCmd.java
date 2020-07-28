@@ -1,19 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any later
- * version.
- * 
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
- * 
- * You should have received a copy of the GNU General Public License along with
- * this program. If not, see <http://www.gnu.org/licenses/>.
- */
 package com.l2jfrozen.gameserver.handler.voicedcommandhandlers;
 
 import com.l2jfrozen.gameserver.datatables.sql.ItemTable;
@@ -63,12 +47,12 @@ public class TvTCmd implements IVoicedCommandHandler
 			return false;
 		}
 		
-		if (!TvT.is_joining())
+		if (!TvT.isJoining())
 		{
 			activeChar.sendMessage("There is no TvT Event in progress.");
 			return false;
 		}
-		else if (TvT.is_joining() && activeChar._inEventTvT)
+		else if (TvT.isJoining() && activeChar.inEventTvT)
 		{
 			activeChar.sendMessage("You are already registered.");
 			return false;
@@ -83,12 +67,12 @@ public class TvTCmd implements IVoicedCommandHandler
 			activeChar.sendMessage("You are not allowed to participate to the event because you are in Olympiad.");
 			return false;
 		}
-		else if (activeChar.getLevel() < TvT.get_minlvl())
+		else if (activeChar.getLevel() < TvT.getMinlvl())
 		{
 			activeChar.sendMessage("You are not allowed to participate to the event because your level is too low.");
 			return false;
 		}
-		else if (activeChar.getLevel() > TvT.get_maxlvl())
+		else if (activeChar.getLevel() > TvT.getMaxlvl())
 		{
 			activeChar.sendMessage("You are not allowed to participate to the event because your level is too high.");
 			return false;
@@ -98,7 +82,7 @@ public class TvTCmd implements IVoicedCommandHandler
 			activeChar.sendMessage("You are not allowed to participate to the event because you have Karma.");
 			return false;
 		}
-		else if (TvT.is_teleport() || TvT.is_started())
+		else if (TvT.isTeleport() || TvT.isStarted())
 		{
 			activeChar.sendMessage("TvT Event registration period is over. You can't register now.");
 			return false;
@@ -118,17 +102,17 @@ public class TvTCmd implements IVoicedCommandHandler
 			return false;
 		}
 		
-		if (!TvT.is_joining())
+		if (!TvT.isJoining())
 		{
 			activeChar.sendMessage("There is no TvT Event in progress.");
 			return false;
 		}
-		else if ((TvT.is_teleport() || TvT.is_started()) && activeChar._inEventTvT)
+		else if ((TvT.isTeleport() || TvT.isStarted()) && activeChar.inEventTvT)
 		{
 			activeChar.sendMessage("You can not leave now because TvT event has started.");
 			return false;
 		}
-		else if (TvT.is_joining() && !activeChar._inEventTvT)
+		else if (TvT.isJoining() && !activeChar.inEventTvT)
 		{
 			activeChar.sendMessage("You aren't registered in the TvT Event.");
 			return false;
@@ -147,31 +131,31 @@ public class TvTCmd implements IVoicedCommandHandler
 			return false;
 		}
 		
-		if (!TvT.is_joining())
+		if (!TvT.isJoining())
 		{
 			activeChar.sendMessage("There is no TvT Event in progress.");
 			return false;
 		}
-		else if (TvT.is_teleport() || TvT.is_started())
+		else if (TvT.isTeleport() || TvT.isStarted())
 		{
 			activeChar.sendMessage("I can't provide you this info. Command available only in joining period.");
 			return false;
 		}
 		else
 		{
-			if (TvT._playersShuffle.size() == 1)
+			if (TvT.playersShuffle.size() == 1)
 			{
-				activeChar.sendMessage("There is " + TvT._playersShuffle.size() + " player participating in this event.");
-				activeChar.sendMessage("Reward: " + TvT.get_rewardAmount() + " " + ItemTable.getInstance().getTemplate(TvT.get_rewardId()).getName() + " !");
-				activeChar.sendMessage("Player Min lvl: " + TvT.get_minlvl() + ".");
-				activeChar.sendMessage("Player Max lvl: " + TvT.get_maxlvl() + ".");
+				activeChar.sendMessage("There is " + TvT.playersShuffle.size() + " player participating in this event.");
+				activeChar.sendMessage("Reward: " + TvT.getRewardAmount() + " " + ItemTable.getInstance().getTemplate(TvT.getRewardId()).getName() + " !");
+				activeChar.sendMessage("Player Min lvl: " + TvT.getMinlvl() + ".");
+				activeChar.sendMessage("Player Max lvl: " + TvT.getMaxlvl() + ".");
 			}
 			else
 			{
-				activeChar.sendMessage("There are " + TvT._playersShuffle.size() + " players participating in this event.");
-				activeChar.sendMessage("Reward: " + TvT.get_rewardAmount() + " " + ItemTable.getInstance().getTemplate(TvT.get_rewardId()).getName() + " !");
-				activeChar.sendMessage("Player Min lvl: " + TvT.get_minlvl() + ".");
-				activeChar.sendMessage("Player Max lvl: " + TvT.get_maxlvl() + ".");
+				activeChar.sendMessage("There are " + TvT.playersShuffle.size() + " players participating in this event.");
+				activeChar.sendMessage("Reward: " + TvT.getRewardAmount() + " " + ItemTable.getInstance().getTemplate(TvT.getRewardId()).getName() + " !");
+				activeChar.sendMessage("Player Min lvl: " + TvT.getMinlvl() + ".");
+				activeChar.sendMessage("Player Max lvl: " + TvT.getMaxlvl() + ".");
 			}
 			return true;
 		}

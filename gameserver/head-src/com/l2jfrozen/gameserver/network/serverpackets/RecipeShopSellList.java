@@ -1,23 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.network.serverpackets;
 
 import com.l2jfrozen.gameserver.model.L2ManufactureItem;
@@ -30,29 +10,27 @@ import com.l2jfrozen.gameserver.model.actor.instance.L2PcInstance;
  */
 public class RecipeShopSellList extends L2GameServerPacket
 {
-	
-	private static final String _S__D9_RecipeShopSellList = "[S] d9 RecipeShopSellList";
-	private final L2PcInstance _buyer, _manufacturer;
+	private final L2PcInstance buyer, manufacturer;
 	
 	public RecipeShopSellList(final L2PcInstance buyer, final L2PcInstance manufacturer)
 	{
-		_buyer = buyer;
-		_manufacturer = manufacturer;
+		this.buyer = buyer;
+		this.manufacturer = manufacturer;
 	}
 	
 	@Override
 	protected final void writeImpl()
 	{
-		final L2ManufactureList createList = _manufacturer.getCreateList();
+		final L2ManufactureList createList = manufacturer.getCreateList();
 		
 		if (createList != null)
 		{
 			// dddd d(ddd)
 			writeC(0xd9);
-			writeD(_manufacturer.getObjectId());
-			writeD((int) _manufacturer.getCurrentMp());// Creator's MP
-			writeD(_manufacturer.getMaxMp());// Creator's MP
-			writeD(_buyer.getAdena());// Buyer Adena
+			writeD(manufacturer.getObjectId());
+			writeD((int) manufacturer.getCurrentMp());// Creator's MP
+			writeD(manufacturer.getMaxMp());// Creator's MP
+			writeD(buyer.getAdena());// Buyer Adena
 			
 			final int count = createList.size();
 			writeD(count);
@@ -68,14 +46,10 @@ public class RecipeShopSellList extends L2GameServerPacket
 		}
 	}
 	
-	/*
-	 * (non-Javadoc)
-	 * @see com.l2jfrozen.gameserver.serverpackets.ServerBasePacket#getType()
-	 */
 	@Override
 	public String getType()
 	{
-		return _S__D9_RecipeShopSellList;
+		return "[S] d9 RecipeShopSellList";
 	}
 	
 }

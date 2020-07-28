@@ -1,23 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.network.serverpackets;
 
 import org.apache.log4j.Logger;
@@ -33,15 +13,14 @@ import com.l2jfrozen.gameserver.model.actor.instance.L2PetInstance;
 public class PetItemList extends L2GameServerPacket
 {
 	private static Logger LOGGER = Logger.getLogger(PetItemList.class);
-	private static final String _S__cb_PETITEMLIST = "[S] b2  PetItemList";
-	private final L2PetInstance _activeChar;
+	private final L2PetInstance activeChar;
 	
 	public PetItemList(final L2PetInstance character)
 	{
-		_activeChar = character;
+		activeChar = character;
 		if (Config.DEBUG)
 		{
-			final L2ItemInstance[] items = _activeChar.getInventory().getItems();
+			final L2ItemInstance[] items = activeChar.getInventory().getItems();
 			for (final L2ItemInstance temp : items)
 			{
 				LOGGER.debug("item:" + temp.getItem().getName() + " type1:" + temp.getItem().getType1() + " type2:" + temp.getItem().getType2());
@@ -54,7 +33,7 @@ public class PetItemList extends L2GameServerPacket
 	{
 		writeC(0xB2);
 		
-		final L2ItemInstance[] items = _activeChar.getInventory().getItems();
+		final L2ItemInstance[] items = activeChar.getInventory().getItems();
 		final int count = items.length;
 		writeH(count);
 		
@@ -81,13 +60,9 @@ public class PetItemList extends L2GameServerPacket
 		}
 	}
 	
-	/*
-	 * (non-Javadoc)
-	 * @see com.l2jfrozen.gameserver.serverpackets.ServerBasePacket#getType()
-	 */
 	@Override
 	public String getType()
 	{
-		return _S__cb_PETITEMLIST;
+		return "[S] b2  PetItemList";
 	}
 }

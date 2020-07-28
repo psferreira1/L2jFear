@@ -1,22 +1,3 @@
-/* L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.model.zone.type;
 
 import java.util.concurrent.Future;
@@ -35,34 +16,24 @@ import com.l2jfrozen.gameserver.thread.ThreadPoolManager;
  */
 public class L2DynamicZone extends L2ZoneType
 {
-	private final L2WorldRegion _region;
-	private final L2Character _owner;
-	private Future<?> _task;
-	private final L2Skill _skill;
+	private final L2WorldRegion region;
+	private final L2Character owner;
+	private Future<?> task;
+	private final L2Skill skill;
 	
 	protected void setTask(final Future<?> task)
 	{
-		_task = task;
+		this.task = task;
 	}
 	
 	public L2DynamicZone(final L2WorldRegion region, final L2Character owner, final L2Skill skill)
 	{
 		super(-1);
-		_region = region;
-		_owner = owner;
-		_skill = skill;
+		this.region = region;
+		this.owner = owner;
+		this.skill = skill;
 		
-		Runnable r = new Runnable()
-		{
-			@Override
-			public void run()
-			{
-				remove();
-			}
-		};
-		setTask(ThreadPoolManager.getInstance().scheduleGeneral(r, skill.getBuffDuration()));
-		
-		r = null;
+		setTask(ThreadPoolManager.getInstance().scheduleGeneral(() -> remove(), skill.getBuffDuration()));
 	}
 	
 	@Override
@@ -75,12 +46,14 @@ public class L2DynamicZone extends L2ZoneType
 				((L2PcInstance) character).sendMessage("You have entered a temporary zone!");
 			}
 			
-			_skill.getEffects(_owner, character, false, false, false);
+			skill.getEffects(owner, character, false, false, false);
 		}
 		catch (final NullPointerException e)
 		{
 			if (Config.ENABLE_ALL_EXCEPTIONS)
+			{
 				e.printStackTrace();
+			}
 			
 		}
 	}
@@ -93,57 +66,61 @@ public class L2DynamicZone extends L2ZoneType
 			((L2PcInstance) character).sendMessage("You have left a temporary zone!");
 		}
 		
-		if (character == _owner)
+		if (character == owner)
 		{
 			remove();
 			return;
 		}
-		character.stopSkillEffects(_skill.getId());
+		character.stopSkillEffects(skill.getId());
 	}
 	
 	protected void remove()
 	{
-		if (_task == null)
+		if (task == null)
+		{
 			return;
+		}
 		
-		_task.cancel(false);
-		_task = null;
+		task.cancel(false);
+		task = null;
 		
-		_region.removeZone(this);
+		region.removeZone(this);
 		
-		for (final L2Character member : _characterList.values())
+		for (final L2Character member : characterList.values())
 		{
 			try
 			{
-				member.stopSkillEffects(_skill.getId());
+				member.stopSkillEffects(skill.getId());
 			}
 			catch (final NullPointerException e)
 			{
 				if (Config.ENABLE_ALL_EXCEPTIONS)
+				{
 					e.printStackTrace();
+				}
 			}
 		}
-		_owner.stopSkillEffects(_skill.getId());
+		owner.stopSkillEffects(skill.getId());
 		
 	}
 	
 	@Override
 	protected void onDieInside(final L2Character character)
 	{
-		if (character == _owner)
+		if (character == owner)
 		{
 			remove();
 		}
 		else
 		{
-			character.stopSkillEffects(_skill.getId());
+			character.stopSkillEffects(skill.getId());
 		}
 	}
 	
 	@Override
 	protected void onReviveInside(final L2Character character)
 	{
-		_skill.getEffects(_owner, character, false, false, false);
+		skill.getEffects(owner, character, false, false, false);
 	}
 	
 }

@@ -1,28 +1,8 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.handler;
 
 import java.util.Arrays;
-
-import javolution.util.FastMap;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.apache.log4j.Logger;
 
@@ -33,17 +13,16 @@ import com.l2jfrozen.gameserver.handler.admincommandhandlers.AdminAio;
 import com.l2jfrozen.gameserver.handler.admincommandhandlers.AdminAnnouncements;
 import com.l2jfrozen.gameserver.handler.admincommandhandlers.AdminBBS;
 import com.l2jfrozen.gameserver.handler.admincommandhandlers.AdminBan;
+import com.l2jfrozen.gameserver.handler.admincommandhandlers.AdminBoat;
 import com.l2jfrozen.gameserver.handler.admincommandhandlers.AdminBuffs;
-import com.l2jfrozen.gameserver.handler.admincommandhandlers.AdminCTFEngine;
 import com.l2jfrozen.gameserver.handler.admincommandhandlers.AdminCache;
 import com.l2jfrozen.gameserver.handler.admincommandhandlers.AdminChangeAccessLevel;
 import com.l2jfrozen.gameserver.handler.admincommandhandlers.AdminCharSupervision;
 import com.l2jfrozen.gameserver.handler.admincommandhandlers.AdminChristmas;
+import com.l2jfrozen.gameserver.handler.admincommandhandlers.AdminClanHall;
 import com.l2jfrozen.gameserver.handler.admincommandhandlers.AdminCreateItem;
 import com.l2jfrozen.gameserver.handler.admincommandhandlers.AdminCursedWeapons;
-import com.l2jfrozen.gameserver.handler.admincommandhandlers.AdminDMEngine;
 import com.l2jfrozen.gameserver.handler.admincommandhandlers.AdminDelete;
-import com.l2jfrozen.gameserver.handler.admincommandhandlers.AdminDonator;
 import com.l2jfrozen.gameserver.handler.admincommandhandlers.AdminDoorControl;
 import com.l2jfrozen.gameserver.handler.admincommandhandlers.AdminEditChar;
 import com.l2jfrozen.gameserver.handler.admincommandhandlers.AdminEditNpc;
@@ -90,114 +69,99 @@ import com.l2jfrozen.gameserver.handler.admincommandhandlers.AdminTarget;
 import com.l2jfrozen.gameserver.handler.admincommandhandlers.AdminTeleport;
 import com.l2jfrozen.gameserver.handler.admincommandhandlers.AdminTest;
 import com.l2jfrozen.gameserver.handler.admincommandhandlers.AdminTownWar;
-import com.l2jfrozen.gameserver.handler.admincommandhandlers.AdminTvTEngine;
-import com.l2jfrozen.gameserver.handler.admincommandhandlers.AdminUnblockIp;
-import com.l2jfrozen.gameserver.handler.admincommandhandlers.AdminVIPEngine;
 import com.l2jfrozen.gameserver.handler.admincommandhandlers.AdminWho;
 import com.l2jfrozen.gameserver.handler.admincommandhandlers.AdminZone;
 
-/**
- * This class ...
- * @version $Revision: 1.1.4.5 $ $Date: 2005/03/27 15:30:09 $
- */
 public class AdminCommandHandler
 {
 	protected static final Logger LOGGER = Logger.getLogger(AdminCommandHandler.class);
-	
-	private static AdminCommandHandler _instance;
-	
-	private final FastMap<String, IAdminCommandHandler> _datatable;
+	private static AdminCommandHandler instance;
+	private Map<String, IAdminCommandHandler> dataTable = new HashMap<>();
 	
 	public static AdminCommandHandler getInstance()
 	{
-		if (_instance == null)
+		if (instance == null)
 		{
-			_instance = new AdminCommandHandler();
+			instance = new AdminCommandHandler();
 		}
-		return _instance;
+		return instance;
 	}
 	
 	private AdminCommandHandler()
 	{
-		_datatable = new FastMap<>();
 		registerAdminCommandHandler(new AdminAdmin());
-		registerAdminCommandHandler(new AdminInvul());
-		registerAdminCommandHandler(new AdminDelete());
-		registerAdminCommandHandler(new AdminKill());
-		registerAdminCommandHandler(new AdminTarget());
-		registerAdminCommandHandler(new AdminShop());
-		registerAdminCommandHandler(new AdminCTFEngine());
-		registerAdminCommandHandler(new AdminVIPEngine());
-		registerAdminCommandHandler(new AdminDMEngine());
+		registerAdminCommandHandler(new AdminAio());
 		registerAdminCommandHandler(new AdminAnnouncements());
+		registerAdminCommandHandler(new AdminBBS());
+		registerAdminCommandHandler(new AdminBan());
+		registerAdminCommandHandler(new AdminBoat());
+		registerAdminCommandHandler(new AdminBuffs());
+		registerAdminCommandHandler(new AdminCache());
+		registerAdminCommandHandler(new AdminChangeAccessLevel());
+		registerAdminCommandHandler(new AdminCharSupervision());
+		registerAdminCommandHandler(new AdminChristmas());
+		registerAdminCommandHandler(new AdminClanHall());
 		registerAdminCommandHandler(new AdminCreateItem());
+		registerAdminCommandHandler(new AdminCursedWeapons());
+		registerAdminCommandHandler(new AdminDelete());
+		registerAdminCommandHandler(new AdminDoorControl());
+		registerAdminCommandHandler(new AdminEditChar());
+		registerAdminCommandHandler(new AdminEditNpc());
+		registerAdminCommandHandler(new AdminEffects());
+		registerAdminCommandHandler(new AdminEnchant());
+		registerAdminCommandHandler(new AdminEventEngine());
+		registerAdminCommandHandler(new AdminExpSp());
+		registerAdminCommandHandler(new AdminFightCalculator());
+		registerAdminCommandHandler(new AdminFortSiege());
+		registerAdminCommandHandler(new AdminGeodata());
+		registerAdminCommandHandler(new AdminGm());
+		registerAdminCommandHandler(new AdminGmChat());
 		registerAdminCommandHandler(new AdminHeal());
 		registerAdminCommandHandler(new AdminHelpPage());
-		registerAdminCommandHandler(new AdminShutdown());
-		registerAdminCommandHandler(new AdminSpawn());
-		registerAdminCommandHandler(new AdminSkill());
-		registerAdminCommandHandler(new AdminScript());
-		registerAdminCommandHandler(new AdminExpSp());
-		registerAdminCommandHandler(new AdminEventEngine());
-		registerAdminCommandHandler(new AdminGmChat());
-		registerAdminCommandHandler(new AdminEditChar());
-		registerAdminCommandHandler(new AdminGm());
-		registerAdminCommandHandler(new AdminTeleport());
-		registerAdminCommandHandler(new AdminRepairChar());
-		registerAdminCommandHandler(new AdminChangeAccessLevel());
-		registerAdminCommandHandler(new AdminChristmas());
-		registerAdminCommandHandler(new AdminBan());
-		registerAdminCommandHandler(new AdminPolymorph());
-		// registerAdminCommandHandler(new AdminBanChat());
-		registerAdminCommandHandler(new AdminReload());
+		registerAdminCommandHandler(new AdminInvul());
 		registerAdminCommandHandler(new AdminKick());
-		registerAdminCommandHandler(new AdminMonsterRace());
-		registerAdminCommandHandler(new AdminEditNpc());
-		registerAdminCommandHandler(new AdminFightCalculator());
-		registerAdminCommandHandler(new AdminMenu());
-		registerAdminCommandHandler(new AdminSiege());
-		registerAdminCommandHandler(new AdminFortSiege());
-		registerAdminCommandHandler(new AdminPetition());
-		registerAdminCommandHandler(new AdminPForge());
-		registerAdminCommandHandler(new AdminBBS());
-		registerAdminCommandHandler(new AdminEffects());
-		registerAdminCommandHandler(new AdminDoorControl());
-		registerAdminCommandHandler(new AdminTest());
-		registerAdminCommandHandler(new AdminEnchant());
-		registerAdminCommandHandler(new AdminMassRecall());
-		registerAdminCommandHandler(new AdminMassControl());
-		registerAdminCommandHandler(new AdminMobGroup());
-		registerAdminCommandHandler(new AdminRes());
-		registerAdminCommandHandler(new AdminMammon());
-		registerAdminCommandHandler(new AdminUnblockIp());
-		registerAdminCommandHandler(new AdminPledge());
-		registerAdminCommandHandler(new AdminRideWyvern());
-		registerAdminCommandHandler(new AdminLogin());
-		registerAdminCommandHandler(new AdminCache());
+		registerAdminCommandHandler(new AdminKill());
 		registerAdminCommandHandler(new AdminLevel());
-		registerAdminCommandHandler(new AdminQuest());
-		registerAdminCommandHandler(new AdminZone());
-		registerAdminCommandHandler(new AdminCursedWeapons());
-		registerAdminCommandHandler(new AdminGeodata());
+		registerAdminCommandHandler(new AdminLogin());
+		registerAdminCommandHandler(new AdminMammon());
 		registerAdminCommandHandler(new AdminManor());
-		registerAdminCommandHandler(new AdminTownWar());
-		registerAdminCommandHandler(new AdminTvTEngine());
-		registerAdminCommandHandler(new AdminDonator());
+		registerAdminCommandHandler(new AdminMassControl());
+		registerAdminCommandHandler(new AdminMassRecall());
+		registerAdminCommandHandler(new AdminMenu());
+		registerAdminCommandHandler(new AdminMobGroup());
+		registerAdminCommandHandler(new AdminMonsterRace());
 		registerAdminCommandHandler(new AdminNoble());
-		registerAdminCommandHandler(new AdminBuffs());
-		registerAdminCommandHandler(new AdminAio());
-		registerAdminCommandHandler(new AdminCharSupervision());
-		registerAdminCommandHandler(new AdminWho()); // L2OFF command
+		registerAdminCommandHandler(new AdminPForge());
+		registerAdminCommandHandler(new AdminPetition());
+		registerAdminCommandHandler(new AdminPledge());
+		registerAdminCommandHandler(new AdminPolymorph());
+		registerAdminCommandHandler(new AdminQuest());
+		registerAdminCommandHandler(new AdminReload());
+		registerAdminCommandHandler(new AdminRepairChar());
+		registerAdminCommandHandler(new AdminRes());
+		registerAdminCommandHandler(new AdminRideWyvern());
+		registerAdminCommandHandler(new AdminScript());
+		registerAdminCommandHandler(new AdminShop());
+		registerAdminCommandHandler(new AdminShutdown());
+		registerAdminCommandHandler(new AdminSiege());
+		registerAdminCommandHandler(new AdminSkill());
+		registerAdminCommandHandler(new AdminSpawn());
+		registerAdminCommandHandler(new AdminTarget());
+		registerAdminCommandHandler(new AdminTeleport());
+		registerAdminCommandHandler(new AdminTest());
+		registerAdminCommandHandler(new AdminTownWar());
+		registerAdminCommandHandler(new AdminWho());
+		registerAdminCommandHandler(new AdminZone());
 		// ATTENTION: adding new command handlers, you have to change the
 		// sql file containing the access levels rights
 		
-		LOGGER.info("AdminCommandHandler: Loaded " + _datatable.size() + " handlers.");
+		LOGGER.info("AdminCommandHandler: Loaded " + dataTable.size() + " handlers.");
 		
 		if (Config.DEBUG)
 		{
-			String[] commands = new String[_datatable.keySet().size()];
+			String[] commands = new String[dataTable.keySet().size()];
 			
-			commands = _datatable.keySet().toArray(commands);
+			commands = dataTable.keySet().toArray(commands);
 			
 			Arrays.sort(commands);
 			
@@ -213,29 +177,29 @@ public class AdminCommandHandler
 		
 	}
 	
-	public void registerAdminCommandHandler(final IAdminCommandHandler handler)
+	public void registerAdminCommandHandler(IAdminCommandHandler handler)
 	{
 		String[] ids = handler.getAdminCommandList();
-		for (final String element : ids)
+		
+		for (String element : ids)
 		{
 			if (Config.DEBUG)
 			{
 				LOGGER.info("Adding handler for command " + element);
 			}
 			
-			if (_datatable.keySet().contains(new String(element)))
+			if (dataTable.keySet().contains(new String(element)))
 			{
 				LOGGER.warn("Duplicated command \"" + element + "\" definition in " + handler.getClass().getName() + ".");
 			}
 			else
 			{
-				_datatable.put(element, handler);
+				dataTable.put(element, handler);
 			}
 		}
-		ids = null;
 	}
 	
-	public IAdminCommandHandler getAdminCommandHandler(final String adminCommand)
+	public IAdminCommandHandler getAdminCommandHandler(String adminCommand)
 	{
 		String command = adminCommand;
 		
@@ -246,9 +210,9 @@ public class AdminCommandHandler
 		
 		if (Config.DEBUG)
 		{
-			LOGGER.info("getting handler for command: " + command + " -> " + (_datatable.get(command) != null));
+			LOGGER.info("getting handler for command: " + command + " -> " + (dataTable.get(command) != null));
 		}
 		
-		return _datatable.get(command);
+		return dataTable.get(command);
 	}
 }

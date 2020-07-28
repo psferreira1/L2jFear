@@ -1,6 +1,7 @@
 package com.l2jfrozen.gameserver.network.serverpackets;
 
-import javolution.util.FastMap;
+import java.util.HashMap;
+import java.util.Map;
 
 import com.l2jfrozen.gameserver.managers.CastleManager;
 import com.l2jfrozen.gameserver.managers.CastleManorManager;
@@ -13,22 +14,20 @@ import com.l2jfrozen.gameserver.model.entity.siege.Castle;
  */
 public class ExShowProcureCropDetail extends L2GameServerPacket
 {
-	private static final String _S__FE_22_EXSHOWPROCURECROPDETAIL = "[S] FE:22 ExShowProcureCropDetail";
-	
-	private final int _cropId;
-	private final FastMap<Integer, CropProcure> _castleCrops;
+	private final int spCropId;
+	private final Map<Integer, CropProcure> castleCrops;
 	
 	public ExShowProcureCropDetail(final int cropId)
 	{
-		_cropId = cropId;
-		_castleCrops = new FastMap<>();
+		spCropId = cropId;
+		castleCrops = new HashMap<>();
 		
 		for (final Castle c : CastleManager.getInstance().getCastles())
 		{
-			final CropProcure cropItem = c.getCrop(_cropId, CastleManorManager.PERIOD_CURRENT);
+			final CropProcure cropItem = c.getCrop(spCropId, CastleManorManager.PERIOD_CURRENT);
 			if (cropItem != null && cropItem.getAmount() > 0)
 			{
-				_castleCrops.put(c.getCastleId(), cropItem);
+				castleCrops.put(c.getCastleId(), cropItem);
 			}
 		}
 	}
@@ -44,12 +43,12 @@ public class ExShowProcureCropDetail extends L2GameServerPacket
 		writeC(0xFE);
 		writeH(0x22);
 		
-		writeD(_cropId); // crop id
-		writeD(_castleCrops.size()); // size
+		writeD(spCropId); // crop id
+		writeD(castleCrops.size()); // size
 		
-		for (final int manorId : _castleCrops.keySet())
+		for (final int manorId : castleCrops.keySet())
 		{
-			final CropProcure crop = _castleCrops.get(manorId);
+			final CropProcure crop = castleCrops.get(manorId);
 			writeD(manorId); // manor name
 			writeD(crop.getAmount()); // buy residual
 			writeD(crop.getPrice()); // buy price
@@ -60,7 +59,7 @@ public class ExShowProcureCropDetail extends L2GameServerPacket
 	@Override
 	public String getType()
 	{
-		return _S__FE_22_EXSHOWPROCURECROPDETAIL;
+		return "[S] FE:22 ExShowProcureCropDetail";
 	}
 	
 }

@@ -22,11 +22,6 @@ public class AdminLevel implements IAdminCommandHandler
 	@Override
 	public boolean useAdminCommand(final String command, final L2PcInstance activeChar)
 	{
-		/*
-		 * if(!AdminCommandAccessRights.getInstance().hasAccess(command, activeChar.getAccessLevel())){ return false; } if(Config.GMAUDIT) { Logger _logAudit = Logger.getLogger("gmaudit"); LogRecord record = new LogRecord(Level.INFO, command); record.setParameters(new Object[] { "GM: " +
-		 * activeChar.getName(), " to target [" + activeChar.getTarget() + "] " }); _logAudit.LOGGER(record); }
-		 */
-		
 		final L2Object targetChar = activeChar.getTarget();
 		final StringTokenizer st = new StringTokenizer(command, " ");
 		final String actualCommand = st.nextToken(); // Get actual command
@@ -49,7 +44,9 @@ public class AdminLevel implements IAdminCommandHandler
 			catch (final NumberFormatException e)
 			{
 				if (Config.ENABLE_ALL_EXCEPTIONS)
+				{
 					e.printStackTrace();
+				}
 				
 				activeChar.sendMessage("Wrong Number Format");
 			}
@@ -66,38 +63,42 @@ public class AdminLevel implements IAdminCommandHandler
 				
 				final L2PlayableInstance targetPlayer = (L2PlayableInstance) targetChar;
 				
-				final byte lvl = Byte.parseByte(val);
-				int max_level = ExperienceData.getInstance().getMaxLevel();
+				byte lvl = Byte.parseByte(val);
+				byte min_level = 1;
+				byte max_level = ExperienceData.getInstance().getMaxLevel();
 				
-				if (targetChar instanceof L2PcInstance && ((L2PcInstance) targetPlayer).isSubClassActive())
+				if (targetChar.isPlayer())
 				{
-					max_level = Config.MAX_SUBCLASS_LEVEL;
+					L2PcInstance player = (L2PcInstance) targetPlayer;
+					if (player.isSubClassActive())
+					{
+						min_level = 40;
+						max_level = Config.MAX_SUBCLASS_LEVEL;
+						
+						if (lvl < 40)
+						{
+							lvl = 40;
+						}
+					}
 				}
 				
-				if (lvl >= 1 && lvl <= max_level)
+				if (lvl >= min_level && lvl <= max_level)
 				{
-					final long pXp = targetPlayer.getStat().getExp();
-					final long tXp = ExperienceData.getInstance().getExpForLevel(lvl);
-					
-					if (pXp > tXp)
-					{
-						targetPlayer.getStat().removeExpAndSp(pXp - tXp, 0);
-					}
-					else if (pXp < tXp)
-					{
-						targetPlayer.getStat().addExpAndSp(tXp - pXp, 0);
-					}
+					targetPlayer.setLevel(lvl);
 				}
 				else
 				{
-					activeChar.sendMessage("You must specify level between 1 and " + ExperienceData.getInstance().getMaxLevel() + ".");
+					String text = String.format("You must specify level between %s and %s.", min_level, max_level);
+					activeChar.sendMessage(text);
 					return false;
 				}
 			}
 			catch (final NumberFormatException e)
 			{
 				if (Config.ENABLE_ALL_EXCEPTIONS)
+				{
 					e.printStackTrace();
+				}
 				
 				activeChar.sendMessage("You must specify level between 1 and " + ExperienceData.getInstance().getMaxLevel() + ".");
 				return false;

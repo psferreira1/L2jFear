@@ -11,6 +11,7 @@ public class DatabaseUtils
 	public static void close(final Connection conn)
 	{
 		if (conn != null)
+		{
 			try
 			{
 				conn.close();
@@ -18,11 +19,13 @@ public class DatabaseUtils
 			catch (final SQLException e)
 			{
 			}
+		}
 	}
 	
 	public static void close(final PreparedStatement stmt)
 	{
 		if (stmt != null)
+		{
 			try
 			{
 				stmt.close();
@@ -30,11 +33,13 @@ public class DatabaseUtils
 			catch (final SQLException e)
 			{
 			}
+		}
 	}
 	
 	public static void close(final ResultSet rs)
 	{
 		if (rs != null)
+		{
 			try
 			{
 				rs.close();
@@ -42,6 +47,7 @@ public class DatabaseUtils
 			catch (final SQLException e)
 			{
 			}
+		}
 	}
 	
 	public static void closeDatabaseCSR(final Connection conn, final PreparedStatement stmt, final ResultSet rs)

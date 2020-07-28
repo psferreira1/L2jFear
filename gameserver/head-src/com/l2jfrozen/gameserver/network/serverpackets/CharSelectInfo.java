@@ -1,31 +1,10 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.network.serverpackets;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.util.ArrayList;
 import java.util.List;
-
-import javolution.util.FastList;
 
 import org.apache.log4j.Logger;
 
@@ -35,8 +14,6 @@ import com.l2jfrozen.gameserver.model.Inventory;
 import com.l2jfrozen.gameserver.model.L2Clan;
 import com.l2jfrozen.gameserver.model.actor.instance.L2PcInstance;
 import com.l2jfrozen.gameserver.network.L2GameClient;
-import com.l2jfrozen.util.CloseUtil;
-import com.l2jfrozen.util.database.DatabaseUtils;
 import com.l2jfrozen.util.database.L2DatabaseFactory;
 
 /**
@@ -45,18 +22,15 @@ import com.l2jfrozen.util.database.L2DatabaseFactory;
  */
 public class CharSelectInfo extends L2GameServerPacket
 {
-	// d SdSddddddddddffddddddddddddddddddddddddddddddddddddddddddddddffd
-	private static final String _S__1F_CHARSELECTINFO = "[S] 1F CharSelectInfo";
-	
 	private static Logger LOGGER = Logger.getLogger(CharSelectInfo.class);
+	private static final String SELECT_AUGMENTATION_ATTRIBUTE_BY_ITEM_OBJECT_ID = "SELECT attributes FROM augmentations WHERE item_object_id=?";
+	private static final String SELECT_CHARACTER_BY_ACCOUNT_NAME = "SELECT account_name, obj_Id, char_name, level, maxHp, curHp, maxMp, curMp, acc, crit, evasion, mAtk, mDef, mSpd, pAtk, pDef, pSpd, runSpd, walkSpd, str, con, dex, _int, men, wit, face, hairStyle, hairColor, sex, heading, x, y, z, movement_multiplier, attack_speed_multiplier, colRad, colHeight, exp, sp, karma, pvpkills, pkkills, clanid, maxload, race, classid, deletetime, cancraft, title, rec_have, rec_left, accesslevel, online, char_slot, lastAccess, base_class FROM characters WHERE account_name=?";
+	private static final String SELECT_CHARACTERS_SUBCLASSES_INFO = "SELECT exp, sp, level FROM character_subclasses WHERE char_obj_id=? AND class_id=? ORDER BY char_obj_id";
 	
-	private final String _loginName;
-	
-	private final int _sessionId;
-	
-	private int _activeId;
-	
-	private final CharSelectInfoPackage[] _characterPackages;
+	private final String loginName;
+	private final int sessionId;
+	private int activeId;
+	private final CharSelectInfoPackage[] characterPackages;
 	
 	/**
 	 * @param loginName
@@ -64,53 +38,55 @@ public class CharSelectInfo extends L2GameServerPacket
 	 */
 	public CharSelectInfo(final String loginName, final int sessionId)
 	{
-		_sessionId = sessionId;
-		_loginName = loginName;
-		_characterPackages = loadCharacterSelectInfo();
-		_activeId = -1;
+		this.sessionId = sessionId;
+		this.loginName = loginName;
+		characterPackages = loadCharacterSelectInfo();
+		activeId = -1;
 	}
 	
 	public CharSelectInfo(final String loginName, final int sessionId, final int activeId)
 	{
-		_sessionId = sessionId;
-		_loginName = loginName;
-		_characterPackages = loadCharacterSelectInfo();
-		_activeId = activeId;
+		this.sessionId = sessionId;
+		this.loginName = loginName;
+		characterPackages = loadCharacterSelectInfo();
+		this.activeId = activeId;
 	}
 	
 	public CharSelectInfoPackage[] getCharInfo()
 	{
-		return _characterPackages;
+		return characterPackages;
 	}
 	
 	@Override
 	protected final void writeImpl()
 	{
-		final int size = _characterPackages.length;
+		final int size = characterPackages.length;
 		
 		writeC(0x13);
 		writeD(size);
 		
 		long lastAccess = 0L;
 		
-		if (_activeId == -1)
+		if (activeId == -1)
 		{
 			for (int i = 0; i < size; i++)
-				if (lastAccess < _characterPackages[i].getLastAccess())
+			{
+				if (lastAccess < characterPackages[i].getLastAccess())
 				{
-					lastAccess = _characterPackages[i].getLastAccess();
-					_activeId = i;
+					lastAccess = characterPackages[i].getLastAccess();
+					activeId = i;
 				}
+			}
 		}
 		
 		for (int i = 0; i < size; i++)
 		{
-			final CharSelectInfoPackage charInfoPackage = _characterPackages[i];
+			final CharSelectInfoPackage charInfoPackage = characterPackages[i];
 			
 			writeS(charInfoPackage.getName());
 			writeD(charInfoPackage.getCharId());
-			writeS(_loginName);
-			writeD(_sessionId);
+			writeS(loginName);
+			writeD(sessionId);
 			writeD(charInfoPackage.getClanId());
 			writeD(0x00); // ??
 			
@@ -198,16 +174,20 @@ public class CharSelectInfo extends L2GameServerPacket
 			int deletedays = 0;
 			
 			if (deleteTime > 0)
+			{
 				deletedays = (int) ((deleteTime - System.currentTimeMillis()) / 1000);
+			}
 			else if (accesslevels < 0)
+			{
 				deletedays = -1; // like L2OFF player looks dead if he is banned.
-				
+			}
+			
 			writeD(deletedays); // days left before
 			// delete .. if != 0
 			// then char is inactive
 			writeD(charInfoPackage.getClassId());
 			
-			if (i == _activeId)
+			if (i == activeId)
 			{
 				writeD(0x01);
 			}
@@ -225,53 +205,41 @@ public class CharSelectInfo extends L2GameServerPacket
 	private CharSelectInfoPackage[] loadCharacterSelectInfo()
 	{
 		CharSelectInfoPackage charInfopackage;
-		final List<CharSelectInfoPackage> characterList = new FastList<>();
+		final List<CharSelectInfoPackage> characterList = new ArrayList<>();
 		
-		Connection con = null;
-		
-		try
+		try (Connection con = L2DatabaseFactory.getInstance().getConnection();
+			PreparedStatement statement = con.prepareStatement(SELECT_CHARACTER_BY_ACCOUNT_NAME))
 		{
-			con = L2DatabaseFactory.getInstance().getConnection(false);
-			final PreparedStatement statement = con.prepareStatement("SELECT account_name, obj_Id, char_name, level, maxHp, curHp, maxMp, curMp, acc, crit, evasion, mAtk, mDef, mSpd, pAtk, pDef, pSpd, runSpd, walkSpd, str, con, dex, _int, men, wit, face, hairStyle, hairColor, sex, heading, x, y, z, movement_multiplier, attack_speed_multiplier, colRad, colHeight, exp, sp, karma, pvpkills, pkkills, clanid, maxload, race, classid, deletetime, cancraft, title, rec_have, rec_left, accesslevel, online, char_slot, lastAccess, base_class FROM characters WHERE account_name=?");
-			statement.setString(1, _loginName);
-			final ResultSet charList = statement.executeQuery();
+			statement.setString(1, loginName);
 			
-			while (charList.next())// fills the package
+			try (ResultSet charList = statement.executeQuery())
 			{
-				charInfopackage = restoreChar(charList);
-				if (charInfopackage != null)
+				while (charList.next())// fills the package
 				{
-					characterList.add(charInfopackage);
+					charInfopackage = restoreChar(charList);
+					if (charInfopackage != null)
+					{
+						characterList.add(charInfopackage);
+					}
 				}
 			}
-			
-			DatabaseUtils.close(statement);
 		}
-		catch (final Exception e)
+		catch (Exception e)
 		{
-			e.printStackTrace();
-		}
-		finally
-		{
-			CloseUtil.close(con);
+			LOGGER.error("CharacterSelecInfo.CharSelectInfoPackage : Could not select character by account name from characters table", e);
 		}
 		
 		return characterList.toArray(new CharSelectInfoPackage[characterList.size()]);
-		
-		// return new CharSelectInfoPackage[0];
 	}
 	
 	private void loadCharacterSubclassInfo(final CharSelectInfoPackage charInfopackage, final int ObjectId, final int activeClassId)
 	{
-		Connection con = null;
-		
-		try
+		try (Connection con = L2DatabaseFactory.getInstance().getConnection();
+			final PreparedStatement statement = con.prepareStatement(SELECT_CHARACTERS_SUBCLASSES_INFO))
 		{
-			con = L2DatabaseFactory.getInstance().getConnection(false);
-			final PreparedStatement statement = con.prepareStatement("SELECT exp, sp, level FROM character_subclasses WHERE char_obj_id=? && class_id=? ORDER BY char_obj_id");
 			statement.setInt(1, ObjectId);
 			statement.setInt(2, activeClassId);
-			final ResultSet charList = statement.executeQuery();
+			ResultSet charList = statement.executeQuery();
 			
 			if (charList.next())
 			{
@@ -281,16 +249,10 @@ public class CharSelectInfo extends L2GameServerPacket
 			}
 			
 			charList.close();
-			DatabaseUtils.close(statement);
 		}
-		catch (final Exception e)
+		catch (Exception e)
 		{
-			e.printStackTrace();
-		}
-		finally
-		{
-			CloseUtil.close(con);
-			con = null;
+			LOGGER.error("CharSelectInfo.loadCharacterSubclassInfo : Could not select character subclass info", e);
 		}
 	}
 	
@@ -337,7 +299,7 @@ public class CharSelectInfo extends L2GameServerPacket
 		
 		charInfopackage.setRace(chardata.getInt("race"));
 		
-		charInfopackage.setAccessLevel(chardata.getInt("accesslevel"));
+		charInfopackage.setAccessLevel(Config.GM_PLAYERS.getOrDefault(objectId, 0));
 		
 		final int baseClassId = chardata.getInt("base_class");
 		final int activeClassId = chardata.getInt("classid");
@@ -359,13 +321,11 @@ public class CharSelectInfo extends L2GameServerPacket
 		
 		if (weaponObjId > 0)
 		{
-			Connection con = null;
-			try
+			try (Connection con = L2DatabaseFactory.getInstance().getConnection();
+				PreparedStatement statement = con.prepareStatement(SELECT_AUGMENTATION_ATTRIBUTE_BY_ITEM_OBJECT_ID);)
 			{
-				con = L2DatabaseFactory.getInstance().getConnection(false);
-				final PreparedStatement statement = con.prepareStatement("SELECT attributes FROM augmentations WHERE item_id=?");
 				statement.setInt(1, weaponObjId);
-				final ResultSet result = statement.executeQuery();
+				ResultSet result = statement.executeQuery();
 				
 				if (result.next())
 				{
@@ -373,19 +333,10 @@ public class CharSelectInfo extends L2GameServerPacket
 				}
 				
 				result.close();
-				DatabaseUtils.close(statement);
 			}
 			catch (final Exception e)
 			{
-				if (Config.ENABLE_ALL_EXCEPTIONS)
-					e.printStackTrace();
-				
-				LOGGER.warn("Could not restore augmentation info: " + e);
-			}
-			finally
-			{
-				CloseUtil.close(con);
-				con = null;
+				LOGGER.error("CharacterSelectInfo : Could not select augmentation info", e);
 			}
 		}
 		
@@ -410,6 +361,6 @@ public class CharSelectInfo extends L2GameServerPacket
 	@Override
 	public String getType()
 	{
-		return _S__1F_CHARSELECTINFO;
+		return "[S] 1F CharSelectInfo";
 	}
 }

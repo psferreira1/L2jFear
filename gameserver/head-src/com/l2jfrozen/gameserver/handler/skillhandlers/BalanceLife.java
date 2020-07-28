@@ -1,22 +1,3 @@
-/* L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.handler.skillhandlers;
 
 import com.l2jfrozen.Config;
@@ -34,7 +15,7 @@ import com.l2jfrozen.gameserver.network.serverpackets.SystemMessage;
 
 /**
  * This class ...
- * @author earendil
+ * @author  earendil
  * @version $Revision: 1.1.2.2.2.4 $ $Date: 2005/04/06 16:13:48 $
  */
 
@@ -55,19 +36,25 @@ public class BalanceLife implements ISkillHandler
 			final ISkillHandler handler = SkillHandler.getInstance().getSkillHandler(SkillType.BUFF);
 			
 			if (handler != null)
+			{
 				handler.useSkill(activeChar, skill, targets);
+			}
 		}
 		catch (final Exception e)
 		{
 			if (Config.ENABLE_ALL_EXCEPTIONS)
+			{
 				e.printStackTrace();
+			}
 		}
 		
 		L2Character target = null;
 		
 		L2PcInstance player = null;
 		if (activeChar instanceof L2PcInstance)
+		{
 			player = (L2PcInstance) activeChar;
+		}
 		
 		double fullHP = 0;
 		double currentHPs = 0;
@@ -78,7 +65,9 @@ public class BalanceLife implements ISkillHandler
 			
 			// We should not heal if char is dead
 			if (target == null || target.isDead())
+			{
 				continue;
+			}
 			
 			// Avoid characters heal inside Baium lair from outside
 			if ((activeChar.isInsideZone(12007) || target.isInsideZone(12007)) && ((GrandBossManager.getInstance().getZone(activeChar) == null && GrandBossManager.getInstance().getZone(target) != null) || (GrandBossManager.getInstance().getZone(target) == null && GrandBossManager.getInstance().getZone(activeChar) != null)))
@@ -90,9 +79,13 @@ public class BalanceLife implements ISkillHandler
 			if (target != activeChar)
 			{
 				if (target instanceof L2PcInstance && ((L2PcInstance) target).isCursedWeaponEquiped())
+				{
 					continue;
+				}
 				else if (player != null && player.isCursedWeaponEquiped())
+				{
 					continue;
+				}
 			}
 			
 			player = null;
@@ -109,7 +102,9 @@ public class BalanceLife implements ISkillHandler
 			target = (L2Character) target2;
 			
 			if (target == null || target.isDead())
+			{
 				continue;
+			}
 			
 			final double newHP = target.getMaxHp() * percentHP;
 			final double totalHeal = newHP - target.getCurrentHp();
@@ -117,7 +112,9 @@ public class BalanceLife implements ISkillHandler
 			target.setCurrentHp(newHP);
 			
 			if (totalHeal > 0)
+			{
 				target.setLastHealAmount((int) totalHeal);
+			}
 			
 			StatusUpdate su = new StatusUpdate(target.getObjectId());
 			su.addAttribute(StatusUpdate.CUR_HP, (int) target.getCurrentHp());

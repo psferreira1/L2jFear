@@ -1,23 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.geo.pathfinding;
 
 import java.util.ArrayList;
@@ -43,7 +23,9 @@ public abstract class PathFinding
 	public static PathFinding getInstance()
 	{
 		if (!Config.GEODATA_CELLFINDING)
+		{
 			return GeoPathFinding.getInstance(); // Higher Memory Usage, Smaller Cpu Usage
+		}
 		return CellPathFinding.getInstance(); // Cell pathfinding, calculated directly from geodata files
 	}
 	
@@ -76,14 +58,18 @@ public abstract class PathFinding
 				
 				final Node node = to_visit.removeFirst();
 				
-				if (node.equals(end)) // path found!
+				if (node.equals(end))
+				{
 					return constructPath(node);
+				}
 				i++;
 				visited.add(node);
 				node.attachNeighbors();
 				final Node[] neighbors = node.getNeighbors();
 				if (neighbors == null)
+				{
 					continue;
+				}
 				for (final Node n : neighbors)
 				{
 					if (!visited.contains(n) && !to_visit.contains(n))
@@ -154,7 +140,9 @@ public abstract class PathFinding
 				
 				final Node[] neighbors = node.getNeighbors();
 				if (neighbors == null)
+				{
 					continue;
+				}
 				for (final Node n : neighbors)
 				{
 					if (!known.contains(n))
@@ -176,7 +164,9 @@ public abstract class PathFinding
 							}
 						}
 						if (!added)
+						{
 							to_visit.add(n);
+						}
 						known.add(n);
 					}
 				}
@@ -234,7 +224,9 @@ public abstract class PathFinding
 				node.attachNeighbors();
 				final Node[] neighbors = node.getNeighbors();
 				if (neighbors == null)
+				{
 					continue;
+				}
 				for (final Node n : neighbors)
 				{
 					if (!visited.contains(n) && !to_visit.contains(n))
@@ -255,7 +247,9 @@ public abstract class PathFinding
 							}
 						}
 						if (!added)
+						{
 							to_visit.add(n);
+						}
 					}
 				}
 			}
@@ -302,12 +296,16 @@ public abstract class PathFinding
 				{
 					// No Path found
 					if (Config.ENABLE_ALL_EXCEPTIONS)
+					{
 						e.printStackTrace();
+					}
 					
 					return null;
 				}
-				if (node.equals(end)) // path found!
+				if (node.equals(end))
+				{
 					return constructPath(node);
+				}
 				visited.add(node);
 				node.attachNeighbors();
 				for (final Node n : node.getNeighbors())
@@ -388,7 +386,9 @@ public abstract class PathFinding
 			final int nextValid = low;
 			
 			for (int i = lastValid + 1; i < nextValid; i++)
+			{
 				path[i] = null;
+			}
 			
 			lastValid = nextValid;
 		}
@@ -428,8 +428,8 @@ public abstract class PathFinding
 	
 	/**
 	 * Convert geodata position to pathnode position
-	 * @param geo_pos
-	 * @return pathnode position
+	 * @param  geo_pos
+	 * @return         pathnode position
 	 */
 	public final short getNodePos(final int geo_pos)
 	{
@@ -438,8 +438,8 @@ public abstract class PathFinding
 	
 	/**
 	 * Convert node position to pathnode block position
-	 * @param node_pos
-	 * @return pathnode block position (0...255)
+	 * @param  node_pos
+	 * @return          pathnode block position (0...255)
 	 */
 	public final short getNodeBlock(final int node_pos)
 	{
@@ -463,7 +463,7 @@ public abstract class PathFinding
 	
 	/**
 	 * Convert pathnode x to World x position
-	 * @param node_x
+	 * @param  node_x
 	 * @return
 	 */
 	public final int calculateWorldX(final short node_x)
@@ -473,7 +473,7 @@ public abstract class PathFinding
 	
 	/**
 	 * Convert pathnode y to World y position
-	 * @param node_y
+	 * @param  node_y
 	 * @return
 	 */
 	public final int calculateWorldY(final short node_y)

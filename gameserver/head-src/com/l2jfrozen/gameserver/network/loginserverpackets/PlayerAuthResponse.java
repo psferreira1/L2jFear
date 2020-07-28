@@ -1,23 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.network.loginserverpackets;
 
 /**
@@ -26,8 +6,8 @@ package com.l2jfrozen.gameserver.network.loginserverpackets;
 public class PlayerAuthResponse extends LoginServerBasePacket
 {
 	
-	private final String _account;
-	private final boolean _authed;
+	private final String account;
+	private final boolean authed;
 	
 	/**
 	 * @param decrypt
@@ -36,8 +16,8 @@ public class PlayerAuthResponse extends LoginServerBasePacket
 	{
 		super(decrypt);
 		
-		_account = readS();
-		_authed = readC() == 0 ? false : true;
+		account = readS();
+		authed = readC() == 0 ? false : true;
 	}
 	
 	/**
@@ -45,7 +25,7 @@ public class PlayerAuthResponse extends LoginServerBasePacket
 	 */
 	public String getAccount()
 	{
-		return _account;
+		return account;
 	}
 	
 	/**
@@ -53,7 +33,7 @@ public class PlayerAuthResponse extends LoginServerBasePacket
 	 */
 	public boolean isAuthed()
 	{
-		return _authed;
+		return authed;
 	}
 	
 }

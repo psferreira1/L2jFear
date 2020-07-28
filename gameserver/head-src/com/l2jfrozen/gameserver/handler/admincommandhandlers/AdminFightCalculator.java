@@ -1,28 +1,6 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.handler.admincommandhandlers;
 
 import java.util.StringTokenizer;
-
-import javolution.text.TextBuilder;
 
 import com.l2jfrozen.Config;
 import com.l2jfrozen.gameserver.datatables.sql.NpcTable;
@@ -37,6 +15,8 @@ import com.l2jfrozen.gameserver.network.serverpackets.SystemMessage;
 import com.l2jfrozen.gameserver.skills.Formulas;
 import com.l2jfrozen.gameserver.templates.L2NpcTemplate;
 import com.l2jfrozen.util.random.Rnd;
+
+import javolution.text.TextBuilder;
 
 /**
  * This class handles following admin commands: - gm = turns gm mode on/off
@@ -57,11 +37,6 @@ public class AdminFightCalculator implements IAdminCommandHandler
 	@Override
 	public boolean useAdminCommand(final String command, final L2PcInstance activeChar)
 	{
-		/*
-		 * if(!AdminCommandAccessRights.getInstance().hasAccess(command, activeChar.getAccessLevel())){ return false; } if(Config.GMAUDIT) { Logger _logAudit = Logger.getLogger("gmaudit"); LogRecord record = new LogRecord(Level.INFO, command); record.setParameters(new Object[] { "GM: " +
-		 * activeChar.getName(), " to target [" + activeChar.getTarget() + "] " }); _logAudit.LOGGER(record); }
-		 */
-		
 		try
 		{
 			if (command.startsWith("admin_fight_calculator_show"))
@@ -80,7 +55,9 @@ public class AdminFightCalculator implements IAdminCommandHandler
 		catch (final StringIndexOutOfBoundsException e)
 		{
 			if (Config.ENABLE_ALL_EXCEPTIONS)
+			{
 				e.printStackTrace();
+			}
 		}
 		return true;
 	}
@@ -279,86 +256,86 @@ public class AdminFightCalculator implements IAdminCommandHandler
 		
 		for (int i = 0; i < 10000; i++)
 		{
-			final boolean _miss1 = Formulas.calcHitMiss(npc1, npc2);
-			if (_miss1)
+			final boolean isMiss1 = Formulas.calcHitMiss(npc1, npc2);
+			if (isMiss1)
 			{
 				miss1++;
 			}
 			
-			final boolean _shld1 = Formulas.calcShldUse(npc1, npc2);
-			if (_shld1)
+			final boolean isShld1 = Formulas.calcShldUse(npc1, npc2);
+			if (isShld1)
 			{
 				shld1++;
 			}
 			
-			final boolean _crit1 = Formulas.calcCrit(npc1.getCriticalHit(npc2, null));
-			if (_crit1)
+			final boolean isCrit1 = Formulas.calcCrit(npc1.getCriticalHit(npc2, null));
+			if (isCrit1)
 			{
 				crit1++;
 			}
 			
-			final boolean _crit4 = Formulas.calcCrit(npc1.getMCriticalHit(npc2, null));
-			if (_crit4)
+			final boolean isCrit4 = Formulas.calcCrit(npc1.getMCriticalHit(npc2, null));
+			if (isCrit4)
 			{
 				crit4++;
 			}
 			
-			double _patk1 = npc1.getPAtk(npc2);
-			_patk1 += Rnd.nextDouble() * npc1.getRandomDamage(npc2);
-			patk1 += _patk1;
+			double randomPatk1 = npc1.getPAtk(npc2);
+			randomPatk1 += Rnd.nextDouble() * npc1.getRandomDamage(npc2);
+			patk1 += randomPatk1;
 			
-			final double _pdef1 = npc1.getPDef(npc2);
-			pdef1 += _pdef1;
+			final double dPdef1 = npc1.getPDef(npc2);
+			pdef1 += dPdef1;
 			
-			if (!_miss1)
+			if (!isMiss1)
 			{
 				npc1.setAttackingBodypart();
 				
-				final double _dmg1 = Formulas.calcPhysDam(npc1, npc2, null, _shld1, _crit1, false, false);
-				dmg1 += _dmg1;
+				final double dDmg1 = Formulas.calcPhysDam(npc1, npc2, null, isShld1, isCrit1, false, false);
+				dmg1 += dDmg1;
 				npc1.abortAttack();
 			}
 		}
 		
 		for (int i = 0; i < 10000; i++)
 		{
-			final boolean _miss2 = Formulas.calcHitMiss(npc2, npc1);
-			if (_miss2)
+			final boolean isMiss2 = Formulas.calcHitMiss(npc2, npc1);
+			if (isMiss2)
 			{
 				miss2++;
 			}
 			
-			final boolean _shld2 = Formulas.calcShldUse(npc2, npc1);
-			if (_shld2)
+			final boolean isShld2 = Formulas.calcShldUse(npc2, npc1);
+			if (isShld2)
 			{
 				shld2++;
 			}
 			
-			final boolean _crit2 = Formulas.calcCrit(npc2.getCriticalHit(npc1, null));
-			if (_crit2)
+			final boolean isCrit2 = Formulas.calcCrit(npc2.getCriticalHit(npc1, null));
+			if (isCrit2)
 			{
 				crit2++;
 			}
 			
-			final boolean _crit3 = Formulas.calcCrit(npc2.getMCriticalHit(npc1, null));
-			if (_crit3)
+			final boolean isCrit3 = Formulas.calcCrit(npc2.getMCriticalHit(npc1, null));
+			if (isCrit3)
 			{
 				crit3++;
 			}
 			
-			double _patk2 = npc2.getPAtk(npc1);
-			_patk2 += Rnd.nextDouble() * npc2.getRandomDamage(npc1);
-			patk2 += _patk2;
+			double randomPatk2 = npc2.getPAtk(npc1);
+			randomPatk2 += Rnd.nextDouble() * npc2.getRandomDamage(npc1);
+			patk2 += randomPatk2;
 			
-			final double _pdef2 = npc2.getPDef(npc1);
-			pdef2 += _pdef2;
+			final double dPdef2 = npc2.getPDef(npc1);
+			pdef2 += dPdef2;
 			
-			if (!_miss2)
+			if (!isMiss2)
 			{
 				npc2.setAttackingBodypart();
 				
-				final double _dmg2 = Formulas.calcPhysDam(npc2, npc1, null, _shld2, _crit2, false, false);
-				dmg2 += _dmg2;
+				final double dDmg2 = Formulas.calcPhysDam(npc2, npc1, null, isShld2, isCrit2, false, false);
+				dmg2 += dDmg2;
 				npc2.abortAttack();
 			}
 		}

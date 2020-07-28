@@ -1,23 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.util;
 
 import java.util.Hashtable;
@@ -53,19 +33,23 @@ public class PacketsFloodProtector
 	
 	/**
 	 * Checks whether the request is flood protected or not.
-	 * @param opcode
-	 * @param opcode2
-	 * @param client
-	 * @return true if action is allowed, otherwise false
+	 * @param  opcode
+	 * @param  opcode2
+	 * @param  client
+	 * @return         true if action is allowed, otherwise false
 	 */
 	public static boolean tryPerformAction(final int opcode, final int opcode2, final MMOClient<?> client)
 	{
 		if (NetcoreConfig.getInstance().DISABLE_FULL_PACKETS_FLOOD_PROTECTOR)
+		{
 			return true;
+		}
 		
 		// filter on opcodes
 		if (!isOpCodeToBeTested(opcode, opcode2, client instanceof L2LoginClient))
+		{
 			return true;
+		}
 		
 		String account = "";
 		
@@ -81,13 +65,17 @@ public class PacketsFloodProtector
 		}
 		
 		if (account == null)
+		{
 			return true;
+		}
 		
 		final L2GameClient clientGame = (L2GameClient) client;
 		
 		// Ignore flood protector for GM char
 		if (clientGame != null && clientGame.getActiveChar() != null && clientGame.getActiveChar().isGM())
+		{
 			return true;
+		}
 		
 		// get actual concurrent actions number for account
 		AtomicInteger actions_per_account = clients_concurrent_actions.get(account);
@@ -107,7 +95,9 @@ public class PacketsFloodProtector
 			clients_concurrent_actions.put(account, actions_per_account);
 		}
 		else
+		{
 			return false;
+		}
 		
 		final int curTick = GameTimeController.getGameTicks();
 		
@@ -116,27 +106,27 @@ public class PacketsFloodProtector
 		{
 			account_nextGameTicks = new Hashtable<>();
 		}
-		Integer _nextGameTick = account_nextGameTicks.get(opcode);
-		if (_nextGameTick == null)
+		Integer nextGameTick = account_nextGameTicks.get(opcode);
+		if (nextGameTick == null)
 		{
-			_nextGameTick = curTick;
-			account_nextGameTicks.put(opcode, _nextGameTick);
+			nextGameTick = curTick;
+			account_nextGameTicks.put(opcode, nextGameTick);
 		}
 		clients_nextGameTick.put(account, account_nextGameTicks);
 		
-		Boolean _punishmentInProgress = punishes_in_progress.get(account);
-		if (_punishmentInProgress == null)
+		Boolean punishmentInProgress = punishes_in_progress.get(account);
+		if (punishmentInProgress == null)
 		{
-			_punishmentInProgress = false;
+			punishmentInProgress = false;
 		}
-		else if (_punishmentInProgress)
+		else if (punishmentInProgress)
 		{
 			final AtomicInteger actions = clients_concurrent_actions.get(account);
 			actions.decrementAndGet();
 			clients_concurrent_actions.put(account, actions);
 			return false;
 		}
-		punishes_in_progress.put(account, _punishmentInProgress);
+		punishes_in_progress.put(account, punishmentInProgress);
 		
 		Hashtable<Integer, AtomicInteger> received_commands_actions = clients_actions.get(account);
 		if (received_commands_actions == null)
@@ -151,14 +141,14 @@ public class PacketsFloodProtector
 		}
 		clients_actions.put(account, received_commands_actions);
 		
-		if (curTick <= _nextGameTick && !_punishmentInProgress) // time to check operations
+		if (curTick <= nextGameTick && !punishmentInProgress) // time to check operations
 		{
 			command_count.incrementAndGet();
 			clients_actions.get(account).put(opcode, command_count);
 			
 			if (NetcoreConfig.getInstance().ENABLE_MMOCORE_DEBUG)
 			{
-				LOGGER.info("-- called OpCode " + Integer.toHexString(opcode) + " ~" + String.valueOf((NetcoreConfig.getInstance().FLOOD_PACKET_PROTECTION_INTERVAL - (_nextGameTick - curTick)) * GameTimeController.MILLIS_IN_TICK) + " ms after first command...");
+				LOGGER.info("-- called OpCode " + Integer.toHexString(opcode) + " ~" + String.valueOf((NetcoreConfig.getInstance().FLOOD_PACKET_PROTECTION_INTERVAL - (nextGameTick - curTick)) * GameTimeController.MILLIS_IN_TICK) + " ms after first command...");
 				LOGGER.info("   total received packets with OpCode " + Integer.toHexString(opcode) + " into the Interval: " + command_count.get());
 			}
 			
@@ -169,18 +159,24 @@ public class PacketsFloodProtector
 				if (!isOpCodeToBeTested(opcode, opcode2, client instanceof L2LoginClient))
 				{
 					if (NetcoreConfig.getInstance().LOG_PACKET_FLOODING)
+					{
 						LOGGER.warn("ATTENTION: Account " + account + " is flooding the server...");
+					}
 					
 					if ("kick".equals(NetcoreConfig.getInstance().PACKET_FLOODING_PUNISHMENT_TYPE))
 					{
 						if (NetcoreConfig.getInstance().LOG_PACKET_FLOODING)
+						{
 							LOGGER.warn(" ------- kicking account " + account);
+						}
 						kickPlayer(client, opcode);
 					}
 					else if ("ban".equals(NetcoreConfig.getInstance().PACKET_FLOODING_PUNISHMENT_TYPE))
 					{
 						if (NetcoreConfig.getInstance().LOG_PACKET_FLOODING)
+						{
 							LOGGER.warn(" ------- banning account " + account);
+						}
 						banAccount(client, opcode);
 					}
 				}
@@ -193,10 +189,10 @@ public class PacketsFloodProtector
 				return false;
 			}
 			
-			if (curTick == _nextGameTick)
+			if (curTick == nextGameTick)
 			{ // if is the first time, just calculate the next game tick
-				_nextGameTick = curTick + NetcoreConfig.getInstance().FLOOD_PACKET_PROTECTION_INTERVAL;
-				clients_nextGameTick.get(account).put(opcode, _nextGameTick);
+				nextGameTick = curTick + NetcoreConfig.getInstance().FLOOD_PACKET_PROTECTION_INTERVAL;
+				clients_nextGameTick.get(account).put(opcode, nextGameTick);
 			}
 			
 			final AtomicInteger actions = clients_concurrent_actions.get(account);
@@ -237,21 +233,21 @@ public class PacketsFloodProtector
 	
 	/**
 	 * Kick player from game (close network connection).
-	 * @param _client
+	 * @param client
 	 * @param opcode
 	 */
-	private static void kickPlayer(final MMOClient<?> _client, final int opcode)
+	private static void kickPlayer(final MMOClient<?> client, final int opcode)
 	{
-		if (_client instanceof L2LoginClient)
+		if (client instanceof L2LoginClient)
 		{
-			final L2LoginClient login_cl = (L2LoginClient) _client;
+			final L2LoginClient login_cl = (L2LoginClient) client;
 			login_cl.close(LoginFailReason.REASON_SYSTEM_ERROR);
 			
 			LOGGER.warn("Player with account " + login_cl.getAccount() + " kicked for flooding with packet " + Integer.toHexString(opcode));
 		}
-		else if (_client instanceof L2GameClient)
+		else if (client instanceof L2GameClient)
 		{
-			final L2GameClient game_cl = (L2GameClient) _client;
+			final L2GameClient game_cl = (L2GameClient) client;
 			game_cl.closeNow();
 			
 			LOGGER.warn("Player with account " + game_cl.accountName + " kicked for flooding with packet " + Integer.toHexString(opcode));
@@ -260,22 +256,22 @@ public class PacketsFloodProtector
 	
 	/**
 	 * Bans char account and logs out the char.
-	 * @param _client
+	 * @param client
 	 * @param opcode
 	 */
-	private static void banAccount(final MMOClient<?> _client, final int opcode)
+	private static void banAccount(final MMOClient<?> client, final int opcode)
 	{
-		if (_client instanceof L2LoginClient)
+		if (client instanceof L2LoginClient)
 		{
-			final L2LoginClient login_cl = (L2LoginClient) _client;
+			final L2LoginClient login_cl = (L2LoginClient) client;
 			LoginController.getInstance().setAccountAccessLevel(login_cl.getAccount(), -100);
 			login_cl.close(LoginFailReason.REASON_SYSTEM_ERROR);
 			
 			LOGGER.warn("Player with account " + login_cl.getAccount() + " banned for flooding forever with packet " + Integer.toHexString(opcode));
 		}
-		else if (_client instanceof L2GameClient)
+		else if (client instanceof L2GameClient)
 		{
-			final L2GameClient game_cl = (L2GameClient) _client;
+			final L2GameClient game_cl = (L2GameClient) client;
 			
 			if (game_cl.getActiveChar() != null)
 			{

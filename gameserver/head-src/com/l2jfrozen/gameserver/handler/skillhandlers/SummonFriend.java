@@ -1,23 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.handler.skillhandlers;
 
 import com.l2jfrozen.Config;
@@ -31,7 +11,6 @@ import com.l2jfrozen.gameserver.model.actor.instance.L2PcInstance;
 import com.l2jfrozen.gameserver.model.entity.event.CTF;
 import com.l2jfrozen.gameserver.model.entity.event.DM;
 import com.l2jfrozen.gameserver.model.entity.event.TvT;
-import com.l2jfrozen.gameserver.model.entity.event.VIP;
 import com.l2jfrozen.gameserver.network.SystemMessageId;
 import com.l2jfrozen.gameserver.network.serverpackets.ConfirmDlg;
 import com.l2jfrozen.gameserver.network.serverpackets.SystemMessage;
@@ -51,13 +30,17 @@ public class SummonFriend implements ISkillHandler
 	@Override
 	public void useSkill(final L2Character activeChar, final L2Skill skill, final L2Object[] targets)
 	{
-		if (!(activeChar instanceof L2PcInstance)) // currently not implemented for others
+		if (!(activeChar instanceof L2PcInstance))
+		{
 			return;
+		}
 		
 		L2PcInstance activePlayer = (L2PcInstance) activeChar;
 		
 		if (!L2PcInstance.checkSummonerStatus(activePlayer))
+		{
 			return;
+		}
 		
 		if (activePlayer.isInOlympiadMode())
 		{
@@ -65,27 +48,22 @@ public class SummonFriend implements ISkillHandler
 			return;
 		}
 		
-		if (activePlayer._inEvent)
+		if (activePlayer.inEvent)
 		{
 			activePlayer.sendMessage("You cannot use this skill in Event.");
 			return;
 		}
-		if (activePlayer._inEventCTF && CTF.is_started())
+		if (activePlayer.inEventCTF && CTF.isStarted())
 		{
 			activePlayer.sendMessage("You cannot use this skill in Event.");
 			return;
 		}
-		if (activePlayer._inEventDM && DM.is_started())
+		if (activePlayer.inEventDM && DM.isStarted())
 		{
 			activePlayer.sendMessage("You cannot use this skill in Event.");
 			return;
 		}
-		if (activePlayer._inEventTvT && TvT.is_started())
-		{
-			activePlayer.sendMessage("You cannot use this skill in Event.");
-			return;
-		}
-		if (activePlayer._inEventVIP && VIP._started)
+		if (activePlayer.inEventTvT && TvT.isStarted())
 		{
 			activePlayer.sendMessage("You cannot use this skill in Event.");
 			return;
@@ -116,18 +94,24 @@ public class SummonFriend implements ISkillHandler
 			for (final L2Object target1 : targets)
 			{
 				if (!(target1 instanceof L2Character))
+				{
 					continue;
+				}
 				
 				L2Character target = (L2Character) target1;
 				if (activeChar == target)
+				{
 					continue;
+				}
 				
 				if (target instanceof L2PcInstance)
 				{
 					L2PcInstance targetChar = (L2PcInstance) target;
 					
 					if (!L2PcInstance.checkSummonTargetStatus(targetChar, activePlayer))
+					{
 						continue;
+					}
 					
 					if (targetChar.isAlikeDead())
 					{
@@ -138,27 +122,22 @@ public class SummonFriend implements ISkillHandler
 						continue;
 					}
 					
-					if (targetChar._inEvent)
+					if (targetChar.inEvent)
 					{
 						targetChar.sendMessage("You cannot use this skill in a Event.");
 						return;
 					}
-					if (targetChar._inEventCTF)
+					if (targetChar.inEventCTF)
 					{
 						targetChar.sendMessage("You cannot use this skill in a Event.");
 						return;
 					}
-					if (targetChar._inEventDM)
+					if (targetChar.inEventDM)
 					{
 						targetChar.sendMessage("You cannot use this skill in a Event.");
 						return;
 					}
-					if (targetChar._inEventTvT)
-					{
-						targetChar.sendMessage("You cannot use this skill in a Event.");
-						return;
-					}
-					if (targetChar._inEventVIP)
+					if (targetChar.inEventTvT)
 					{
 						targetChar.sendMessage("You cannot use this skill in a Event.");
 						return;
@@ -257,7 +236,9 @@ public class SummonFriend implements ISkillHandler
 		catch (final Throwable e)
 		{
 			if (Config.ENABLE_ALL_EXCEPTIONS)
+			{
 				e.printStackTrace();
+			}
 		}
 	}
 	

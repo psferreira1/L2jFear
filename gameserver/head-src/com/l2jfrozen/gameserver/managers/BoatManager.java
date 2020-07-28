@@ -1,23 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.managers;
 
 import java.io.BufferedReader;
@@ -25,10 +5,9 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.LineNumberReader;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.StringTokenizer;
-
-import javolution.util.FastMap;
 
 import org.apache.log4j.Logger;
 
@@ -44,14 +23,10 @@ public class BoatManager
 	
 	public static final BoatManager getInstance()
 	{
-		return SingletonHolder._instance;
+		return SingletonHolder.instance;
 	}
 	
-	// =========================================================
-	
-	// =========================================================
-	// Data Field
-	private Map<Integer, L2BoatInstance> _staticItems = new FastMap<>();
+	private Map<Integer, L2BoatInstance> staticItems = new HashMap<>();
 	
 	public BoatManager()
 	{
@@ -59,8 +34,6 @@ public class BoatManager
 		load();
 	}
 	
-	// =========================================================
-	// Method - Private
 	private final void load()
 	{
 		if (!Config.ALLOW_BOAT)
@@ -68,19 +41,14 @@ public class BoatManager
 			return;
 		}
 		
-		FileReader reader = null;
-		BufferedReader buff = null;
-		LineNumberReader lnr = null;
+		File boatData = new File(Config.DATAPACK_ROOT, "data/csv/boat.csv");
 		
-		try
+		try (FileReader reader = new FileReader(boatData);
+			BufferedReader buff = new BufferedReader(reader);
+			LineNumberReader lnr = new LineNumberReader(buff))
 		{
-			final File boatData = new File(Config.DATAPACK_ROOT, "data/boat.csv");
-			
-			reader = new FileReader(boatData);
-			buff = new BufferedReader(reader);
-			lnr = new LineNumberReader(buff);
-			
 			String line = null;
+			
 			while ((line = lnr.readLine()) != null)
 			{
 				if (line.trim().length() == 0 || line.startsWith("#"))
@@ -90,7 +58,7 @@ public class BoatManager
 				
 				L2BoatInstance boat = parseLine(line);
 				boat.spawn();
-				_staticItems.put(boat.getObjectId(), boat);
+				staticItems.put(boat.getObjectId(), boat);
 				
 				if (Config.DEBUG)
 				{
@@ -99,59 +67,17 @@ public class BoatManager
 				
 				boat = null;
 			}
-			
 		}
-		catch (final FileNotFoundException e)
+		catch (FileNotFoundException e)
 		{
-			if (Config.ENABLE_ALL_EXCEPTIONS)
-				e.printStackTrace();
-			
-			LOGGER.warn("boat.csv is missing in data folder");
+			LOGGER.warn("BoatManager.load : boat.csv file is missing in gameserver/data/csv/ folder");
 		}
-		catch (final Exception e)
+		catch (Exception e)
 		{
-			LOGGER.warn("error while creating boat table " + e);
-			e.printStackTrace();
-		}
-		finally
-		{
-			if (lnr != null)
-				try
-				{
-					lnr.close();
-				}
-				catch (final Exception e1)
-				{
-					e1.printStackTrace();
-				}
-			
-			if (buff != null)
-				try
-				{
-					buff.close();
-				}
-				catch (final Exception e1)
-				{
-					e1.printStackTrace();
-				}
-			
-			if (reader != null)
-				try
-				{
-					reader.close();
-				}
-				catch (final Exception e1)
-				{
-					e1.printStackTrace();
-				}
-			
+			LOGGER.error("BoatManager.load : Error while reading data from csv file", e);
 		}
 	}
 	
-	/**
-	 * @param line
-	 * @return
-	 */
 	private L2BoatInstance parseLine(final String line)
 	{
 		L2BoatInstance boat;
@@ -247,23 +173,18 @@ public class BoatManager
 		return boat;
 	}
 	
-	// =========================================================
-	// Property - Public
-	/**
-	 * @param boatId
-	 * @return
-	 */
 	public L2BoatInstance GetBoat(final int boatId)
 	{
-		if (_staticItems == null)
+		if (staticItems == null)
 		{
-			_staticItems = new FastMap<>();
+			staticItems = new HashMap<>();
 		}
-		return _staticItems.get(boatId);
+		
+		return staticItems.get(boatId);
 	}
 	
 	private static class SingletonHolder
 	{
-		protected static final BoatManager _instance = new BoatManager();
+		protected static final BoatManager instance = new BoatManager();
 	}
 }

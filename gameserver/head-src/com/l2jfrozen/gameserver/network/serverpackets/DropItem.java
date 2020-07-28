@@ -1,23 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.network.serverpackets;
 
 import com.l2jfrozen.gameserver.model.actor.instance.L2ItemInstance;
@@ -28,34 +8,33 @@ import com.l2jfrozen.gameserver.model.actor.instance.L2ItemInstance;
  */
 public class DropItem extends L2GameServerPacket
 {
-	private static final String _S__16_DROPITEM = "[S] 0c DropItem";
-	private final L2ItemInstance _item;
-	private final int _charObjId;
+	private final L2ItemInstance item;
+	private final int charObjId;
 	
 	/**
 	 * Constructor of the DropItem server packet
-	 * @param item : L2ItemInstance designating the item
+	 * @param item        : L2ItemInstance designating the item
 	 * @param playerObjId : int designating the player ID who dropped the item
 	 */
 	public DropItem(final L2ItemInstance item, final int playerObjId)
 	{
-		_item = item;
-		_charObjId = playerObjId;
+		this.item = item;
+		charObjId = playerObjId;
 	}
 	
 	@Override
 	protected final void writeImpl()
 	{
 		writeC(0x0c);
-		writeD(_charObjId);
-		writeD(_item.getObjectId());
-		writeD(_item.getItemId());
+		writeD(charObjId);
+		writeD(item.getObjectId());
+		writeD(item.getItemId());
 		
-		writeD(_item.getX());
-		writeD(_item.getY());
-		writeD(_item.getZ());
+		writeD(item.getX());
+		writeD(item.getY());
+		writeD(item.getZ());
 		// only show item count if it is a stackable item
-		if (_item.isStackable())
+		if (item.isStackable())
 		{
 			writeD(0x01);
 		}
@@ -63,19 +42,15 @@ public class DropItem extends L2GameServerPacket
 		{
 			writeD(0x00);
 		}
-		writeD(_item.getCount());
+		writeD(item.getCount());
 		
 		writeD(1); // unknown
 	}
 	
-	/*
-	 * (non-Javadoc)
-	 * @see com.l2jfrozen.gameserver.serverpackets.ServerBasePacket#getType()
-	 */
 	@Override
 	public String getType()
 	{
-		return _S__16_DROPITEM;
+		return "[S] 0c DropItem";
 	}
 	
 }

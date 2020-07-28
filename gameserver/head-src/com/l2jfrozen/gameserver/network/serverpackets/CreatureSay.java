@@ -1,23 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.network.serverpackets;
 
 import com.l2jfrozen.gameserver.model.actor.instance.L2PcInstance;
@@ -28,12 +8,10 @@ import com.l2jfrozen.gameserver.model.actor.instance.L2PcInstance;
  */
 public class CreatureSay extends L2GameServerPacket
 {
-	// ddSS
-	private static final String _S__4A_CREATURESAY = "[S] 4A CreatureSay";
-	private final int _objectId;
-	private final int _textType;
-	private final String _charName;
-	private final String _text;
+	private final int objectId;
+	private final int textType;
+	private final String charName;
+	private final String text;
 	
 	/**
 	 * @param objectId
@@ -43,10 +21,10 @@ public class CreatureSay extends L2GameServerPacket
 	 */
 	public CreatureSay(final int objectId, final int messageType, final String charName, final String text)
 	{
-		_objectId = objectId;
-		_textType = messageType;
-		_charName = charName;
-		_text = text;
+		this.objectId = objectId;
+		textType = messageType;
+		this.charName = charName;
+		this.text = text;
 		// setLifeTime(0);
 	}
 	
@@ -54,25 +32,21 @@ public class CreatureSay extends L2GameServerPacket
 	protected final void writeImpl()
 	{
 		writeC(0x4a);
-		writeD(_objectId);
-		writeD(_textType);
-		writeS(_charName);
-		writeS(_text);
+		writeD(objectId);
+		writeD(textType);
+		writeS(charName);
+		writeS(text);
 		
-		final L2PcInstance _pci = getClient().getActiveChar();
-		if (_pci != null)
+		final L2PcInstance pci = getClient().getActiveChar();
+		if (pci != null)
 		{
-			_pci.broadcastSnoop(_textType, _charName, _text, this);
+			pci.broadcastSnoop(textType, charName, text, this);
 		}
 	}
 	
-	/*
-	 * (non-Javadoc)
-	 * @see com.l2jfrozen.gameserver.serverpackets.ServerBasePacket#getType()
-	 */
 	@Override
 	public String getType()
 	{
-		return _S__4A_CREATURESAY;
+		return "[S] 4A CreatureSay";
 	}
 }

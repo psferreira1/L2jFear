@@ -1,23 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 
 package com.l2jfrozen.gameserver.model;
 
@@ -32,45 +12,45 @@ import com.l2jfrozen.gameserver.skills.effects.EffectForce;
  */
 public final class ForceBuff
 {
-	protected int _forceId;
-	protected int _forceLevel;
-	protected L2Character _caster;
-	protected L2Character _target;
+	protected int forceId;
+	protected int forceLevel;
+	protected L2Character caster;
+	protected L2Character targetCharacter;
 	
 	static final Logger LOGGER = Logger.getLogger(ForceBuff.class);
 	
 	public L2Character getCaster()
 	{
-		return _caster;
+		return caster;
 	}
 	
 	public L2Character getTarget()
 	{
-		return _target;
+		return targetCharacter;
 	}
 	
 	public ForceBuff(final L2Character caster, final L2Character target, final L2Skill skill)
 	{
-		_caster = caster;
-		_target = target;
-		_forceId = skill.getTriggeredId();
-		_forceLevel = skill.getTriggeredLevel();
+		this.caster = caster;
+		targetCharacter = target;
+		forceId = skill.getTriggeredId();
+		forceLevel = skill.getTriggeredLevel();
 		
-		L2Effect effect = _target.getFirstEffect(_forceId);
+		L2Effect effect = targetCharacter.getFirstEffect(forceId);
 		if (effect != null)
 		{
 			((EffectForce) effect).increaseForce();
 		}
 		else
 		{
-			final L2Skill force = SkillTable.getInstance().getInfo(_forceId, _forceLevel);
+			final L2Skill force = SkillTable.getInstance().getInfo(forceId, forceLevel);
 			if (force != null)
 			{
-				force.getEffects(_caster, _target, false, false, false);
+				force.getEffects(this.caster, targetCharacter, false, false, false);
 			}
 			else
 			{
-				LOGGER.warn("Triggered skill [" + _forceId + ";" + _forceLevel + "] not found!");
+				LOGGER.warn("Triggered skill [" + forceId + ";" + forceLevel + "] not found!");
 			}
 		}
 		effect = null;
@@ -78,8 +58,8 @@ public final class ForceBuff
 	
 	public void onCastAbort()
 	{
-		_caster.setForceBuff(null);
-		L2Effect effect = _target.getFirstEffect(_forceId);
+		caster.setForceBuff(null);
+		L2Effect effect = targetCharacter.getFirstEffect(forceId);
 		if (effect != null)
 		{
 			if (Config.DEVELOPER)
@@ -88,9 +68,13 @@ public final class ForceBuff
 			}
 			
 			if (effect instanceof EffectForce)
+			{
 				((EffectForce) effect).decreaseForce();
+			}
 			else
+			{
 				effect.exit(false);
+			}
 		}
 		effect = null;
 	}

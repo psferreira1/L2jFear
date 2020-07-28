@@ -1,29 +1,8 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.templates;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
-
-import javolution.util.FastList;
 
 import com.l2jfrozen.Config;
 import com.l2jfrozen.gameserver.datatables.SkillTable;
@@ -48,64 +27,71 @@ import com.l2jfrozen.gameserver.skills.funcs.FuncTemplate;
  */
 public final class L2Weapon extends L2Item
 {
-	private final int _soulShotCount;
-	private final int _spiritShotCount;
-	private final int _pDam;
-	private final int _rndDam;
-	private final int _critical;
-	private final double _hitModifier;
-	private final int _avoidModifier;
-	private final int _shieldDef;
-	private final double _shieldDefRate;
-	private final int _atkSpeed;
-	private final int _atkReuse;
-	private final int _mpConsume;
-	private final int _mDam;
-	private L2Skill _itemSkill = null; // for passive skill
-	private L2Skill _enchant4Skill = null; // skill that activates when item is enchanted +4 (for duals)
+	private final int soulShotCount;
+	private final int spiritShotCount;
+	private final int pDam;
+	private final int rndDam;
+	private final int critical;
+	private final double hitModifier;
+	private final int avoidModifier;
+	private final int shieldDef;
+	private final double shieldDefRate;
+	private final int atkSpeed;
+	private final int atkReuse;
+	private final int mpConsume;
+	private final int mDam;
+	private L2Skill itemSkill = null; // for passive skill
+	private L2Skill enchant4Skill = null; // skill that activates when item is enchanted +4 (for duals)
 	
 	// Attached skills for Special Abilities
-	protected L2Skill[] _skillsOnCast;
-	protected L2Skill[] _skillsOnCrit;
+	protected L2Skill[] skillsOnCast;
+	protected L2Skill[] skillsOnCrit;
 	
 	/**
 	 * Constructor for Weapon.<BR>
 	 * <BR>
 	 * <U><I>Variables filled :</I></U><BR>
-	 * <LI>_soulShotCount & _spiritShotCount</LI> <LI>_pDam & _mDam & _rndDam</LI> <LI>_critical</LI> <LI>_hitModifier</LI> <LI>_avoidModifier</LI> <LI>_shieldDes & _shieldDefRate</LI> <LI>_atkSpeed & _AtkReuse</LI> <LI>_mpConsume</LI>
+	 * <LI>soulShotCount & spiritShotCount</LI>
+	 * <LI>pDam & mDam & rndDam</LI>
+	 * <LI>critical</LI>
+	 * <LI>hitModifier</LI>
+	 * <LI>avoidModifier</LI>
+	 * <LI>shieldDes & shieldDefRate</LI>
+	 * <LI>atkSpeed & atkReuse</LI>
+	 * <LI>mpConsume</LI>
 	 * @param type : L2ArmorType designating the type of armor
-	 * @param set : StatsSet designating the set of couples (key,value) caracterizing the armor
-	 * @see L2Item constructor
+	 * @param set  : StatsSet designating the set of couples (key,value) caracterizing the armor
+	 * @see        L2Item constructor
 	 */
 	public L2Weapon(final L2WeaponType type, final StatsSet set)
 	{
 		super(type, set);
-		_soulShotCount = set.getInteger("soulshots");
-		_spiritShotCount = set.getInteger("spiritshots");
-		_pDam = set.getInteger("p_dam");
-		_rndDam = set.getInteger("rnd_dam");
-		_critical = set.getInteger("critical");
-		_hitModifier = set.getDouble("hit_modify");
-		_avoidModifier = set.getInteger("avoid_modify");
-		_shieldDef = set.getInteger("shield_def");
-		_shieldDefRate = set.getDouble("shield_def_rate");
-		_atkSpeed = set.getInteger("atk_speed");
-		_atkReuse = set.getInteger("atk_reuse", type == L2WeaponType.BOW ? 1500 : 0);
-		_mpConsume = set.getInteger("mp_consume");
-		_mDam = set.getInteger("m_dam");
+		soulShotCount = set.getInteger("soulshots");
+		spiritShotCount = set.getInteger("spiritshots");
+		pDam = set.getInteger("p_dam");
+		rndDam = set.getInteger("rnd_dam");
+		critical = set.getInteger("critical");
+		hitModifier = set.getDouble("hit_modify");
+		avoidModifier = set.getInteger("avoid_modify");
+		shieldDef = set.getInteger("shield_def");
+		shieldDefRate = set.getDouble("shield_def_rate");
+		atkSpeed = set.getInteger("atk_speed");
+		atkReuse = set.getInteger("atk_reuse", type == L2WeaponType.BOW ? 1500 : 0);
+		mpConsume = set.getInteger("mp_consume");
+		mDam = set.getInteger("m_dam");
 		
 		int sId = set.getInteger("item_skill_id");
 		int sLv = set.getInteger("item_skill_lvl");
 		if (sId > 0 && sLv > 0)
 		{
-			_itemSkill = SkillTable.getInstance().getInfo(sId, sLv);
+			itemSkill = SkillTable.getInstance().getInfo(sId, sLv);
 		}
 		
 		sId = set.getInteger("enchant4_skill_id");
 		sLv = set.getInteger("enchant4_skill_lvl");
 		if (sId > 0 && sLv > 0)
 		{
-			_enchant4Skill = SkillTable.getInstance().getInfo(sId, sLv);
+			enchant4Skill = SkillTable.getInstance().getInfo(sId, sLv);
 		}
 		
 		sId = set.getInteger("onCast_skill_id");
@@ -136,7 +122,7 @@ public final class L2Weapon extends L2Item
 	@Override
 	public L2WeaponType getItemType()
 	{
-		return (L2WeaponType) super._type;
+		return (L2WeaponType) super.type;
 	}
 	
 	/**
@@ -155,7 +141,7 @@ public final class L2Weapon extends L2Item
 	 */
 	public int getSoulShotCount()
 	{
-		return _soulShotCount;
+		return soulShotCount;
 	}
 	
 	/**
@@ -164,7 +150,7 @@ public final class L2Weapon extends L2Item
 	 */
 	public int getSpiritShotCount()
 	{
-		return _spiritShotCount;
+		return spiritShotCount;
 	}
 	
 	/**
@@ -173,7 +159,7 @@ public final class L2Weapon extends L2Item
 	 */
 	public int getPDamage()
 	{
-		return _pDam;
+		return pDam;
 	}
 	
 	/**
@@ -182,7 +168,7 @@ public final class L2Weapon extends L2Item
 	 */
 	public int getRandomDamage()
 	{
-		return _rndDam;
+		return rndDam;
 	}
 	
 	/**
@@ -191,7 +177,7 @@ public final class L2Weapon extends L2Item
 	 */
 	public int getAttackSpeed()
 	{
-		return _atkSpeed;
+		return atkSpeed;
 	}
 	
 	/**
@@ -201,7 +187,7 @@ public final class L2Weapon extends L2Item
 	 */
 	public int getAttackReuseDelay()
 	{
-		return _atkReuse;
+		return atkReuse;
 	}
 	
 	/**
@@ -210,7 +196,7 @@ public final class L2Weapon extends L2Item
 	 */
 	public int getAvoidModifier()
 	{
-		return _avoidModifier;
+		return avoidModifier;
 	}
 	
 	/**
@@ -219,7 +205,7 @@ public final class L2Weapon extends L2Item
 	 */
 	public int getCritical()
 	{
-		return _critical;
+		return critical;
 	}
 	
 	/**
@@ -228,7 +214,7 @@ public final class L2Weapon extends L2Item
 	 */
 	public double getHitModifier()
 	{
-		return _hitModifier;
+		return hitModifier;
 	}
 	
 	/**
@@ -237,7 +223,7 @@ public final class L2Weapon extends L2Item
 	 */
 	public int getMDamage()
 	{
-		return _mDam;
+		return mDam;
 	}
 	
 	/**
@@ -246,7 +232,7 @@ public final class L2Weapon extends L2Item
 	 */
 	public int getMpConsume()
 	{
-		return _mpConsume;
+		return mpConsume;
 	}
 	
 	/**
@@ -255,7 +241,7 @@ public final class L2Weapon extends L2Item
 	 */
 	public int getShieldDef()
 	{
-		return _shieldDef;
+		return shieldDef;
 	}
 	
 	/**
@@ -264,7 +250,7 @@ public final class L2Weapon extends L2Item
 	 */
 	public double getShieldDefRate()
 	{
-		return _shieldDefRate;
+		return shieldDefRate;
 	}
 	
 	/**
@@ -273,7 +259,7 @@ public final class L2Weapon extends L2Item
 	 */
 	public L2Skill getSkill()
 	{
-		return _itemSkill;
+		return itemSkill;
 	}
 	
 	/**
@@ -282,22 +268,22 @@ public final class L2Weapon extends L2Item
 	 */
 	public L2Skill getEnchant4Skill()
 	{
-		return _enchant4Skill;
+		return enchant4Skill;
 	}
 	
 	/**
 	 * Returns array of Func objects containing the list of functions used by the weapon
-	 * @param instance : L2ItemInstance pointing out the weapon
-	 * @param player : L2Character pointing out the player
-	 * @return Func[] : array of functions
+	 * @param  instance : L2ItemInstance pointing out the weapon
+	 * @param  player   : L2Character pointing out the player
+	 * @return          Func[] : array of functions
 	 */
 	@Override
 	public Func[] getStatFuncs(final L2ItemInstance instance, final L2Character player)
 	{
-		final List<Func> funcs = new FastList<>();
-		if (_funcTemplates != null)
+		final List<Func> funcs = new ArrayList<>();
+		if (funcTemplates != null)
 		{
-			for (final FuncTemplate t : _funcTemplates)
+			for (final FuncTemplate t : funcTemplates)
 			{
 				final Env env = new Env();
 				env.player = player;
@@ -314,18 +300,20 @@ public final class L2Weapon extends L2Item
 	
 	/**
 	 * Returns effects of skills associated with the item to be triggered onHit.
-	 * @param caster : L2Character pointing out the caster
-	 * @param target : L2Character pointing out the target
-	 * @param crit : boolean tells whether the hit was critical
-	 * @return L2Effect[] : array of effects generated by the skill
+	 * @param  caster : L2Character pointing out the caster
+	 * @param  target : L2Character pointing out the target
+	 * @param  crit   : boolean tells whether the hit was critical
+	 * @return        L2Effect[] : array of effects generated by the skill
 	 */
 	public L2Effect[] getSkillEffects(final L2Character caster, final L2Character target, final boolean crit)
 	{
-		if (_skillsOnCrit == null || !crit)
-			return _emptyEffectSet;
-		final List<L2Effect> effects = new FastList<>();
+		if (skillsOnCrit == null || !crit)
+		{
+			return emptyEffectSet;
+		}
+		final List<L2Effect> effects = new ArrayList<>();
 		
-		for (final L2Skill skill : _skillsOnCrit)
+		for (final L2Skill skill : skillsOnCrit)
 		{
 			if (target.isRaid() && (skill.getSkillType() == SkillType.CONFUSION || skill.getSkillType() == SkillType.MUTE || skill.getSkillType() == SkillType.PARALYZE || skill.getSkillType() == SkillType.ROOT))
 			{
@@ -347,28 +335,32 @@ public final class L2Weapon extends L2Item
 			}
 		}
 		if (effects.size() == 0)
-			return _emptyEffectSet;
+		{
+			return emptyEffectSet;
+		}
 		return effects.toArray(new L2Effect[effects.size()]);
 	}
 	
 	/**
 	 * Returns effects of skills associated with the item to be triggered onCast.
-	 * @param caster : L2Character pointing out the caster
-	 * @param target : L2Character pointing out the target
-	 * @param trigger : L2Skill pointing out the skill triggering this action
-	 * @return L2Effect[] : array of effects generated by the skill
+	 * @param  caster  : L2Character pointing out the caster
+	 * @param  target  : L2Character pointing out the target
+	 * @param  trigger : L2Skill pointing out the skill triggering this action
+	 * @return         L2Effect[] : array of effects generated by the skill
 	 */
 	public boolean getSkillEffects(final L2Character caster, final L2Character target, final L2Skill trigger)
 	{
 		boolean output = false;
 		
-		if (_skillsOnCast == null)
+		if (skillsOnCast == null)
+		{
 			return output;
+		}
 		
-		// return _emptyEffectSet;
-		// List<L2Effect> effects = new FastList<L2Effect>();
+		// return emptyEffectSet;
+		// List<L2Effect> effects = new ArrayList<L2Effect>();
 		
-		for (final L2Skill skill : _skillsOnCast)
+		for (final L2Skill skill : skillsOnCast)
 		{
 			if (trigger.isOffensive() != skill.isOffensive())
 			{
@@ -431,11 +423,13 @@ public final class L2Weapon extends L2Item
 			catch (final IOException e)
 			{
 				if (Config.ENABLE_ALL_EXCEPTIONS)
+				{
 					e.printStackTrace();
+				}
 			}
 		}
 		// if(effects.size() == 0)
-		// return _emptyEffectSet;
+		// return emptyEffectSet;
 		// return effects.toArray(new L2Effect[effects.size()]);
 		
 		return output;
@@ -447,22 +441,22 @@ public final class L2Weapon extends L2Item
 	 */
 	public void attachOnCrit(final L2Skill skill)
 	{
-		if (_skillsOnCrit == null)
+		if (skillsOnCrit == null)
 		{
-			_skillsOnCrit = new L2Skill[]
+			skillsOnCrit = new L2Skill[]
 			{
 				skill
 			};
 		}
 		else
 		{
-			final int len = _skillsOnCrit.length;
+			final int len = skillsOnCrit.length;
 			final L2Skill[] tmp = new L2Skill[len + 1];
 			// Definition : arraycopy(array source, begins copy at this position of source, array destination, begins copy at this position in dest,
 			// number of components to be copied)
-			System.arraycopy(_skillsOnCrit, 0, tmp, 0, len);
+			System.arraycopy(skillsOnCrit, 0, tmp, 0, len);
 			tmp[len] = skill;
-			_skillsOnCrit = tmp;
+			skillsOnCrit = tmp;
 		}
 	}
 	
@@ -472,22 +466,22 @@ public final class L2Weapon extends L2Item
 	 */
 	public void attachOnCast(final L2Skill skill)
 	{
-		if (_skillsOnCast == null)
+		if (skillsOnCast == null)
 		{
-			_skillsOnCast = new L2Skill[]
+			skillsOnCast = new L2Skill[]
 			{
 				skill
 			};
 		}
 		else
 		{
-			final int len = _skillsOnCast.length;
+			final int len = skillsOnCast.length;
 			final L2Skill[] tmp = new L2Skill[len + 1];
 			// Definition : arraycopy(array source, begins copy at this position of source, array destination, begins copy at this position in dest,
 			// number of components to be copied)
-			System.arraycopy(_skillsOnCast, 0, tmp, 0, len);
+			System.arraycopy(skillsOnCast, 0, tmp, 0, len);
 			tmp[len] = skill;
-			_skillsOnCast = tmp;
+			skillsOnCast = tmp;
 		}
 	}
 }

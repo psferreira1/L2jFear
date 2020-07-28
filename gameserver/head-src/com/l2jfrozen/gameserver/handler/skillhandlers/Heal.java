@@ -1,23 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.handler.skillhandlers;
 
 import com.l2jfrozen.Config;
@@ -43,13 +23,8 @@ import com.l2jfrozen.gameserver.skills.Stats;
 
 public class Heal implements ISkillHandler
 {
-	// all the items ids that this handler knowns
 	// private static Logger LOGGER = Logger.getLogger(Heal.class);
 	
-	/*
-	 * (non-Javadoc)
-	 * @see com.l2jfrozen.gameserver.handler.IItemHandler#useItem(com.l2jfrozen.gameserver.model.L2PcInstance, com.l2jfrozen.gameserver.model.L2ItemInstance)
-	 */
 	private static final SkillType[] SKILL_IDS =
 	{
 		SkillType.HEAL,
@@ -57,16 +32,14 @@ public class Heal implements ISkillHandler
 		SkillType.HEAL_STATIC
 	};
 	
-	/*
-	 * (non-Javadoc)
-	 * @see com.l2jfrozen.gameserver.handler.IItemHandler#useItem(com.l2jfrozen.gameserver.model.L2PcInstance, com.l2jfrozen.gameserver.model.L2ItemInstance)
-	 */
 	@Override
 	public void useSkill(final L2Character activeChar, final L2Skill skill, final L2Object[] targets)
 	{
 		L2PcInstance player = null;
 		if (activeChar instanceof L2PcInstance)
+		{
 			player = (L2PcInstance) activeChar;
+		}
 		
 		final boolean bss = activeChar.checkBss();
 		final boolean sps = activeChar.checkSps();
@@ -77,14 +50,18 @@ public class Heal implements ISkillHandler
 			ISkillHandler handler = SkillHandler.getInstance().getSkillHandler(SkillType.BUFF);
 			
 			if (handler != null)
+			{
 				handler.useSkill(activeChar, skill, targets);
+			}
 			
 			handler = null;
 		}
 		catch (final Exception e)
 		{
 			if (Config.ENABLE_ALL_EXCEPTIONS)
+			{
 				e.printStackTrace();
+			}
 		}
 		
 		L2Character target = null;
@@ -94,7 +71,9 @@ public class Heal implements ISkillHandler
 			target = (L2Character) target2;
 			
 			if (target == null || target.isDead() || target.isInvul())
+			{
 				continue;
+			}
 			
 			// Avoid players heal inside Baium lair from outside
 			if ((activeChar.isInsideZone(12007) || target.isInsideZone(12007)) && ((GrandBossManager.getInstance().getZone(player) == null && GrandBossManager.getInstance().getZone(target) != null) || (GrandBossManager.getInstance().getZone(target) == null && GrandBossManager.getInstance().getZone(activeChar) != null)))
@@ -104,7 +83,9 @@ public class Heal implements ISkillHandler
 			
 			// We should not heal walls and door
 			if (target instanceof L2DoorInstance)
+			{
 				continue;
+			}
 			
 			// We should not heal siege flags
 			if (target instanceof L2NpcInstance && ((L2NpcInstance) target).getNpcId() == 35062)
@@ -117,9 +98,13 @@ public class Heal implements ISkillHandler
 			if (target != activeChar)
 			{
 				if (target instanceof L2PcInstance && ((L2PcInstance) target).isCursedWeaponEquiped())
+				{
 					continue;
+				}
 				else if (player != null && player.isCursedWeaponEquiped())
+				{
 					continue;
+				}
 			}
 			
 			double hp = skill.getPower();
@@ -141,9 +126,13 @@ public class Heal implements ISkillHandler
 			}
 			
 			if (skill.getSkillType() == SkillType.HEAL_STATIC)
+			{
 				hp = skill.getPower();
+			}
 			else if (skill.getSkillType() != SkillType.HEAL_PERCENT)
+			{
 				hp *= target.calcStat(Stats.HEAL_EFFECTIVNESS, 100, null, null) / 100;
+			}
 			
 			target.setCurrentHp(hp + target.getCurrentHp());
 			target.setLastHealAmount((int) hp);

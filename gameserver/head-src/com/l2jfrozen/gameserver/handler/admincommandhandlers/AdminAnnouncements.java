@@ -1,23 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.handler.admincommandhandlers;
 
 import java.util.StringTokenizer;
@@ -36,7 +16,7 @@ import com.l2jfrozen.gameserver.util.Broadcast;
  * This class handles following admin commands: - announce text = announces text to all players - list_announcements = show menu - reload_announcements = reloads announcements from txt file - announce_announcements = announce all stored announcements to all players - add_announcement text = adds
  * text to startup announcements - del_announcement id = deletes announcement with respective id
  * @version $Revision: 1.5 $
- * @author ProGramMoS
+ * @author  ProGramMoS
  */
 public class AdminAnnouncements implements IAdminCommandHandler
 {
@@ -75,11 +55,6 @@ public class AdminAnnouncements implements IAdminCommandHandler
 	@Override
 	public boolean useAdminCommand(String command, final L2PcInstance activeChar)
 	{
-		/*
-		 * if(!AdminCommandAccessRights.getInstance().hasAccess(command, activeChar.getAccessLevel())){ return false; } if(Config.GMAUDIT) { Logger _logAudit = Logger.getLogger("gmaudit"); LogRecord record = new LogRecord(Level.INFO, command); record.setParameters(new Object[] { "GM: " +
-		 * activeChar.getName(), " to target [" + activeChar.getTarget() + "] " }); _logAudit.LOGGER(record); }
-		 */
-		
 		final StringTokenizer st = new StringTokenizer(command);
 		
 		final String comm_s = st.nextToken();
@@ -89,7 +64,9 @@ public class AdminAnnouncements implements IAdminCommandHandler
 		CommandEnum comm = CommandEnum.valueOf(comm_s);
 		
 		if (comm == null)
+		{
 			return false;
+		}
 		
 		switch (comm)
 		{
@@ -104,21 +81,19 @@ public class AdminAnnouncements implements IAdminCommandHandler
 				
 				if (st.hasMoreTokens())
 				{
-					
 					text = command.replace(comm_s + " ", "");
-					// text = st.nextToken();
 				}
 				
 				if (!text.equals(""))
 				{
 					Announcements.getInstance().announceToAll(text);
 				}
+				
 				Announcements.getInstance().listAnnouncements(activeChar);
 				return true;
-				/*
-				*/
-				
+			
 			case admin_announce_announcements:
+				
 				for (final L2PcInstance player : L2World.getInstance().getAllPlayers())
 				{
 					Announcements.getInstance().showAnnouncements(player);
@@ -131,7 +106,6 @@ public class AdminAnnouncements implements IAdminCommandHandler
 				if (st.hasMoreTokens())
 				{
 					text = command.replace(comm_s + " ", "");
-					// text = st.nextToken();
 				}
 				
 				if (!text.equals(""))
@@ -140,9 +114,10 @@ public class AdminAnnouncements implements IAdminCommandHandler
 					Announcements.getInstance().listAnnouncements(activeChar);
 					return true;
 				}
+				
 				activeChar.sendMessage("You cannot announce Empty message");
 				return false;
-				
+			
 			case admin_del_announcement:
 				
 				if (st.hasMoreTokens())
@@ -165,6 +140,7 @@ public class AdminAnnouncements implements IAdminCommandHandler
 					Announcements.getInstance().listAnnouncements(activeChar);
 					return true;
 				}
+				
 				activeChar.sendMessage("Usage: //del_announcement <index> (number >=0)");
 				return false;
 			case admin_announce:
@@ -176,21 +152,23 @@ public class AdminAnnouncements implements IAdminCommandHandler
 				
 				Announcements.getInstance().handleAnnounce(command, 15);
 				return true;
-				
+			
 			case admin_critannounce:
 				
 				String text1 = command.substring(19);
 				if (Config.GM_CRITANNOUNCER_NAME && text1.length() > 0)
+				{
 					text1 = activeChar.getName() + ": " + text1;
+				}
 				
 				final CreatureSay cs = new CreatureSay(activeChar.getObjectId(), Say2.CRITICAL_ANNOUNCE, "", text1);
 				Broadcast.toAllOnlinePlayers(cs);
 				return true;
-				
+			
 			case admin_list_autoannouncements:
 				AutoAnnouncementHandler.getInstance().listAutoAnnouncements(activeChar);
 				return true;
-				
+			
 			case admin_add_autoannouncement:
 				
 				if (st.hasMoreTokens())

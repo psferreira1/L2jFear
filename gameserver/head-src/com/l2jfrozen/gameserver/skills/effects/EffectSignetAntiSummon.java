@@ -1,22 +1,3 @@
-/* L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.skills.effects;
 
 import com.l2jfrozen.gameserver.ai.CtrlEvent;
@@ -31,7 +12,7 @@ import com.l2jfrozen.gameserver.skills.Env;
 
 public final class EffectSignetAntiSummon extends L2Effect
 {
-	private L2EffectPointInstance _actor;
+	private L2EffectPointInstance actor;
 	
 	public EffectSignetAntiSummon(final Env env, final EffectTemplate template)
 	{
@@ -47,17 +28,19 @@ public final class EffectSignetAntiSummon extends L2Effect
 	@Override
 	public void onStart()
 	{
-		_actor = (L2EffectPointInstance) getEffected();
+		actor = (L2EffectPointInstance) getEffected();
 	}
 	
 	@Override
 	public boolean onActionTime()
 	{
 		if (getCount() == getTotalCount() - 1)
+		{
 			return true; // do nothing first time
+		}
 		final int mpConsume = getSkill().getMpConsume();
 		
-		for (final L2Character cha : _actor.getKnownList().getKnownCharactersInRadius(getSkill().getSkillRadius()))
+		for (final L2Character cha : actor.getKnownList().getKnownCharactersInRadius(getSkill().getSkillRadius()))
 		{
 			if (cha == null)
 			{
@@ -88,9 +71,9 @@ public final class EffectSignetAntiSummon extends L2Effect
 	@Override
 	public void onExit()
 	{
-		if (_actor != null)
+		if (actor != null)
 		{
-			_actor.deleteMe();
+			actor.deleteMe();
 		}
 	}
 }

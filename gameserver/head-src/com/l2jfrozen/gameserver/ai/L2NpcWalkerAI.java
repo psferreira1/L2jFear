@@ -1,25 +1,6 @@
-/* L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.ai;
 
-import javolution.util.FastList;
+import java.util.List;
 
 import com.l2jfrozen.Config;
 import com.l2jfrozen.gameserver.datatables.csv.NpcWalkerRoutesTable;
@@ -33,24 +14,24 @@ public class L2NpcWalkerAI extends L2CharacterAI implements Runnable
 {
 	private static final int DEFAULT_MOVE_DELAY = 0;
 	
-	private long _nextMoveTime;
+	private long nextMoveTime;
 	
-	private boolean _walkingToNextPoint = false;
+	private boolean walkingToNextPoint = false;
 	
 	/**
 	 * home points for xyz
 	 */
-	int _homeX, _homeY, _homeZ;
+	int homeX, homeY, homeZ;
 	
 	/**
 	 * route of the current npc
 	 */
-	private final FastList<L2NpcWalkerNode> _route = NpcWalkerRoutesTable.getInstance().getRouteForNpc(getActor().getNpcId());
+	private final List<L2NpcWalkerNode> route = NpcWalkerRoutesTable.getInstance().getRouteForNpc(getActor().getNpcId());
 	
 	/**
 	 * current node
 	 */
-	private int _currentPos;
+	private int currentPos;
 	
 	/**
 	 * Constructor of L2CharacterAI.<BR>
@@ -75,7 +56,9 @@ public class L2NpcWalkerAI extends L2CharacterAI implements Runnable
 	protected void onEvtThink()
 	{
 		if (!Config.ALLOW_NPC_WALKERS)
+		{
 			return;
+		}
 		
 		if (isWalkingToNextPoint())
 		{
@@ -83,7 +66,7 @@ public class L2NpcWalkerAI extends L2CharacterAI implements Runnable
 			return;
 		}
 		
-		if (_nextMoveTime < System.currentTimeMillis())
+		if (nextMoveTime < System.currentTimeMillis())
 		{
 			walkToLocation();
 		}
@@ -96,14 +79,16 @@ public class L2NpcWalkerAI extends L2CharacterAI implements Runnable
 	@Override
 	protected void onEvtArrivedBlocked(final L2CharPosition blocked_at_pos)
 	{
-		LOGGER.warn("NpcWalker ID: " + getActor().getNpcId() + ": Blocked at rote position [" + _currentPos + "], coords: " + blocked_at_pos.x + ", " + blocked_at_pos.y + ", " + blocked_at_pos.z + ". Teleporting to next point");
+		LOGGER.warn("NpcWalker ID: " + getActor().getNpcId() + ": Blocked at rote position [" + currentPos + "], coords: " + blocked_at_pos.x + ", " + blocked_at_pos.y + ", " + blocked_at_pos.z + ". Teleporting to next point");
 		
-		if (_route.size() <= _currentPos)
+		if (route.size() <= currentPos)
+		{
 			return;
+		}
 		
-		final int destinationX = _route.get(_currentPos).getMoveX();
-		final int destinationY = _route.get(_currentPos).getMoveY();
-		final int destinationZ = _route.get(_currentPos).getMoveZ();
+		final int destinationX = route.get(currentPos).getMoveX();
+		final int destinationY = route.get(currentPos).getMoveY();
+		final int destinationZ = route.get(currentPos).getMoveZ();
 		
 		getActor().teleToLocation(destinationX, destinationY, destinationZ, false);
 		super.onEvtArrivedBlocked(blocked_at_pos);
@@ -111,16 +96,18 @@ public class L2NpcWalkerAI extends L2CharacterAI implements Runnable
 	
 	private void checkArrived()
 	{
-		if (_route.size() <= _currentPos)
+		if (route.size() <= currentPos)
+		{
 			return;
+		}
 		
-		final int destinationX = _route.get(_currentPos).getMoveX();
-		final int destinationY = _route.get(_currentPos).getMoveY();
-		final int destinationZ = _route.get(_currentPos).getMoveZ();
+		final int destinationX = route.get(currentPos).getMoveX();
+		final int destinationY = route.get(currentPos).getMoveY();
+		final int destinationZ = route.get(currentPos).getMoveZ();
 		
 		if (getActor().getX() == destinationX && getActor().getY() == destinationY && getActor().getZ() == destinationZ)
 		{
-			String chat = _route.get(_currentPos).getChatText();
+			String chat = route.get(currentPos).getChatText();
 			
 			if (chat != null && !chat.equals("NULL"))
 			{
@@ -131,7 +118,9 @@ public class L2NpcWalkerAI extends L2CharacterAI implements Runnable
 				catch (final ArrayIndexOutOfBoundsException e)
 				{
 					if (Config.ENABLE_ALL_EXCEPTIONS)
+					{
 						e.printStackTrace();
+					}
 					
 					LOGGER.info("L2NpcWalkerInstance: Error, " + e);
 				}
@@ -139,7 +128,7 @@ public class L2NpcWalkerAI extends L2CharacterAI implements Runnable
 			chat = null;
 			
 			// time in millis
-			long delay = _route.get(_currentPos).getDelay() * 1000;
+			long delay = route.get(currentPos).getDelay() * 1000;
 			
 			// sleeps between each move
 			if (delay < 0)
@@ -151,26 +140,28 @@ public class L2NpcWalkerAI extends L2CharacterAI implements Runnable
 				}
 			}
 			
-			_nextMoveTime = System.currentTimeMillis() + delay;
+			nextMoveTime = System.currentTimeMillis() + delay;
 			setWalkingToNextPoint(false);
 		}
 	}
 	
 	private void walkToLocation()
 	{
-		if (_currentPos < _route.size() - 1)
+		if (currentPos < route.size() - 1)
 		{
-			_currentPos++;
+			currentPos++;
 		}
 		else
 		{
-			_currentPos = 0;
+			currentPos = 0;
 		}
 		
-		if (_route.size() <= _currentPos)
+		if (route.size() <= currentPos)
+		{
 			return;
+		}
 		
-		final boolean moveType = _route.get(_currentPos).getRunning();
+		final boolean moveType = route.get(currentPos).getRunning();
 		
 		/**
 		 * false - walking true - Running
@@ -185,9 +176,9 @@ public class L2NpcWalkerAI extends L2CharacterAI implements Runnable
 		}
 		
 		// now we define destination
-		final int destinationX = _route.get(_currentPos).getMoveX();
-		final int destinationY = _route.get(_currentPos).getMoveY();
-		final int destinationZ = _route.get(_currentPos).getMoveZ();
+		final int destinationX = route.get(currentPos).getMoveX();
+		final int destinationY = route.get(currentPos).getMoveY();
+		final int destinationZ = route.get(currentPos).getMoveZ();
 		
 		// notify AI of MOVE_TO
 		setWalkingToNextPoint(true);
@@ -203,41 +194,41 @@ public class L2NpcWalkerAI extends L2CharacterAI implements Runnable
 	
 	public int getHomeX()
 	{
-		return _homeX;
+		return homeX;
 	}
 	
 	public int getHomeY()
 	{
-		return _homeY;
+		return homeY;
 	}
 	
 	public int getHomeZ()
 	{
-		return _homeZ;
+		return homeZ;
 	}
 	
 	public void setHomeX(final int homeX)
 	{
-		_homeX = homeX;
+		this.homeX = homeX;
 	}
 	
 	public void setHomeY(final int homeY)
 	{
-		_homeY = homeY;
+		this.homeY = homeY;
 	}
 	
 	public void setHomeZ(final int homeZ)
 	{
-		_homeZ = homeZ;
+		this.homeZ = homeZ;
 	}
 	
 	public boolean isWalkingToNextPoint()
 	{
-		return _walkingToNextPoint;
+		return walkingToNextPoint;
 	}
 	
 	public void setWalkingToNextPoint(final boolean value)
 	{
-		_walkingToNextPoint = value;
+		walkingToNextPoint = value;
 	}
 }

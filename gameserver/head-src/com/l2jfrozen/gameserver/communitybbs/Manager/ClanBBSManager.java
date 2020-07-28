@@ -1,28 +1,6 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.communitybbs.Manager;
 
 import java.util.StringTokenizer;
-
-import javolution.text.TextBuilder;
 
 import com.l2jfrozen.gameserver.datatables.sql.ClanTable;
 import com.l2jfrozen.gameserver.model.L2Clan;
@@ -30,16 +8,18 @@ import com.l2jfrozen.gameserver.model.actor.instance.L2PcInstance;
 import com.l2jfrozen.gameserver.network.SystemMessageId;
 import com.l2jfrozen.gameserver.network.serverpackets.SystemMessage;
 
+import javolution.text.TextBuilder;
+
 public class ClanBBSManager extends BaseBBSManager
 {
-	private static ClanBBSManager _instance = new ClanBBSManager();
+	private static ClanBBSManager instance = new ClanBBSManager();
 	
 	/**
 	 * @return
 	 */
 	public static ClanBBSManager getInstance()
 	{
-		return _instance;
+		return instance;
 	}
 	
 	/**
@@ -100,7 +80,9 @@ public class ClanBBSManager extends BaseBBSManager
 		else if (command.startsWith("_bbsclan_clannotice_edit;"))
 		{
 			if (activeChar != null && activeChar.getClan() != null)
+			{
 				clanNotice(activeChar, activeChar.getClan().getClanId());
+			}
 		}
 		else if (command.startsWith("_bbsclan_clannotice_enable"))
 		{
@@ -140,11 +122,17 @@ public class ClanBBSManager extends BaseBBSManager
 					html.append("<br><br><center>" + "<table width=610 border=0 cellspacing=0 cellpadding=0>" + "<tr><td fixwidth=610><font color=\"AAAAAA\">The Clan Notice function allows the clan leader to send messages through a pop-up window to clan members at login.</font> </td></tr>" + "<tr><td height=20></td></tr>");
 					
 					if (activeChar.getClan().isNoticeEnabled())
+					{
 						html.append("<tr><td fixwidth=610> Clan Notice Function:&nbsp;&nbsp;&nbsp;on&nbsp;&nbsp;&nbsp;/&nbsp;&nbsp;&nbsp;<a action=\"bypass _bbsclan_clannotice_disable\">off</a>");
+					}
 					else
+					{
 						html.append("<tr><td fixwidth=610> Clan Notice Function:&nbsp;&nbsp;&nbsp;<a action=\"bypass _bbsclan_clannotice_enable\">on</a>&nbsp;&nbsp;&nbsp;/&nbsp;&nbsp;&nbsp;off");
+					}
 					
-					html.append("</td></tr>" + "</table>" + "<img src=\"L2UI.Squaregray\" width=\"610\" height=\"1\">" + "<br> <br>" + "<table width=610 border=0 cellspacing=2 cellpadding=0>" + "<tr><td>Edit Notice: </td></tr>" + "<tr><td height=5></td></tr>" + "<tr><td>" + "<MultiEdit var =\"Content\" width=610 height=100>" + "</td></tr>" + "</table>" + "<br>" + "<table width=610 border=0 cellspacing=0 cellpadding=0>" + "<tr><td height=5></td></tr>" + "<tr>" + "<td align=center FIXWIDTH=65><button value=\"&$140;\" action=\"Write Notice Set _ Content Content Content\" back=\"l2ui_ch3.smallbutton2_down\" width=65 height=20 fore=\"l2ui_ch3.smallbutton2\" ></td>" + "<td align=center FIXWIDTH=45></td>" + "<td align=center FIXWIDTH=500></td>" + "</tr>" + "</table>" + "</center>" + "</body>" + "</html>");
+					html.append("</td></tr>" + "</table>" + "<img src=\"L2UI.Squaregray\" width=\"610\" height=\"1\">" + "<br> <br>" + "<table width=610 border=0 cellspacing=2 cellpadding=0>" + "<tr><td>Edit Notice: </td></tr>" + "<tr><td height=5></td></tr>" + "<tr><td>" + "<MultiEdit var =\"Content\" width=610 height=100>" + "</td></tr>" + "</table>" + "<br>"
+						+ "<table width=610 border=0 cellspacing=0 cellpadding=0>" + "<tr><td height=5></td></tr>" + "<tr>" + "<td align=center FIXWIDTH=65><button value=\"&$140;\" action=\"Write Notice Set _ Content Content Content\" back=\"l2ui_ch3.smallbutton2_down\" width=65 height=20 fore=\"l2ui_ch3.smallbutton2\" ></td>" + "<td align=center FIXWIDTH=45></td>"
+						+ "<td align=center FIXWIDTH=500></td>" + "</tr>" + "</table>" + "</center>" + "</body>" + "</html>");
 					send1001(html.toString(), activeChar);
 					send1002(activeChar, activeChar.getClan().getNotice(), " ", "0");
 				}
@@ -375,7 +363,7 @@ public class ClanBBSManager extends BaseBBSManager
 				html.append("<tr><td height=10></td></tr>");
 				html.append("</table>");
 				// TODO: the BB for clan :)
-				// html.append("<table border=0 cellspacing=0 cellpadding=0 width=610  bgcolor=333333>");
+				// html.append("<table border=0 cellspacing=0 cellpadding=0 width=610 bgcolor=333333>");
 				html.append("<img src=\"L2UI.squareblank\" width=\"1\" height=\"5\">");
 				html.append("<img src=\"L2UI.squaregray\" width=\"610\" height=\"1\">");
 				html.append("<br>");

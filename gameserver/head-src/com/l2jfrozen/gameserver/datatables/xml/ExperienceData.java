@@ -1,19 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any later
- * version.
- * 
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
- * 
- * You should have received a copy of the GNU General Public License along with
- * this program. If not, see <http://www.gnu.org/licenses/>.
- */
 package com.l2jfrozen.gameserver.datatables.xml;
 
 import java.io.File;
@@ -40,16 +24,16 @@ public class ExperienceData
 	private byte MAX_LEVEL;
 	private byte MAX_PET_LEVEL;
 	
-	private final Map<Integer, Long> _expTable = new HashMap<>();
+	private final Map<Integer, Long> expTable = new HashMap<>();
 	
-	private ExperienceData()
+	public ExperienceData()
 	{
 		loadData();
 	}
 	
 	private void loadData()
 	{
-		final File xml = new File(Config.DATAPACK_ROOT, "data/stats/experience.xml");
+		final File xml = new File(Config.DATAPACK_ROOT, "data/xml/experience.xml");
 		if (!xml.exists())
 		{
 			LOGGER.warn(getClass().getSimpleName() + ": experience.xml not found!");
@@ -76,7 +60,7 @@ public class ExperienceData
 		MAX_LEVEL = (byte) (Byte.parseByte(tableAttr.getNamedItem("maxLevel").getNodeValue()) + 1);
 		MAX_PET_LEVEL = (byte) (Byte.parseByte(tableAttr.getNamedItem("maxPetLevel").getNodeValue()) + 1);
 		
-		_expTable.clear();
+		expTable.clear();
 		
 		NamedNodeMap attrs;
 		Integer level;
@@ -88,18 +72,18 @@ public class ExperienceData
 				attrs = experience.getAttributes();
 				level = Integer.valueOf(attrs.getNamedItem("level").getNodeValue());
 				exp = Long.valueOf(attrs.getNamedItem("tolevel").getNodeValue());
-				_expTable.put(level, exp);
+				expTable.put(level, exp);
 			}
 		}
 		
-		LOGGER.info(getClass().getSimpleName() + ": Loaded " + _expTable.size() + " levels");
+		LOGGER.info(getClass().getSimpleName() + ": Loaded " + expTable.size() + " levels");
 		LOGGER.info(getClass().getSimpleName() + ": Max Player Level is: " + (MAX_LEVEL - 1));
 		LOGGER.info(getClass().getSimpleName() + ": Max Pet Level is: " + (MAX_PET_LEVEL - 1));
 	}
 	
 	public long getExpForLevel(final int level)
 	{
-		return _expTable.get(level);
+		return expTable.get(level);
 	}
 	
 	public byte getMaxLevel()
@@ -114,12 +98,11 @@ public class ExperienceData
 	
 	public static ExperienceData getInstance()
 	{
-		return SingletonHolder._instance;
+		return SingletonHolder.instance;
 	}
 	
-	@SuppressWarnings("synthetic-access")
 	private static class SingletonHolder
 	{
-		protected static final ExperienceData _instance = new ExperienceData();
+		protected static final ExperienceData instance = new ExperienceData();
 	}
 }

@@ -1,29 +1,7 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.model.actor.instance;
 
 import java.util.List;
-
-import javolution.text.TextBuilder;
-import javolution.util.FastMap;
+import java.util.Map;
 
 import org.apache.log4j.Logger;
 
@@ -36,6 +14,8 @@ import com.l2jfrozen.gameserver.network.serverpackets.InventoryUpdate;
 import com.l2jfrozen.gameserver.network.serverpackets.NpcHtmlMessage;
 import com.l2jfrozen.gameserver.network.serverpackets.SystemMessage;
 import com.l2jfrozen.gameserver.templates.L2NpcTemplate;
+
+import javolution.text.TextBuilder;
 
 /**
  * Olympiad Npc's Instance
@@ -65,7 +45,9 @@ public class L2OlympiadManagerInstance extends L2FolkInstance
 		else if (command.startsWith("OlympiadNoble"))
 		{
 			if (!player.isNoble() || player.getClassId().getId() < 88)
+			{
 				return;
+			}
 			
 			final int val = Integer.parseInt(command.substring(14));
 			NpcHtmlMessage reply;
@@ -90,7 +72,9 @@ public class L2OlympiadManagerInstance extends L2FolkInstance
 					
 					reply = new NpcHtmlMessage(getObjectId());
 					replyMSG = new TextBuilder("<html><body>");
-					replyMSG.append("The number of people on the waiting list for " + "Grand Olympiad" + "<center>" + "<img src=\"L2UI.SquareWhite\" width=270 height=1><img src=\"L2UI.SquareBlank\" width=1 height=3>" + "<table width=270 border=0 bgcolor=\"000000\">" + "<tr>" + "<td align=\"left\">General</td>" + "<td align=\"right\">" + classed + "</td>" + "</tr>" + "<tr>" + "<td align=\"left\">Not class-defined</td>" + "<td align=\"right\">" + nonClassed + "</td>" + "</tr>" + "</table><br>" + "<img src=\"L2UI.SquareWhite\" width=270 height=1> <img src=\"L2UI.SquareBlank\" width=1 height=3>" + "<button value=\"Back\" action=\"bypass -h npc_" + getObjectId() + "_OlympiadDesc 2a\" " + "width=40 height=15 back=\"sek.cbui94\" fore=\"sek.cbui92\"></center>");
+					replyMSG.append("The number of people on the waiting list for " + "Grand Olympiad" + "<center>" + "<img src=\"L2UI.SquareWhite\" width=270 height=1><img src=\"L2UI.SquareBlank\" width=1 height=3>" + "<table width=270 border=0 bgcolor=\"000000\">" + "<tr>" + "<td align=\"left\">General</td>" + "<td align=\"right\">" + classed + "</td>" + "</tr>" + "<tr>"
+						+ "<td align=\"left\">Not class-defined</td>" + "<td align=\"right\">" + nonClassed + "</td>" + "</tr>" + "</table><br>" + "<img src=\"L2UI.SquareWhite\" width=270 height=1> <img src=\"L2UI.SquareBlank\" width=1 height=3>" + "<button value=\"Back\" action=\"bypass -h npc_" + getObjectId() + "_OlympiadDesc 2a\" "
+						+ "width=40 height=15 back=\"sek.cbui94\" fore=\"sek.cbui92\"></center>");
 					
 					replyMSG.append("</body></html>");
 					
@@ -111,19 +95,9 @@ public class L2OlympiadManagerInstance extends L2FolkInstance
 					}
 					break;
 				case 4:
-					if (player.isRegisteredInFunEvent())
-					{
-						player.sendMessage("You are already registered to another Event");
-						return;
-					}
 					Olympiad.getInstance().registerNoble(player, false);
 					break;
 				case 5:
-					if (player.isRegisteredInFunEvent())
-					{
-						player.sendMessage("You are already registered to another Event");
-						return;
-					}
 					Olympiad.getInstance().registerNoble(player, true);
 					break;
 				case 6:
@@ -148,12 +122,12 @@ public class L2OlympiadManagerInstance extends L2FolkInstance
 					}
 					break;
 				case 7:
-					L2Multisell.getInstance().SeparateAndSend(102, player, false, getCastle().getTaxRate());
+					L2Multisell.getInstance().separateAndSend(102, player, false, getCastle().getTaxRate());
 					break;
 				default:
 					LOGGER.warn("Olympiad System: Couldnt send packet for request " + val);
 					break;
-			
+				
 			}
 		}
 		else if (command.startsWith("Olympiad"))
@@ -166,7 +140,7 @@ public class L2OlympiadManagerInstance extends L2FolkInstance
 			switch (val)
 			{
 				case 1:
-					final FastMap<Integer, String> matches = Olympiad.getInstance().getMatchList();
+					final Map<Integer, String> matches = Olympiad.getInstance().getMatchList();
 					
 					replyMSG.append("Grand Olympiad Games Overview<br><br>" + "* Caution: Please note, if you watch an Olympiad " + "game, the summoning of your Servitors or Pets will be " + "cancelled. Be careful.<br>");
 					
@@ -237,7 +211,9 @@ public class L2OlympiadManagerInstance extends L2FolkInstance
 			}
 		}
 		else
+		{
 			super.onBypassFeedback(player, command);
+		}
 	}
 	
 	private void showChatWindow(final L2PcInstance player, final int val, final String suffix)
@@ -248,7 +224,9 @@ public class L2OlympiadManagerInstance extends L2FolkInstance
 		filename += (suffix != null) ? suffix + ".htm" : ".htm";
 		
 		if (filename.equals(Olympiad.OLYMPIAD_HTML_PATH + "noble_desc0.htm"))
+		{
 			filename = Olympiad.OLYMPIAD_HTML_PATH + "noble_main.htm";
+		}
 		
 		showChatWindow(player, filename);
 	}

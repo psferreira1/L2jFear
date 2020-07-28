@@ -1,65 +1,45 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.geo.pathfinding;
 
 public abstract class Node
 {
-	private final int _neighborsIdx;
-	private Node[] _neighbors;
-	private Node _parent;
-	private short _cost;
+	private final int neighborsIdx;
+	private Node[] neighbors;
+	private Node parent;
+	private short cost;
 	
 	protected Node(final int neighborsIdx)
 	{
-		_neighborsIdx = neighborsIdx;
+		this.neighborsIdx = neighborsIdx;
 	}
 	
 	public final void setParent(final Node p)
 	{
-		_parent = p;
+		parent = p;
 	}
 	
 	public final void setCost(final int cost)
 	{
-		_cost = (short) cost;
+		this.cost = (short) cost;
 	}
 	
 	public final void attachNeighbors()
 	{
-		_neighbors = PathFinding.getInstance().readNeighbors(this, _neighborsIdx);
+		neighbors = PathFinding.getInstance().readNeighbors(this, neighborsIdx);
 	}
 	
 	public final Node[] getNeighbors()
 	{
-		return _neighbors;
+		return neighbors;
 	}
 	
 	public final Node getParent()
 	{
-		return _parent;
+		return parent;
 	}
 	
 	public final short getCost()
 	{
-		return _cost;
+		return cost;
 	}
 	
 	public abstract int getX();
@@ -84,7 +64,9 @@ public abstract class Node
 	public final boolean equals(final Object obj)
 	{
 		if (!(obj instanceof Node))
+		{
 			return false;
+		}
 		
 		final Node n = (Node) obj;
 		

@@ -1,23 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.templates;
 
 /**
@@ -27,22 +7,22 @@ package com.l2jfrozen.gameserver.templates;
 public class L2HelperBuff
 {
 	/** Min level that the player must achieve to obtain this buff from Newbie Helper */
-	private int _lowerLevel;
+	private int lowerLevel;
 	
 	/** Max level that the player mustn't exceed if it want to obtain this buff from Newbie Helper */
-	private int _upperLevel;
+	private int upperLevel;
 	
 	/** Identifier of the skill (buff) that the Newbie Helper must cast */
-	private int _skillID;
+	private int skillID;
 	
 	/** Level of the skill (buff) that the Newbie Helper must cast */
-	private int _skillLevel;
+	private int skillLevel;
 	
 	/**
 	 * If True only Magus class will obtain this Buff <BR>
 	 * If False only Fighter class will obtain this Buff
 	 */
-	private boolean _isMagicClass;
+	private boolean isMagicClass;
 	
 	/**
 	 * Constructor of L2HelperBuff.<BR>
@@ -52,18 +32,18 @@ public class L2HelperBuff
 	public L2HelperBuff(final StatsSet set)
 	{
 		
-		_lowerLevel = set.getInteger("lowerLevel");
-		_upperLevel = set.getInteger("upperLevel");
-		_skillID = set.getInteger("skillID");
-		_skillLevel = set.getInteger("skillLevel");
+		lowerLevel = set.getInteger("lowerLevel");
+		upperLevel = set.getInteger("upperLevel");
+		skillID = set.getInteger("skillID");
+		skillLevel = set.getInteger("skillLevel");
 		
 		if ("false".equals(set.getString("isMagicClass")))
 		{
-			_isMagicClass = false;
+			isMagicClass = false;
 		}
 		else
 		{
-			_isMagicClass = true;
+			isMagicClass = true;
 		}
 		
 	}
@@ -74,7 +54,7 @@ public class L2HelperBuff
 	 */
 	public int getLowerLevel()
 	{
-		return _lowerLevel;
+		return lowerLevel;
 	}
 	
 	/**
@@ -83,7 +63,7 @@ public class L2HelperBuff
 	 */
 	public void setLowerLevel(final int lowerLevel)
 	{
-		_lowerLevel = lowerLevel;
+		this.lowerLevel = lowerLevel;
 	}
 	
 	/**
@@ -92,7 +72,7 @@ public class L2HelperBuff
 	 */
 	public int getUpperLevel()
 	{
-		return _upperLevel;
+		return upperLevel;
 	}
 	
 	/**
@@ -101,7 +81,7 @@ public class L2HelperBuff
 	 */
 	public void setUpperLevel(final int upperLevel)
 	{
-		_upperLevel = upperLevel;
+		this.upperLevel = upperLevel;
 	}
 	
 	/**
@@ -110,7 +90,7 @@ public class L2HelperBuff
 	 */
 	public int getSkillID()
 	{
-		return _skillID;
+		return skillID;
 	}
 	
 	/**
@@ -119,7 +99,7 @@ public class L2HelperBuff
 	 */
 	public void setSkillID(final int skillID)
 	{
-		_skillID = skillID;
+		this.skillID = skillID;
 	}
 	
 	/**
@@ -128,7 +108,7 @@ public class L2HelperBuff
 	 */
 	public int getSkillLevel()
 	{
-		return _skillLevel;
+		return skillLevel;
 	}
 	
 	/**
@@ -137,7 +117,7 @@ public class L2HelperBuff
 	 */
 	public void setSkillLevel(final int skillLevel)
 	{
-		_skillLevel = skillLevel;
+		this.skillLevel = skillLevel;
 	}
 	
 	/**
@@ -146,7 +126,7 @@ public class L2HelperBuff
 	 */
 	public boolean isMagicClassBuff()
 	{
-		return _isMagicClass;
+		return isMagicClass;
 	}
 	
 	/**
@@ -155,7 +135,7 @@ public class L2HelperBuff
 	 */
 	public void setIsMagicClass(final boolean isMagicClass)
 	{
-		_isMagicClass = isMagicClass;
+		this.isMagicClass = isMagicClass;
 	}
 	
 }

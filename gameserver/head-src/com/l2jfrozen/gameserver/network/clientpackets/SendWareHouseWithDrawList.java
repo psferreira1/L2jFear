@@ -1,23 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.network.clientpackets;
 
 import org.apache.log4j.Logger;
@@ -42,37 +22,37 @@ public final class SendWareHouseWithDrawList extends L2GameClientPacket
 {
 	private static Logger LOGGER = Logger.getLogger(SendWareHouseWithDrawList.class);
 	
-	private int _count;
-	private int[] _items;
+	private int count;
+	private int[] items;
 	
 	@Override
 	protected void readImpl()
 	{
-		_count = readD();
+		count = readD();
 		
-		if (_count < 0 || _count * 8 > _buf.remaining() || _count > Config.MAX_ITEM_IN_PACKET)
+		if (count < 0 || count * 8 > buf.remaining() || count > Config.MAX_ITEM_IN_PACKET)
 		{
-			_count = 0;
-			_items = null;
+			count = 0;
+			items = null;
 			return;
 		}
 		
-		_items = new int[_count * 2];
+		items = new int[count * 2];
 		
-		for (int i = 0; i < _count; i++)
+		for (int i = 0; i < count; i++)
 		{
 			final int objectId = readD();
-			_items[i * 2 + 0] = objectId;
+			items[i * 2 + 0] = objectId;
 			final long cnt = readD();
 			
 			if (cnt > Integer.MAX_VALUE || cnt < 0)
 			{
-				_count = 0;
-				_items = null;
+				count = 0;
+				items = null;
 				return;
 			}
 			
-			_items[i * 2 + 1] = (int) cnt;
+			items[i * 2 + 1] = (int) cnt;
 		}
 	}
 	
@@ -81,7 +61,9 @@ public final class SendWareHouseWithDrawList extends L2GameClientPacket
 	{
 		final L2PcInstance player = getClient().getActiveChar();
 		if (player == null)
+		{
 			return;
+		}
 		
 		if (!getClient().getFloodProtectors().getTransaction().tryPerformAction("withdraw"))
 		{
@@ -99,11 +81,15 @@ public final class SendWareHouseWithDrawList extends L2GameClientPacket
 		
 		final ItemContainer warehouse = player.getActiveWarehouse();
 		if (warehouse == null)
+		{
 			return;
+		}
 		
 		final L2FolkInstance manager = player.getLastFolkNPC();
 		if ((manager == null || !player.isInsideRadius(manager, L2NpcInstance.INTERACTION_DISTANCE, false, false)) && !player.isGM())
+		{
 			return;
+		}
 		
 		if (warehouse instanceof ClanWarehouse && !player.getAccessLevel().allowTransaction())
 		{
@@ -114,12 +100,16 @@ public final class SendWareHouseWithDrawList extends L2GameClientPacket
 		
 		// Alt game - Karma punishment
 		if (!Config.ALT_GAME_KARMA_PLAYER_CAN_USE_WAREHOUSE && player.getKarma() > 0)
+		{
 			return;
+		}
 		
 		if (Config.ALT_MEMBERS_CAN_WITHDRAW_FROM_CLANWH)
 		{
 			if (warehouse instanceof ClanWarehouse && (player.getClanPrivileges() & L2Clan.CP_CL_VIEW_WAREHOUSE) != L2Clan.CP_CL_VIEW_WAREHOUSE)
+			{
 				return;
+			}
 		}
 		else
 		{
@@ -134,10 +124,10 @@ public final class SendWareHouseWithDrawList extends L2GameClientPacket
 		int weight = 0;
 		int slots = 0;
 		
-		for (int i = 0; i < _count; i++)
+		for (int i = 0; i < count; i++)
 		{
-			final int objectId = _items[i * 2 + 0];
-			final int count = _items[i * 2 + 1];
+			final int objectId = items[i * 2 + 0];
+			final int count = items[i * 2 + 1];
 			
 			// Calculate needed slots
 			final L2ItemInstance item = warehouse.getItemByObjectId(objectId);
@@ -181,10 +171,10 @@ public final class SendWareHouseWithDrawList extends L2GameClientPacket
 		
 		// Proceed to the transfer
 		final InventoryUpdate playerIU = Config.FORCE_INVENTORY_UPDATE ? null : new InventoryUpdate();
-		for (int i = 0; i < _count; i++)
+		for (int i = 0; i < count; i++)
 		{
-			final int objectId = _items[i * 2 + 0];
-			final int count = _items[i * 2 + 1];
+			final int objectId = items[i * 2 + 0];
+			final int count = items[i * 2 + 1];
 			
 			final L2ItemInstance oldItem = warehouse.getItemByObjectId(objectId);
 			if (oldItem == null || oldItem.getCount() < count)

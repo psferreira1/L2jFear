@@ -14,7 +14,7 @@ public class KnownListUpdateTaskManager
 {
 	protected static final Logger LOGGER = Logger.getLogger(DecayTaskManager.class);
 	
-	private static KnownListUpdateTaskManager _instance;
+	private static KnownListUpdateTaskManager instance;
 	
 	public KnownListUpdateTaskManager()
 	{
@@ -23,12 +23,12 @@ public class KnownListUpdateTaskManager
 	
 	public static KnownListUpdateTaskManager getInstance()
 	{
-		if (_instance == null)
+		if (instance == null)
 		{
-			_instance = new KnownListUpdateTaskManager();
+			instance = new KnownListUpdateTaskManager();
 		}
 		
-		return _instance;
+		return instance;
 	}
 	
 	private class KnownListUpdate implements Runnable
@@ -73,7 +73,9 @@ public class KnownListUpdateTaskManager
 			catch (final Throwable e)
 			{
 				if (Config.ENABLE_ALL_EXCEPTIONS)
+				{
 					e.printStackTrace();
+				}
 				
 				LOGGER.warn(e.toString());
 			}
@@ -93,15 +95,15 @@ public class KnownListUpdateTaskManager
 				object.getKnownList().forgetObjects(); // TODO
 				continue;
 			}
-			if (object instanceof L2PlayableInstance /* || (false && object instanceof L2GuardInstance) */|| fullUpdate)
+			if (object instanceof L2PlayableInstance /* || (false && object instanceof L2GuardInstance) */ || fullUpdate)
 			{
 				for (final L2WorldRegion regi : region.getSurroundingRegions()) // offer members of this and surrounding regions
 				{
-					for (final L2Object _object : regi.getVisibleObjects())
+					for (final L2Object visibleObject : regi.getVisibleObjects())
 					{
-						if (_object != object)
+						if (visibleObject != object)
 						{
-							object.getKnownList().addKnownObject(_object);
+							object.getKnownList().addKnownObject(visibleObject);
 						}
 					}
 				}
@@ -112,11 +114,11 @@ public class KnownListUpdateTaskManager
 				{
 					if (regi.isActive())
 					{
-						for (final L2Object _object : regi.getVisibleObjects())
+						for (final L2Object visibleObject : regi.getVisibleObjects())
 						{
-							if (_object != object)
+							if (visibleObject != object)
 							{
-								object.getKnownList().addKnownObject(_object);
+								object.getKnownList().addKnownObject(visibleObject);
 							}
 						}
 					}

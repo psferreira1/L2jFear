@@ -1,23 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.network.serverpackets;
 
 import com.l2jfrozen.Config;
@@ -31,27 +11,26 @@ import com.l2jfrozen.gameserver.model.actor.instance.L2PcInstance;
  */
 public class PrivateStoreManageListBuy extends L2GameServerPacket
 {
-	private static final String _S__D0_PRIVATESELLLISTBUY = "[S] b7 PrivateSellListBuy";
-	private final L2PcInstance _activeChar;
-	private int _playerAdena;
-	private final L2ItemInstance[] _itemList;
-	private final TradeList.TradeItem[] _buyList;
+	private final L2PcInstance activeChar;
+	private int playerAdena;
+	private final L2ItemInstance[] itemList;
+	private final TradeList.TradeItem[] buyList;
 	
 	public PrivateStoreManageListBuy(final L2PcInstance player)
 	{
-		_activeChar = player;
+		activeChar = player;
 		
 		if (Config.SELL_BY_ITEM)
 		{
-			_playerAdena = _activeChar.getItemCount(Config.SELL_ITEM, -1);
+			playerAdena = activeChar.getItemCount(Config.SELL_ITEM, -1);
 		}
 		else
 		{
-			_playerAdena = _activeChar.getAdena();
+			playerAdena = activeChar.getAdena();
 		}
 		
-		_itemList = _activeChar.getInventory().getUniqueItems(false, true, true);
-		_buyList = _activeChar.getBuyList().getItems();
+		itemList = activeChar.getInventory().getUniqueItems(false, true, true);
+		buyList = activeChar.getBuyList().getItems();
 	}
 	
 	@Override
@@ -59,12 +38,12 @@ public class PrivateStoreManageListBuy extends L2GameServerPacket
 	{
 		writeC(0xb7);
 		// section 1
-		writeD(_activeChar.getObjectId());
-		writeD(_playerAdena);
+		writeD(activeChar.getObjectId());
+		writeD(playerAdena);
 		
 		// section2
-		writeD(_itemList.length); // inventory items for potential buy
-		for (final L2ItemInstance item : _itemList)
+		writeD(itemList.length); // inventory items for potential buy
+		for (final L2ItemInstance item : itemList)
 		{
 			writeD(item.getItemId());
 			writeH(item.getEnchantLevel()); // show enchant lvl, but you can't buy enchanted weapons because of L2 Interlude Client bug
@@ -76,8 +55,8 @@ public class PrivateStoreManageListBuy extends L2GameServerPacket
 		}
 		
 		// section 3
-		writeD(_buyList.length); // count for all items already added for buy
-		for (final TradeList.TradeItem item : _buyList)
+		writeD(buyList.length); // count for all items already added for buy
+		for (final TradeList.TradeItem item : buyList)
 		{
 			writeD(item.getItem().getItemId());
 			writeH(item.getEnchant());
@@ -91,13 +70,9 @@ public class PrivateStoreManageListBuy extends L2GameServerPacket
 		}
 	}
 	
-	/*
-	 * (non-Javadoc)
-	 * @see com.l2jfrozen.gameserver.serverpackets.ServerBasePacket#getType()
-	 */
 	@Override
 	public String getType()
 	{
-		return _S__D0_PRIVATESELLLISTBUY;
+		return "[S] b7 PrivateSellListBuy";
 	}
 }

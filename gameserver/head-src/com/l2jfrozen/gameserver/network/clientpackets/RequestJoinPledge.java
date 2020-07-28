@@ -1,19 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any later
- * version.
- * 
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
- * 
- * You should have received a copy of the GNU General Public License along with
- * this program. If not, see <http://www.gnu.org/licenses/>.
- */
 package com.l2jfrozen.gameserver.network.clientpackets;
 
 import com.l2jfrozen.gameserver.model.L2Clan;
@@ -25,14 +9,14 @@ import com.l2jfrozen.gameserver.network.serverpackets.SystemMessage;
 
 public final class RequestJoinPledge extends L2GameClientPacket
 {
-	private int _target;
-	private int _pledgeType;
+	private int playerTarget;
+	private int pledgeType;
 	
 	@Override
 	protected void readImpl()
 	{
-		_target = readD();
-		_pledgeType = readD();
+		playerTarget = readD();
+		pledgeType = readD();
 	}
 	
 	@Override
@@ -41,22 +25,28 @@ public final class RequestJoinPledge extends L2GameClientPacket
 		final L2PcInstance activeChar = getClient().getActiveChar();
 		
 		if (activeChar == null)
+		{
 			return;
+		}
 		
-		if (!(L2World.getInstance().findObject(_target) instanceof L2PcInstance))
+		if (!(L2World.getInstance().findObject(playerTarget) instanceof L2PcInstance))
 		{
 			activeChar.sendPacket(new SystemMessage(SystemMessageId.YOU_HAVE_INVITED_THE_WRONG_TARGET));
 			return;
 		}
 		
-		final L2PcInstance target = (L2PcInstance) L2World.getInstance().findObject(_target);
+		final L2PcInstance target = (L2PcInstance) L2World.getInstance().findObject(playerTarget);
 		final L2Clan clan = activeChar.getClan();
 		
-		if (!clan.checkClanJoinCondition(activeChar, target, _pledgeType))
+		if (!clan.checkClanJoinCondition(activeChar, target, pledgeType))
+		{
 			return;
+		}
 		
 		if (!activeChar.getRequest().setRequest(target, this))
+		{
 			return;
+		}
 		
 		final AskJoinPledge ap = new AskJoinPledge(activeChar.getObjectId(), activeChar.getClan().getName());
 		target.sendPacket(ap);
@@ -64,7 +54,7 @@ public final class RequestJoinPledge extends L2GameClientPacket
 	
 	public int getPledgeType()
 	{
-		return _pledgeType;
+		return pledgeType;
 	}
 	
 	@Override

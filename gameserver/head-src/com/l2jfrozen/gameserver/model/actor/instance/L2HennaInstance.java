@@ -1,23 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.model.actor.instance;
 
 import com.l2jfrozen.gameserver.templates.L2Henna;
@@ -31,84 +11,84 @@ public class L2HennaInstance
 {
 	// private static Logger LOGGER = Logger.getLogger(L2HennaInstance.class);
 	
-	private final L2Henna _template;
-	private int _symbolId;
-	private int _itemIdDye;
-	private int _price;
-	private int _statINT;
-	private int _statSTR;
-	private int _statCON;
-	private int _statMEM;
-	private int _statDEX;
-	private int _statWIT;
-	private int _amountDyeRequire;
+	private final L2Henna hennaTemplate;
+	private int symbolId;
+	private int itemIdDye;
+	private int price;
+	private int statINT;
+	private int statSTR;
+	private int statCON;
+	private int statMEM;
+	private int statDEX;
+	private int statWIT;
+	private int amountDyeRequire;
 	
 	public L2HennaInstance(final L2Henna template)
 	{
-		_template = template;
-		_symbolId = _template.symbolId;
-		_itemIdDye = _template.dye;
-		_amountDyeRequire = _template.amount;
-		_price = _template.price;
-		_statINT = _template.statINT;
-		_statSTR = _template.statSTR;
-		_statCON = _template.statCON;
-		_statMEM = _template.statMEM;
-		_statDEX = _template.statDEX;
-		_statWIT = _template.statWIT;
+		hennaTemplate = template;
+		symbolId = hennaTemplate.symbolId;
+		itemIdDye = hennaTemplate.dye;
+		amountDyeRequire = hennaTemplate.amount;
+		price = hennaTemplate.price;
+		statINT = hennaTemplate.statINT;
+		statSTR = hennaTemplate.statSTR;
+		statCON = hennaTemplate.statCON;
+		statMEM = hennaTemplate.statMEM;
+		statDEX = hennaTemplate.statDEX;
+		statWIT = hennaTemplate.statWIT;
 	}
 	
 	public String getName()
 	{
 		String res = "";
-		if (_statINT > 0)
+		if (statINT > 0)
 		{
-			res = res + "INT +" + _statINT;
+			res = res + "INT +" + statINT;
 		}
-		else if (_statSTR > 0)
+		else if (statSTR > 0)
 		{
-			res = res + "STR +" + _statSTR;
+			res = res + "STR +" + statSTR;
 		}
-		else if (_statCON > 0)
+		else if (statCON > 0)
 		{
-			res = res + "CON +" + _statCON;
+			res = res + "CON +" + statCON;
 		}
-		else if (_statMEM > 0)
+		else if (statMEM > 0)
 		{
-			res = res + "MEN +" + _statMEM;
+			res = res + "MEN +" + statMEM;
 		}
-		else if (_statDEX > 0)
+		else if (statDEX > 0)
 		{
-			res = res + "DEX +" + _statDEX;
+			res = res + "DEX +" + statDEX;
 		}
-		else if (_statWIT > 0)
+		else if (statWIT > 0)
 		{
-			res = res + "WIT +" + _statWIT;
+			res = res + "WIT +" + statWIT;
 		}
 		
-		if (_statINT < 0)
+		if (statINT < 0)
 		{
-			res = res + ", INT " + _statINT;
+			res = res + ", INT " + statINT;
 		}
-		else if (_statSTR < 0)
+		else if (statSTR < 0)
 		{
-			res = res + ", STR " + _statSTR;
+			res = res + ", STR " + statSTR;
 		}
-		else if (_statCON < 0)
+		else if (statCON < 0)
 		{
-			res = res + ", CON " + _statCON;
+			res = res + ", CON " + statCON;
 		}
-		else if (_statMEM < 0)
+		else if (statMEM < 0)
 		{
-			res = res + ", MEN " + _statMEM;
+			res = res + ", MEN " + statMEM;
 		}
-		else if (_statDEX < 0)
+		else if (statDEX < 0)
 		{
-			res = res + ", DEX " + _statDEX;
+			res = res + ", DEX " + statDEX;
 		}
-		else if (_statWIT < 0)
+		else if (statWIT < 0)
 		{
-			res = res + ", WIT " + _statWIT;
+			res = res + ", WIT " + statWIT;
 		}
 		
 		return res;
@@ -116,106 +96,106 @@ public class L2HennaInstance
 	
 	public L2Henna getTemplate()
 	{
-		return _template;
+		return hennaTemplate;
 	}
 	
 	public int getSymbolId()
 	{
-		return _symbolId;
+		return symbolId;
 	}
 	
 	public void setSymbolId(final int SymbolId)
 	{
-		_symbolId = SymbolId;
+		symbolId = SymbolId;
 	}
 	
 	public int getItemIdDye()
 	{
-		return _itemIdDye;
+		return itemIdDye;
 	}
 	
 	public void setItemIdDye(final int ItemIdDye)
 	{
-		_itemIdDye = ItemIdDye;
+		itemIdDye = ItemIdDye;
 	}
 	
 	public int getAmountDyeRequire()
 	{
-		return _amountDyeRequire;
+		return amountDyeRequire;
 	}
 	
 	public void setAmountDyeRequire(final int AmountDyeRequire)
 	{
-		_amountDyeRequire = AmountDyeRequire;
+		amountDyeRequire = AmountDyeRequire;
 	}
 	
 	public int getPrice()
 	{
-		return _price;
+		return price;
 	}
 	
 	public void setPrice(final int Price)
 	{
-		_price = Price;
+		price = Price;
 	}
 	
 	public int getStatINT()
 	{
-		return _statINT;
+		return statINT;
 	}
 	
 	public void setStatINT(final int StatINT)
 	{
-		_statINT = StatINT;
+		statINT = StatINT;
 	}
 	
 	public int getStatSTR()
 	{
-		return _statSTR;
+		return statSTR;
 	}
 	
 	public void setStatSTR(final int StatSTR)
 	{
-		_statSTR = StatSTR;
+		statSTR = StatSTR;
 	}
 	
 	public int getStatCON()
 	{
-		return _statCON;
+		return statCON;
 	}
 	
 	public void setStatCON(final int StatCON)
 	{
-		_statCON = StatCON;
+		statCON = StatCON;
 	}
 	
 	public int getStatMEM()
 	{
-		return _statMEM;
+		return statMEM;
 	}
 	
 	public void setStatMEM(final int StatMEM)
 	{
-		_statMEM = StatMEM;
+		statMEM = StatMEM;
 	}
 	
 	public int getStatDEX()
 	{
-		return _statDEX;
+		return statDEX;
 	}
 	
 	public void setStatDEX(final int StatDEX)
 	{
-		_statDEX = StatDEX;
+		statDEX = StatDEX;
 	}
 	
 	public int getStatWIT()
 	{
-		return _statWIT;
+		return statWIT;
 	}
 	
 	public void setStatWIT(final int StatWIT)
 	{
-		_statWIT = StatWIT;
+		statWIT = StatWIT;
 	}
 }

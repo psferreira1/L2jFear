@@ -1,23 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.handler.skillhandlers;
 
 import org.apache.log4j.Logger;
@@ -50,17 +30,19 @@ public class Sow implements ISkillHandler
 		SkillType.SOW
 	};
 	
-	private L2PcInstance _activeChar;
-	private L2MonsterInstance _target;
-	private int _seedId;
+	private L2PcInstance activeCharSow;
+	private L2MonsterInstance targetSow;
+	private int seedId;
 	
 	@Override
 	public void useSkill(final L2Character activeChar, final L2Skill skill, final L2Object[] targets)
 	{
 		if (!(activeChar instanceof L2PcInstance))
+		{
 			return;
+		}
 		
-		_activeChar = (L2PcInstance) activeChar;
+		activeCharSow = (L2PcInstance) activeChar;
 		
 		final L2Object[] targetList = skill.getTargetList(activeChar);
 		if (targetList == null)
@@ -69,54 +51,58 @@ public class Sow implements ISkillHandler
 		}
 		
 		if (Config.DEBUG)
+		{
 			LOGGER.info("Casting sow");
+		}
 		
 		for (int index = 0; index < targetList.length; index++)
 		{
 			if (!(targetList[0] instanceof L2MonsterInstance))
-				continue;
-			
-			_target = (L2MonsterInstance) targetList[0];
-			if (_target.isSeeded())
 			{
-				_activeChar.sendPacket(ActionFailed.STATIC_PACKET);
 				continue;
 			}
 			
-			if (_target.isDead())
+			targetSow = (L2MonsterInstance) targetList[0];
+			if (targetSow.isSeeded())
 			{
-				_activeChar.sendPacket(ActionFailed.STATIC_PACKET);
+				activeCharSow.sendPacket(ActionFailed.STATIC_PACKET);
 				continue;
 			}
 			
-			if (_target.getSeeder() != _activeChar)
+			if (targetSow.isDead())
 			{
-				_activeChar.sendPacket(ActionFailed.STATIC_PACKET);
+				activeCharSow.sendPacket(ActionFailed.STATIC_PACKET);
 				continue;
 			}
 			
-			_seedId = _target.getSeedType();
-			if (_seedId == 0)
+			if (targetSow.getSeeder() != activeCharSow)
 			{
-				_activeChar.sendPacket(ActionFailed.STATIC_PACKET);
+				activeCharSow.sendPacket(ActionFailed.STATIC_PACKET);
 				continue;
 			}
 			
-			L2ItemInstance item = _activeChar.getInventory().getItemByItemId(_seedId);
+			seedId = targetSow.getSeedType();
+			if (seedId == 0)
+			{
+				activeCharSow.sendPacket(ActionFailed.STATIC_PACKET);
+				continue;
+			}
+			
+			L2ItemInstance item = activeCharSow.getInventory().getItemByItemId(seedId);
 			if (item == null)
 			{
-				_activeChar.sendPacket(ActionFailed.STATIC_PACKET);
+				activeCharSow.sendPacket(ActionFailed.STATIC_PACKET);
 				break;
 			}
 			// Consuming used seed
-			_activeChar.destroyItem("Consume", item.getObjectId(), 1, null, false);
+			activeCharSow.destroyItem("Consume", item.getObjectId(), 1, null, false);
 			item = null;
 			
 			SystemMessage sm = null;
 			if (calcSuccess())
 			{
-				_activeChar.sendPacket(new PlaySound("Itemsound.quest_itemget"));
-				_target.setSeeded();
+				activeCharSow.sendPacket(new PlaySound("Itemsound.quest_itemget"));
+				targetSow.setSeeded();
 				sm = new SystemMessage(SystemMessageId.THE_SEED_WAS_SUCCESSFULLY_SOWN);
 			}
 			else
@@ -124,17 +110,17 @@ public class Sow implements ISkillHandler
 				sm = new SystemMessage(SystemMessageId.THE_SEED_WAS_NOT_SOWN);
 			}
 			
-			if (_activeChar.getParty() == null)
+			if (activeCharSow.getParty() == null)
 			{
-				_activeChar.sendPacket(sm);
+				activeCharSow.sendPacket(sm);
 			}
 			else
 			{
-				_activeChar.getParty().broadcastToPartyMembers(sm);
+				activeCharSow.getParty().broadcastToPartyMembers(sm);
 			}
 			sm = null;
 			// TODO: Mob should not agro on player, this way doesn't work really nice
-			_target.getAI().setIntention(CtrlIntention.AI_INTENTION_IDLE);
+			targetSow.getAI().setIntention(CtrlIntention.AI_INTENTION_IDLE);
 			
 		}
 		
@@ -142,38 +128,50 @@ public class Sow implements ISkillHandler
 	
 	private boolean calcSuccess()
 	{
-		if (_activeChar == null || _target == null)
+		if (activeCharSow == null || targetSow == null)
+		{
 			return false;
+		}
 		
 		// TODO: check all the chances
-		int basicSuccess = (L2Manor.getInstance().isAlternative(_seedId) ? 20 : 90);
+		int basicSuccess = (L2Manor.getInstance().isAlternative(seedId) ? 20 : 90);
 		int minlevelSeed = 0;
 		int maxlevelSeed = 0;
-		minlevelSeed = L2Manor.getInstance().getSeedMinLevel(_seedId);
-		maxlevelSeed = L2Manor.getInstance().getSeedMaxLevel(_seedId);
+		minlevelSeed = L2Manor.getInstance().getSeedMinLevel(seedId);
+		maxlevelSeed = L2Manor.getInstance().getSeedMaxLevel(seedId);
 		
-		final int levelPlayer = _activeChar.getLevel(); // Attacker Level
-		final int levelTarget = _target.getLevel(); // taret Level
+		final int levelPlayer = activeCharSow.getLevel(); // Attacker Level
+		final int levelTarget = targetSow.getLevel(); // taret Level
 		
 		// 5% decrease in chance if player level
-		// is more then +/- 5 levels to _seed's_ level
+		// is more then +/- 5 levels to seed's_ level
 		if (levelTarget < minlevelSeed)
+		{
 			basicSuccess -= 5;
+		}
 		if (levelTarget > maxlevelSeed)
+		{
 			basicSuccess -= 5;
+		}
 		
 		// 5% decrease in chance if player level
-		// is more than +/- 5 levels to _target's_ level
+		// is more than +/- 5 levels to target's_ level
 		int diff = (levelPlayer - levelTarget);
 		if (diff < 0)
+		{
 			diff = -diff;
+		}
 		
 		if (diff > 5)
+		{
 			basicSuccess -= 5 * (diff - 5);
+		}
 		
 		// chance can't be less than 1%
 		if (basicSuccess < 1)
+		{
 			basicSuccess = 1;
+		}
 		
 		final int rate = Rnd.nextInt(99);
 		

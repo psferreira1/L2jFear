@@ -1,19 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any later
- * version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
- *
- * You should have received a copy of the GNU General Public License along with
- * this program. If not, see <http://www.gnu.org/licenses/>.
- */
 package com.l2jfrozen.gameserver.model.actor.instance;
 
 import java.text.SimpleDateFormat;
@@ -47,7 +31,9 @@ public class L2ClanHallSiegeInfInstance extends L2NpcInstance
 	public void onAction(final L2PcInstance player)
 	{
 		if (!canTarget(player))
+		{
 			return;
+		}
 		
 		// Check if the L2PcInstance already target the L2NpcInstance
 		if (this != player.getTarget())
@@ -96,7 +82,9 @@ public class L2ClanHallSiegeInfInstance extends L2NpcInstance
 			catch (IndexOutOfBoundsException | NumberFormatException ioobe)
 			{
 				if (Config.ENABLE_ALL_EXCEPTIONS)
+				{
 					ioobe.printStackTrace();
+				}
 			}
 			showMessageWindow(player, val);
 		}
@@ -110,7 +98,9 @@ public class L2ClanHallSiegeInfInstance extends L2NpcInstance
 			catch (final IndexOutOfBoundsException ioobe)
 			{
 				if (Config.ENABLE_ALL_EXCEPTIONS)
+				{
 					ioobe.printStackTrace();
+				}
 			}
 			
 			if (quest.length() == 0)
@@ -266,7 +256,9 @@ public class L2ClanHallSiegeInfInstance extends L2NpcInstance
 		{
 			final L2Clan playerClan = player.getClan();
 			if (playerClan == null || !playerClan.getLeaderName().equalsIgnoreCase(player.getName()) || playerClan.getLevel() < 4)
+			{
 				return;
+			}
 			if (!BanditStrongholdSiege.getInstance().isRegistrationPeriod())
 			{
 				showMessageWindow(player, 3);
@@ -281,7 +273,9 @@ public class L2ClanHallSiegeInfInstance extends L2NpcInstance
 		{
 			final L2Clan playerClan = player.getClan();
 			if (playerClan == null || !playerClan.getLeaderName().equalsIgnoreCase(player.getName()) || playerClan.getLevel() < 4)
+			{
 				return;
+			}
 			if (!BanditStrongholdSiege.getInstance().isRegistrationPeriod())
 			{
 				showMessageWindow(player, 3);
@@ -289,7 +283,9 @@ public class L2ClanHallSiegeInfInstance extends L2NpcInstance
 			}
 			final String val = command.substring(10);
 			if (playerClan.getClanMember(val) == null)
+			{
 				return;
+			}
 			BanditStrongholdSiege.getInstance().addPlayer(playerClan, val);
 			if (BanditStrongholdSiege.getInstance().isClanOnSiege(playerClan))
 			{
@@ -300,7 +296,9 @@ public class L2ClanHallSiegeInfInstance extends L2NpcInstance
 		{
 			final L2Clan playerClan = player.getClan();
 			if (playerClan == null || !playerClan.getLeaderName().equalsIgnoreCase(player.getName()) || playerClan.getLevel() < 4)
+			{
 				return;
+			}
 			if (!BanditStrongholdSiege.getInstance().isRegistrationPeriod())
 			{
 				showMessageWindow(player, 3);
@@ -389,10 +387,10 @@ public class L2ClanHallSiegeInfInstance extends L2NpcInstance
 						clans += "<tr><td><font color=\"LEVEL\">" + a + "</font>  (Number :" + BanditStrongholdSiege.getInstance().getPlayersCount(a) + "people.)</td></tr>";
 					}
 					break;
-			/*
-			 * case 35627: clanhall = ClanHallManager.getInstance().getClanHallById(63); startSiege=WildBeastFarmSiege.getInstance().getSiegeDate().getTimeInMillis(); for (String a : WildBeastFarmSiege.getInstance().getRegisteredClans()) { clanCount++;
-			 * clans+="<tr><td><font color=\"LEVEL\">"+a+"</font>  (Number :"+BanditStrongholdSiege.getInstance().getPlayersCount(a)+"people.)</td></tr>"; } break;
-			 */
+				/*
+				 * case 35627: clanhall = ClanHallManager.getInstance().getClanHallById(63); startSiege=WildBeastFarmSiege.getInstance().getSiegeDate().getTimeInMillis(); for (String a : WildBeastFarmSiege.getInstance().getRegisteredClans()) { clanCount++;
+				 * clans+="<tr><td><font color=\"LEVEL\">"+a+"</font>  (Number :"+BanditStrongholdSiege.getInstance().getPlayersCount(a)+"people.)</td></tr>"; } break;
+				 */
 			}
 			while (clanCount < 5)
 			{

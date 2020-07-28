@@ -1,22 +1,3 @@
-/* L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.network.serverpackets;
 
 import com.l2jfrozen.gameserver.model.actor.instance.L2PcInstance;
@@ -38,26 +19,24 @@ public class RelationChanged extends L2GameServerPacket
 	public static final int RELATION_MUTUAL_WAR = 0x08000; // double fist
 	public static final int RELATION_1SIDED_WAR = 0x10000; // single fist
 	
-	private static final String _S__CE_RELATIONCHANGED = "[S] CE RelationChanged";
-	
-	private final int _objId, _relation, _autoAttackable;
-	private int _karma;
-	private int _pvpFlag;
+	private final int objId, relation, autoAttackable;
+	private int karma;
+	private int pvpFlag;
 	
 	public RelationChanged(final L2PlayableInstance activeChar, final int relation, final boolean autoattackable)
 	{
-		_objId = activeChar.getObjectId();
-		_relation = relation;
-		_autoAttackable = autoattackable ? 1 : 0;
+		objId = activeChar.getObjectId();
+		this.relation = relation;
+		autoAttackable = autoattackable ? 1 : 0;
 		if (activeChar instanceof L2PcInstance)
 		{
-			_karma = ((L2PcInstance) activeChar).getKarma();
-			_pvpFlag = ((L2PcInstance) activeChar).getPvpFlag();
+			karma = ((L2PcInstance) activeChar).getKarma();
+			pvpFlag = ((L2PcInstance) activeChar).getPvpFlag();
 		}
 		else if (activeChar instanceof L2SummonInstance)
 		{
-			_karma = ((L2SummonInstance) activeChar).getOwner().getKarma();
-			_pvpFlag = ((L2SummonInstance) activeChar).getOwner().getPvpFlag();
+			karma = ((L2SummonInstance) activeChar).getOwner().getKarma();
+			pvpFlag = ((L2SummonInstance) activeChar).getOwner().getPvpFlag();
 		}
 	}
 	
@@ -65,16 +44,16 @@ public class RelationChanged extends L2GameServerPacket
 	protected final void writeImpl()
 	{
 		writeC(0xce);
-		writeD(_objId);
-		writeD(_relation);
-		writeD(_autoAttackable);
-		writeD(_karma);
-		writeD(_pvpFlag);
+		writeD(objId);
+		writeD(relation);
+		writeD(autoAttackable);
+		writeD(karma);
+		writeD(pvpFlag);
 	}
 	
 	@Override
 	public String getType()
 	{
-		return _S__CE_RELATIONCHANGED;
+		return "[S] CE RelationChanged";
 	}
 }

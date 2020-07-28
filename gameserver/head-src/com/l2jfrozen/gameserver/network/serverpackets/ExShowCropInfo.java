@@ -1,25 +1,7 @@
-/* L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.network.serverpackets;
 
-import javolution.util.FastList;
+import java.util.ArrayList;
+import java.util.List;
 
 import com.l2jfrozen.gameserver.managers.CastleManorManager.CropProcure;
 import com.l2jfrozen.gameserver.model.L2Manor;
@@ -31,17 +13,16 @@ import com.l2jfrozen.gameserver.model.L2Manor;
 
 public class ExShowCropInfo extends L2GameServerPacket
 {
-	private static final String _S__FE_1C_EXSHOWSEEDINFO = "[S] FE:1D ExShowCropInfo";
-	private FastList<CropProcure> _crops;
-	private final int _manorId;
+	private List<CropProcure> cropProcures;
+	private final int manorId;
 	
-	public ExShowCropInfo(final int manorId, final FastList<CropProcure> crops)
+	public ExShowCropInfo(final int manorId, final List<CropProcure> crops)
 	{
-		_manorId = manorId;
-		_crops = crops;
-		if (_crops == null)
+		this.manorId = manorId;
+		cropProcures = crops;
+		if (cropProcures == null)
 		{
-			_crops = new FastList<>();
+			cropProcures = new ArrayList<>();
 		}
 	}
 	
@@ -51,10 +32,10 @@ public class ExShowCropInfo extends L2GameServerPacket
 		writeC(0xFE); // Id
 		writeH(0x1D); // SubId
 		writeC(0);
-		writeD(_manorId); // Manor ID
+		writeD(manorId); // Manor ID
 		writeD(0);
-		writeD(_crops.size());
-		for (final CropProcure crop : _crops)
+		writeD(cropProcures.size());
+		for (final CropProcure crop : cropProcures)
 		{
 			writeD(crop.getId()); // Crop id
 			writeD(crop.getAmount()); // Buy residual
@@ -72,7 +53,7 @@ public class ExShowCropInfo extends L2GameServerPacket
 	@Override
 	public String getType()
 	{
-		return _S__FE_1C_EXSHOWSEEDINFO;
+		return "[S] FE:1D ExShowCropInfo";
 	}
 	
 }

@@ -1,27 +1,10 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any later
- * version.
- * 
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
- * 
- * You should have received a copy of the GNU General Public License along with
- * this program. If not, see <http://www.gnu.org/licenses/>.
- */
 package com.l2jfrozen.gameserver.ai.special;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.ScheduledFuture;
-
-import javolution.util.FastList;
 
 import org.apache.log4j.Logger;
 
@@ -55,7 +38,7 @@ import com.l2jfrozen.util.random.Rnd;
 /**
  * This class ... control for sequence of fight against Antharas.
  * @version $Revision: $ $Date: $
- * @author L2J_JP SANDMAN
+ * @author  L2J_JP SANDMAN
  */
 public class Antharas extends Quest implements Runnable
 {
@@ -79,8 +62,8 @@ public class Antharas extends Quest implements Runnable
 	private static final int FWA_PERCENTOFBEHEMOTH = 60;
 	private static final int FWA_SELFDESTRUCTTIME = 15000;
 	// Location of teleport cube.
-	private final int _teleportCubeId = 31859;
-	private final int _teleportCubeLocation[][] =
+	private final int teleportCubeId = 31859;
+	private final int teleportCubeLocation[][] =
 	{
 		{
 			177615,
@@ -90,15 +73,15 @@ public class Antharas extends Quest implements Runnable
 		}
 	};
 	
-	protected List<L2Spawn> _teleportCubeSpawn = new FastList<>();
-	protected List<L2NpcInstance> _teleportCube = new FastList<>();
+	protected List<L2Spawn> teleportCubeSpawn = new ArrayList<>();
+	protected List<L2NpcInstance> teleportCube = new ArrayList<>();
 	
 	// Spawn data of monsters.
-	protected HashMap<Integer, L2Spawn> _monsterSpawn = new HashMap<>();
+	protected HashMap<Integer, L2Spawn> monsterSpawn = new HashMap<>();
 	
 	// Instance of monsters.
-	protected List<L2NpcInstance> _monsters = new FastList<>();
-	protected L2GrandBossInstance _antharas = null;
+	protected List<L2NpcInstance> monsters = new ArrayList<>();
+	protected L2GrandBossInstance antharas = null;
 	
 	// monstersId
 	private static final int ANTHARASOLDID = 29019;
@@ -107,15 +90,15 @@ public class Antharas extends Quest implements Runnable
 	private static final int ANTHARASSTRONGID = 29068;
 	
 	// Tasks.
-	protected ScheduledFuture<?> _cubeSpawnTask = null;
-	protected volatile ScheduledFuture<?> _monsterSpawnTask = null;
-	protected ScheduledFuture<?> _activityCheckTask = null;
-	protected ScheduledFuture<?> _socialTask = null;
-	protected ScheduledFuture<?> _mobiliseTask = null;
-	protected ScheduledFuture<?> _mobsSpawnTask = null;
-	protected ScheduledFuture<?> _selfDestructionTask = null;
-	protected ScheduledFuture<?> _moveAtRandomTask = null;
-	protected ScheduledFuture<?> _movieTask = null;
+	protected ScheduledFuture<?> cubeSpawnTask = null;
+	protected volatile ScheduledFuture<?> monsterSpawnTask = null;
+	protected ScheduledFuture<?> activityCheckTask = null;
+	protected ScheduledFuture<?> socialTask = null;
+	protected ScheduledFuture<?> mobiliseTask = null;
+	protected ScheduledFuture<?> mobsSpawnTask = null;
+	protected ScheduledFuture<?> selfDestructionTask = null;
+	protected ScheduledFuture<?> moveAtRandomTask = null;
+	protected ScheduledFuture<?> movieTask = null;
 	
 	// Antharas Status Tracking :
 	private static final int DORMANT = 0; // Antharas is spawned and no one has entered yet. Entry is unlocked
@@ -124,9 +107,9 @@ public class Antharas extends Quest implements Runnable
 	private static final int FIGHTING = 2; // Antharas is engaged in battle, annihilating his foes. Entry is locked
 	private static final int DEAD = 3; // Antharas has been killed. Entry is locked
 	
-	protected static long _LastAction = 0;
+	protected static long LastAction = 0;
 	
-	protected static L2BossZone _Zone;
+	protected static L2BossZone zone;
 	
 	// Boss: Antharas
 	public Antharas(final int id, final String name, final String descr)
@@ -157,7 +140,7 @@ public class Antharas extends Quest implements Runnable
 		// Setting spawn data of monsters.
 		try
 		{
-			_Zone = GrandBossManager.getInstance().getZone(179700, 113800, -7709);
+			zone = GrandBossManager.getInstance().getZone(179700, 113800, -7709);
 			L2NpcTemplate template1;
 			L2Spawn tempSpawn;
 			
@@ -171,7 +154,7 @@ public class Antharas extends Quest implements Runnable
 			tempSpawn.setAmount(1);
 			tempSpawn.setRespawnDelay(FWA_ACTIVITYTIMEOFANTHARAS * 2);
 			SpawnTable.getInstance().addNewSpawn(tempSpawn, false);
-			_monsterSpawn.put(29019, tempSpawn);
+			monsterSpawn.put(29019, tempSpawn);
 			
 			// Weak Antharas
 			template1 = NpcTable.getInstance().getTemplate(ANTHARASWEAKID);
@@ -183,7 +166,7 @@ public class Antharas extends Quest implements Runnable
 			tempSpawn.setAmount(1);
 			tempSpawn.setRespawnDelay(FWA_ACTIVITYTIMEOFANTHARAS * 2);
 			SpawnTable.getInstance().addNewSpawn(tempSpawn, false);
-			_monsterSpawn.put(29066, tempSpawn);
+			monsterSpawn.put(29066, tempSpawn);
 			
 			// Normal Antharas
 			template1 = NpcTable.getInstance().getTemplate(ANTHARASNORMALID);
@@ -195,7 +178,7 @@ public class Antharas extends Quest implements Runnable
 			tempSpawn.setAmount(1);
 			tempSpawn.setRespawnDelay(FWA_ACTIVITYTIMEOFANTHARAS * 2);
 			SpawnTable.getInstance().addNewSpawn(tempSpawn, false);
-			_monsterSpawn.put(29067, tempSpawn);
+			monsterSpawn.put(29067, tempSpawn);
 			
 			// Strong Antharas
 			template1 = NpcTable.getInstance().getTemplate(ANTHARASSTRONGID);
@@ -207,7 +190,7 @@ public class Antharas extends Quest implements Runnable
 			tempSpawn.setAmount(1);
 			tempSpawn.setRespawnDelay(FWA_ACTIVITYTIMEOFANTHARAS * 2);
 			SpawnTable.getInstance().addNewSpawn(tempSpawn, false);
-			_monsterSpawn.put(29068, tempSpawn);
+			monsterSpawn.put(29068, tempSpawn);
 		}
 		catch (final Exception e)
 		{
@@ -217,9 +200,9 @@ public class Antharas extends Quest implements Runnable
 		// Setting spawn data of teleport cube.
 		try
 		{
-			final L2NpcTemplate Cube = NpcTable.getInstance().getTemplate(_teleportCubeId);
+			final L2NpcTemplate Cube = NpcTable.getInstance().getTemplate(teleportCubeId);
 			L2Spawn spawnDat;
-			for (final int[] element : _teleportCubeLocation)
+			for (final int[] element : teleportCubeLocation)
 			{
 				spawnDat = new L2Spawn(Cube);
 				spawnDat.setAmount(1);
@@ -230,7 +213,7 @@ public class Antharas extends Quest implements Runnable
 				spawnDat.setRespawnDelay(60);
 				spawnDat.setLocation(0);
 				SpawnTable.getInstance().addNewSpawn(spawnDat, false);
-				_teleportCubeSpawn.add(spawnDat);
+				teleportCubeSpawn.add(spawnDat);
 			}
 		}
 		catch (final Exception e)
@@ -259,12 +242,12 @@ public class Antharas extends Quest implements Runnable
 				final int heading = info.getInteger("heading");
 				final int hp = info.getInteger("currentHP");
 				final int mp = info.getInteger("currentMP");
-				_antharas = (L2GrandBossInstance) addSpawn(ANTHARASOLDID, loc_x, loc_y, loc_z, heading, false, 0);
-				GrandBossManager.getInstance().addBoss(_antharas);
-				_antharas.setCurrentHpMp(hp, mp);
-				_LastAction = System.currentTimeMillis();
+				antharas = (L2GrandBossInstance) addSpawn(ANTHARASOLDID, loc_x, loc_y, loc_z, heading, false, 0);
+				GrandBossManager.getInstance().addBoss(antharas);
+				antharas.setCurrentHpMp(hp, mp);
+				LastAction = System.currentTimeMillis();
 				// Start repeating timer to check for inactivity
-				_activityCheckTask = ThreadPoolManager.getInstance().scheduleGeneralAtFixedRate(new CheckActivity(), 60000, 60000);
+				activityCheckTask = ThreadPoolManager.getInstance().scheduleGeneralAtFixedRate(new CheckActivity(), 60000, 60000);
 			}
 			else if (status == DEAD)
 			{
@@ -312,12 +295,12 @@ public class Antharas extends Quest implements Runnable
 				final int heading = info.getInteger("heading");
 				final int hp = info.getInteger("currentHP");
 				final int mp = info.getInteger("currentMP");
-				_antharas = (L2GrandBossInstance) addSpawn(antharasId, loc_x, loc_y, loc_z, heading, false, 0);
-				GrandBossManager.getInstance().addBoss(_antharas);
-				_antharas.setCurrentHpMp(hp, mp);
-				_LastAction = System.currentTimeMillis();
+				antharas = (L2GrandBossInstance) addSpawn(antharasId, loc_x, loc_y, loc_z, heading, false, 0);
+				GrandBossManager.getInstance().addBoss(antharas);
+				antharas.setCurrentHpMp(hp, mp);
+				LastAction = System.currentTimeMillis();
 				// Start repeating timer to check for inactivity
-				_activityCheckTask = ThreadPoolManager.getInstance().scheduleGeneralAtFixedRate(new CheckActivity(), 60000, 60000);
+				activityCheckTask = ThreadPoolManager.getInstance().scheduleGeneralAtFixedRate(new CheckActivity(), 60000, 60000);
 			}
 			else if (antharasId != 0 && status == DEAD)
 			{
@@ -341,39 +324,39 @@ public class Antharas extends Quest implements Runnable
 	// Do spawn teleport cube.
 	public void spawnCube()
 	{
-		if (_mobsSpawnTask != null)
+		if (mobsSpawnTask != null)
 		{
-			_mobsSpawnTask.cancel(true);
-			_mobsSpawnTask = null;
+			mobsSpawnTask.cancel(true);
+			mobsSpawnTask = null;
 		}
-		if (_selfDestructionTask != null)
+		if (selfDestructionTask != null)
 		{
-			_selfDestructionTask.cancel(true);
-			_selfDestructionTask = null;
+			selfDestructionTask.cancel(true);
+			selfDestructionTask = null;
 		}
-		if (_activityCheckTask != null)
+		if (activityCheckTask != null)
 		{
-			_activityCheckTask.cancel(false);
-			_activityCheckTask = null;
+			activityCheckTask.cancel(false);
+			activityCheckTask = null;
 		}
 		
-		for (final L2Spawn spawnDat : _teleportCubeSpawn)
+		for (final L2Spawn spawnDat : teleportCubeSpawn)
 		{
-			_teleportCube.add(spawnDat.doSpawn());
+			teleportCube.add(spawnDat.doSpawn());
 		}
 	}
 	
 	// Setting Antharas spawn task.
 	public void setAntharasSpawnTask()
 	{
-		if (_monsterSpawnTask == null)
+		if (monsterSpawnTask == null)
 		{
 			synchronized (this)
 			{
-				if (_monsterSpawnTask == null)
+				if (monsterSpawnTask == null)
 				{
 					GrandBossManager.getInstance().setBossStatus(ANTHARASOLDID, WAITING);
-					_monsterSpawnTask = ThreadPoolManager.getInstance().scheduleGeneral(new AntharasSpawn(1), 60000 * Config.ANTHARAS_WAIT_TIME);
+					monsterSpawnTask = ThreadPoolManager.getInstance().scheduleGeneral(new AntharasSpawn(1), 60000 * Config.ANTHARAS_WAIT_TIME);
 				}
 			}
 		}
@@ -399,21 +382,21 @@ public class Antharas extends Quest implements Runnable
 		}
 		
 		// Spawn mobs.
-		_mobsSpawnTask = ThreadPoolManager.getInstance().scheduleGeneralAtFixedRate(new MobsSpawn(), intervalOfMobs, intervalOfMobs);
+		mobsSpawnTask = ThreadPoolManager.getInstance().scheduleGeneralAtFixedRate(new MobsSpawn(), intervalOfMobs, intervalOfMobs);
 	}
 	
 	// Do spawn Antharas.
 	private class AntharasSpawn implements Runnable
 	{
-		private int _taskId = 0;
-		private Collection<L2Character> _players;
+		private int taskId = 0;
+		private Collection<L2Character> players;
 		
 		AntharasSpawn(final int taskId)
 		{
-			_taskId = taskId;
-			if (_Zone.getCharactersInside() != null)
+			this.taskId = taskId;
+			if (zone.getCharactersInside() != null)
 			{
-				_players = _Zone.getCharactersInside().values();
+				players = zone.getCharactersInside().values();
 			}
 		}
 		
@@ -423,35 +406,43 @@ public class Antharas extends Quest implements Runnable
 			int npcId;
 			L2Spawn antharasSpawn = null;
 			
-			switch (_taskId)
+			switch (taskId)
 			{
 				case 1: // Spawn.
 					// Strength of Antharas is decided by the number of players that
 					// invaded the lair.
-					_monsterSpawnTask.cancel(false);
-					_monsterSpawnTask = null;
+					monsterSpawnTask.cancel(false);
+					monsterSpawnTask = null;
 					if (FWA_OLDANTHARAS)
+					{
 						npcId = 29019; // old
-					else if (_players == null || _players != null && _players.size() <= FWA_LIMITOFWEAK)
+					}
+					else if (players == null || players != null && players.size() <= FWA_LIMITOFWEAK)
+					{
 						npcId = 29066; // weak
-					else if (_players != null && _players.size() > FWA_LIMITOFNORMAL)
+					}
+					else if (players != null && players.size() > FWA_LIMITOFNORMAL)
+					{
 						npcId = 29068; // strong
+					}
 					else
+					{
 						npcId = 29067; // normal
-						
-					// Do spawn.
-					antharasSpawn = _monsterSpawn.get(npcId);
-					_antharas = (L2GrandBossInstance) antharasSpawn.doSpawn();
-					GrandBossManager.getInstance().addBoss(_antharas);
+					}
 					
-					_monsters.add(_antharas);
-					_antharas.setIsImobilised(true);
+					// Do spawn.
+					antharasSpawn = monsterSpawn.get(npcId);
+					antharas = (L2GrandBossInstance) antharasSpawn.doSpawn();
+					GrandBossManager.getInstance().addBoss(antharas);
+					
+					monsters.add(antharas);
+					antharas.setIsImobilised(true);
 					
 					GrandBossManager.getInstance().setBossStatus(ANTHARASOLDID, DORMANT);
 					GrandBossManager.getInstance().setBossStatus(npcId, FIGHTING);
-					_LastAction = System.currentTimeMillis();
+					LastAction = System.currentTimeMillis();
 					// Start repeating timer to check for inactivity
-					_activityCheckTask = ThreadPoolManager.getInstance().scheduleGeneralAtFixedRate(new CheckActivity(), 60000, 60000);
+					activityCheckTask = ThreadPoolManager.getInstance().scheduleGeneralAtFixedRate(new CheckActivity(), 60000, 60000);
 					
 					// Setting 1st time of minions spawn task.
 					if (!FWA_OLDANTHARAS)
@@ -460,88 +451,88 @@ public class Antharas extends Quest implements Runnable
 					}
 					
 					// Set next task.
-					if (_socialTask != null)
+					if (socialTask != null)
 					{
-						_socialTask.cancel(true);
-						_socialTask = null;
+						socialTask.cancel(true);
+						socialTask = null;
 					}
-					_socialTask = ThreadPoolManager.getInstance().scheduleGeneral(new AntharasSpawn(2), 16);
+					socialTask = ThreadPoolManager.getInstance().scheduleGeneral(new AntharasSpawn(2), 16);
 					break;
 				case 2:
 					// Set camera.
-					broadcastPacket(new SpecialCamera(_antharas.getObjectId(), 700, 13, -19, 0, 20000));
+					broadcastPacket(new SpecialCamera(antharas.getObjectId(), 700, 13, -19, 0, 20000));
 					
 					// Set next task.
-					if (_socialTask != null)
+					if (socialTask != null)
 					{
-						_socialTask.cancel(true);
-						_socialTask = null;
+						socialTask.cancel(true);
+						socialTask = null;
 					}
-					_socialTask = ThreadPoolManager.getInstance().scheduleGeneral(new AntharasSpawn(3), 3000);
+					socialTask = ThreadPoolManager.getInstance().scheduleGeneral(new AntharasSpawn(3), 3000);
 					break;
 				
 				case 3:
 					// Do social.
-					broadcastPacket(new SpecialCamera(_antharas.getObjectId(), 700, 13, 0, 6000, 20000));
+					broadcastPacket(new SpecialCamera(antharas.getObjectId(), 700, 13, 0, 6000, 20000));
 					// Set next task.
-					if (_socialTask != null)
+					if (socialTask != null)
 					{
-						_socialTask.cancel(true);
-						_socialTask = null;
+						socialTask.cancel(true);
+						socialTask = null;
 					}
-					_socialTask = ThreadPoolManager.getInstance().scheduleGeneral(new AntharasSpawn(4), 10000);
+					socialTask = ThreadPoolManager.getInstance().scheduleGeneral(new AntharasSpawn(4), 10000);
 					break;
 				case 4:
-					broadcastPacket(new SpecialCamera(_antharas.getObjectId(), 3700, 0, -3, 0, 10000));
+					broadcastPacket(new SpecialCamera(antharas.getObjectId(), 3700, 0, -3, 0, 10000));
 					// Set next task.
-					if (_socialTask != null)
+					if (socialTask != null)
 					{
-						_socialTask.cancel(true);
-						_socialTask = null;
+						socialTask.cancel(true);
+						socialTask = null;
 					}
-					_socialTask = ThreadPoolManager.getInstance().scheduleGeneral(new AntharasSpawn(5), 200);
+					socialTask = ThreadPoolManager.getInstance().scheduleGeneral(new AntharasSpawn(5), 200);
 					break;
 				
 				case 5:
 					// Do social.
-					broadcastPacket(new SpecialCamera(_antharas.getObjectId(), 1100, 0, -3, 22000, 30000));
+					broadcastPacket(new SpecialCamera(antharas.getObjectId(), 1100, 0, -3, 22000, 30000));
 					// Set next task.
-					if (_socialTask != null)
+					if (socialTask != null)
 					{
-						_socialTask.cancel(true);
-						_socialTask = null;
+						socialTask.cancel(true);
+						socialTask = null;
 					}
-					_socialTask = ThreadPoolManager.getInstance().scheduleGeneral(new AntharasSpawn(6), 10800);
+					socialTask = ThreadPoolManager.getInstance().scheduleGeneral(new AntharasSpawn(6), 10800);
 					break;
 				
 				case 6:
 					// Set camera.
-					broadcastPacket(new SpecialCamera(_antharas.getObjectId(), 1100, 0, -3, 300, 7000));
+					broadcastPacket(new SpecialCamera(antharas.getObjectId(), 1100, 0, -3, 300, 7000));
 					// Set next task.
-					if (_socialTask != null)
+					if (socialTask != null)
 					{
-						_socialTask.cancel(true);
-						_socialTask = null;
+						socialTask.cancel(true);
+						socialTask = null;
 					}
-					_socialTask = ThreadPoolManager.getInstance().scheduleGeneral(new AntharasSpawn(7), 1900);
+					socialTask = ThreadPoolManager.getInstance().scheduleGeneral(new AntharasSpawn(7), 1900);
 					break;
 				
 				case 7:
-					_antharas.abortCast();
+					antharas.abortCast();
 					
-					_mobiliseTask = ThreadPoolManager.getInstance().scheduleGeneral(new SetMobilised(_antharas), 16);
+					mobiliseTask = ThreadPoolManager.getInstance().scheduleGeneral(new SetMobilised(antharas), 16);
 					
 					// Move at random.
 					if (FWA_MOVEATRANDOM)
 					{
 						final L2CharPosition pos = new L2CharPosition(Rnd.get(175000, 178500), Rnd.get(112400, 116000), -7707, 0);
-						_moveAtRandomTask = ThreadPoolManager.getInstance().scheduleGeneral(new MoveAtRandom(_antharas, pos), 500);
+						moveAtRandomTask = ThreadPoolManager.getInstance().scheduleGeneral(new MoveAtRandom(antharas, pos), 500);
 					}
 					
-					if (_socialTask != null)
+					if (socialTask != null)
 					{
-						_socialTask.cancel(true);
-						_socialTask = null;
+						socialTask.cancel(true);
+						socialTask = null;
 					}
 					break;
 			}
@@ -550,12 +541,14 @@ public class Antharas extends Quest implements Runnable
 	
 	protected void broadcastPacket(final L2GameServerPacket mov)
 	{
-		if (_Zone != null)
+		if (zone != null)
 		{
-			for (final L2Character characters : _Zone.getCharactersInside().values())
+			for (final L2Character characters : zone.getCharactersInside().values())
 			{
 				if (characters instanceof L2PcInstance)
+				{
 					characters.sendPacket(mov);
+				}
 			}
 		}
 	}
@@ -579,13 +572,19 @@ public class Antharas extends Quest implements Runnable
 				// Set spawn.
 				for (int i = 0; i < mobNumber; i++)
 				{
-					if (_monsters.size() >= FWA_MAXMOBS)
+					if (monsters.size() >= FWA_MAXMOBS)
+					{
 						break;
+					}
 					int npcId;
 					if (isBehemoth)
+					{
 						npcId = 29069;
+					}
 					else
+					{
 						npcId = Rnd.get(29070, 29076);
+					}
 					template1 = NpcTable.getInstance().getTemplate(npcId);
 					tempSpawn = new L2Spawn(template1);
 					// allocates it at random in the lair of Antharas.
@@ -593,21 +592,25 @@ public class Antharas extends Quest implements Runnable
 					boolean notFound = true;
 					int x = 175000;
 					int y = 112400;
-					int dt = (_antharas.getX() - x) * (_antharas.getX() - x) + (_antharas.getY() - y) * (_antharas.getY() - y);
+					int dt = (antharas.getX() - x) * (antharas.getX() - x) + (antharas.getY() - y) * (antharas.getY() - y);
 					while (tried++ < 25 && notFound)
 					{
 						final int rx = Rnd.get(175000, 179900);
 						final int ry = Rnd.get(112400, 116000);
-						final int rdt = (_antharas.getX() - rx) * (_antharas.getX() - rx) + (_antharas.getY() - ry) * (_antharas.getY() - ry);
-						if (GeoData.getInstance().canSeeTarget(_antharas.getX(), _antharas.getY(), -7704, rx, ry, -7704))
+						final int rdt = (antharas.getX() - rx) * (antharas.getX() - rx) + (antharas.getY() - ry) * (antharas.getY() - ry);
+						if (GeoData.getInstance().canSeeTarget(antharas.getX(), antharas.getY(), -7704, rx, ry, -7704))
+						{
 							if (rdt < dt)
 							{
 								x = rx;
 								y = ry;
 								dt = rdt;
 								if (rdt <= 900000)
+								{
 									notFound = false;
+								}
 							}
+						}
 					}
 					tempSpawn.setLocx(x);
 					tempSpawn.setLocy(y);
@@ -617,7 +620,7 @@ public class Antharas extends Quest implements Runnable
 					tempSpawn.setRespawnDelay(FWA_ACTIVITYTIMEOFANTHARAS * 2);
 					SpawnTable.getInstance().addNewSpawn(tempSpawn, false);
 					// Do spawn.
-					_monsters.add(tempSpawn.doSpawn());
+					monsters.add(tempSpawn.doSpawn());
 				}
 			}
 			catch (final Exception e)
@@ -639,8 +642,10 @@ public class Antharas extends Quest implements Runnable
 			case 29074:
 			case 29075:
 			case 29076:
-				if (_selfDestructionTask == null && !npc.isDead())
-					_selfDestructionTask = ThreadPoolManager.getInstance().scheduleGeneral(new SelfDestructionOfBomber(npc), FWA_SELFDESTRUCTTIME);
+				if (selfDestructionTask == null && !npc.isDead())
+				{
+					selfDestructionTask = ThreadPoolManager.getInstance().scheduleGeneral(new SelfDestructionOfBomber(npc), FWA_SELFDESTRUCTTIME);
+				}
 				break;
 		}
 		return super.onAggroRangeEnter(npc, player, isPet);
@@ -649,18 +654,18 @@ public class Antharas extends Quest implements Runnable
 	// Do self destruction.
 	private class SelfDestructionOfBomber implements Runnable
 	{
-		private final L2NpcInstance _bomber;
+		private final L2NpcInstance bomber;
 		
 		public SelfDestructionOfBomber(final L2NpcInstance bomber)
 		{
-			_bomber = bomber;
+			this.bomber = bomber;
 		}
 		
 		@Override
 		public void run()
 		{
 			L2Skill skill = null;
-			switch (_bomber.getNpcId())
+			switch (bomber.getNpcId())
 			{
 				case 29070:
 				case 29071:
@@ -675,12 +680,12 @@ public class Antharas extends Quest implements Runnable
 					break;
 			}
 			
-			_bomber.doCast(skill);
+			bomber.doCast(skill);
 			
-			if (_selfDestructionTask != null)
+			if (selfDestructionTask != null)
 			{
-				_selfDestructionTask.cancel(false);
-				_selfDestructionTask = null;
+				selfDestructionTask.cancel(false);
+				selfDestructionTask = null;
 			}
 			
 		}
@@ -717,10 +722,10 @@ public class Antharas extends Quest implements Runnable
 		@Override
 		public void run()
 		{
-			final Long temp = (System.currentTimeMillis() - _LastAction);
+			final Long temp = (System.currentTimeMillis() - LastAction);
 			if (temp > (Config.ANTHARAS_DESPAWN_TIME * 60000))
 			{
-				GrandBossManager.getInstance().setBossStatus(_antharas.getNpcId(), DORMANT);
+				GrandBossManager.getInstance().setBossStatus(antharas.getNpcId(), DORMANT);
 				setUnspawn();
 			}
 		}
@@ -730,130 +735,136 @@ public class Antharas extends Quest implements Runnable
 	public void setUnspawn()
 	{
 		// Eliminate players.
-		_Zone.oustAllPlayers();
+		zone.oustAllPlayers();
 		
 		// Not executed tasks is canceled.
-		if (_cubeSpawnTask != null)
+		if (cubeSpawnTask != null)
 		{
-			_cubeSpawnTask.cancel(true);
-			_cubeSpawnTask = null;
+			cubeSpawnTask.cancel(true);
+			cubeSpawnTask = null;
 		}
-		if (_monsterSpawnTask != null)
+		if (monsterSpawnTask != null)
 		{
-			_monsterSpawnTask.cancel(true);
-			_monsterSpawnTask = null;
+			monsterSpawnTask.cancel(true);
+			monsterSpawnTask = null;
 		}
-		if (_activityCheckTask != null)
+		if (activityCheckTask != null)
 		{
-			_activityCheckTask.cancel(false);
-			_activityCheckTask = null;
+			activityCheckTask.cancel(false);
+			activityCheckTask = null;
 		}
-		if (_socialTask != null)
+		if (socialTask != null)
 		{
-			_socialTask.cancel(true);
-			_socialTask = null;
+			socialTask.cancel(true);
+			socialTask = null;
 		}
-		if (_mobiliseTask != null)
+		if (mobiliseTask != null)
 		{
-			_mobiliseTask.cancel(true);
-			_mobiliseTask = null;
+			mobiliseTask.cancel(true);
+			mobiliseTask = null;
 		}
-		if (_mobsSpawnTask != null)
+		if (mobsSpawnTask != null)
 		{
-			_mobsSpawnTask.cancel(true);
-			_mobsSpawnTask = null;
+			mobsSpawnTask.cancel(true);
+			mobsSpawnTask = null;
 		}
-		if (_selfDestructionTask != null)
+		if (selfDestructionTask != null)
 		{
-			_selfDestructionTask.cancel(true);
-			_selfDestructionTask = null;
+			selfDestructionTask.cancel(true);
+			selfDestructionTask = null;
 		}
-		if (_moveAtRandomTask != null)
+		if (moveAtRandomTask != null)
 		{
-			_moveAtRandomTask.cancel(true);
-			_moveAtRandomTask = null;
+			moveAtRandomTask.cancel(true);
+			moveAtRandomTask = null;
 		}
 		
 		// Delete monsters.
-		for (final L2NpcInstance mob : _monsters)
+		for (final L2NpcInstance mob : monsters)
 		{
 			mob.getSpawn().stopRespawn();
 			mob.deleteMe();
 		}
-		_monsters.clear();
+		monsters.clear();
 		
 		// Delete teleport cube.
-		for (final L2NpcInstance cube : _teleportCube)
+		for (final L2NpcInstance cube : teleportCube)
 		{
 			cube.getSpawn().stopRespawn();
 			cube.deleteMe();
 		}
-		_teleportCube.clear();
+		teleportCube.clear();
 	}
 	
 	// Do spawn teleport cube.
 	private class CubeSpawn implements Runnable
 	{
-		private final int _type;
+		private final int type;
 		
 		CubeSpawn(final int type)
 		{
-			_type = type;
+			this.type = type;
 		}
 		
 		@Override
 		public void run()
 		{
-			if (_type == 0)
+			if (type == 0)
 			{
 				spawnCube();
-				_cubeSpawnTask = ThreadPoolManager.getInstance().scheduleGeneral(new CubeSpawn(1), 1800000);
+				cubeSpawnTask = ThreadPoolManager.getInstance().scheduleGeneral(new CubeSpawn(1), 1800000);
 			}
 			else
+			{
 				setUnspawn();
+			}
 		}
 	}
 	
 	// UnLock Antharas.
 	private static class UnlockAntharas implements Runnable
 	{
-		private final int _bossId;
+		private final int bossId;
 		
 		public UnlockAntharas(final int bossId)
 		{
-			_bossId = bossId;
+			this.bossId = bossId;
 		}
 		
 		@Override
 		public void run()
 		{
-			GrandBossManager.getInstance().setBossStatus(_bossId, DORMANT);
+			GrandBossManager.getInstance().setBossStatus(bossId, DORMANT);
 			if (FWA_DOSERVEREARTHQUAKE)
+			{
 				for (final L2PcInstance p : L2World.getInstance().getAllPlayers())
+				{
 					p.broadcastPacket(new Earthquake(185708, 114298, -8221, 20, 10));
+				}
+			}
 		}
 	}
 	
 	// Action is enabled the boss.
 	private class SetMobilised implements Runnable
 	{
-		private final L2GrandBossInstance _boss;
+		private final L2GrandBossInstance boss;
 		
 		public SetMobilised(final L2GrandBossInstance boss)
 		{
-			_boss = boss;
+			this.boss = boss;
 		}
 		
 		@Override
 		public void run()
 		{
-			_boss.setIsImobilised(false);
+			boss.setIsImobilised(false);
 			
 			// When it is possible to act, a social action is canceled.
-			if (_socialTask != null)
+			if (socialTask != null)
 			{
-				_socialTask.cancel(true);
-				_socialTask = null;
+				socialTask.cancel(true);
+				socialTask = null;
 			}
 		}
 	}
@@ -861,19 +872,19 @@ public class Antharas extends Quest implements Runnable
 	// Move at random on after Antharas appears.
 	private static class MoveAtRandom implements Runnable
 	{
-		private final L2NpcInstance _npc;
-		private final L2CharPosition _pos;
+		private final L2NpcInstance npc;
+		private final L2CharPosition pos;
 		
 		public MoveAtRandom(final L2NpcInstance npc, final L2CharPosition pos)
 		{
-			_npc = npc;
-			_pos = pos;
+			this.npc = npc;
+			this.pos = pos;
 		}
 		
 		@Override
 		public void run()
 		{
-			_npc.getAI().setIntention(CtrlIntention.AI_INTENTION_MOVE_TO, _pos);
+			npc.getAI().setIntention(CtrlIntention.AI_INTENTION_MOVE_TO, pos);
 		}
 	}
 	
@@ -881,12 +892,10 @@ public class Antharas extends Quest implements Runnable
 	public String onAttack(final L2NpcInstance npc, final L2PcInstance attacker, final int damage, final boolean isPet)
 	{
 		
-		if (npc.getSpawn() != null && !npc.getSpawn().is_customBossInstance() && npc.getNpcId() == 29019 || npc.getNpcId() == 29066 || npc.getNpcId() == 29067 || npc.getNpcId() == 29068)
+		if (npc.getSpawn() != null && !npc.getSpawn().isCustomRaidBoss() && npc.getNpcId() == 29019 || npc.getNpcId() == 29066 || npc.getNpcId() == 29067 || npc.getNpcId() == 29068)
 		{
-			_LastAction = System.currentTimeMillis();
-			/*
-			 * if (GrandBossManager.getInstance().getBossStatus(_antharas.getNpcId()) != FIGHTING) { _Zone.oustAllPlayers(); } else
-			 */if (!FWA_OLDANTHARAS && _mobsSpawnTask == null)
+			LastAction = System.currentTimeMillis();
+			if (!FWA_OLDANTHARAS && mobsSpawnTask == null)
 			{
 				startMinionSpawns(npc.getNpcId());
 			}
@@ -921,9 +930,9 @@ public class Antharas extends Quest implements Runnable
 		{
 			npc.broadcastPacket(new PlaySound(1, "BS01_D", 1, npc.getObjectId(), npc.getX(), npc.getY(), npc.getZ()));
 			
-			if (!npc.getSpawn().is_customBossInstance())
+			if (!npc.getSpawn().isCustomRaidBoss())
 			{
-				_cubeSpawnTask = ThreadPoolManager.getInstance().scheduleGeneral(new CubeSpawn(0), 10000);
+				cubeSpawnTask = ThreadPoolManager.getInstance().scheduleGeneral(new CubeSpawn(0), 10000);
 				GrandBossManager.getInstance().setBossStatus(npc.getNpcId(), DEAD);
 				final long respawnTime = (Config.ANTHARAS_RESP_FIRST + Rnd.get(Config.ANTHARAS_RESP_SECOND)) * 3600000;
 				ThreadPoolManager.getInstance().scheduleGeneral(new UnlockAntharas(npc.getNpcId()), respawnTime);
@@ -939,12 +948,18 @@ public class Antharas extends Quest implements Runnable
 			final int countHPHerb = Rnd.get(6, 18);
 			final int countMPHerb = Rnd.get(6, 18);
 			for (int i = 0; i < countHPHerb; i++)
+			{
 				((L2MonsterInstance) npc).DropItem(killer, 8602, 1);
+			}
 			for (int i = 0; i < countMPHerb; i++)
+			{
 				((L2MonsterInstance) npc).DropItem(killer, 8605, 1);
+			}
 		}
-		if (_monsters.contains(npc))
-			_monsters.remove(npc);
+		if (monsters.contains(npc))
+		{
+			monsters.remove(npc);
+		}
 		return super.onKill(npc, killer, isPet);
 	}
 	

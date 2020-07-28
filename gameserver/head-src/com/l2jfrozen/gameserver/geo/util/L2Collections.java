@@ -1,23 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.geo.util;
 
 import java.lang.reflect.Array;
@@ -178,7 +158,9 @@ public final class L2Collections
 		public <T> T[] toArray(T[] a)
 		{
 			if (a.length != 0)
+			{
 				a = (T[]) Array.newInstance(a.getClass().getComponentType(), 0);
+			}
 			
 			return a;
 		}
@@ -385,7 +367,9 @@ public final class L2Collections
 		public <T> T[] moveToArray(T[] array)
 		{
 			if (array.length != 0)
+			{
 				array = (T[]) Array.newInstance(array.getClass().getComponentType(), 0);
+			}
 			
 			return array;
 		}
@@ -490,37 +474,37 @@ public final class L2Collections
 	
 	private static final class FilteredIterable<E> implements Iterable<E>
 	{
-		private final Iterable<? super E> _iterable;
-		private final Filter<E> _filter;
-		private final Class<E> _clazz;
+		private final Iterable<? super E> iterable;
+		private final Filter<E> filter;
+		private final Class<E> clazz;
 		
 		protected FilteredIterable(final Class<E> clazz, final Iterable<? super E> iterable, final Filter<E> filter)
 		{
-			_iterable = iterable;
-			_filter = filter;
-			_clazz = clazz;
+			this.iterable = iterable;
+			this.filter = filter;
+			this.clazz = clazz;
 		}
 		
 		@Override
 		public Iterator<E> iterator()
 		{
-			return filteredIterator(_clazz, _iterable, _filter);
+			return filteredIterator(clazz, iterable, filter);
 		}
 	}
 	
 	private static final class FilteredIterator<E> implements Iterator<E>
 	{
-		private final Iterator<? super E> _iterator;
-		private final Filter<E> _filter;
-		private final Class<E> _clazz;
+		private final Iterator<? super E> iterator;
+		private final Filter<E> filter;
+		private final Class<E> clazz;
 		
-		private E _next;
+		private E nextE;
 		
 		protected FilteredIterator(final Class<E> clazz, final Iterable<? super E> iterable, final Filter<E> filter)
 		{
-			_iterator = iterable.iterator();
-			_filter = filter;
-			_clazz = clazz;
+			iterator = iterable.iterator();
+			this.filter = filter;
+			this.clazz = clazz;
 			
 			step();
 		}
@@ -528,16 +512,18 @@ public final class L2Collections
 		@Override
 		public boolean hasNext()
 		{
-			return _next != null;
+			return nextE != null;
 		}
 		
 		@Override
 		public E next()
 		{
 			if (!hasNext())
+			{
 				throw new NoSuchElementException();
+			}
 			
-			final E next = _next;
+			final E next = nextE;
 			
 			step();
 			
@@ -546,21 +532,23 @@ public final class L2Collections
 		
 		private void step()
 		{
-			while (_iterator.hasNext())
+			while (iterator.hasNext())
 			{
-				final Object next = _iterator.next();
+				final Object next = iterator.next();
 				
-				if (next == null || !_clazz.isInstance(next))
-					continue;
-				
-				if (_filter == null || _filter.accept((E) next))
+				if (next == null || !clazz.isInstance(next))
 				{
-					_next = (E) next;
+					continue;
+				}
+				
+				if (filter == null || filter.accept((E) next))
+				{
+					nextE = (E) next;
 					return;
 				}
 			}
 			
-			_next = null;
+			nextE = null;
 		}
 		
 		@Override
@@ -587,33 +575,33 @@ public final class L2Collections
 	
 	private static final class ConvertingIterable<S, T> implements Iterable<T>
 	{
-		private final Iterable<? extends S> _iterable;
-		private final Converter<S, T> _converter;
+		private final Iterable<? extends S> iterable;
+		private final Converter<S, T> converter;
 		
 		protected ConvertingIterable(final Iterable<? extends S> iterable, final Converter<S, T> converter)
 		{
-			_iterable = iterable;
-			_converter = converter;
+			this.iterable = iterable;
+			this.converter = converter;
 		}
 		
 		@Override
 		public Iterator<T> iterator()
 		{
-			return convertingIterator(_iterable, _converter);
+			return convertingIterator(iterable, converter);
 		}
 	}
 	
 	private static final class ConvertingIterator<S, T> implements Iterator<T>
 	{
-		private final Iterator<? extends S> _iterator;
-		private final Converter<S, T> _converter;
+		private final Iterator<? extends S> iterator;
+		private final Converter<S, T> converter;
 		
-		private T _next;
+		private T nextE;
 		
 		protected ConvertingIterator(final Iterable<? extends S> iterable, final Converter<S, T> converter)
 		{
-			_iterator = iterable.iterator();
-			_converter = converter;
+			iterator = iterable.iterator();
+			this.converter = converter;
 			
 			step();
 		}
@@ -621,16 +609,18 @@ public final class L2Collections
 		@Override
 		public boolean hasNext()
 		{
-			return _next != null;
+			return nextE != null;
 		}
 		
 		@Override
 		public T next()
 		{
 			if (!hasNext())
+			{
 				throw new NoSuchElementException();
+			}
 			
-			final T next = _next;
+			final T next = nextE;
 			
 			step();
 			
@@ -639,23 +629,25 @@ public final class L2Collections
 		
 		private void step()
 		{
-			while (_iterator.hasNext())
+			while (iterator.hasNext())
 			{
-				final S src = _iterator.next();
+				final S src = iterator.next();
 				
 				if (src == null)
+				{
 					continue;
+				}
 				
-				final T next = _converter.convert(src);
+				final T next = converter.convert(src);
 				
 				if (next != null)
 				{
-					_next = next;
+					nextE = next;
 					return;
 				}
 			}
 			
-			_next = null;
+			nextE = null;
 		}
 		
 		@Override
@@ -697,30 +689,30 @@ public final class L2Collections
 	
 	private static final class ConcatenatedIterable<E> implements Iterable<E>
 	{
-		private final Iterable<? extends E>[] _iterables;
+		private final Iterable<? extends E>[] iterables;
 		
 		protected ConcatenatedIterable(final Iterable<? extends E>... iterables)
 		{
-			_iterables = iterables;
+			this.iterables = iterables;
 		}
 		
 		@Override
 		public Iterator<E> iterator()
 		{
-			return concatenatedIterator(_iterables);
+			return concatenatedIterator(iterables);
 		}
 	}
 	
 	private static final class ConcatenatedIterator<E> implements Iterator<E>
 	{
-		private final Iterable<? extends E>[] _iterables;
+		private final Iterable<? extends E>[] iterables;
 		
-		private Iterator<? extends E> _iterator;
-		private int _index = -1;
+		private Iterator<? extends E> iterator;
+		private int index = -1;
 		
 		protected ConcatenatedIterator(final Iterable<? extends E>... iterables)
 		{
-			_iterables = iterables;
+			this.iterables = iterables;
 			
 			validateIterator();
 		}
@@ -730,28 +722,32 @@ public final class L2Collections
 		{
 			validateIterator();
 			
-			return _iterator != null && _iterator.hasNext();
+			return iterator != null && iterator.hasNext();
 		}
 		
 		@Override
 		public E next()
 		{
 			if (!hasNext())
+			{
 				throw new NoSuchElementException();
+			}
 			
-			return _iterator.next();
+			return iterator.next();
 		}
 		
 		private void validateIterator()
 		{
-			while (_iterator == null || !_iterator.hasNext())
+			while (iterator == null || !iterator.hasNext())
 			{
-				_index++;
+				index++;
 				
-				if (_index >= _iterables.length)
+				if (index >= iterables.length)
+				{
 					return;
+				}
 				
-				_iterator = _iterables[_index].iterator();
+				iterator = iterables[index].iterator();
 			}
 		}
 		

@@ -1,19 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any later
- * version.
- * 
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
- * 
- * You should have received a copy of the GNU General Public License along with
- * this program. If not, see <http://www.gnu.org/licenses/>.
- */
 package com.l2jfrozen.gameserver.network.clientpackets;
 
 import org.apache.log4j.Logger;
@@ -27,37 +11,40 @@ import com.l2jfrozen.gameserver.network.SystemMessageId;
 import com.l2jfrozen.gameserver.network.serverpackets.ActionFailed;
 import com.l2jfrozen.gameserver.network.serverpackets.SystemMessage;
 
-@SuppressWarnings("unused")
 public final class Action extends L2GameClientPacket
 {
 	private static Logger LOGGER = Logger.getLogger(Action.class);
-	private int _objectId;
-	private int _originX;
-	private int _originY;
-	private int _originZ;
-	private int _actionId;
+	private int objectId;
+	private int originX;
+	private int originY;
+	private int originZ;
+	private int actionId;
 	
 	@Override
 	protected void readImpl()
 	{
-		_objectId = readD(); // Target object Identifier
-		_originX = readD();
-		_originY = readD();
-		_originZ = readD();
-		_actionId = readC(); // Action identifier : 0-Simple click, 1-Shift click
+		objectId = readD(); // Target object Identifier
+		originX = (readD());
+		originY = (readD());
+		originZ = (readD());
+		actionId = readC(); // Action identifier : 0-Simple click, 1-Shift click
 	}
 	
 	@Override
 	protected void runImpl()
 	{
 		if (Config.DEBUG)
-			LOGGER.debug("DEBUG " + getType() + ": ActionId: " + _actionId + " , ObjectID: " + _objectId);
+		{
+			LOGGER.debug("DEBUG " + getType() + ": ActionId: " + actionId + " , ObjectID: " + objectId);
+		}
 		
 		// Get the current L2PcInstance of the player
 		final L2PcInstance activeChar = getClient().getActiveChar();
 		
 		if (activeChar == null)
+		{
 			return;
+		}
 		
 		if (activeChar.inObserverMode())
 		{
@@ -68,10 +55,14 @@ public final class Action extends L2GameClientPacket
 		
 		final L2Object obj;
 		
-		if (activeChar.getTargetId() == _objectId)
+		if (activeChar.getTargetId() == objectId)
+		{
 			obj = activeChar.getTarget();
+		}
 		else
-			obj = L2World.getInstance().findObject(_objectId);
+		{
+			obj = L2World.getInstance().findObject(objectId);
+		}
 		
 		// If object requested does not exist
 		// pressing e.g. pickup many times quickly would get you here
@@ -89,7 +80,7 @@ public final class Action extends L2GameClientPacket
 		}
 		
 		// Only GMs can directly interact with invisible characters
-		if (obj instanceof L2PcInstance && (((L2PcInstance) obj).getAppearance().getInvisible()) && !activeChar.isGM())
+		if (obj instanceof L2PcInstance && (((L2PcInstance) obj).getAppearance().isInvisible()) && !activeChar.isGM())
 		{
 			getClient().sendPacket(ActionFailed.STATIC_PACKET);
 			return;
@@ -97,31 +88,69 @@ public final class Action extends L2GameClientPacket
 		
 		// reset old Moving task
 		if (activeChar.isMovingTaskDefined())
+		{
 			activeChar.setMovingTaskDefined(false);
+		}
 		
 		// Check if the target is valid, if the player haven't a shop or isn't the requester of a transaction (ex : FriendInvite, JoinAlly, JoinParty...)
 		if (activeChar.getPrivateStoreType() == 0/* && activeChar.getActiveRequester() == null */)
 		{
-			switch (_actionId)
+			switch (actionId)
 			{
 				case 0:
 					obj.onAction(activeChar);
 					break;
 				case 1:
 					if (obj instanceof L2Character && ((L2Character) obj).isAlikeDead())
+					{
 						obj.onAction(activeChar);
+					}
 					else
+					{
 						obj.onActionShift(getClient());
+					}
 					break;
 				default:
 					// Invalid action detected (probably client cheating), LOGGER this
-					LOGGER.warn("Character: " + activeChar.getName() + " requested invalid action: " + _actionId);
+					LOGGER.warn("Character: " + activeChar.getName() + " requested invalid action: " + actionId);
 					getClient().sendPacket(ActionFailed.STATIC_PACKET);
 					break;
 			}
 		}
 		else
+		{
 			getClient().sendPacket(ActionFailed.STATIC_PACKET); // Actions prohibited when in trade
+		}
+	}
+	
+	public int getOriginX()
+	{
+		return originX;
+	}
+	
+	public void setOriginX(int originX)
+	{
+		this.originX = originX;
+	}
+	
+	public int getOriginY()
+	{
+		return originY;
+	}
+	
+	public void setOriginY(int originY)
+	{
+		this.originY = originY;
+	}
+	
+	public int getOriginZ()
+	{
+		return originZ;
+	}
+	
+	public void setOriginZ(int originZ)
+	{
+		this.originZ = originZ;
 	}
 	
 	@Override

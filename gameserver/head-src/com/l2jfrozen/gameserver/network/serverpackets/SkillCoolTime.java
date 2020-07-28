@@ -1,41 +1,32 @@
 package com.l2jfrozen.gameserver.network.serverpackets;
 
-import java.util.Collection;
-import java.util.Iterator;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import com.l2jfrozen.gameserver.model.actor.instance.L2PcInstance;
-import com.l2jfrozen.gameserver.network.L2GameClient;
+import com.l2jfrozen.gameserver.model.holder.TimeStamp;
 
 public class SkillCoolTime extends L2GameServerPacket
 {
+	public List<TimeStamp> reuseTimeStamps;
 	
-	@SuppressWarnings("rawtypes")
-	public Collection _reuseTimeStamps;
-	
-	public SkillCoolTime(final L2PcInstance cha)
+	public SkillCoolTime(L2PcInstance player)
 	{
-		_reuseTimeStamps = cha.getReuseTimeStamps();
+		reuseTimeStamps = player.getReuseTimeStamps().stream().filter(r -> r.hasNotPassed()).collect(Collectors.toList());
 	}
 	
-	@SuppressWarnings("rawtypes")
 	@Override
-	protected final void writeImpl()
+	protected void writeImpl()
 	{
-		@SuppressWarnings("cast")
-		final L2PcInstance activeChar = ((L2GameClient) getClient()).getActiveChar();
-		if (activeChar == null)
-			return;
-		writeC(193);
-		writeD(_reuseTimeStamps.size());
-		L2PcInstance.TimeStamp ts;
-		for (final Iterator i$ = _reuseTimeStamps.iterator(); i$.hasNext(); writeD((int) ts.getRemaining() / 1000))
+		writeC(0xc1);
+		writeD(reuseTimeStamps.size()); // list size
+		for (TimeStamp ts : reuseTimeStamps)
 		{
-			ts = (L2PcInstance.TimeStamp) i$.next();
 			writeD(ts.getSkill().getId());
-			writeD(0);
+			writeD(ts.getSkill().getLevel());
 			writeD((int) ts.getReuse() / 1000);
+			writeD((int) ts.getRemaining() / 1000);
 		}
-		
 	}
 	
 	@Override

@@ -1,23 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 
 package com.l2jfrozen.gameserver.util;
 
@@ -33,31 +13,31 @@ import com.l2jfrozen.Config;
 
 /**
  * extension loader for L2JFrozen
- * @author galun
+ * @author  galun
  * @version $Id: DynamicExtension.java,v 1.3 2006/05/14 17:19:39 galun Exp $
  */
 public class DynamicExtension
 {
-	private static Logger LOGGER = Logger.getLogger(DynamicExtension.class.getCanonicalName());
-	private JarClassLoader _classLoader;
+	private static Logger LOGGER = Logger.getLogger(DynamicExtension.class);
+	private JarClassLoader classLoader;
 	private static final String CONFIG = "config/extensions.properties";
-	private Properties _prop;
-	private ConcurrentHashMap<String, Object> _loadedExtensions;
-	private static DynamicExtension _instance;
-	private final ConcurrentHashMap<String, ExtensionFunction> _getters;
-	private final ConcurrentHashMap<String, ExtensionFunction> _setters;
+	private Properties prop;
+	private ConcurrentHashMap<String, Object> loadedExtensions;
+	private static DynamicExtension instance;
+	private final ConcurrentHashMap<String, ExtensionFunction> getters;
+	private final ConcurrentHashMap<String, ExtensionFunction> setters;
 	
 	/**
 	 * create an instance of DynamicExtension this will be done by GameServer according to the altsettings.properties
 	 */
 	private DynamicExtension()
 	{
-		if (_instance == null)
+		if (instance == null)
 		{
-			_instance = this;
+			instance = this;
 		}
-		_getters = new ConcurrentHashMap<>();
-		_setters = new ConcurrentHashMap<>();
+		getters = new ConcurrentHashMap<>();
+		setters = new ConcurrentHashMap<>();
 		initExtensions();
 	}
 	
@@ -67,21 +47,21 @@ public class DynamicExtension
 	 */
 	public static DynamicExtension getInstance()
 	{
-		if (_instance == null)
+		if (instance == null)
 		{
-			_instance = new DynamicExtension();
+			instance = new DynamicExtension();
 		}
-		return _instance;
+		return instance;
 	}
 	
 	/**
 	 * get an extension object by class name
-	 * @param className he class name as defined in the extension properties
-	 * @return the object or null if not found
+	 * @param  className he class name as defined in the extension properties
+	 * @return           the object or null if not found
 	 */
 	public Object getExtension(final String className)
 	{
-		return _loadedExtensions.get(className);
+		return loadedExtensions.get(className);
 	}
 	
 	/**
@@ -90,28 +70,32 @@ public class DynamicExtension
 	 */
 	public String initExtensions()
 	{
-		_prop = new Properties();
+		prop = new Properties();
 		String res = "";
-		_loadedExtensions = new ConcurrentHashMap<>();
+		loadedExtensions = new ConcurrentHashMap<>();
 		
 		FileInputStream fis = null;
 		
 		try
 		{
 			fis = new FileInputStream(CONFIG);
-			_prop.load(fis);
+			prop.load(fis);
 		}
 		catch (final FileNotFoundException ex)
 		{
 			if (Config.ENABLE_ALL_EXCEPTIONS)
+			{
 				ex.printStackTrace();
+			}
 			
 			LOGGER.info(ex.getMessage() + ": no extensions to load");
 		}
 		catch (final Exception ex)
 		{
 			if (Config.ENABLE_ALL_EXCEPTIONS)
+			{
 				ex.printStackTrace();
+			}
 			
 			LOGGER.warn("could not load properties", ex);
 			
@@ -132,15 +116,15 @@ public class DynamicExtension
 			}
 		}
 		
-		_classLoader = new JarClassLoader();
+		classLoader = new JarClassLoader();
 		
-		for (final Object o : _prop.keySet())
+		for (final Object o : prop.keySet())
 		{
 			final String k = (String) o;
 			
 			if (k.endsWith("Class"))
 			{
-				res += initExtension(_prop.getProperty(k)) + "\n";
+				res += initExtension(prop.getProperty(k)) + "\n";
 			}
 		}
 		return res;
@@ -148,7 +132,7 @@ public class DynamicExtension
 	
 	/**
 	 * init a named extension
-	 * @param name the class name and optionally a jar file name delimited with a '@' if the jar file is not in the class path
+	 * @param  name the class name and optionally a jar file name delimited with a '@' if the jar file is not in the class path
 	 * @return
 	 */
 	public String initExtension(final String name)
@@ -159,27 +143,26 @@ public class DynamicExtension
 		
 		if (p.length > 1)
 		{
-			_classLoader.addJarFile(p[1]);
+			classLoader.addJarFile(p[1]);
 			className = p[0];
 		}
 		
-		if (_loadedExtensions.containsKey(className))
+		if (loadedExtensions.containsKey(className))
+		{
 			return "already loaded";
+		}
 		
 		try
 		{
-			final Class<?> extension = Class.forName(className, true, _classLoader);
-			final Object obj = extension.newInstance();
+			final Class<?> extension = Class.forName(className, true, classLoader);
+			final Object obj = extension.getDeclaredConstructor().newInstance();
 			extension.getMethod("init", new Class[0]).invoke(obj, new Object[0]);
 			LOGGER.info("Extension " + className + " loaded.");
-			_loadedExtensions.put(className, obj);
+			loadedExtensions.put(className, obj);
 		}
 		catch (final Exception ex)
 		{
-			if (Config.ENABLE_ALL_EXCEPTIONS)
-				ex.printStackTrace();
-			
-			LOGGER.warn(name, ex);
+			LOGGER.error("error we", ex);
 			res = ex.toString();
 		}
 		return res;
@@ -190,7 +173,7 @@ public class DynamicExtension
 	 */
 	protected void clearCache()
 	{
-		_classLoader = new JarClassLoader();
+		classLoader = new JarClassLoader();
 	}
 	
 	/**
@@ -201,7 +184,7 @@ public class DynamicExtension
 	{
 		String res = "";
 		
-		for (final String e : _loadedExtensions.keySet())
+		for (final String e : loadedExtensions.keySet())
 		{
 			res += unloadExtension(e) + "\n";
 		}
@@ -214,14 +197,14 @@ public class DynamicExtension
 	 */
 	public String[] getExtensions()
 	{
-		final String[] l = new String[_loadedExtensions.size()];
-		_loadedExtensions.keySet().toArray(l);
+		final String[] l = new String[loadedExtensions.size()];
+		loadedExtensions.keySet().toArray(l);
 		return l;
 	}
 	
 	/**
 	 * unload a named extension
-	 * @param name the class name and optionally a jar file name delimited with a '@'
+	 * @param  name the class name and optionally a jar file name delimited with a '@'
 	 * @return
 	 */
 	public String unloadExtension(final String name)
@@ -231,7 +214,7 @@ public class DynamicExtension
 		
 		if (p.length > 1)
 		{
-			_classLoader.addJarFile(p[1]);
+			classLoader.addJarFile(p[1]);
 			className = p[0];
 		}
 		
@@ -239,16 +222,18 @@ public class DynamicExtension
 		
 		try
 		{
-			final Object obj = _loadedExtensions.get(className);
+			final Object obj = loadedExtensions.get(className);
 			final Class<?> extension = obj.getClass();
-			_loadedExtensions.remove(className);
+			loadedExtensions.remove(className);
 			extension.getMethod("unload", new Class[0]).invoke(obj, new Object[0]);
 			LOGGER.info("Extension " + className + " unloaded.");
 		}
 		catch (final Exception ex)
 		{
 			if (Config.ENABLE_ALL_EXCEPTIONS)
+			{
 				ex.printStackTrace();
+			}
 			
 			LOGGER.warn("could not unload " + className, ex);
 			res = ex.toString();
@@ -279,12 +264,12 @@ public class DynamicExtension
 	
 	/**
 	 * register a getter function given a (hopefully) unique name
-	 * @param name the name of the function
+	 * @param name     the name of the function
 	 * @param function the ExtensionFunction implementation
 	 */
 	public void addGetter(final String name, final ExtensionFunction function)
 	{
-		_getters.put(name, function);
+		getters.put(name, function);
 	}
 	
 	/**
@@ -293,32 +278,34 @@ public class DynamicExtension
 	 */
 	public void removeGetter(final String name)
 	{
-		_getters.remove(name);
+		getters.remove(name);
 	}
 	
 	/**
 	 * call a getter function registered with DynamicExtension
-	 * @param name the function name
-	 * @param arg a function argument
-	 * @return an object from the extension
+	 * @param  name the function name
+	 * @param  arg  a function argument
+	 * @return      an object from the extension
 	 */
 	public Object get(final String name, final String arg)
 	{
-		final ExtensionFunction func = _getters.get(name);
+		final ExtensionFunction func = getters.get(name);
 		
 		if (func != null)
+		{
 			return func.get(arg);
+		}
 		return "<none>";
 	}
 	
 	/**
 	 * register a setter function given a (hopefully) unique name
-	 * @param name the name of the function
+	 * @param name     the name of the function
 	 * @param function the ExtensionFunction implementation
 	 */
 	public void addSetter(final String name, final ExtensionFunction function)
 	{
-		_setters.put(name, function);
+		setters.put(name, function);
 	}
 	
 	/**
@@ -327,18 +314,18 @@ public class DynamicExtension
 	 */
 	public void removeSetter(final String name)
 	{
-		_setters.remove(name);
+		setters.remove(name);
 	}
 	
 	/**
 	 * call a setter function registered with DynamicExtension
 	 * @param name the function name
-	 * @param arg a function argument
-	 * @param obj an object to set
+	 * @param arg  a function argument
+	 * @param obj  an object to set
 	 */
 	public void set(final String name, final String arg, final Object obj)
 	{
-		final ExtensionFunction func = _setters.get(name);
+		final ExtensionFunction func = setters.get(name);
 		
 		if (func != null)
 		{
@@ -348,6 +335,6 @@ public class DynamicExtension
 	
 	public JarClassLoader getClassLoader()
 	{
-		return _classLoader;
+		return classLoader;
 	}
 }

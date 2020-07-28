@@ -1,22 +1,7 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any later
- * version.
- * 
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
- * 
- * You should have received a copy of the GNU General Public License along with
- * this program. If not, see <http://www.gnu.org/licenses/>.
- */
 package com.l2jfrozen.gameserver.model.zone.type;
 
-import javolution.util.FastList;
+import java.util.ArrayList;
+import java.util.List;
 
 import com.l2jfrozen.Config;
 import com.l2jfrozen.gameserver.datatables.csv.MapRegionTable;
@@ -35,15 +20,15 @@ import com.l2jfrozen.gameserver.network.serverpackets.SystemMessage;
  */
 public class L2FortZone extends L2ZoneType
 {
-	private int _fortId;
-	private Fort _fort;
-	private final int[] _spawnLoc;
+	private int fortId;
+	private Fort fort;
+	private final int[] spawnLoc;
 	
 	public L2FortZone(final int id)
 	{
 		super(id);
 		
-		_spawnLoc = new int[3];
+		spawnLoc = new int[3];
 	}
 	
 	@Override
@@ -52,20 +37,20 @@ public class L2FortZone extends L2ZoneType
 		switch (name)
 		{
 			case "fortId":
-				_fortId = Integer.parseInt(value);
+				fortId = Integer.parseInt(value);
 				
 				// Register self to the correct fort
-				_fort = FortManager.getInstance().getFortById(_fortId);
-				_fort.setZone(this);
+				fort = FortManager.getInstance().getFortById(fortId);
+				fort.setZone(this);
 				break;
 			case "spawnX":
-				_spawnLoc[0] = Integer.parseInt(value);
+				spawnLoc[0] = Integer.parseInt(value);
 				break;
 			case "spawnY":
-				_spawnLoc[1] = Integer.parseInt(value);
+				spawnLoc[1] = Integer.parseInt(value);
 				break;
 			case "spawnZ":
-				_spawnLoc[2] = Integer.parseInt(value);
+				spawnLoc[2] = Integer.parseInt(value);
 				break;
 			default:
 				super.setParameter(name, value);
@@ -76,7 +61,7 @@ public class L2FortZone extends L2ZoneType
 	@Override
 	protected void onEnter(final L2Character character)
 	{
-		if (_fort.getSiege().getIsInProgress())
+		if (fort.getSiege().getIsInProgress())
 		{
 			character.setInsideZone(L2Character.ZONE_PVP, true);
 			character.setInsideZone(L2Character.ZONE_SIEGE, true);
@@ -91,7 +76,7 @@ public class L2FortZone extends L2ZoneType
 	@Override
 	protected void onExit(final L2Character character)
 	{
-		if (_fort.getSiege().getIsInProgress())
+		if (fort.getSiege().getIsInProgress())
 		{
 			character.setInsideZone(L2Character.ZONE_PVP, false);
 			character.setInsideZone(L2Character.ZONE_SIEGE, false);
@@ -125,9 +110,9 @@ public class L2FortZone extends L2ZoneType
 	
 	public void updateZoneStatusForCharactersInside()
 	{
-		if (_fort.getSiege().getIsInProgress())
+		if (fort.getSiege().getIsInProgress())
 		{
-			for (final L2Character character : _characterList.values())
+			for (final L2Character character : characterList.values())
 			{
 				try
 				{
@@ -136,13 +121,15 @@ public class L2FortZone extends L2ZoneType
 				catch (final NullPointerException e)
 				{
 					if (Config.ENABLE_ALL_EXCEPTIONS)
+					{
 						e.printStackTrace();
+					}
 				}
 			}
 		}
 		else
 		{
-			for (final L2Character character : _characterList.values())
+			for (final L2Character character : characterList.values())
 			{
 				try
 				{
@@ -162,7 +149,9 @@ public class L2FortZone extends L2ZoneType
 				catch (final NullPointerException e)
 				{
 					if (Config.ENABLE_ALL_EXCEPTIONS)
+					{
 						e.printStackTrace();
+					}
 				}
 			}
 		}
@@ -174,7 +163,7 @@ public class L2FortZone extends L2ZoneType
 	 */
 	public void banishForeigners(final int owningClanId)
 	{
-		for (final L2Character temp : _characterList.values())
+		for (final L2Character temp : characterList.values())
 		{
 			if (!(temp instanceof L2PcInstance))
 			{
@@ -196,7 +185,7 @@ public class L2FortZone extends L2ZoneType
 	 */
 	public void announceToPlayers(final String message)
 	{
-		for (final L2Character temp : _characterList.values())
+		for (final L2Character temp : characterList.values())
 		{
 			if (temp instanceof L2PcInstance)
 			{
@@ -209,13 +198,13 @@ public class L2FortZone extends L2ZoneType
 	 * Returns all players within this zone
 	 * @return
 	 */
-	public FastList<L2PcInstance> getAllPlayers()
+	public List<L2PcInstance> getAllPlayers()
 	{
-		final FastList<L2PcInstance> players = new FastList<>();
+		List<L2PcInstance> players = new ArrayList<>();
 		
-		for (final L2Character temp : _characterList.values())
+		for (L2Character temp : characterList.values())
 		{
-			if (temp instanceof L2PcInstance)
+			if (temp.isPlayer())
 			{
 				players.add((L2PcInstance) temp);
 			}
@@ -230,6 +219,6 @@ public class L2FortZone extends L2ZoneType
 	 */
 	public int[] getSpawn()
 	{
-		return _spawnLoc;
+		return spawnLoc;
 	}
 }

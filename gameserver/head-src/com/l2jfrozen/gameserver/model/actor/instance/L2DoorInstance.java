@@ -1,30 +1,9 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.model.actor.instance;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.concurrent.ScheduledFuture;
-
-import javolution.text.TextBuilder;
-import javolution.util.FastList;
 
 import org.apache.log4j.Logger;
 
@@ -59,6 +38,8 @@ import com.l2jfrozen.gameserver.templates.L2CharTemplate;
 import com.l2jfrozen.gameserver.templates.L2Weapon;
 import com.l2jfrozen.gameserver.thread.ThreadPoolManager;
 
+import javolution.text.TextBuilder;
+
 /**
  * This class ...
  * @version $Revision: 1.3.2.2.2.5 $ $Date: 2005/03/27 15:29:32 $
@@ -69,67 +50,32 @@ public class L2DoorInstance extends L2Character
 	protected static final Logger LOGGER = Logger.getLogger(L2DoorInstance.class);
 	
 	/** The castle index in the array of L2Castle this L2NpcInstance belongs to. */
-	private int _castleIndex = -2;
+	private int castleIndex = -2;
 	
-	/** The _map region. */
-	private int _mapRegion = -1;
+	private int mapRegion = -1;
 	
 	/** fort index in array L2Fort -> L2NpcInstance. */
-	private int _fortIndex = -2;
+	private int fortIndex = -2;
 	
 	// when door is closed, the dimensions are
-	/** The _range x min. */
-	private int _rangeXMin = 0;
+	private int rangeXMin = 0;
+	private int rangeYMin = 0;
+	private int rangeZMin = 0;
+	private int rangeXMax = 0;
+	private int rangeYMax = 0;
+	private int rangeZMax = 0;
 	
-	/** The _range y min. */
-	private int _rangeYMin = 0;
-	
-	/** The _range z min. */
-	private int _rangeZMin = 0;
-	
-	/** The _range x max. */
-	private int _rangeXMax = 0;
-	
-	/** The _range y max. */
-	private int _rangeYMax = 0;
-	
-	/** The _range z max. */
-	private int _rangeZMax = 0;
-	
-	/** The _ a. */
-	private int _A = 0;
-	
-	/** The _ b. */
-	private int _B = 0;
-	
-	/** The _ c. */
-	private int _C = 0;
-	
-	/** The _ d. */
-	private int _D = 0;
-	
-	/** The _door id. */
-	protected final int _doorId;
-	
-	/** The _name. */
-	protected final String _name;
-	
-	/** The _open. */
-	private boolean _open;
-	
-	/** The _unlockable. */
-	private final boolean _unlockable;
-	
-	/** The _clan hall. */
-	private ClanHall _clanHall;
-	
-	/** The _auto action delay. */
-	protected int _autoActionDelay = -1;
-	
-	/** The _auto action task. */
-	private ScheduledFuture<?> _autoActionTask;
-	
-	/** The pos. */
+	private int a = 0;
+	private int b = 0;
+	private int c = 0;
+	private int d = 0;
+	protected final int doorId;
+	protected final String name;
+	private boolean open;
+	private final boolean unlockable;
+	private ClanHall clanHall;
+	protected int autoActionDelay = -1;
+	private ScheduledFuture<?> autoActionTask;
 	public final L2Territory pos;
 	
 	/**
@@ -146,50 +92,30 @@ public class L2DoorInstance extends L2Character
 			// null;
 		}
 		
-		/*
-		 * (non-Javadoc)
-		 * @see com.l2jfrozen.gameserver.model.L2Character.AIAccessor#getActor()
-		 */
 		@Override
 		public L2DoorInstance getActor()
 		{
 			return L2DoorInstance.this;
 		}
 		
-		/*
-		 * (non-Javadoc)
-		 * @see com.l2jfrozen.gameserver.model.L2Character.AIAccessor#moveTo(int, int, int, int)
-		 */
 		@Override
 		public void moveTo(final int x, final int y, final int z, final int offset)
 		{
 			// null;
 		}
 		
-		/*
-		 * (non-Javadoc)
-		 * @see com.l2jfrozen.gameserver.model.L2Character.AIAccessor#moveTo(int, int, int)
-		 */
 		@Override
 		public void moveTo(final int x, final int y, final int z)
 		{
 			// null;
 		}
 		
-		/*
-		 * (non-Javadoc)
-		 * @see com.l2jfrozen.gameserver.model.L2Character.AIAccessor#stopMove(com.l2jfrozen.gameserver.model.actor.position.L2CharPosition)
-		 */
 		@Override
 		public void stopMove(final L2CharPosition pos)
 		{
 			// null;
 		}
 		
-		/*
-		 * (non-Javadoc)
-		 * @see com.l2jfrozen.gameserver.model.L2Character.AIAccessor#doAttack(com.l2jfrozen.gameserver.model.L2Character)
-		 */
 		@Override
 		public void doAttack(final L2Character target)
 		{
@@ -206,39 +132,28 @@ public class L2DoorInstance extends L2Character
 	@Override
 	public L2CharacterAI getAI()
 	{
-		if (_ai == null)
+		if (aiCharacter == null)
 		{
 			synchronized (this)
 			{
-				if (_ai == null)
+				if (aiCharacter == null)
 				{
-					_ai = new L2DoorAI(new AIAccessor());
+					aiCharacter = new L2DoorAI(new AIAccessor());
 				}
 			}
 		}
-		return _ai;
+		return aiCharacter;
 	}
 	
-	/*
-	 * (non-Javadoc)
-	 * @see com.l2jfrozen.gameserver.model.L2Character#hasAI()
-	 */
 	@Override
 	public boolean hasAI()
 	{
-		return _ai != null;
+		return aiCharacter != null;
 	}
 	
-	/**
-	 * The Class CloseTask.
-	 */
 	class CloseTask implements Runnable
 	{
 		
-		/*
-		 * (non-Javadoc)
-		 * @see java.lang.Runnable#run()
-		 */
 		@Override
 		public void run()
 		{
@@ -259,10 +174,6 @@ public class L2DoorInstance extends L2Character
 	class AutoOpenClose implements Runnable
 	{
 		
-		/*
-		 * (non-Javadoc)
-		 * @see java.lang.Runnable#run()
-		 */
 		@Override
 		public void run()
 		{
@@ -270,7 +181,7 @@ public class L2DoorInstance extends L2Character
 			{
 				String doorAction;
 				
-				if (!getOpen())
+				if (!isOpen())
 				{
 					doorAction = "opened";
 					openMe();
@@ -283,25 +194,27 @@ public class L2DoorInstance extends L2Character
 				
 				if (Config.DEBUG)
 				{
-					LOGGER.info("Auto " + doorAction + " door ID " + _doorId + " (" + _name + ") for " + _autoActionDelay / 60000 + " minute(s).");
+					LOGGER.info("Auto " + doorAction + " door ID " + doorId + " (" + name + ") for " + autoActionDelay / 60000 + " minute(s).");
 				}
 			}
 			catch (final Exception e)
 			{
 				if (Config.ENABLE_ALL_EXCEPTIONS)
+				{
 					e.printStackTrace();
+				}
 				
-				LOGGER.warn("Could not auto open/close door ID " + _doorId + " (" + _name + ")");
+				LOGGER.warn("Could not auto open/close door ID " + doorId + " (" + name + ")");
 			}
 		}
 	}
 	
 	/**
 	 * Instantiates a new l2 door instance.
-	 * @param objectId the object id
-	 * @param template the template
-	 * @param doorId the door id
-	 * @param name the name
+	 * @param objectId   the object id
+	 * @param template   the template
+	 * @param doorId     the door id
+	 * @param name       the name
 	 * @param unlockable the unlockable
 	 */
 	public L2DoorInstance(final int objectId, final L2CharTemplate template, final int doorId, final String name, final boolean unlockable)
@@ -310,16 +223,12 @@ public class L2DoorInstance extends L2Character
 		getKnownList(); // init knownlist
 		getStat(); // init stats
 		getStatus(); // init status
-		_doorId = doorId;
-		_name = name;
-		_unlockable = unlockable;
+		this.doorId = doorId;
+		this.name = name;
+		this.unlockable = unlockable;
 		pos = new L2Territory(/* "door_" + doorId */);
 	}
 	
-	/*
-	 * (non-Javadoc)
-	 * @see com.l2jfrozen.gameserver.model.L2Character#getKnownList()
-	 */
 	@Override
 	public final DoorKnownList getKnownList()
 	{
@@ -331,10 +240,6 @@ public class L2DoorInstance extends L2Character
 		return (DoorKnownList) super.getKnownList();
 	}
 	
-	/*
-	 * (non-Javadoc)
-	 * @see com.l2jfrozen.gameserver.model.L2Character#getStat()
-	 */
 	@Override
 	public final DoorStat getStat()
 	{
@@ -346,10 +251,6 @@ public class L2DoorInstance extends L2Character
 		return (DoorStat) super.getStat();
 	}
 	
-	/*
-	 * (non-Javadoc)
-	 * @see com.l2jfrozen.gameserver.model.L2Character#getStatus()
-	 */
 	@Override
 	public final DoorStatus getStatus()
 	{
@@ -367,13 +268,9 @@ public class L2DoorInstance extends L2Character
 	 */
 	public final boolean isUnlockable()
 	{
-		return _unlockable;
+		return unlockable;
 	}
 	
-	/*
-	 * (non-Javadoc)
-	 * @see com.l2jfrozen.gameserver.model.L2Character#getLevel()
-	 */
 	@Override
 	public final int getLevel()
 	{
@@ -386,25 +283,17 @@ public class L2DoorInstance extends L2Character
 	 */
 	public int getDoorId()
 	{
-		return _doorId;
+		return doorId;
 	}
 	
-	/**
-	 * Gets the open.
-	 * @return Returns the open.
-	 */
-	public boolean getOpen()
+	public boolean isOpen()
 	{
-		return _open;
+		return open;
 	}
 	
-	/**
-	 * Sets the open.
-	 * @param open The open to set.
-	 */
-	public void setOpen(final boolean open)
+	public void setIsOpen(boolean open)
 	{
-		_open = open;
+		this.open = open;
 	}
 	
 	/**
@@ -414,8 +303,10 @@ public class L2DoorInstance extends L2Character
 	 */
 	public void setAutoActionDelay(final int actionDelay)
 	{
-		if (_autoActionDelay == actionDelay)
+		if (autoActionDelay == actionDelay)
+		{
 			return;
+		}
 		
 		if (actionDelay > -1)
 		{
@@ -425,13 +316,13 @@ public class L2DoorInstance extends L2Character
 		}
 		else
 		{
-			if (_autoActionTask != null)
+			if (autoActionTask != null)
 			{
-				_autoActionTask.cancel(false);
+				autoActionTask.cancel(false);
 			}
 		}
 		
-		_autoActionDelay = actionDelay;
+		autoActionDelay = actionDelay;
 	}
 	
 	/**
@@ -442,9 +333,13 @@ public class L2DoorInstance extends L2Character
 	{
 		final int dmg = 6 - (int) Math.ceil(getCurrentHp() / getMaxHp() * 6);
 		if (dmg > 6)
+		{
 			return 6;
+		}
 		if (dmg < 0)
+		{
 			return 0;
+		}
 		return dmg;
 	}
 	
@@ -454,15 +349,17 @@ public class L2DoorInstance extends L2Character
 	 */
 	public final Castle getCastle()
 	{
-		if (_castleIndex < 0)
+		if (castleIndex < 0)
 		{
-			_castleIndex = CastleManager.getInstance().getCastleIndex(this);
+			castleIndex = CastleManager.getInstance().getCastleIndex(this);
 		}
 		
-		if (_castleIndex < 0)
+		if (castleIndex < 0)
+		{
 			return null;
+		}
 		
-		return CastleManager.getInstance().getCastles().get(_castleIndex);
+		return CastleManager.getInstance().getCastles().get(castleIndex);
 	}
 	
 	/**
@@ -471,15 +368,17 @@ public class L2DoorInstance extends L2Character
 	 */
 	public final Fort getFort()
 	{
-		if (_fortIndex < 0)
+		if (fortIndex < 0)
 		{
-			_fortIndex = FortManager.getInstance().getFortIndex(this);
+			fortIndex = FortManager.getInstance().getFortIndex(this);
 		}
 		
-		if (_fortIndex < 0)
+		if (fortIndex < 0)
+		{
 			return null;
+		}
 		
-		return FortManager.getInstance().getForts().get(_fortIndex);
+		return FortManager.getInstance().getForts().get(fortIndex);
 	}
 	
 	/**
@@ -488,7 +387,7 @@ public class L2DoorInstance extends L2Character
 	 */
 	public void setClanHall(final ClanHall clanhall)
 	{
-		_clanHall = clanhall;
+		clanHall = clanhall;
 	}
 	
 	/**
@@ -497,32 +396,32 @@ public class L2DoorInstance extends L2Character
 	 */
 	public ClanHall getClanHall()
 	{
-		return _clanHall;
+		return clanHall;
 	}
 	
 	/**
 	 * Checks if is enemy of.
-	 * @param cha the cha
-	 * @return true, if is enemy of
+	 * @param  cha the cha
+	 * @return     true, if is enemy of
 	 */
 	public boolean isEnemyOf(final L2Character cha)
 	{
 		return true;
 	}
 	
-	/*
-	 * (non-Javadoc)
-	 * @see com.l2jfrozen.gameserver.model.L2Object#isAutoAttackable(com.l2jfrozen.gameserver.model.L2Character)
-	 */
 	@Override
 	public boolean isAutoAttackable(final L2Character attacker)
 	{
 		if (isUnlockable())
+		{
 			return true;
+		}
 		
 		// Doors can`t be attacked by NPCs
 		if (attacker == null || !(attacker instanceof L2PlayableInstance))
+		{
 			return false;
+		}
 		
 		// Attackable during siege by attacker only
 		
@@ -567,18 +466,14 @@ public class L2DoorInstance extends L2Character
 	
 	/**
 	 * Checks if is attackable.
-	 * @param attacker the attacker
-	 * @return true, if is attackable
+	 * @param  attacker the attacker
+	 * @return          true, if is attackable
 	 */
 	public boolean isAttackable(final L2Character attacker)
 	{
 		return isAutoAttackable(attacker);
 	}
 	
-	/*
-	 * (non-Javadoc)
-	 * @see com.l2jfrozen.gameserver.model.L2Character#updateAbnormalEffect()
-	 */
 	@Override
 	public void updateAbnormalEffect()
 	{
@@ -586,30 +481,35 @@ public class L2DoorInstance extends L2Character
 	
 	/**
 	 * Gets the distance to watch object.
-	 * @param object the object
-	 * @return the distance to watch object
+	 * @param  object the object
+	 * @return        the distance to watch object
 	 */
 	public int getDistanceToWatchObject(final L2Object object)
 	{
 		if (!(object instanceof L2PcInstance))
+		{
 			return 0;
+		}
 		return 2000;
 	}
 	
 	/**
-	 * Return the distance after which the object must be remove from _knownObject according to the type of the object.<BR>
+	 * Return the distance after which the object must be remove from knownObject according to the type of the object.<BR>
 	 * <BR>
 	 * <B><U> Values </U> :</B><BR>
 	 * <BR>
-	 * <li>object is a L2PcInstance : 4000</li> <li>object is not a L2PcInstance : 0</li><BR>
+	 * <li>object is a L2PcInstance : 4000</li>
+	 * <li>object is not a L2PcInstance : 0</li><BR>
 	 * <BR>
-	 * @param object the object
-	 * @return the distance to forget object
+	 * @param  object the object
+	 * @return        the distance to forget object
 	 */
 	public int getDistanceToForgetObject(final L2Object object)
 	{
 		if (!(object instanceof L2PcInstance))
+		{
 			return 0;
+		}
 		
 		return 4000;
 	}
@@ -625,45 +525,31 @@ public class L2DoorInstance extends L2Character
 		return null;
 	}
 	
-	/*
-	 * (non-Javadoc)
-	 * @see com.l2jfrozen.gameserver.model.L2Character#getActiveWeaponItem()
-	 */
 	@Override
 	public L2Weapon getActiveWeaponItem()
 	{
 		return null;
 	}
 	
-	/*
-	 * (non-Javadoc)
-	 * @see com.l2jfrozen.gameserver.model.L2Character#getSecondaryWeaponInstance()
-	 */
 	@Override
 	public L2ItemInstance getSecondaryWeaponInstance()
 	{
 		return null;
 	}
 	
-	/*
-	 * (non-Javadoc)
-	 * @see com.l2jfrozen.gameserver.model.L2Character#getSecondaryWeaponItem()
-	 */
 	@Override
 	public L2Weapon getSecondaryWeaponItem()
 	{
 		return null;
 	}
 	
-	/*
-	 * (non-Javadoc)
-	 * @see com.l2jfrozen.gameserver.model.L2Object#onAction(com.l2jfrozen.gameserver.model.actor.instance.L2PcInstance)
-	 */
 	@Override
 	public void onAction(final L2PcInstance player)
 	{
 		if (player == null)
+		{
 			return;
+		}
 		
 		if (Config.DEBUG)
 		{
@@ -729,10 +615,14 @@ public class L2DoorInstance extends L2Character
 				{
 					// Like L2OFF Clanhall's doors get request to be closed/opened
 					player.gatesRequest(this);
-					if (!this.getOpen())
+					if (!isOpen())
+					{
 						player.sendPacket(new ConfirmDlg(1140));
+					}
 					else
+					{
 						player.sendPacket(new ConfirmDlg(1141));
+					}
 				}
 			}
 		}
@@ -740,16 +630,14 @@ public class L2DoorInstance extends L2Character
 		player.sendPacket(ActionFailed.STATIC_PACKET);
 	}
 	
-	/*
-	 * (non-Javadoc)
-	 * @see com.l2jfrozen.gameserver.model.L2Object#onActionShift(com.l2jfrozen.gameserver.network.L2GameClient)
-	 */
 	@Override
 	public void onActionShift(final L2GameClient client)
 	{
 		L2PcInstance player = client.getActiveChar();
 		if (player == null)
+		{
 			return;
+		}
 		
 		if (Config.DEBUG)
 		{
@@ -797,7 +685,7 @@ public class L2DoorInstance extends L2Character
 			html1.append("<tr><td>Door ID: " + getDoorId() + "</td></tr>");
 			html1.append("<tr><td><br></td></tr>");
 			
-			html1.append("<tr><td>Class: " + getClass().getName() + "</td></tr>");
+			html1.append("<tr><td>Instance Type: " + getClass().getSimpleName() + "</td></tr>");
 			html1.append("<tr><td><br></td></tr>");
 			html1.append("</table>");
 			
@@ -843,17 +731,15 @@ public class L2DoorInstance extends L2Character
 		player = null;
 	}
 	
-	/*
-	 * (non-Javadoc)
-	 * @see com.l2jfrozen.gameserver.model.L2Character#broadcastStatusUpdate()
-	 */
 	@Override
 	public void broadcastStatusUpdate()
 	{
 		final Collection<L2PcInstance> knownPlayers = getKnownList().getKnownPlayers().values();
 		
 		if (knownPlayers == null || knownPlayers.isEmpty())
+		{
 			return;
+		}
 		
 		final DoorStatusUpdate su = new DoorStatusUpdate(this);
 		
@@ -886,10 +772,12 @@ public class L2DoorInstance extends L2Character
 	{
 		synchronized (this)
 		{
-			if (!getOpen())
+			if (!isOpen())
+			{
 				return;
+			}
 			
-			setOpen(false);
+			setIsOpen(false);
 		}
 		
 		broadcastStatusUpdate();
@@ -902,22 +790,20 @@ public class L2DoorInstance extends L2Character
 	{
 		synchronized (this)
 		{
-			if (getOpen())
+			if (isOpen())
+			{
 				return;
-			setOpen(true);
+			}
+			setIsOpen(true);
 		}
 		
 		broadcastStatusUpdate();
 	}
 	
-	/*
-	 * (non-Javadoc)
-	 * @see com.l2jfrozen.gameserver.model.L2Character#toString()
-	 */
 	@Override
 	public String toString()
 	{
-		return "door " + _doorId;
+		return "door " + doorId;
 	}
 	
 	/**
@@ -926,7 +812,7 @@ public class L2DoorInstance extends L2Character
 	 */
 	public String getDoorName()
 	{
-		return _name;
+		return name;
 	}
 	
 	/**
@@ -935,7 +821,7 @@ public class L2DoorInstance extends L2Character
 	 */
 	public int getXMin()
 	{
-		return _rangeXMin;
+		return rangeXMin;
 	}
 	
 	/**
@@ -944,7 +830,7 @@ public class L2DoorInstance extends L2Character
 	 */
 	public int getYMin()
 	{
-		return _rangeYMin;
+		return rangeYMin;
 	}
 	
 	/**
@@ -953,7 +839,7 @@ public class L2DoorInstance extends L2Character
 	 */
 	public int getZMin()
 	{
-		return _rangeZMin;
+		return rangeZMin;
 	}
 	
 	/**
@@ -962,7 +848,7 @@ public class L2DoorInstance extends L2Character
 	 */
 	public int getXMax()
 	{
-		return _rangeXMax;
+		return rangeXMax;
 	}
 	
 	/**
@@ -971,7 +857,7 @@ public class L2DoorInstance extends L2Character
 	 */
 	public int getYMax()
 	{
-		return _rangeYMax;
+		return rangeYMax;
 	}
 	
 	/**
@@ -980,7 +866,7 @@ public class L2DoorInstance extends L2Character
 	 */
 	public int getZMax()
 	{
-		return _rangeZMax;
+		return rangeZMax;
 	}
 	
 	/**
@@ -994,18 +880,18 @@ public class L2DoorInstance extends L2Character
 	 */
 	public void setRange(final int xMin, final int yMin, final int zMin, final int xMax, final int yMax, final int zMax)
 	{
-		_rangeXMin = xMin;
-		_rangeYMin = yMin;
-		_rangeZMin = zMin;
+		rangeXMin = xMin;
+		rangeYMin = yMin;
+		rangeZMin = zMin;
 		
-		_rangeXMax = xMax;
-		_rangeYMax = yMax;
-		_rangeZMax = zMax;
+		rangeXMax = xMax;
+		rangeYMax = yMax;
+		rangeZMax = zMax;
 		
-		_A = _rangeYMax * (_rangeZMax - _rangeZMin) + _rangeYMin * (_rangeZMin - _rangeZMax);
-		_B = _rangeZMin * (_rangeXMax - _rangeXMin) + _rangeZMax * (_rangeXMin - _rangeXMax);
-		_C = _rangeXMin * (_rangeYMax - _rangeYMin) + _rangeXMin * (_rangeYMin - _rangeYMax);
-		_D = -1 * (_rangeXMin * (_rangeYMax * _rangeZMax - _rangeYMin * _rangeZMax) + _rangeXMax * (_rangeYMin * _rangeZMin - _rangeYMin * _rangeZMax) + _rangeXMin * (_rangeYMin * _rangeZMax - _rangeYMax * _rangeZMin));
+		a = rangeYMax * (rangeZMax - rangeZMin) + rangeYMin * (rangeZMin - rangeZMax);
+		b = rangeZMin * (rangeXMax - rangeXMin) + rangeZMax * (rangeXMin - rangeXMax);
+		c = rangeXMin * (rangeYMax - rangeYMin) + rangeXMin * (rangeYMin - rangeYMax);
+		d = -1 * (rangeXMin * (rangeYMax * rangeZMax - rangeYMin * rangeZMax) + rangeXMax * (rangeYMin * rangeZMin - rangeYMin * rangeZMax) + rangeXMin * (rangeYMin * rangeZMax - rangeYMax * rangeZMin));
 	}
 	
 	/**
@@ -1014,7 +900,7 @@ public class L2DoorInstance extends L2Character
 	 */
 	public int getA()
 	{
-		return _A;
+		return a;
 	}
 	
 	/**
@@ -1023,7 +909,7 @@ public class L2DoorInstance extends L2Character
 	 */
 	public int getB()
 	{
-		return _B;
+		return b;
 	}
 	
 	/**
@@ -1032,7 +918,7 @@ public class L2DoorInstance extends L2Character
 	 */
 	public int getC()
 	{
-		return _C;
+		return c;
 	}
 	
 	/**
@@ -1041,7 +927,7 @@ public class L2DoorInstance extends L2Character
 	 */
 	public int getD()
 	{
-		return _D;
+		return d;
 	}
 	
 	/**
@@ -1050,7 +936,7 @@ public class L2DoorInstance extends L2Character
 	 */
 	public int getMapRegion()
 	{
-		return _mapRegion;
+		return mapRegion;
 	}
 	
 	/**
@@ -1059,7 +945,7 @@ public class L2DoorInstance extends L2Character
 	 */
 	public void setMapRegion(final int region)
 	{
-		_mapRegion = region;
+		mapRegion = region;
 	}
 	
 	/**
@@ -1068,7 +954,7 @@ public class L2DoorInstance extends L2Character
 	 */
 	public Collection<L2SiegeGuardInstance> getKnownSiegeGuards()
 	{
-		final FastList<L2SiegeGuardInstance> result = new FastList<>();
+		final List<L2SiegeGuardInstance> result = new ArrayList<>();
 		
 		for (final L2Object obj : getKnownList().getKnownObjects().values())
 		{
@@ -1087,7 +973,7 @@ public class L2DoorInstance extends L2Character
 	 */
 	public Collection<L2FortSiegeGuardInstance> getKnownFortSiegeGuards()
 	{
-		final FastList<L2FortSiegeGuardInstance> result = new FastList<>();
+		final List<L2FortSiegeGuardInstance> result = new ArrayList<>();
 		
 		final Collection<L2Object> objs = getKnownList().getKnownObjects().values();
 		// synchronized (getKnownList().getKnownObjects())
@@ -1103,14 +989,10 @@ public class L2DoorInstance extends L2Character
 		return result;
 	}
 	
-	/*
-	 * (non-Javadoc)
-	 * @see com.l2jfrozen.gameserver.model.L2Character#reduceCurrentHp(double, com.l2jfrozen.gameserver.model.L2Character, boolean)
-	 */
 	@Override
 	public void reduceCurrentHp(final double damage, final L2Character attacker, final boolean awake)
 	{
-		if (this.isAutoAttackable(attacker) || (attacker instanceof L2PcInstance && ((L2PcInstance) attacker).isGM()))
+		if (isAutoAttackable(attacker) || (attacker instanceof L2PcInstance && ((L2PcInstance) attacker).isGM()))
 		{
 			super.reduceCurrentHp(damage, attacker, awake);
 		}
@@ -1120,21 +1002,21 @@ public class L2DoorInstance extends L2Character
 		}
 	}
 	
-	/*
-	 * (non-Javadoc)
-	 * @see com.l2jfrozen.gameserver.model.L2Character#doDie(com.l2jfrozen.gameserver.model.L2Character)
-	 */
 	@Override
 	public boolean doDie(final L2Character killer)
 	{
 		if (!super.doDie(killer))
+		{
 			return false;
+		}
 		
 		final boolean isFort = (getFort() != null && getFort().getFortId() > 0 && getFort().getSiege().getIsInProgress());
 		final boolean isCastle = (getCastle() != null && getCastle().getCastleId() > 0 && getCastle().getSiege().getIsInProgress());
 		
 		if (isFort || isCastle)
+		{
 			broadcastPacket(SystemMessage.sendString("The castle gate has been broken down"));
+		}
 		return true;
 	}
 }

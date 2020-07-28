@@ -1,35 +1,16 @@
-/* L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.netcore;
 
 /**
  * @author Forsaiken
- * @param <E>
+ * @param  <E>
  */
 public final class NioNetStackList<E>
 {
-	private final NioNetStackNode _start = new NioNetStackNode();
+	private final NioNetStackNode start = new NioNetStackNode();
 	
-	private final NioNetStackNodeBuf _buf = new NioNetStackNodeBuf();
+	private final NioNetStackNodeBuf buf = new NioNetStackNodeBuf();
 	
-	private NioNetStackNode _end = new NioNetStackNode();
+	private NioNetStackNode end = new NioNetStackNode();
 	
 	public NioNetStackList()
 	{
@@ -38,66 +19,66 @@ public final class NioNetStackList<E>
 	
 	public final void addLast(final E elem)
 	{
-		final NioNetStackNode newEndNode = _buf.removeFirst();
-		_end._value = elem;
-		_end._next = newEndNode;
-		_end = newEndNode;
+		final NioNetStackNode newEndNode = buf.removeFirst();
+		end.value = elem;
+		end.next = newEndNode;
+		end = newEndNode;
 	}
 	
 	public final E removeFirst()
 	{
-		final NioNetStackNode old = _start._next;
-		final E value = old._value;
-		_start._next = old._next;
-		_buf.addLast(old);
+		final NioNetStackNode old = start.next;
+		final E value = old.value;
+		start.next = old.next;
+		buf.addLast(old);
 		return value;
 	}
 	
 	public final boolean isEmpty()
 	{
-		return _start._next == _end;
+		return start.next == end;
 	}
 	
 	public final void clear()
 	{
-		_start._next = _end;
+		start.next = end;
 	}
 	
 	protected final class NioNetStackNode
 	{
-		protected NioNetStackNode _next;
+		protected NioNetStackNode next;
 		
-		protected E _value;
+		protected E value;
 	}
 	
 	private final class NioNetStackNodeBuf
 	{
-		private final NioNetStackNode _start = new NioNetStackNode();
+		private final NioNetStackNode startNode = new NioNetStackNode();
 		
-		private NioNetStackNode _end = new NioNetStackNode();
+		private NioNetStackNode endNode = new NioNetStackNode();
 		
 		NioNetStackNodeBuf()
 		{
-			_start._next = _end;
+			startNode.next = endNode;
 		}
 		
 		final void addLast(final NioNetStackNode node)
 		{
-			node._next = null;
-			node._value = null;
-			_end._next = node;
-			_end = node;
+			node.next = null;
+			node.value = null;
+			endNode.next = node;
+			endNode = node;
 		}
 		
 		final NioNetStackNode removeFirst()
 		{
-			if (_start._next == _end)
+			if (startNode.next == endNode)
 			{
 				return new NioNetStackNode();
 			}
 			
-			final NioNetStackNode old = _start._next;
-			_start._next = old._next;
+			final NioNetStackNode old = startNode.next;
+			startNode.next = old.next;
 			return old;
 		}
 	}

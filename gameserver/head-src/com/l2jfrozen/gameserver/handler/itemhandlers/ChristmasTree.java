@@ -1,23 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.handler.itemhandlers;
 
 import com.l2jfrozen.Config;
@@ -41,7 +21,7 @@ public class ChristmasTree implements IItemHandler
 	{
 		5560, /* x-mas tree */
 		5561
-	/* Special x-mas tree */
+		/* Special x-mas tree */
 	};
 	
 	private static final int[] NPC_IDS =
@@ -68,7 +48,9 @@ public class ChristmasTree implements IItemHandler
 		}
 		
 		if (template1 == null)
+		{
 			return;
+		}
 		
 		L2Object target = activeChar.getTarget();
 		if (target == null)
@@ -98,7 +80,9 @@ public class ChristmasTree implements IItemHandler
 		catch (final Exception e)
 		{
 			if (Config.ENABLE_ALL_EXCEPTIONS)
+			{
 				e.printStackTrace();
+			}
 			
 			SystemMessage sm = new SystemMessage(SystemMessageId.S1_S2);
 			sm.addString("Target is not ingame.");
@@ -113,17 +97,17 @@ public class ChristmasTree implements IItemHandler
 	
 	public class DeSpawn implements Runnable
 	{
-		L2NpcInstance _npc = null;
+		L2NpcInstance npc = null;
 		
 		public DeSpawn(final L2NpcInstance npc)
 		{
-			_npc = npc;
+			this.npc = npc;
 		}
 		
 		@Override
 		public void run()
 		{
-			_npc.onDecay();
+			npc.onDecay();
 		}
 	}
 	

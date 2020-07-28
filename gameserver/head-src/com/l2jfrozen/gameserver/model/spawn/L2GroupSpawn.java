@@ -1,22 +1,3 @@
-/* L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.model.spawn;
 
 import java.lang.reflect.Constructor;
@@ -33,14 +14,14 @@ import com.l2jfrozen.util.random.Rnd;
  */
 public class L2GroupSpawn extends L2Spawn
 {
-	private final Constructor<?> _constructor;
-	private final L2NpcTemplate _template;
+	private final Constructor<?> constructor;
+	private final L2NpcTemplate template;
 	
 	public L2GroupSpawn(final L2NpcTemplate mobTemplate) throws SecurityException, ClassNotFoundException, NoSuchMethodException
 	{
 		super(mobTemplate);
-		_constructor = Class.forName("com.l2jfrozen.gameserver.model.actor.instance.L2ControllableMobInstance").getConstructors()[0];
-		_template = mobTemplate;
+		constructor = Class.forName("com.l2jfrozen.gameserver.model.actor.instance.L2ControllableMobInstance").getConstructors()[0];
+		template = mobTemplate;
 		
 		setAmount(1);
 	}
@@ -51,18 +32,22 @@ public class L2GroupSpawn extends L2Spawn
 		
 		try
 		{
-			if (_template.type.equalsIgnoreCase("L2Pet") || _template.type.equalsIgnoreCase("L2Minion"))
+			if (template.type.equalsIgnoreCase("L2Pet") || template.type.equalsIgnoreCase("L2Minion"))
+			{
 				return null;
+			}
 			
 			Object[] parameters =
 			{
 				IdFactory.getInstance().getNextId(),
-				_template
+				template
 			};
-			Object tmp = _constructor.newInstance(parameters);
+			Object tmp = constructor.newInstance(parameters);
 			
 			if (!(tmp instanceof L2NpcInstance))
+			{
 				return null;
+			}
 			
 			mob = (L2NpcInstance) tmp;
 			
@@ -71,7 +56,9 @@ public class L2GroupSpawn extends L2Spawn
 			if (getLocx() == 0 && getLocy() == 0)
 			{
 				if (getLocation() == 0)
+				{
 					return null;
+				}
 				
 				final int p[] = TerritoryTable.getInstance().getRandomPoint(getLocation());
 				newlocx = p[0];
@@ -102,7 +89,7 @@ public class L2GroupSpawn extends L2Spawn
 			
 			if (Config.DEBUG)
 			{
-				LOGGER.debug("spawned Mob ID: " + _template.npcId + " ,at: " + mob.getX() + " x, " + mob.getY() + " y, " + mob.getZ() + " z");
+				LOGGER.debug("spawned Mob ID: " + template.npcId + " ,at: " + mob.getX() + " x, " + mob.getY() + " y, " + mob.getZ() + " z");
 			}
 			
 			parameters = null;
@@ -114,7 +101,9 @@ public class L2GroupSpawn extends L2Spawn
 		catch (final Exception e)
 		{
 			if (Config.ENABLE_ALL_EXCEPTIONS)
+			{
 				e.printStackTrace();
+			}
 			
 			LOGGER.warn("NPC class not found: " + e);
 			return null;

@@ -1,29 +1,7 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.model.actor.instance;
 
 import java.util.Calendar;
 import java.util.List;
-
-import javolution.text.TextBuilder;
 
 import com.l2jfrozen.Config;
 import com.l2jfrozen.gameserver.model.L2Party;
@@ -36,26 +14,19 @@ import com.l2jfrozen.gameserver.network.serverpackets.SystemMessage;
 import com.l2jfrozen.gameserver.templates.L2NpcTemplate;
 import com.l2jfrozen.gameserver.templates.StatsSet;
 
+import javolution.text.TextBuilder;
+
 /**
  * Festival of Darkness Guide (Seven Signs).
  * @author Tempy
  */
 public final class L2FestivalGuideInstance extends L2FolkInstance
 {
-	/** The _festival type. */
-	protected int _festivalType;
-	
-	/** The _festival oracle. */
-	protected int _festivalOracle;
-	
-	/** The _blue stones needed. */
-	protected int _blueStonesNeeded;
-	
-	/** The _green stones needed. */
-	protected int _greenStonesNeeded;
-	
-	/** The _red stones needed. */
-	protected int _redStonesNeeded;
+	protected int festivalType;
+	protected int festivalOracle;
+	protected int blueStonesNeeded;
+	protected int greenStonesNeeded;
+	protected int redStonesNeeded;
 	
 	/**
 	 * Instantiates a new l2 festival guide instance.
@@ -70,92 +41,88 @@ public final class L2FestivalGuideInstance extends L2FolkInstance
 		{
 			case 31127:
 			case 31132:
-				_festivalType = SevenSignsFestival.FESTIVAL_LEVEL_MAX_FOR_31;
-				_festivalOracle = SevenSigns.CABAL_DAWN;
-				_blueStonesNeeded = 900;
-				_greenStonesNeeded = 540;
-				_redStonesNeeded = 270;
+				festivalType = SevenSignsFestival.FESTIVAL_LEVEL_MAX_FOR_31;
+				festivalOracle = SevenSigns.CABAL_DAWN;
+				blueStonesNeeded = 900;
+				greenStonesNeeded = 540;
+				redStonesNeeded = 270;
 				break;
 			case 31128:
 			case 31133:
-				_festivalType = SevenSignsFestival.FESTIVAL_LEVEL_MAX_FOR_42;
-				_festivalOracle = SevenSigns.CABAL_DAWN;
-				_blueStonesNeeded = 1500;
-				_greenStonesNeeded = 900;
-				_redStonesNeeded = 450;
+				festivalType = SevenSignsFestival.FESTIVAL_LEVEL_MAX_FOR_42;
+				festivalOracle = SevenSigns.CABAL_DAWN;
+				blueStonesNeeded = 1500;
+				greenStonesNeeded = 900;
+				redStonesNeeded = 450;
 				break;
 			case 31129:
 			case 31134:
-				_festivalType = SevenSignsFestival.FESTIVAL_LEVEL_MAX_FOR_53;
-				_festivalOracle = SevenSigns.CABAL_DAWN;
-				_blueStonesNeeded = 3000;
-				_greenStonesNeeded = 1800;
-				_redStonesNeeded = 900;
+				festivalType = SevenSignsFestival.FESTIVAL_LEVEL_MAX_FOR_53;
+				festivalOracle = SevenSigns.CABAL_DAWN;
+				blueStonesNeeded = 3000;
+				greenStonesNeeded = 1800;
+				redStonesNeeded = 900;
 				break;
 			case 31130:
 			case 31135:
-				_festivalType = SevenSignsFestival.FESTIVAL_LEVEL_MAX_FOR_64;
-				_festivalOracle = SevenSigns.CABAL_DAWN;
-				_blueStonesNeeded = 4500;
-				_greenStonesNeeded = 2700;
-				_redStonesNeeded = 1350;
+				festivalType = SevenSignsFestival.FESTIVAL_LEVEL_MAX_FOR_64;
+				festivalOracle = SevenSigns.CABAL_DAWN;
+				blueStonesNeeded = 4500;
+				greenStonesNeeded = 2700;
+				redStonesNeeded = 1350;
 				break;
 			case 31131:
 			case 31136:
-				_festivalType = SevenSignsFestival.FESTIVAL_LEVEL_MAX_FOR_NONE;
-				_festivalOracle = SevenSigns.CABAL_DAWN;
-				_blueStonesNeeded = 6000;
-				_greenStonesNeeded = 3600;
-				_redStonesNeeded = 1800;
+				festivalType = SevenSignsFestival.FESTIVAL_LEVEL_MAX_FOR_NONE;
+				festivalOracle = SevenSigns.CABAL_DAWN;
+				blueStonesNeeded = 6000;
+				greenStonesNeeded = 3600;
+				redStonesNeeded = 1800;
 				break;
 			
 			case 31137:
 			case 31142:
-				_festivalType = SevenSignsFestival.FESTIVAL_LEVEL_MAX_FOR_31;
-				_festivalOracle = SevenSigns.CABAL_DUSK;
-				_blueStonesNeeded = 900;
-				_greenStonesNeeded = 540;
-				_redStonesNeeded = 270;
+				festivalType = SevenSignsFestival.FESTIVAL_LEVEL_MAX_FOR_31;
+				festivalOracle = SevenSigns.CABAL_DUSK;
+				blueStonesNeeded = 900;
+				greenStonesNeeded = 540;
+				redStonesNeeded = 270;
 				break;
 			case 31138:
 			case 31143:
-				_festivalType = SevenSignsFestival.FESTIVAL_LEVEL_MAX_FOR_42;
-				_festivalOracle = SevenSigns.CABAL_DUSK;
-				_blueStonesNeeded = 1500;
-				_greenStonesNeeded = 900;
-				_redStonesNeeded = 450;
+				festivalType = SevenSignsFestival.FESTIVAL_LEVEL_MAX_FOR_42;
+				festivalOracle = SevenSigns.CABAL_DUSK;
+				blueStonesNeeded = 1500;
+				greenStonesNeeded = 900;
+				redStonesNeeded = 450;
 				break;
 			case 31139:
 			case 31144:
-				_festivalType = SevenSignsFestival.FESTIVAL_LEVEL_MAX_FOR_53;
-				_festivalOracle = SevenSigns.CABAL_DUSK;
-				_blueStonesNeeded = 3000;
-				_greenStonesNeeded = 1800;
-				_redStonesNeeded = 900;
+				festivalType = SevenSignsFestival.FESTIVAL_LEVEL_MAX_FOR_53;
+				festivalOracle = SevenSigns.CABAL_DUSK;
+				blueStonesNeeded = 3000;
+				greenStonesNeeded = 1800;
+				redStonesNeeded = 900;
 				break;
 			case 31140:
 			case 31145:
-				_festivalType = SevenSignsFestival.FESTIVAL_LEVEL_MAX_FOR_64;
-				_festivalOracle = SevenSigns.CABAL_DUSK;
-				_blueStonesNeeded = 4500;
-				_greenStonesNeeded = 2700;
-				_redStonesNeeded = 1350;
+				festivalType = SevenSignsFestival.FESTIVAL_LEVEL_MAX_FOR_64;
+				festivalOracle = SevenSigns.CABAL_DUSK;
+				blueStonesNeeded = 4500;
+				greenStonesNeeded = 2700;
+				redStonesNeeded = 1350;
 				break;
 			case 31141:
 			case 31146:
-				_festivalType = SevenSignsFestival.FESTIVAL_LEVEL_MAX_FOR_NONE;
-				_festivalOracle = SevenSigns.CABAL_DUSK;
-				_blueStonesNeeded = 6000;
-				_greenStonesNeeded = 3600;
-				_redStonesNeeded = 1800;
+				festivalType = SevenSignsFestival.FESTIVAL_LEVEL_MAX_FOR_NONE;
+				festivalOracle = SevenSigns.CABAL_DUSK;
+				blueStonesNeeded = 6000;
+				greenStonesNeeded = 3600;
+				redStonesNeeded = 1800;
 				break;
 		}
 	}
 	
-	/*
-	 * (non-Javadoc)
-	 * @see com.l2jfrozen.gameserver.model.actor.instance.L2FolkInstance#onBypassFeedback(com.l2jfrozen.gameserver.model.actor.instance.L2PcInstance, java.lang.String)
-	 */
 	@Override
 	public void onBypassFeedback(final L2PcInstance player, final String command)
 	{
@@ -209,7 +176,7 @@ public final class L2FestivalGuideInstance extends L2FolkInstance
 					}
 					
 					// Check if all the party members are in the required level range.
-					if (playerParty.getLevel() > SevenSignsFestival.getMaxLevelForFestival(_festivalType))
+					if (playerParty.getLevel() > SevenSignsFestival.getMaxLevelForFestival(festivalType))
 					{
 						showChatWindow(player, 2, "d", false);
 						return;
@@ -222,7 +189,7 @@ public final class L2FestivalGuideInstance extends L2FolkInstance
 					 */
 					if (player.isFestivalParticipant())
 					{
-						SevenSignsFestival.getInstance().setParticipants(_festivalOracle, _festivalType, playerParty);
+						SevenSignsFestival.getInstance().setParticipants(festivalOracle, festivalType, playerParty);
 						showChatWindow(player, 2, "f", false);
 						return;
 					}
@@ -236,21 +203,23 @@ public final class L2FestivalGuideInstance extends L2FolkInstance
 					switch (stoneType)
 					{
 						case SevenSigns.SEAL_STONE_BLUE_ID:
-							stonesNeeded = _blueStonesNeeded;
+							stonesNeeded = blueStonesNeeded;
 							break;
 						case SevenSigns.SEAL_STONE_GREEN_ID:
-							stonesNeeded = _greenStonesNeeded;
+							stonesNeeded = greenStonesNeeded;
 							break;
 						case SevenSigns.SEAL_STONE_RED_ID:
-							stonesNeeded = _redStonesNeeded;
+							stonesNeeded = redStonesNeeded;
 							break;
 					}
 					
 					if (!player.destroyItemByItemId("SevenSigns", stoneType, stonesNeeded, this, true))
+					{
 						return;
+					}
 					
-					SevenSignsFestival.getInstance().setParticipants(_festivalOracle, _festivalType, playerParty);
-					SevenSignsFestival.getInstance().addAccumulatedBonus(_festivalType, stoneType, stonesNeeded);
+					SevenSignsFestival.getInstance().setParticipants(festivalOracle, festivalType, playerParty);
+					SevenSignsFestival.getInstance().addAccumulatedBonus(festivalType, stoneType, stonesNeeded);
 					
 					showChatWindow(player, 2, "e", false);
 					break;
@@ -276,11 +245,13 @@ public final class L2FestivalGuideInstance extends L2FolkInstance
 						return;
 					}
 					
-					List<L2PcInstance> prevParticipants = SevenSignsFestival.getInstance().getPreviousParticipants(_festivalOracle, _festivalType);
+					List<L2PcInstance> prevParticipants = SevenSignsFestival.getInstance().getPreviousParticipants(festivalOracle, festivalType);
 					
 					// Check if there are any past participants.
 					if (prevParticipants == null)
+					{
 						return;
+					}
 					
 					// Check if this player was among the past set of participants for this festival.
 					if (!prevParticipants.contains(player))
@@ -309,7 +280,7 @@ public final class L2FestivalGuideInstance extends L2FolkInstance
 					offeringCount = bloodOfferings.getCount();
 					
 					final int offeringScore = offeringCount * SevenSignsFestival.FESTIVAL_OFFERING_VALUE;
-					final boolean isHighestScore = SevenSignsFestival.getInstance().setFinalScore(player, _festivalOracle, _festivalType, offeringScore);
+					final boolean isHighestScore = SevenSignsFestival.getInstance().setFinalScore(player, festivalOracle, festivalType, offeringScore);
 					
 					player.destroyItem("SevenSigns", bloodOfferings, this, false);
 					
@@ -334,9 +305,9 @@ public final class L2FestivalGuideInstance extends L2FolkInstance
 				case 4: // Current High Scores
 					TextBuilder strBuffer = new TextBuilder("<html><body>Festival Guide:<br>These are the top scores of the week, for the ");
 					
-					final StatsSet dawnData = SevenSignsFestival.getInstance().getHighestScoreData(SevenSigns.CABAL_DAWN, _festivalType);
-					final StatsSet duskData = SevenSignsFestival.getInstance().getHighestScoreData(SevenSigns.CABAL_DUSK, _festivalType);
-					final StatsSet overallData = SevenSignsFestival.getInstance().getOverallHighestScoreData(_festivalType);
+					final StatsSet dawnData = SevenSignsFestival.getInstance().getHighestScoreData(SevenSigns.CABAL_DAWN, festivalType);
+					final StatsSet duskData = SevenSignsFestival.getInstance().getHighestScoreData(SevenSigns.CABAL_DUSK, festivalType);
+					final StatsSet overallData = SevenSignsFestival.getInstance().getOverallHighestScoreData(festivalType);
 					
 					final int dawnScore = dawnData.getInteger("score");
 					final int duskScore = duskData.getInteger("score");
@@ -348,7 +319,7 @@ public final class L2FestivalGuideInstance extends L2FolkInstance
 						overallScore = overallData.getInteger("score");
 					}
 					
-					strBuffer.append(SevenSignsFestival.getFestivalName(_festivalType) + " festival.<br>");
+					strBuffer.append(SevenSignsFestival.getFestivalName(festivalType) + " festival.<br>");
 					
 					if (dawnScore > 0)
 					{
@@ -394,10 +365,14 @@ public final class L2FestivalGuideInstance extends L2FolkInstance
 					break;
 				case 8: // Increase the Festival Challenge
 					if (playerParty == null)
+					{
 						return;
+					}
 					
 					if (!SevenSignsFestival.getInstance().isFestivalInProgress())
+					{
 						return;
+					}
 					
 					if (!playerParty.isLeader(player))
 					{
@@ -405,7 +380,7 @@ public final class L2FestivalGuideInstance extends L2FolkInstance
 						break;
 					}
 					
-					if (SevenSignsFestival.getInstance().increaseChallenge(_festivalOracle, _festivalType))
+					if (SevenSignsFestival.getInstance().increaseChallenge(festivalOracle, festivalType))
 					{
 						showChatWindow(player, 8, "b", false);
 					}
@@ -416,7 +391,9 @@ public final class L2FestivalGuideInstance extends L2FolkInstance
 					break;
 				case 9: // Leave the Festival
 					if (playerParty == null)
+					{
 						return;
+					}
 					
 					/**
 					 * If the player is the party leader, remove all participants from the festival (i.e. set the party to null, when updating the participant list) otherwise just remove this player from the "arena", and also remove them from the party.
@@ -464,9 +441,9 @@ public final class L2FestivalGuideInstance extends L2FolkInstance
 	
 	/**
 	 * Show chat window.
-	 * @param player the player
-	 * @param val the val
-	 * @param suffix the suffix
+	 * @param player        the player
+	 * @param val           the val
+	 * @param suffix        the suffix
 	 * @param isDescription the is description
 	 */
 	private void showChatWindow(final L2PcInstance player, final int val, final String suffix, final boolean isDescription)
@@ -479,7 +456,7 @@ public final class L2FestivalGuideInstance extends L2FolkInstance
 		NpcHtmlMessage html = new NpcHtmlMessage(getObjectId());
 		html.setFile(filename);
 		html.replace("%objectId%", String.valueOf(getObjectId()));
-		html.replace("%festivalType%", SevenSignsFestival.getFestivalName(_festivalType));
+		html.replace("%festivalType%", SevenSignsFestival.getFestivalName(festivalType));
 		html.replace("%cycleMins%", String.valueOf(SevenSignsFestival.getInstance().getMinsToNextCycle()));
 		if (!isDescription && "2b".equals(val + suffix))
 		{
@@ -499,9 +476,9 @@ public final class L2FestivalGuideInstance extends L2FolkInstance
 		// festival's fee
 		if (val == 1)
 		{
-			html.replace("%blueStoneNeeded%", String.valueOf(_blueStonesNeeded));
-			html.replace("%greenStoneNeeded%", String.valueOf(_greenStonesNeeded));
-			html.replace("%redStoneNeeded%", String.valueOf(_redStonesNeeded));
+			html.replace("%blueStoneNeeded%", String.valueOf(blueStonesNeeded));
+			html.replace("%greenStoneNeeded%", String.valueOf(greenStonesNeeded));
+			html.replace("%redStoneNeeded%", String.valueOf(redStonesNeeded));
 		}
 		
 		player.sendPacket(html);
@@ -565,8 +542,8 @@ public final class L2FestivalGuideInstance extends L2FolkInstance
 	
 	/**
 	 * Calculate date.
-	 * @param milliFromEpoch the milli from epoch
-	 * @return the string
+	 * @param  milliFromEpoch the milli from epoch
+	 * @return                the string
 	 */
 	private final String calculateDate(final String milliFromEpoch)
 	{

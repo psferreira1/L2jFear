@@ -1,19 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any later
- * version.
- * 
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
- * 
- * You should have received a copy of the GNU General Public License along with
- * this program. If not, see <http://www.gnu.org/licenses/>.
- */
 package com.l2jfrozen.gameserver.model;
 
 import com.l2jfrozen.Config;
@@ -34,26 +18,26 @@ public class CombatFlag
 {
 	// private static final Logger LOGGER = Logger.getLogger(CombatFlag.class);
 	
-	protected L2PcInstance _player = null;
+	protected L2PcInstance playerFlag = null;
 	public int playerId = 0;
-	private L2ItemInstance _item = null;
+	private L2ItemInstance combatItem = null;
 	
-	private final Location _location;
+	private final Location location;
 	public L2ItemInstance itemInstance;
 	
-	private final int _itemId;
+	private final int itemId;
 	
-	// private int _heading;
-	// private int _fortId;
+	// private int heading;
+	// private int fortId;
 	
 	// =========================================================
 	// Constructor
 	public CombatFlag(/* int fort_id, */final int x, final int y, final int z, final int heading, final int item_id)
 	{
-		// _fortId = fort_id;
-		_location = new Location(x, y, z, heading);
-		// _heading = heading;
-		_itemId = item_id;
+		// fortId = fort_id;
+		location = new Location(x, y, z, heading);
+		// heading = heading;
+		itemId = item_id;
 	}
 	
 	public synchronized void spawnMe()
@@ -61,15 +45,15 @@ public class CombatFlag
 		L2ItemInstance i;
 		
 		// Init the dropped L2ItemInstance and add it in the world as a visible object at the position where mob was last
-		i = ItemTable.getInstance().createItem("Combat", _itemId, 1, null, null);
-		i.spawnMe(_location.getX(), _location.getY(), _location.getZ());
+		i = ItemTable.getInstance().createItem("Combat", itemId, 1, null, null);
+		i.spawnMe(location.getX(), location.getY(), location.getZ());
 		itemInstance = i;
 		i = null;
 	}
 	
 	public synchronized void unSpawnMe()
 	{
-		if (_player != null)
+		if (playerFlag != null)
 		{
 			dropIt();
 		}
@@ -96,65 +80,65 @@ public class CombatFlag
 		}
 		
 		// Player holding it data
-		_player = player;
-		playerId = _player.getObjectId();
+		playerFlag = player;
+		playerId = playerFlag.getObjectId();
 		itemInstance = null;
 		
 		// Add skill
 		giveSkill();
 		
 		// Equip with the weapon
-		_item = item;
-		_player.getInventory().equipItemAndRecord(_item);
+		combatItem = item;
+		playerFlag.getInventory().equipItemAndRecord(combatItem);
 		
 		SystemMessage sm = new SystemMessage(SystemMessageId.S1_EQUIPPED);
-		sm.addItemName(_item.getItemId());
-		_player.sendPacket(sm);
+		sm.addItemName(combatItem.getItemId());
+		playerFlag.sendPacket(sm);
 		sm = null;
 		
 		// Refresh inventory
 		if (!Config.FORCE_INVENTORY_UPDATE)
 		{
 			InventoryUpdate iu = new InventoryUpdate();
-			iu.addItem(_item);
-			_player.sendPacket(iu);
+			iu.addItem(combatItem);
+			playerFlag.sendPacket(iu);
 			iu = null;
 		}
 		else
 		{
-			_player.sendPacket(new ItemList(_player, false));
+			playerFlag.sendPacket(new ItemList(playerFlag, false));
 		}
 		
 		// Refresh player stats
-		_player.broadcastUserInfo();
-		// _player.setCombatFlagEquipped(true);
+		playerFlag.broadcastUserInfo();
+		// player.setCombatFlagEquipped(true);
 		
 	}
 	
 	public void dropIt()
 	{
 		// Reset player stats
-		// _player.setCombatFlagEquipped(false);
+		// player.setCombatFlagEquipped(false);
 		removeSkill();
-		_player.destroyItem("DieDrop", _item, null, false);
-		_item = null;
-		_player.broadcastUserInfo();
-		_player = null;
+		playerFlag.destroyItem("DieDrop", combatItem, null, false);
+		combatItem = null;
+		playerFlag.broadcastUserInfo();
+		playerFlag = null;
 		playerId = 0;
 	}
 	
 	public void giveSkill()
 	{
-		_player.addSkill(SkillTable.getInstance().getInfo(3318, 1), false);
-		_player.addSkill(SkillTable.getInstance().getInfo(3358, 1), false);
-		_player.sendSkillList();
+		playerFlag.addSkill(SkillTable.getInstance().getInfo(3318, 1), false);
+		playerFlag.addSkill(SkillTable.getInstance().getInfo(3358, 1), false);
+		playerFlag.sendSkillList();
 	}
 	
 	public void removeSkill()
 	{
-		_player.removeSkill(SkillTable.getInstance().getInfo(3318, 1), false);
-		_player.removeSkill(SkillTable.getInstance().getInfo(3358, 1), false);
-		_player.sendSkillList();
+		playerFlag.removeSkill(SkillTable.getInstance().getInfo(3318, 1), false);
+		playerFlag.removeSkill(SkillTable.getInstance().getInfo(3358, 1), false);
+		playerFlag.sendSkillList();
 	}
 	
 }

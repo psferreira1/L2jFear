@@ -1,23 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.model;
 
 /**
@@ -26,19 +6,19 @@ package com.l2jfrozen.gameserver.model;
  */
 public class L2TeleportLocation
 {
-	private int _teleId;
-	private int _locX;
-	private int _locY;
-	private int _locZ;
-	private int _price;
-	private boolean _forNoble;
+	private int teleId;
+	private int locX;
+	private int locY;
+	private int locZ;
+	private int price;
+	private boolean forNoble;
 	
 	/**
 	 * @param id
 	 */
 	public void setTeleId(final int id)
 	{
-		_teleId = id;
+		teleId = id;
 	}
 	
 	/**
@@ -46,7 +26,7 @@ public class L2TeleportLocation
 	 */
 	public void setLocX(final int locX)
 	{
-		_locX = locX;
+		this.locX = locX;
 	}
 	
 	/**
@@ -54,7 +34,7 @@ public class L2TeleportLocation
 	 */
 	public void setLocY(final int locY)
 	{
-		_locY = locY;
+		this.locY = locY;
 	}
 	
 	/**
@@ -62,7 +42,7 @@ public class L2TeleportLocation
 	 */
 	public void setLocZ(final int locZ)
 	{
-		_locZ = locZ;
+		this.locZ = locZ;
 	}
 	
 	/**
@@ -70,7 +50,7 @@ public class L2TeleportLocation
 	 */
 	public void setPrice(final int price)
 	{
-		_price = price;
+		this.price = price;
 	}
 	
 	/**
@@ -78,7 +58,7 @@ public class L2TeleportLocation
 	 */
 	public void setIsForNoble(final boolean val)
 	{
-		_forNoble = val;
+		forNoble = val;
 	}
 	
 	/**
@@ -86,7 +66,7 @@ public class L2TeleportLocation
 	 */
 	public int getTeleId()
 	{
-		return _teleId;
+		return teleId;
 	}
 	
 	/**
@@ -94,7 +74,7 @@ public class L2TeleportLocation
 	 */
 	public int getLocX()
 	{
-		return _locX;
+		return locX;
 	}
 	
 	/**
@@ -102,7 +82,7 @@ public class L2TeleportLocation
 	 */
 	public int getLocY()
 	{
-		return _locY;
+		return locY;
 	}
 	
 	/**
@@ -110,7 +90,7 @@ public class L2TeleportLocation
 	 */
 	public int getLocZ()
 	{
-		return _locZ;
+		return locZ;
 	}
 	
 	/**
@@ -118,7 +98,7 @@ public class L2TeleportLocation
 	 */
 	public int getPrice()
 	{
-		return _price;
+		return price;
 	}
 	
 	/**
@@ -126,6 +106,6 @@ public class L2TeleportLocation
 	 */
 	public boolean getIsForNoble()
 	{
-		return _forNoble;
+		return forNoble;
 	}
 }

@@ -1,31 +1,12 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.datatables.sql;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-
-import javolution.util.FastList;
-import javolution.util.FastMap;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import org.apache.log4j.Logger;
 
@@ -43,10 +24,13 @@ import com.l2jfrozen.util.database.L2DatabaseFactory;
 public class TradeListTable
 {
 	private static final Logger LOGGER = Logger.getLogger(TradeListTable.class);
-	private static TradeListTable _instance;
+	private static TradeListTable instance;
 	
-	private int _nextListId;
-	private final FastMap<Integer, L2TradeList> _lists;
+	private static final String UPDATE_MERCHANT_BUY_LIST_BY_TIME = "UPDATE merchant_buylists SET savetimer=? WHERE time=?";
+	private static final String UPDATE_MERCHANT_BUY_LIST_BY_ITEM_ID_AND_SHOP_ID = "UPDATE merchant_buylists SET currentCount=? WHERE item_id=? AND shop_id=?";
+	
+	private int nextListId;
+	private final Map<Integer, L2TradeList> tradeLists;
 	
 	/** Task launching the function for restore count of Item (Clan Hall) */
 	private class RestoreCount implements Runnable
@@ -69,17 +53,17 @@ public class TradeListTable
 	
 	public static TradeListTable getInstance()
 	{
-		if (_instance == null)
+		if (instance == null)
 		{
-			_instance = new TradeListTable();
+			instance = new TradeListTable();
 		}
 		
-		return _instance;
+		return instance;
 	}
 	
 	private TradeListTable()
 	{
-		_lists = new FastMap<>();
+		tradeLists = new HashMap<>();
 		load();
 	}
 	
@@ -91,7 +75,7 @@ public class TradeListTable
 		 */
 		try
 		{
-			con = L2DatabaseFactory.getInstance().getConnection(false);
+			con = L2DatabaseFactory.getInstance().getConnection();
 			final PreparedStatement statement1 = con.prepareStatement("SELECT " + L2DatabaseFactory.getInstance().safetyString(new String[]
 			{
 				"shop_id",
@@ -108,9 +92,9 @@ public class TradeListTable
 				final L2TradeList buylist = new L2TradeList(rset1.getInt("shop_id"));
 				
 				buylist.setNpcId(rset1.getString("npc_id"));
-				int _itemId = 0;
-				int _itemCount = 0;
-				int _price = 0;
+				int itemId = 0;
+				int itemCount = 0;
+				int price = 0;
 				
 				if (!buylist.isGm() && NpcTable.getInstance().getTemplate(rset1.getInt("npc_id")) == null)
 				{
@@ -121,26 +105,26 @@ public class TradeListTable
 				{
 					while (rset.next())
 					{
-						_itemId = rset.getInt("item_id");
-						_price = rset.getInt("price");
+						itemId = rset.getInt("item_id");
+						price = rset.getInt("price");
 						final int count = rset.getInt("count");
 						final int currentCount = rset.getInt("currentCount");
 						final int time = rset.getInt("time");
 						
-						final L2ItemInstance buyItem = ItemTable.getInstance().createDummyItem(_itemId);
+						final L2ItemInstance buyItem = ItemTable.getInstance().createDummyItem(itemId);
 						
 						if (buyItem == null)
 						{
 							continue;
 						}
 						
-						_itemCount++;
+						itemCount++;
 						
 						if (count > -1)
 						{
 							buyItem.setCountDecrease(true);
 						}
-						buyItem.setPriceToSell(_price);
+						buyItem.setPriceToSell(price);
 						buyItem.setTime(time);
 						buyItem.setInitCount(count);
 						
@@ -155,9 +139,9 @@ public class TradeListTable
 						
 						buylist.addItem(buyItem);
 						
-						if (!buylist.isGm() && buyItem.getReferencePrice() > _price)
+						if (!buylist.isGm() && buyItem.getReferencePrice() > price)
 						{
-							LOGGER.warn("TradeListTable: Reference price of item {} in buylist {} higher then sell price. " + _itemId + " " + buylist.getListId());
+							LOGGER.warn("TradeListTable: Reference price of item {} in buylist {} higher then sell price. " + itemId + " " + buylist.getListId());
 						}
 					}
 				}
@@ -166,10 +150,10 @@ public class TradeListTable
 					LOGGER.error("TradeListTable: Problem with buylist {}. " + buylist.getListId(), e);
 				}
 				
-				if (_itemCount > 0)
+				if (itemCount > 0)
 				{
-					_lists.put(buylist.getListId(), buylist);
-					_nextListId = Math.max(_nextListId, buylist.getListId() + 1);
+					tradeLists.put(buylist.getListId(), buylist);
+					nextListId = Math.max(nextListId, buylist.getListId() + 1);
 				}
 				else
 				{
@@ -182,7 +166,7 @@ public class TradeListTable
 			rset1.close();
 			statement1.close();
 			
-			LOGGER.info("TradeListTable: Loaded {} Buylists. " + _lists.size());
+			LOGGER.info("TradeListTable: Loaded {} Buylists. " + tradeLists.size());
 			/*
 			 * Restore Task for reinitialize count of buy item
 			 */
@@ -235,29 +219,32 @@ public class TradeListTable
 	
 	public void reloadAll()
 	{
-		_lists.clear();
+		tradeLists.clear();
 		
 		load();
 	}
 	
 	public L2TradeList getBuyList(final int listId)
 	{
-		if (_lists.containsKey(listId))
-			return _lists.get(listId);
+		if (tradeLists.containsKey(listId))
+		{
+			return tradeLists.get(listId);
+		}
 		
 		return null;
 	}
 	
-	public FastList<L2TradeList> getBuyListByNpcId(final int npcId)
+	public List<L2TradeList> getBuyListByNpcId(int npcId)
 	{
-		final FastList<L2TradeList> lists = new FastList<>();
+		List<L2TradeList> lists = new ArrayList<>();
 		
-		for (final L2TradeList list : _lists.values())
+		for (L2TradeList list : tradeLists.values())
 		{
 			if (list.isGm())
 			{
 				continue;
 			}
+			
 			/** if (npcId == list.getNpcId()) **/
 			lists.add(list);
 		}
@@ -267,52 +254,46 @@ public class TradeListTable
 	
 	protected void restoreCount(final int time)
 	{
-		if (_lists == null)
+		if (tradeLists == null)
+		{
 			return;
+		}
 		
-		for (final L2TradeList list : _lists.values())
+		for (final L2TradeList list : tradeLists.values())
 		{
 			list.restoreCount(time);
 		}
 	}
 	
-	protected void dataTimerSave(final int time)
+	protected void dataTimerSave(int time)
 	{
-		Connection con = null;
-		final long timerSave = System.currentTimeMillis() + (long) time * 3600000; // 60*60*1000
+		long timerSave = System.currentTimeMillis() + (long) time * 3600000; // 60*60*1000
 		
-		try
+		try (Connection con = L2DatabaseFactory.getInstance().getConnection();
+			PreparedStatement statement = con.prepareStatement(UPDATE_MERCHANT_BUY_LIST_BY_TIME);)
 		{
-			con = L2DatabaseFactory.getInstance().getConnection(false);
-			final PreparedStatement statement = con.prepareStatement("UPDATE merchant_buylists SET savetimer =? WHERE time =?");
 			statement.setLong(1, timerSave);
 			statement.setInt(2, time);
 			statement.executeUpdate();
-			DatabaseUtils.close(statement);
 		}
-		catch (final Exception e)
+		catch (Exception e)
 		{
-			LOGGER.error("TradeController: Could not update Timer save in Buylist ", e);
-		}
-		finally
-		{
-			CloseUtil.close(con);
+			LOGGER.error("TradeListTable.dataTimerSave : Could not update Timer save in Buylist ", e);
 		}
 	}
 	
 	public void dataCountStore()
 	{
-		if (_lists == null)
+		if (tradeLists == null)
+		{
 			return;
+		}
 		
 		int listId;
-		Connection con = null;
-		try
+		try (Connection con = L2DatabaseFactory.getInstance().getConnection();
+			PreparedStatement statement = con.prepareStatement(UPDATE_MERCHANT_BUY_LIST_BY_ITEM_ID_AND_SHOP_ID))
 		{
-			con = L2DatabaseFactory.getInstance().getConnection(false);
-			PreparedStatement statement;
-			
-			for (final L2TradeList list : _lists.values())
+			for (final L2TradeList list : tradeLists.values())
 			{
 				if (list == null)
 				{
@@ -321,27 +302,21 @@ public class TradeListTable
 				
 				listId = list.getListId();
 				
-				for (final L2ItemInstance Item : list.getItems())
+				for (L2ItemInstance Item : list.getItems())
 				{
 					if (Item.getCount() < Item.getInitCount()) // needed?
 					{
-						statement = con.prepareStatement("UPDATE merchant_buylists SET currentCount=? WHERE item_id=? AND shop_id=?");
 						statement.setInt(1, Item.getCount());
 						statement.setInt(2, Item.getItemId());
 						statement.setInt(3, listId);
 						statement.executeUpdate();
-						DatabaseUtils.close(statement);
 					}
 				}
 			}
 		}
-		catch (final Exception e)
+		catch (Exception e)
 		{
 			LOGGER.error("TradeController: Could not store Count Item ", e);
-		}
-		finally
-		{
-			CloseUtil.close(con);
 		}
 	}
 }

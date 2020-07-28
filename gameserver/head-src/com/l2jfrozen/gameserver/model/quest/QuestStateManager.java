@@ -1,36 +1,16 @@
-/* L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.model.quest;
 
+import java.util.ArrayList;
 import java.util.List;
 
-import javolution.util.FastList;
-
-import com.l2jfrozen.Config;
 import com.l2jfrozen.gameserver.model.actor.instance.L2PcInstance;
 import com.l2jfrozen.gameserver.thread.ThreadPoolManager;
 
 public class QuestStateManager
 {
-	// =========================================================
-	// Schedule Task
+	private static QuestStateManager instance;
+	private List<QuestState> questStates = new ArrayList<>();
+	
 	public class ScheduleTimerTask implements Runnable
 	{
 		@Override
@@ -41,47 +21,28 @@ public class QuestStateManager
 				cleanUp();
 				ThreadPoolManager.getInstance().scheduleGeneral(new ScheduleTimerTask(), 60000);
 			}
-			catch (final Throwable t)
+			catch (Throwable t)
 			{
-				if (Config.ENABLE_ALL_EXCEPTIONS)
-					t.printStackTrace();
+				t.printStackTrace();
 			}
 		}
 	}
 	
-	// =========================================================
-	// Data Field
-	private static QuestStateManager _instance;
-	private List<QuestState> _questStates = new FastList<>();
-	
-	// =========================================================
-	// Constructor
 	public QuestStateManager()
 	{
 		ThreadPoolManager.getInstance().scheduleGeneral(new ScheduleTimerTask(), 60000);
 	}
 	
-	// =========================================================
-	// Property - Public
 	public static final QuestStateManager getInstance()
 	{
-		if (_instance == null)
+		if (instance == null)
 		{
-			_instance = new QuestStateManager();
+			instance = new QuestStateManager();
 		}
 		
-		return _instance;
+		return instance;
 	}
 	
-	// =========================================================
-	// Method - Public
-	/**
-	 * Add QuestState for the specified player instance
-	 * @param quest
-	 * @param player
-	 * @param state
-	 * @param completed
-	 */
 	public void addQuestState(final Quest quest, final L2PcInstance player, final State state, final boolean completed)
 	{
 		QuestState qs = getQuestState(player);
@@ -110,16 +71,17 @@ public class QuestStateManager
 	}
 	
 	/**
-	 * Return QuestState for specified player instance
-	 * @param player
-	 * @return
+	 * @param  player
+	 * @return        QuestState for specified player instance
 	 */
 	public QuestState getQuestState(final L2PcInstance player)
 	{
 		for (int i = 0; i < getQuestStates().size(); i++)
 		{
 			if (getQuestStates().get(i).getPlayer() != null && getQuestStates().get(i).getPlayer().getObjectId() == player.getObjectId())
+			{
 				return getQuestStates().get(i);
+			}
 			
 		}
 		
@@ -127,16 +89,15 @@ public class QuestStateManager
 	}
 	
 	/**
-	 * Return all QuestState
-	 * @return
+	 * @return all QuestState
 	 */
 	public List<QuestState> getQuestStates()
 	{
-		if (_questStates == null)
+		if (questStates == null)
 		{
-			_questStates = new FastList<>();
+			questStates = new ArrayList<>();
 		}
 		
-		return _questStates;
+		return questStates;
 	}
 }

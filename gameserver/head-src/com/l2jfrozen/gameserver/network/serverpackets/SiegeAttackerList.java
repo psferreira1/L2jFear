@@ -1,23 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.network.serverpackets;
 
 import com.l2jfrozen.gameserver.datatables.sql.ClanTable;
@@ -52,31 +32,29 @@ import com.l2jfrozen.gameserver.model.entity.siege.Castle;
  */
 public class SiegeAttackerList extends L2GameServerPacket
 {
-	private static final String _S__CA_SiegeAttackerList = "[S] ca SiegeAttackerList";
-	// private static Logger LOGGER = Logger.getLogger(SiegeAttackerList.class);
-	private final Castle _castle;
+	private final Castle castle;
 	
 	public SiegeAttackerList(final Castle castle)
 	{
-		_castle = castle;
+		this.castle = castle;
 	}
 	
 	@Override
 	protected final void writeImpl()
 	{
 		writeC(0xca);
-		writeD(_castle.getCastleId());
+		writeD(castle.getCastleId());
 		writeD(0x00); // 0
 		writeD(0x01); // 1
 		writeD(0x00); // 0
-		final int size = _castle.getSiege().getAttackerClans().size();
+		final int size = castle.getSiege().getAttackerClans().size();
 		if (size > 0)
 		{
 			L2Clan clan;
 			
 			writeD(size);
 			writeD(size);
-			for (final L2SiegeClan siegeclan : _castle.getSiege().getAttackerClans())
+			for (final L2SiegeClan siegeclan : castle.getSiege().getAttackerClans())
 			{
 				clan = ClanTable.getInstance().getClan(siegeclan.getClanId());
 				if (clan == null)
@@ -102,14 +80,10 @@ public class SiegeAttackerList extends L2GameServerPacket
 		}
 	}
 	
-	/*
-	 * (non-Javadoc)
-	 * @see com.l2jfrozen.gameserver.serverpackets.ServerBasePacket#getType()
-	 */
 	@Override
 	public String getType()
 	{
-		return _S__CA_SiegeAttackerList;
+		return "[S] ca SiegeAttackerList";
 	}
 	
 }

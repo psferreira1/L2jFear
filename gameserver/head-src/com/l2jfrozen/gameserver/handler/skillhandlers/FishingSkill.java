@@ -1,23 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.handler.skillhandlers;
 
 import com.l2jfrozen.gameserver.handler.ISkillHandler;
@@ -47,11 +27,13 @@ public class FishingSkill implements ISkillHandler
 	public void useSkill(final L2Character activeChar, final L2Skill skill, final L2Object[] targets)
 	{
 		if (activeChar == null || !(activeChar instanceof L2PcInstance))
+		{
 			return;
+		}
 		
 		L2PcInstance player = (L2PcInstance) activeChar;
 		
-		L2Fishing fish = player.GetFishCombat();
+		L2Fishing fish = player.getFishCombat();
 		if (fish == null)
 		{
 			if (skill.getSkillType() == SkillType.PUMPING)
@@ -82,7 +64,9 @@ public class FishingSkill implements ISkillHandler
 		int pen = 0;
 		
 		if (weaponInst.getChargedFishshot())
+		{
 			SS = 2;
+		}
 		
 		final double gradebonus = 1 + weaponItem.getCrystalType() * 0.1;
 		int dmg = (int) (skill.getPower() * gradebonus * SS);
@@ -93,7 +77,9 @@ public class FishingSkill implements ISkillHandler
 			pen = 50;
 			final int penatlydmg = dmg - pen;
 			if (player.isGM())
+			{
 				player.sendMessage("Dmg w/o penalty = " + dmg);
+			}
 			dmg = penatlydmg;
 		}
 		player = null;

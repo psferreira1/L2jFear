@@ -1,23 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.network.clientpackets;
 
 import org.apache.log4j.Logger;
@@ -49,18 +29,16 @@ public class RequestAquireSkill extends L2GameClientPacket
 {
 	private static Logger LOGGER = Logger.getLogger(RequestAquireSkill.class);
 	
-	private int _id;
-	
-	private int _level;
-	
-	private int _skillType;
+	private int id;
+	private int level;
+	private int skillType;
 	
 	@Override
 	protected void readImpl()
 	{
-		_id = readD();
-		_level = readD();
-		_skillType = readD();
+		id = readD();
+		level = readD();
+		skillType = readD();
 	}
 	
 	@Override
@@ -70,33 +48,41 @@ public class RequestAquireSkill extends L2GameClientPacket
 		final L2PcInstance player = getClient().getActiveChar();
 		
 		if (player == null)
+		{
 			return;
+		}
 		
 		final L2FolkInstance trainer = player.getLastFolkNPC();
 		
 		if (trainer == null)
+		{
 			return;
+		}
 		
 		final int npcid = trainer.getNpcId();
 		
 		if (!player.isInsideRadius(trainer, L2NpcInstance.INTERACTION_DISTANCE, false, false) && !player.isGM())
+		{
 			return;
+		}
 		
 		if (!Config.ALT_GAME_SKILL_LEARN)
 		{
 			player.setSkillLearningClassId(player.getClassId());
 		}
 		
-		if (player.getSkillLevel(_id) >= _level)
+		if (player.getSkillLevel(id) >= level)
+		{
 			// already knows the skill with this level
 			return;
+		}
 		
-		final L2Skill skill = SkillTable.getInstance().getInfo(_id, _level);
+		final L2Skill skill = SkillTable.getInstance().getInfo(id, level);
 		
 		int counts = 0;
-		int _requiredSp = 10000000;
+		int requiredSp = 10000000;
 		
-		if (_skillType == 0)
+		if (skillType == 0)
 		{
 			
 			final L2SkillLearn[] skills = SkillTreeTable.getInstance().getAvailableSkills(player, player.getSkillLearningClassId());
@@ -109,7 +95,7 @@ public class RequestAquireSkill extends L2GameClientPacket
 					continue;
 				}
 				counts++;
-				_requiredSp = SkillTreeTable.getInstance().getSkillCost(player, skill);
+				requiredSp = SkillTreeTable.getInstance().getSkillCost(player, skill);
 			}
 			
 			if (counts == 0 && !Config.ALT_GAME_SKILL_LEARN)
@@ -119,13 +105,13 @@ public class RequestAquireSkill extends L2GameClientPacket
 				return;
 			}
 			
-			if (player.getSp() >= _requiredSp)
+			if (player.getSp() >= requiredSp)
 			{
 				int spbId = -1;
 				// divine inspiration require book for each level
 				if (Config.DIVINE_SP_BOOK_NEEDED && skill.getId() == L2Skill.SKILL_DIVINE_INSPIRATION)
 				{
-					spbId = SkillSpellbookTable.getInstance().getBookForSkill(skill, _level);
+					spbId = SkillSpellbookTable.getInstance().getBookForSkill(skill, level);
 				}
 				else if (Config.SP_BOOK_NEEDED && skill.getLevel() == 1)
 				{
@@ -156,7 +142,7 @@ public class RequestAquireSkill extends L2GameClientPacket
 				return;
 			}
 		}
-		else if (_skillType == 1)
+		else if (skillType == 1)
 		{
 			int costid = 0;
 			int costcount = 0;
@@ -175,7 +161,7 @@ public class RequestAquireSkill extends L2GameClientPacket
 				counts++;
 				costid = s.getIdCost();
 				costcount = s.getCostCount();
-				_requiredSp = s.getSpCost();
+				requiredSp = s.getSpCost();
 			}
 			
 			if (counts == 0)
@@ -185,7 +171,7 @@ public class RequestAquireSkill extends L2GameClientPacket
 				return;
 			}
 			
-			if (player.getSp() >= _requiredSp)
+			if (player.getSp() >= requiredSp)
 			{
 				if (!player.destroyItemByItemId("Consume", costid, costcount, trainer, false))
 				{
@@ -206,12 +192,11 @@ public class RequestAquireSkill extends L2GameClientPacket
 				return;
 			}
 		}
-		else if (_skillType == 2) // pledgeskills TODO: Find appropriate system messages.
+		else if (skillType == 2)
 		{
 			if (!player.isClanLeader())
 			{
-				// TODO: Find and add system msg
-				player.sendMessage("This feature is available only for the clan leader");
+				player.sendPacket(SystemMessageId.ONLY_THE_CLAN_LEADER_IS_ENABLED);
 				return;
 			}
 			
@@ -269,14 +254,14 @@ public class RequestAquireSkill extends L2GameClientPacket
 			
 			if (Config.DEBUG)
 			{
-				LOGGER.debug("Learned pledge skill " + _id + " for " + _requiredSp + " SP.");
+				LOGGER.debug("Learned pledge skill " + id + " for " + requiredSp + " SP.");
 			}
 			
 			final SystemMessage cr = new SystemMessage(SystemMessageId.S1_DEDUCTED_FROM_CLAN_REP);
 			cr.addNumber(repCost);
 			player.sendPacket(cr);
 			final SystemMessage sm = new SystemMessage(SystemMessageId.CLAN_SKILL_S1_ADDED);
-			sm.addSkillName(_id);
+			sm.addSkillName(id);
 			player.sendPacket(sm);
 			
 			player.getClan().broadcastToOnlineMembers(new PledgeSkillList(player.getClan()));
@@ -296,7 +281,7 @@ public class RequestAquireSkill extends L2GameClientPacket
 		
 		else
 		{
-			LOGGER.warn("Recived Wrong Packet Data in Aquired Skill - unk1:" + _skillType);
+			LOGGER.warn("Recived Wrong Packet Data in Aquired Skill - unk1:" + skillType);
 			return;
 		}
 		
@@ -304,33 +289,31 @@ public class RequestAquireSkill extends L2GameClientPacket
 		
 		if (Config.DEBUG)
 		{
-			LOGGER.debug("Learned skill " + _id + " for " + _requiredSp + " SP.");
+			LOGGER.debug("Learned skill " + id + " for " + requiredSp + " SP.");
 		}
 		
-		player.setSp(player.getSp() - _requiredSp);
+		player.setSp(player.getSp() - requiredSp);
 		
 		final StatusUpdate su = new StatusUpdate(player.getObjectId());
 		su.addAttribute(StatusUpdate.SP, player.getSp());
 		player.sendPacket(su);
 		
 		final SystemMessage sp = new SystemMessage(SystemMessageId.SP_DECREASED_S1);
-		sp.addNumber(_requiredSp);
+		sp.addNumber(requiredSp);
 		sendPacket(sp);
 		
 		final SystemMessage sm = new SystemMessage(SystemMessageId.LEARNED_SKILL_S1);
-		sm.addSkillName(_id);
+		sm.addSkillName(id);
 		player.sendPacket(sm);
 		
 		// update all the shortcuts to this skill
-		if (_level > 1)
+		if (level > 1)
 		{
-			final L2ShortCut[] allShortCuts = player.getAllShortCuts();
-			
-			for (final L2ShortCut sc : allShortCuts)
+			for (L2ShortCut sc : player.getAllShortCuts())
 			{
-				if (sc.getId() == _id && sc.getType() == L2ShortCut.TYPE_SKILL)
+				if (sc.getId() == id && sc.getType() == L2ShortCut.TYPE_SKILL)
 				{
-					final L2ShortCut newsc = new L2ShortCut(sc.getSlot(), sc.getPage(), sc.getType(), sc.getId(), _level, 1);
+					L2ShortCut newsc = new L2ShortCut(sc.getSlot(), sc.getPage(), sc.getType(), sc.getId(), level, 1);
 					player.sendPacket(new ShortCutRegister(newsc));
 					player.registerShortCut(newsc);
 				}
@@ -346,7 +329,7 @@ public class RequestAquireSkill extends L2GameClientPacket
 			trainer.showSkillList(player, player.getSkillLearningClassId());
 		}
 		
-		if (_id >= 1368 && _id <= 1372) // if skill is expand sendpacket :)
+		if (id >= 1368 && id <= 1372) // if skill is expand sendpacket :)
 		{
 			final ExStorageMaxCount esmc = new ExStorageMaxCount(player);
 			player.sendPacket(esmc);

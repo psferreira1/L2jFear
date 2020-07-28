@@ -1,19 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any later
- * version.
- * 
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
- * 
- * You should have received a copy of the GNU General Public License along with
- * this program. If not, see <http://www.gnu.org/licenses/>.
- */
 package com.l2jfrozen.gameserver.ai.special;
 
 import java.util.Collection;
@@ -29,19 +13,19 @@ import com.l2jfrozen.gameserver.model.spawn.L2Spawn;
 
 /**
  * Gordon AI
- * @author TOFIZ
+ * @author  TOFIZ
  * @version $Revision: 1.1 $ $Date: 2008/08/21 $
  */
 public class Gordon extends Quest implements Runnable
 {
 	private static final int GORDON = 29095;
-	private static int _npcMoveX = 0;
-	private static int _npcMoveY = 0;
-	private static int _isWalkTo = 0;
-	private static int _npcBlock = 0;
-	private static int X = 0;
-	private static int Y = 0;
-	private static int Z = 0;
+	private static int npcMoveX = 0;
+	private static int npcMoveY = 0;
+	private static int isWalkTo = 0;
+	private static int npcBlock = 0;
+	private static int x = 0;
+	private static int y = 0;
+	private static int z = 0;
 	private static final int[][] WALKS =
 	{
 		{
@@ -321,8 +305,8 @@ public class Gordon extends Quest implements Runnable
 		}
 	};
 	
-	private static boolean _isAttacked = false;
-	private static boolean _isSpawned = false;
+	private static boolean isAttacked = false;
+	private static boolean isSpawned = false;
 	
 	public Gordon(final int id, final String name, final String descr)
 	{
@@ -335,38 +319,38 @@ public class Gordon extends Quest implements Runnable
 		// wait 2 minutes after Start AI
 		startQuestTimer("check_ai", 120000, null, null, true);
 		
-		_isSpawned = false;
-		_isAttacked = false;
-		_isWalkTo = 1;
-		_npcMoveX = 0;
-		_npcMoveY = 0;
-		_npcBlock = 0;
+		isSpawned = false;
+		isAttacked = false;
+		isWalkTo = 1;
+		npcMoveX = 0;
+		npcMoveY = 0;
+		npcBlock = 0;
 	}
 	
 	@Override
 	public String onAdvEvent(final String event, final L2NpcInstance npc, final L2PcInstance player)
 	{
-		X = WALKS[_isWalkTo - 1][0];
-		Y = WALKS[_isWalkTo - 1][1];
-		Z = WALKS[_isWalkTo - 1][2];
+		x = WALKS[isWalkTo - 1][0];
+		y = WALKS[isWalkTo - 1][1];
+		z = WALKS[isWalkTo - 1][2];
 		if (event.equalsIgnoreCase("time_isAttacked"))
 		{
-			_isAttacked = false;
+			isAttacked = false;
 			if (npc.getNpcId() == GORDON)
 			{
 				npc.setWalking();
-				npc.getAI().setIntention(CtrlIntention.AI_INTENTION_MOVE_TO, new L2CharPosition(X, Y, Z, 0));
+				npc.getAI().setIntention(CtrlIntention.AI_INTENTION_MOVE_TO, new L2CharPosition(x, y, z, 0));
 			}
 		}
 		else if (event.equalsIgnoreCase("check_ai"))
 		{
 			cancelQuestTimer("check_ai", null, null);
-			if (!_isSpawned)
+			if (!isSpawned)
 			{
 				final L2NpcInstance gordon_ai = findTemplate(GORDON);
 				if (gordon_ai != null)
 				{
-					_isSpawned = true;
+					isSpawned = true;
 					startQuestTimer("Start", 1000, gordon_ai, null, true);
 					return super.onAdvEvent(event, npc, player);
 				}
@@ -375,7 +359,7 @@ public class Gordon extends Quest implements Runnable
 		else if (event.equalsIgnoreCase("Start"))
 		{
 			// startQuestTimer("Start", 1000, npc, null);
-			if (npc != null && _isSpawned)
+			if (npc != null && isSpawned)
 			{
 				// check if player have Cursed Weapon and in radius
 				if (npc.getNpcId() == GORDON)
@@ -390,7 +374,7 @@ public class Gordon extends Quest implements Runnable
 								npc.setRunning();
 								((L2Attackable) npc).addDamageHate(pc, 0, 9999);
 								npc.getAI().setIntention(CtrlIntention.AI_INTENTION_ATTACK, pc);
-								_isAttacked = true;
+								isAttacked = true;
 								cancelQuestTimer("time_isAttacked", null, null);
 								startQuestTimer("time_isAttacked", 180000, npc, null);
 								return super.onAdvEvent(event, npc, player);
@@ -399,48 +383,50 @@ public class Gordon extends Quest implements Runnable
 					}
 				}
 				// end check
-				if (_isAttacked)
-					return super.onAdvEvent(event, npc, player);
-				
-				if (npc.getNpcId() == GORDON && npc.getX() - 50 <= X && npc.getX() + 50 >= X && npc.getY() - 50 <= Y && npc.getY() + 50 >= Y)
+				if (isAttacked)
 				{
-					_isWalkTo++;
-					if (_isWalkTo > 55)
+					return super.onAdvEvent(event, npc, player);
+				}
+				
+				if (npc.getNpcId() == GORDON && npc.getX() - 50 <= x && npc.getX() + 50 >= x && npc.getY() - 50 <= y && npc.getY() + 50 >= y)
+				{
+					isWalkTo++;
+					if (isWalkTo > 55)
 					{
-						_isWalkTo = 1;
+						isWalkTo = 1;
 					}
-					X = WALKS[_isWalkTo - 1][0];
-					Y = WALKS[_isWalkTo - 1][1];
-					Z = WALKS[_isWalkTo - 1][2];
+					x = WALKS[isWalkTo - 1][0];
+					y = WALKS[isWalkTo - 1][1];
+					z = WALKS[isWalkTo - 1][2];
 					npc.setWalking();
 					// TODO: find better way to prevent teleporting to the home location
-					npc.getSpawn().setLocx(X);
-					npc.getSpawn().setLocy(Y);
-					npc.getSpawn().setLocz(Z);
-					npc.getAI().setIntention(CtrlIntention.AI_INTENTION_MOVE_TO, new L2CharPosition(X, Y, Z, 0));
+					npc.getSpawn().setLocx(x);
+					npc.getSpawn().setLocy(y);
+					npc.getSpawn().setLocz(z);
+					npc.getAI().setIntention(CtrlIntention.AI_INTENTION_MOVE_TO, new L2CharPosition(x, y, z, 0));
 				}
 				// Test for unblock Npc
-				if (npc.getX() != _npcMoveX && npc.getY() != _npcMoveY)
+				if (npc.getX() != npcMoveX && npc.getY() != npcMoveY)
 				{
-					_npcMoveX = npc.getX();
-					_npcMoveY = npc.getY();
-					_npcBlock = 0;
+					npcMoveX = npc.getX();
+					npcMoveY = npc.getY();
+					npcBlock = 0;
 				}
 				else if (npc.getNpcId() == GORDON)
 				{
-					_npcBlock++;
-					if (_npcBlock > 2)
+					npcBlock++;
+					if (npcBlock > 2)
 					{
-						npc.teleToLocation(X, Y, Z);
+						npc.teleToLocation(x, y, z);
 						return super.onAdvEvent(event, npc, player);
 					}
-					if (_npcBlock > 0)
+					if (npcBlock > 0)
 					{
 						// TODO: find better way to prevent teleporting to the home location
-						npc.getSpawn().setLocx(X);
-						npc.getSpawn().setLocy(Y);
-						npc.getSpawn().setLocz(Z);
-						npc.getAI().setIntention(CtrlIntention.AI_INTENTION_MOVE_TO, new L2CharPosition(X, Y, Z, 0));
+						npc.getSpawn().setLocx(x);
+						npc.getSpawn().setLocy(y);
+						npc.getSpawn().setLocz(z);
+						npc.getAI().setIntention(CtrlIntention.AI_INTENTION_MOVE_TO, new L2CharPosition(x, y, z, 0));
 					}
 				}
 				// End Test unblock Npc
@@ -452,10 +438,10 @@ public class Gordon extends Quest implements Runnable
 	@Override
 	public String onSpawn(final L2NpcInstance npc)
 	{
-		if (npc.getNpcId() == GORDON && _npcBlock == 0)
+		if (npc.getNpcId() == GORDON && npcBlock == 0)
 		{
-			_isSpawned = true;
-			_isWalkTo = 1;
+			isSpawned = true;
+			isWalkTo = 1;
 			startQuestTimer("Start", 1000, npc, null);
 		}
 		return super.onSpawn(npc);
@@ -466,7 +452,7 @@ public class Gordon extends Quest implements Runnable
 	{
 		if (npc.getNpcId() == GORDON)
 		{
-			_isAttacked = true;
+			isAttacked = true;
 			cancelQuestTimer("time_isAttacked", null, null);
 			startQuestTimer("time_isAttacked", 180000, npc, null);
 			if (player != null)
@@ -486,7 +472,7 @@ public class Gordon extends Quest implements Runnable
 		{
 			cancelQuestTimer("Start", null, null);
 			cancelQuestTimer("time_isAttacked", null, null);
-			_isSpawned = false;
+			isSpawned = false;
 		}
 		return super.onKill(npc, killer, isPet);
 	}

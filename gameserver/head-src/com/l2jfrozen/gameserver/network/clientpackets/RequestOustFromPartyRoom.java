@@ -1,19 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any later
- * version.
- * 
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
- * 
- * You should have received a copy of the GNU General Public License along with
- * this program. If not, see <http://www.gnu.org/licenses/>.
- */
 package com.l2jfrozen.gameserver.network.clientpackets;
 
 import com.l2jfrozen.gameserver.managers.TownManager;
@@ -33,13 +17,12 @@ import com.l2jfrozen.gameserver.network.serverpackets.SystemMessage;
  */
 public final class RequestOustFromPartyRoom extends L2GameClientPacket
 {
-	
-	private int _charid;
+	private int charid;
 	
 	@Override
 	protected void readImpl()
 	{
-		_charid = readD();
+		charid = readD();
 	}
 	
 	@Override
@@ -48,24 +31,34 @@ public final class RequestOustFromPartyRoom extends L2GameClientPacket
 		
 		final L2PcInstance activeChar = getClient().getActiveChar();
 		if (activeChar == null)
+		{
 			return;
+		}
 		
-		final L2PcInstance member = L2World.getInstance().getPlayer(_charid);
+		final L2PcInstance member = L2World.getInstance().getPlayer(charid);
 		if (member == null)
+		{
 			return;
+		}
 		
-		final PartyMatchRoom _room = PartyMatchRoomList.getInstance().getPlayerRoom(member);
-		if (_room == null)
+		final PartyMatchRoom room = PartyMatchRoomList.getInstance().getPlayerRoom(member);
+		if (room == null)
+		{
 			return;
+		}
 		
-		if (_room.getOwner() != activeChar)
+		if (room.getOwner() != activeChar)
+		{
 			return;
+		}
 		
 		if (activeChar.isInParty() && member.isInParty() && activeChar.getParty().getPartyLeaderOID() == member.getParty().getPartyLeaderOID())
+		{
 			activeChar.sendPacket(new SystemMessage(SystemMessageId.CANNOT_DISMISS_PARTY_MEMBER));
+		}
 		else
 		{
-			_room.deleteMember(member);
+			room.deleteMember(member);
 			member.setPartyRoom(0);
 			
 			// Close the PartyRoom window
@@ -75,8 +68,8 @@ public final class RequestOustFromPartyRoom extends L2GameClientPacket
 			PartyMatchWaitingList.getInstance().addPlayer(member);
 			
 			// Send Room list
-			final int _loc = TownManager.getClosestLocation(member);
-			member.sendPacket(new PartyMatchList(member, 0, _loc, member.getLevel()));
+			final int loc = TownManager.getClosestLocation(member);
+			member.sendPacket(new PartyMatchList(member, 0, loc, member.getLevel()));
 			
 			// Clean player's LFP title
 			member.broadcastUserInfo();

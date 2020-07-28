@@ -1,23 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.network.serverpackets;
 
 import com.l2jfrozen.gameserver.model.L2Character;
@@ -28,51 +8,42 @@ import com.l2jfrozen.gameserver.model.L2Character;
  */
 public class ExFishingHpRegen extends L2GameServerPacket
 {
-	private static final String _S__FE_16_EXFISHINGHPREGEN = "[S] FE:16 ExFishingHPRegen";
-	private final L2Character _activeChar;
-	private final int _time, _fishHP, _hpMode, _anim, _goodUse, _penalty, _hpBarColor;
+	private final L2Character activeChar;
+	private final int time, fishHP, hpMode, anim, goodUse, penalty, hpBarColor;
 	
-	public ExFishingHpRegen(final L2Character character, final int time, final int fishHP, final int HPmode, final int GoodUse, final int anim, final int penalty, final int hpBarColor)
+	public ExFishingHpRegen(final L2Character character, final int time, final int fishHP, final int hpMode, final int goodUse, final int anim, final int penalty, final int hpBarColor)
 	{
-		_activeChar = character;
-		_time = time;
-		_fishHP = fishHP;
-		_hpMode = HPmode;
-		_goodUse = GoodUse;
-		_anim = anim;
-		_penalty = penalty;
-		_hpBarColor = hpBarColor;
+		activeChar = character;
+		this.time = time;
+		this.fishHP = fishHP;
+		this.hpMode = hpMode;
+		this.goodUse = goodUse;
+		this.anim = anim;
+		this.penalty = penalty;
+		this.hpBarColor = hpBarColor;
 	}
 	
-	/*
-	 * (non-Javadoc)
-	 * @see com.l2jfrozen.gameserver.serverpackets.ServerBasePacket#writeImpl()
-	 */
 	@Override
 	protected void writeImpl()
 	{
 		writeC(0xfe);
 		writeH(0x16);
 		
-		writeD(_activeChar.getObjectId());
-		writeD(_time);
-		writeD(_fishHP);
-		writeC(_hpMode); // 0 = HP stop, 1 = HP raise
-		writeC(_goodUse); // 0 = none, 1 = success, 2 = failed
-		writeC(_anim); // Anim: 0 = none, 1 = reeling, 2 = pumping
-		writeD(_penalty); // Penalty
-		writeC(_hpBarColor); // 0 = normal hp bar, 1 = purple hp bar
+		writeD(activeChar.getObjectId());
+		writeD(time);
+		writeD(fishHP);
+		writeC(hpMode); // 0 = HP stop, 1 = HP raise
+		writeC(goodUse); // 0 = none, 1 = success, 2 = failed
+		writeC(anim); // Anim: 0 = none, 1 = reeling, 2 = pumping
+		writeD(penalty); // Penalty
+		writeC(hpBarColor); // 0 = normal hp bar, 1 = purple hp bar
 		
 	}
 	
-	/*
-	 * (non-Javadoc)
-	 * @see com.l2jfrozen.gameserver.BasePacket#getType()
-	 */
 	@Override
 	public String getType()
 	{
-		return _S__FE_16_EXFISHINGHPREGEN;
+		return "[S] FE:16 ExFishingHPRegen";
 	}
 	
 }

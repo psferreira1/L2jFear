@@ -1,23 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.network.serverpackets;
 
 import org.apache.log4j.Logger;
@@ -25,15 +5,106 @@ import org.apache.log4j.Logger;
 import com.l2jfrozen.Config;
 import com.l2jfrozen.gameserver.cache.HtmCache;
 import com.l2jfrozen.gameserver.model.actor.instance.L2PcInstance;
-import com.l2jfrozen.gameserver.network.clientpackets.RequestBypassToServer;
+import com.l2jfrozen.gameserver.network.L2GameClient;
 
 /**
  * The HTML parser in the client knowns these standard and non-standard tags and attributes<br>
- * <li>VOLUMN<br> <li>UNKNOWN<br> <li>UL<br> <li>U<br> <li>TT<br> <li>TR<br> <li>TITLE<br> <li>TEXTCODE<br> <li>TEXTAREA <br> <li>TD<br> <li>TABLE<br> <li>SUP<br> <li>SUB<br> <li>STRIKE<br> <li>SPIN<br> <li>SELECT<br> <li>RIGHT<br> <li>PRE<br> <li>P<br> <li>OPTION<br> <li>OL<br> <li>MULTIEDIT<br>
- * <li>LI<br> <li>LEFT<br> <li>INPUT<br> <li>IMG<br> <li>I <br> <li>HTML<br> <li>H7<br> <li>H6<br> <li>H5<br> <li>H4<br> <li>H3<br> <li>H2<br> <li>H1<br> <li>FONT<br> <li>EXTEND<br> <li>EDIT<br> <li>COMMENT<br> <li>COMBOBOX<br> <li>CENTER<br> <li>BUTTON<br> <li>BR<br> <li>BODY<br> <li>BAR<br> <li>
- * ADDRESS<br> <li>A<br> <li>SEL<br> <li>LIST<br> <li>VAR<br> <li>FORE<br> <li>READONL<br> <li>ROWS<br> <li>VALIGN<br> <li>FIXWIDTH<br> <li>BORDERCOLORLI<br> <li>BORDERCOLORDA<br> <li>BORDERCOLOR<br> <li>BORDER<br> <li>BGCOLOR<br> <li>BACKGROUND<br> <li>ALIGN<br> <li>VALU<br> <li>READONLY<br> <li>
- * MULTIPLE<br> <li>SELECTED<br> <li>TYP <br> <li>TYPE<br> <li>MAXLENGTH<br> <li>CHECKED<br> <li>SRC<br> <li>Y<br> <li>X<br> <li>QUERYDELAY<br> <li>NOSCROLLBAR<br> <li>IMGSRC<br> <li>B<br> <li>FG<br> <li>SIZE<br> <li>FACE<br> <li>COLOR<br> <li>DEFFON<br> <li>DEFFIXEDFONT<br> <li>WIDTH<br> <li>VALUE
- * <br> <li>TOOLTIP<br> <li>NAME<br> <li>MIN<br> <li>MAX<br> <li>HEIGHT<br> <li>DISABLED<br> <li>ALIGN<br> <li>MSG<br> <li>LINK<br> <li>HREF<br> <li>ACTION<br>
+ * <li>VOLUMN<br>
+ * <li>UNKNOWN<br>
+ * <li>UL<br>
+ * <li>U<br>
+ * <li>TT<br>
+ * <li>TR<br>
+ * <li>TITLE<br>
+ * <li>TEXTCODE<br>
+ * <li>TEXTAREA <br>
+ * <li>TD<br>
+ * <li>TABLE<br>
+ * <li>SUP<br>
+ * <li>SUB<br>
+ * <li>STRIKE<br>
+ * <li>SPIN<br>
+ * <li>SELECT<br>
+ * <li>RIGHT<br>
+ * <li>PRE<br>
+ * <li>P<br>
+ * <li>OPTION<br>
+ * <li>OL<br>
+ * <li>MULTIEDIT<br>
+ * <li>LI<br>
+ * <li>LEFT<br>
+ * <li>INPUT<br>
+ * <li>IMG<br>
+ * <li>I <br>
+ * <li>HTML<br>
+ * <li>H7<br>
+ * <li>H6<br>
+ * <li>H5<br>
+ * <li>H4<br>
+ * <li>H3<br>
+ * <li>H2<br>
+ * <li>H1<br>
+ * <li>FONT<br>
+ * <li>EXTEND<br>
+ * <li>EDIT<br>
+ * <li>COMMENT<br>
+ * <li>COMBOBOX<br>
+ * <li>CENTER<br>
+ * <li>BUTTON<br>
+ * <li>BR<br>
+ * <li>BODY<br>
+ * <li>BAR<br>
+ * <li>ADDRESS<br>
+ * <li>A<br>
+ * <li>SEL<br>
+ * <li>LIST<br>
+ * <li>VAR<br>
+ * <li>FORE<br>
+ * <li>READONL<br>
+ * <li>ROWS<br>
+ * <li>VALIGN<br>
+ * <li>FIXWIDTH<br>
+ * <li>BORDERCOLORLI<br>
+ * <li>BORDERCOLORDA<br>
+ * <li>BORDERCOLOR<br>
+ * <li>BORDER<br>
+ * <li>BGCOLOR<br>
+ * <li>BACKGROUND<br>
+ * <li>ALIGN<br>
+ * <li>VALU<br>
+ * <li>READONLY<br>
+ * <li>MULTIPLE<br>
+ * <li>SELECTED<br>
+ * <li>TYP <br>
+ * <li>TYPE<br>
+ * <li>MAXLENGTH<br>
+ * <li>CHECKED<br>
+ * <li>SRC<br>
+ * <li>Y<br>
+ * <li>X<br>
+ * <li>QUERYDELAY<br>
+ * <li>NOSCROLLBAR<br>
+ * <li>IMGSRC<br>
+ * <li>B<br>
+ * <li>FG<br>
+ * <li>SIZE<br>
+ * <li>FACE<br>
+ * <li>COLOR<br>
+ * <li>DEFFON<br>
+ * <li>DEFFIXEDFONT<br>
+ * <li>WIDTH<br>
+ * <li>VALUE <br>
+ * <li>TOOLTIP<br>
+ * <li>NAME<br>
+ * <li>MIN<br>
+ * <li>MAX<br>
+ * <li>HEIGHT<br>
+ * <li>DISABLED<br>
+ * <li>ALIGN<br>
+ * <li>MSG<br>
+ * <li>LINK<br>
+ * <li>HREF<br>
+ * <li>ACTION<br>
  * .
  * @version $Revision: 1.3.2.1.2.3 $ $Date: 2005/03/27 15:29:57 $
  */
@@ -42,29 +113,15 @@ public class NpcHtmlMessage extends L2GameServerPacket
 	// d S
 	// d is usually 0, S is the html text starting with <html> and ending with </html>
 	//
-	/** The Constant _S__1B_NPCHTMLMESSAGE. */
-	private static final String _S__1B_NPCHTMLMESSAGE = "[S] 0f NpcHtmlMessage";
+	private static final Logger LOGGER = Logger.getLogger(NpcHtmlMessage.class);
+	private final int npcObjId;
+	private String html;
+	private final boolean validate = true;
+	private String filePath;
 	
-	/** The LOGGER. */
-	private static Logger LOGGER = Logger.getLogger(RequestBypassToServer.class);
-	
-	/** The _npc obj id. */
-	private final int _npcObjId;
-	
-	/** The _html. */
-	private String _html;
-	
-	/** The _validate. */
-	private final boolean _validate = true;
-	
-	/**
-	 * Instantiates a new npc html message.
-	 * @param npcObjId the npc obj id
-	 * @param text the text
-	 */
 	public NpcHtmlMessage(final int npcObjId, final String text)
 	{
-		_npcObjId = npcObjId;
+		this.npcObjId = npcObjId;
 		setHtml(text);
 	}
 	
@@ -74,17 +131,13 @@ public class NpcHtmlMessage extends L2GameServerPacket
 	 */
 	public NpcHtmlMessage(final int npcObjId)
 	{
-		_npcObjId = npcObjId;
+		this.npcObjId = npcObjId;
 	}
 	
-	/*
-	 * (non-Javadoc)
-	 * @see com.l2jfrozen.gameserver.network.serverpackets.L2GameServerPacket#runImpl()
-	 */
 	@Override
 	public void runImpl()
 	{
-		if (Config.BYPASS_VALIDATION && _validate)
+		if (Config.BYPASS_VALIDATION && validate)
 		{
 			buildBypassCache(getClient().getActiveChar());
 			buildLinksCache(getClient().getActiveChar());
@@ -95,33 +148,34 @@ public class NpcHtmlMessage extends L2GameServerPacket
 	 * Sets the html.
 	 * @param text the new html
 	 */
-	public void setHtml(final String text)
+	public void setHtml(String text)
 	{
 		if (text == null)
 		{
 			LOGGER.warn("Html is null! this will crash the client!");
-			_html = "<html><body></body></html>";
+			html = "<html><body></body></html>";
 			return;
 		}
 		
 		if (text.length() > 8192)
 		{
 			LOGGER.warn("Html is too long! this will crash the client!");
-			_html = "<html><body>Html was too long,<br>Try to use DB for this action</body></html>";
+			html = "<html><body>Html was too long,<br>Try to use DB for this action</body></html>";
 			return;
 		}
 		
-		_html = text; // html code must not exceed 8192 bytes
+		html = text; // html code must not exceed 8192 bytes
 	}
 	
 	/**
 	 * Sets the file.
-	 * @param path the path
-	 * @return true, if successful
+	 * @param  path the path
+	 * @return      true, if successful
 	 */
 	public boolean setFile(final String path)
 	{
 		final String content = HtmCache.getInstance().getHtm(path);
+		filePath = path;
 		
 		if (content == null)
 		{
@@ -137,11 +191,11 @@ public class NpcHtmlMessage extends L2GameServerPacket
 	/**
 	 * Replace.
 	 * @param pattern the pattern
-	 * @param value the value
+	 * @param value   the value
 	 */
 	public void replace(final String pattern, final String value)
 	{
-		_html = _html.replaceAll(pattern, value);
+		html = html.replaceAll(pattern, value);
 	}
 	
 	public void replace(final String pattern, final boolean val)
@@ -171,31 +225,40 @@ public class NpcHtmlMessage extends L2GameServerPacket
 	private final void buildBypassCache(final L2PcInstance activeChar)
 	{
 		if (activeChar == null)
+		{
 			return;
+		}
 		
 		activeChar.clearBypass();
-		final int len = _html.length();
-		for (int i = 0; i < len; i++)
+		for (int i = 0; i < html.length(); i++)
 		{
-			int start = _html.indexOf("bypass -h", i);
-			final int finish = _html.indexOf("\"", start);
+			int start = html.indexOf("\"bypass ", i);
+			int finish = html.indexOf("\"", start + 1);
 			
 			if (start < 0 || finish < 0)
 			{
 				break;
 			}
 			
-			start += 10;
-			i = start;
-			final int finish2 = _html.indexOf("$", start);
-			if (finish2 < finish && finish2 > 0)
+			if (html.substring(start + 8, start + 10).equals("-h"))
 			{
-				activeChar.addBypass2(_html.substring(start, finish2));
+				start += 11;
 			}
 			else
 			{
-				activeChar.addBypass(_html.substring(start, finish));
-				// LOGGER.error("["+_html.substring(start, finish)+"]");
+				start += 8;
+			}
+			
+			i = finish;
+			int finish2 = html.indexOf("$", start);
+			
+			if (finish2 < finish && finish2 > 0)
+			{
+				activeChar.addBypass2(html.substring(start, finish2).trim());
+			}
+			else
+			{
+				activeChar.addBypass(html.substring(start, finish).trim());
 			}
 		}
 	}
@@ -207,45 +270,50 @@ public class NpcHtmlMessage extends L2GameServerPacket
 	private final void buildLinksCache(final L2PcInstance activeChar)
 	{
 		if (activeChar == null)
+		{
 			return;
+		}
 		
 		activeChar.clearLinks();
-		final int len = _html.length();
+		final int len = html.length();
 		for (int i = 0; i < len; i++)
 		{
-			final int start = _html.indexOf("link", i);
-			final int finish = _html.indexOf("\"", start);
+			final int start = html.indexOf("link", i);
+			final int finish = html.indexOf("\"", start);
 			
 			if (start < 0 || finish < 0)
+			{
 				break;
+			}
 			
 			i = start;
-			activeChar.addLink(_html.substring(start + 5, finish).trim());
+			activeChar.addLink(html.substring(start + 5, finish).trim());
 		}
 	}
 	
-	/*
-	 * (non-Javadoc)
-	 * @see com.l2jfrozen.gameserver.network.serverpackets.L2GameServerPacket#writeImpl()
-	 */
+	public void processHtml(L2GameClient paramGameClient)
+	{
+		L2PcInstance localPlayer = paramGameClient.getActiveChar();
+		if (filePath != null)
+		{
+			if (localPlayer != null)
+			{
+				if (localPlayer.isGM())
+				{
+					localPlayer.sendMessage("HTML: " + filePath.replaceAll("data/html/", ""));
+				}
+			}
+		}
+	}
+	
 	@Override
 	protected final void writeImpl()
 	{
 		writeC(0x0f);
 		
-		writeD(_npcObjId);
-		writeS(_html);
+		writeD(npcObjId);
+		writeS(html);
 		writeD(0x00);
-	}
-	
-	/*
-	 * (non-Javadoc)
-	 * @see com.l2jfrozen.gameserver.serverpackets.ServerBasePacket#getType()
-	 */
-	@Override
-	public String getType()
-	{
-		return _S__1B_NPCHTMLMESSAGE;
 	}
 	
 	/**
@@ -254,7 +322,12 @@ public class NpcHtmlMessage extends L2GameServerPacket
 	 */
 	public String getContent()
 	{
-		return _html;
+		return html;
 	}
 	
+	@Override
+	public String getType()
+	{
+		return "[S] 0f NpcHtmlMessage";
+	}
 }

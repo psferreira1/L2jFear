@@ -1,23 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.scripting;
 
 import java.io.BufferedReader;
@@ -29,6 +9,7 @@ import java.io.InputStreamReader;
 import java.io.InvalidClassException;
 import java.io.LineNumberReader;
 import java.io.ObjectInputStream;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -41,8 +22,6 @@ import javax.script.ScriptEngineFactory;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 import javax.script.SimpleScriptContext;
-
-import javolution.util.FastMap;
 
 import org.apache.log4j.Logger;
 
@@ -62,16 +41,16 @@ public final class L2ScriptEngineManager
 	
 	public static L2ScriptEngineManager getInstance()
 	{
-		return SingletonHolder._instance;
+		return SingletonHolder.instance;
 	}
 	
-	private final Map<String, ScriptEngine> _nameEngines = new FastMap<>();
-	private final Map<String, ScriptEngine> _extEngines = new FastMap<>();
-	private final List<ScriptManager<?>> _scriptManagers = new LinkedList<>();
+	private final Map<String, ScriptEngine> nameEngines = new HashMap<>();
+	private final Map<String, ScriptEngine> extEngines = new HashMap<>();
+	private final List<ScriptManager<?>> scriptManagers = new LinkedList<>();
 	
-	private final CompiledScriptCache _cache;
+	private final CompiledScriptCache cache;
 	
-	private File _currentLoadingScript;
+	private File currentLoadingScript;
 	
 	private L2ScriptEngineManager()
 	{
@@ -79,11 +58,11 @@ public final class L2ScriptEngineManager
 		final List<ScriptEngineFactory> factories = scriptEngineManager.getEngineFactories();
 		if (Config.SCRIPT_CACHE)
 		{
-			_cache = loadCompiledScriptCache();
+			cache = loadCompiledScriptCache();
 		}
 		else
 		{
-			_cache = null;
+			cache = null;
 		}
 		ThreadPoolManager.getInstance().scheduleGeneralAtFixedRate(new CleaneCache(), 43200000, 43200000);
 		LOGGER.info("Initializing Script Engine Manager");
@@ -96,7 +75,7 @@ public final class L2ScriptEngineManager
 				boolean reg = false;
 				for (final String name : factory.getNames())
 				{
-					final ScriptEngine existentEngine = _nameEngines.get(name);
+					final ScriptEngine existentEngine = nameEngines.get(name);
 					
 					if (existentEngine != null)
 					{
@@ -110,7 +89,7 @@ public final class L2ScriptEngineManager
 					}
 					
 					reg = true;
-					_nameEngines.put(name, engine);
+					nameEngines.put(name, engine);
 				}
 				
 				if (reg)
@@ -122,7 +101,7 @@ public final class L2ScriptEngineManager
 				{
 					if (!ext.equals("java") || factory.getLanguageName().equals("java"))
 					{
-						_extEngines.put(ext, engine);
+						extEngines.put(ext, engine);
 					}
 				}
 			}
@@ -153,12 +132,12 @@ public final class L2ScriptEngineManager
 	
 	private ScriptEngine getEngineByName(final String name)
 	{
-		return _nameEngines.get(name);
+		return nameEngines.get(name);
 	}
 	
 	private ScriptEngine getEngineByExtension(final String ext)
 	{
-		return _extEngines.get(ext);
+		return extEngines.get(ext);
 	}
 	
 	public void executeScriptsList(final File list) throws IllegalArgumentException
@@ -214,7 +193,9 @@ public final class L2ScriptEngineManager
 							catch (final ScriptException e)
 							{
 								if (Config.ENABLE_ALL_EXCEPTIONS)
+								{
 									e.printStackTrace();
+								}
 								
 								reportScriptFileError(file, e);
 							}
@@ -235,6 +216,7 @@ public final class L2ScriptEngineManager
 			finally
 			{
 				if (lnr != null)
+				{
 					try
 					{
 						lnr.close();
@@ -243,8 +225,10 @@ public final class L2ScriptEngineManager
 					{
 						e1.printStackTrace();
 					}
+				}
 				
 				if (buff != null)
+				{
 					try
 					{
 						buff.close();
@@ -253,8 +237,10 @@ public final class L2ScriptEngineManager
 					{
 						e1.printStackTrace();
 					}
+				}
 				
 				if (reader != null)
+				{
 					try
 					{
 						reader.close();
@@ -263,12 +249,15 @@ public final class L2ScriptEngineManager
 					{
 						e1.printStackTrace();
 					}
+				}
 				
 			}
 			
 		}
 		else
+		{
 			throw new IllegalArgumentException("Argument must be an file containing a list of scripts to be loaded");
+		}
 	}
 	
 	public void executeAllScriptsInDirectory(final File dir)
@@ -315,7 +304,9 @@ public final class L2ScriptEngineManager
 					catch (final ScriptException e)
 					{
 						if (Config.ENABLE_ALL_EXCEPTIONS)
+						{
 							e.printStackTrace();
+						}
 						
 						reportScriptFileError(file, e);
 						// e.printStackTrace();
@@ -324,12 +315,14 @@ public final class L2ScriptEngineManager
 			}
 		}
 		else
+		{
 			throw new IllegalArgumentException("The argument directory either doesnt exists or is not an directory.");
+		}
 	}
 	
 	public CompiledScriptCache getCompiledScriptCache()
 	{
-		return _cache;
+		return cache;
 	}
 	
 	public CompiledScriptCache loadCompiledScriptCache()
@@ -352,24 +345,31 @@ public final class L2ScriptEngineManager
 				catch (final InvalidClassException e)
 				{
 					if (Config.ENABLE_ALL_EXCEPTIONS)
+					{
 						e.printStackTrace();
+					}
 					LOGGER.error("Failed loading Compiled Scripts Cache, invalid class (Possibly outdated).", e);
 				}
 				catch (final IOException e)
 				{
 					if (Config.ENABLE_ALL_EXCEPTIONS)
+					{
 						e.printStackTrace();
+					}
 					LOGGER.error("Failed loading Compiled Scripts Cache from file.", e);
 				}
 				catch (final ClassNotFoundException e)
 				{
 					if (Config.ENABLE_ALL_EXCEPTIONS)
+					{
 						e.printStackTrace();
+					}
 					LOGGER.error("Failed loading Compiled Scripts Cache, class not found.", e);
 				}
 				finally
 				{
 					if (ois != null)
+					{
 						try
 						{
 							ois.close();
@@ -378,7 +378,9 @@ public final class L2ScriptEngineManager
 						{
 							e.printStackTrace();
 						}
+					}
 					if (fis != null)
+					{
 						try
 						{
 							fis.close();
@@ -387,6 +389,7 @@ public final class L2ScriptEngineManager
 						{
 							e.printStackTrace();
 						}
+					}
 				}
 				
 			}
@@ -420,11 +423,15 @@ public final class L2ScriptEngineManager
 			extension = name.substring(lastIndex + 1);
 		}
 		else
+		{
 			throw new ScriptException("Script file (" + name + ") doesnt has an extension that identifies the ScriptEngine to be used.");
+		}
 		
 		final ScriptEngine engine = getEngineByExtension(extension);
 		if (engine == null)
+		{
 			throw new ScriptException("No engine registered for extension (" + extension + ")");
+		}
 		executeScript(engine, file);
 	}
 	
@@ -432,7 +439,9 @@ public final class L2ScriptEngineManager
 	{
 		final ScriptEngine engine = getEngineByName(engineName);
 		if (engine == null)
+		{
 			throw new ScriptException("No engine registered with name (" + engineName + ")");
+		}
 		executeScript(engine, file);
 	}
 	
@@ -480,7 +489,7 @@ public final class L2ScriptEngineManager
 					engine.setContext(context);
 					if (Config.SCRIPT_CACHE)
 					{
-						final CompiledScript cs = _cache.loadCompiledScript(engine, file);
+						final CompiledScript cs = cache.loadCompiledScript(engine, file);
 						cs.eval(context);
 					}
 					else
@@ -529,6 +538,7 @@ public final class L2ScriptEngineManager
 		finally
 		{
 			if (lnr != null)
+			{
 				try
 				{
 					lnr.close();
@@ -537,8 +547,10 @@ public final class L2ScriptEngineManager
 				{
 					e1.printStackTrace();
 				}
+			}
 			
 			if (buff != null)
+			{
 				try
 				{
 					buff.close();
@@ -547,8 +559,10 @@ public final class L2ScriptEngineManager
 				{
 					e1.printStackTrace();
 				}
+			}
 			
 			if (reader != null)
+			{
 				try
 				{
 					reader.close();
@@ -557,6 +571,7 @@ public final class L2ScriptEngineManager
 				{
 					e1.printStackTrace();
 				}
+			}
 			
 		}
 		
@@ -583,7 +598,9 @@ public final class L2ScriptEngineManager
 	{
 		final ScriptEngine engine = getEngineByName(engineName);
 		if (engine == null)
+		{
 			throw new IllegalStateException("No engine registered with name (" + engineName + ")");
+		}
 		return getScriptContext(engine);
 	}
 	
@@ -607,7 +624,9 @@ public final class L2ScriptEngineManager
 	{
 		final ScriptEngine engine = getEngineByName(engineName);
 		if (engine == null)
+		{
 			throw new ScriptException("No engine registered with name (" + engineName + ")");
+		}
 		return eval(engine, script, context);
 	}
 	
@@ -645,6 +664,7 @@ public final class L2ScriptEngineManager
 			finally
 			{
 				if (fos != null)
+				{
 					try
 					{
 						fos.close();
@@ -653,6 +673,7 @@ public final class L2ScriptEngineManager
 					{
 						e1.printStackTrace();
 					}
+				}
 			}
 		}
 		else
@@ -663,17 +684,17 @@ public final class L2ScriptEngineManager
 	
 	public void registerScriptManager(final ScriptManager<?> manager)
 	{
-		_scriptManagers.add(manager);
+		scriptManagers.add(manager);
 	}
 	
 	public void removeScriptManager(final ScriptManager<?> manager)
 	{
-		_scriptManagers.remove(manager);
+		scriptManagers.remove(manager);
 	}
 	
 	public List<ScriptManager<?>> getScriptManagers()
 	{
-		return _scriptManagers;
+		return scriptManagers;
 		
 	}
 	
@@ -682,7 +703,7 @@ public final class L2ScriptEngineManager
 	 */
 	protected void setCurrentLoadingScript(final File currentLoadingScript)
 	{
-		_currentLoadingScript = currentLoadingScript;
+		this.currentLoadingScript = currentLoadingScript;
 	}
 	
 	/**
@@ -690,12 +711,12 @@ public final class L2ScriptEngineManager
 	 */
 	protected File getCurrentLoadScript()
 	{
-		return _currentLoadingScript;
+		return currentLoadingScript;
 	}
 	
 	@SuppressWarnings("synthetic-access")
 	private static class SingletonHolder
 	{
-		protected static final L2ScriptEngineManager _instance = new L2ScriptEngineManager();
+		protected static final L2ScriptEngineManager instance = new L2ScriptEngineManager();
 	}
 }

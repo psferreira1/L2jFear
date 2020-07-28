@@ -1,22 +1,3 @@
-/* L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.model.actor.instance;
 
 import java.util.concurrent.ScheduledFuture;
@@ -36,18 +17,17 @@ import com.l2jfrozen.gameserver.thread.ThreadPoolManager;
  */
 public class L2ProtectorInstance extends L2NpcInstance
 {
-	private ScheduledFuture<?> _aiTask;
+	private ScheduledFuture<?> aiTask;
 	
 	private class ProtectorAI implements Runnable
 	{
-		private final L2ProtectorInstance _caster;
+		private final L2ProtectorInstance caster;
 		
 		protected ProtectorAI(final L2ProtectorInstance caster)
 		{
-			_caster = caster;
+			this.caster = caster;
 		}
 		
-		@SuppressWarnings("synthetic-access")
 		@Override
 		public void run()
 		{
@@ -64,7 +44,9 @@ public class L2ProtectorInstance extends L2NpcInstance
 				final L2Summon activePet = player.getPet();
 				
 				if (activePet == null)
+				{
 					continue;
+				}
 				
 				if (activePet.getKarma() > 0 && Config.PROTECTOR_PLAYER_PK || activePet.getPvpFlag() != 0 && Config.PROTECTOR_PLAYER_PVP)
 				{
@@ -78,15 +60,17 @@ public class L2ProtectorInstance extends L2NpcInstance
 		private boolean handleCast(final L2PcInstance player, final int skillId, final int skillLevel)
 		{
 			if (player.isGM() || player.isDead() || !player.isVisible() || !isInsideRadius(player, Config.PROTECTOR_RADIUS_ACTION, false, false))
+			{
 				return false;
+			}
 			
 			L2Skill skill = SkillTable.getInstance().getInfo(skillId, skillLevel);
 			
 			if (player.getFirstEffect(skill) == null)
 			{
-				final int objId = _caster.getObjectId();
-				skill.getEffects(_caster, player, false, false, false);
-				broadcastPacket(new MagicSkillUser(_caster, player, skillId, skillLevel, Config.PROTECTOR_SKILLTIME, 0));
+				final int objId = caster.getObjectId();
+				skill.getEffects(caster, player, false, false, false);
+				broadcastPacket(new MagicSkillUser(caster, player, skillId, skillLevel, Config.PROTECTOR_SKILLTIME, 0));
 				broadcastPacket(new CreatureSay(objId, 0, String.valueOf(getName()), Config.PROTECTOR_MESSAGE));
 				
 				skill = null;
@@ -100,14 +84,16 @@ public class L2ProtectorInstance extends L2NpcInstance
 		private boolean handleCastonPet(final L2Summon player, final int skillId, final int skillLevel)
 		{
 			if (player.isDead() || !player.isVisible() || !isInsideRadius(player, Config.PROTECTOR_RADIUS_ACTION, false, false))
+			{
 				return false;
+			}
 			
 			L2Skill skill = SkillTable.getInstance().getInfo(skillId, skillLevel);
 			if (player.getFirstEffect(skill) == null)
 			{
-				final int objId = _caster.getObjectId();
-				skill.getEffects(_caster, player, false, false, false);
-				broadcastPacket(new MagicSkillUser(_caster, player, skillId, skillLevel, Config.PROTECTOR_SKILLTIME, 0));
+				final int objId = caster.getObjectId();
+				skill.getEffects(caster, player, false, false, false);
+				broadcastPacket(new MagicSkillUser(caster, player, skillId, skillLevel, Config.PROTECTOR_SKILLTIME, 0));
 				broadcastPacket(new CreatureSay(objId, 0, String.valueOf(getName()), Config.PROTECTOR_MESSAGE));
 				
 				skill = null;
@@ -122,21 +108,21 @@ public class L2ProtectorInstance extends L2NpcInstance
 	{
 		super(objectId, template);
 		
-		if (_aiTask != null)
+		if (aiTask != null)
 		{
-			_aiTask.cancel(true);
+			aiTask.cancel(true);
 		}
 		
-		_aiTask = ThreadPoolManager.getInstance().scheduleAiAtFixedRate(new ProtectorAI(this), 3000, 3000);
+		aiTask = ThreadPoolManager.getInstance().scheduleAiAtFixedRate(new ProtectorAI(this), 3000, 3000);
 	}
 	
 	@Override
 	public void deleteMe()
 	{
-		if (_aiTask != null)
+		if (aiTask != null)
 		{
-			_aiTask.cancel(true);
-			_aiTask = null;
+			aiTask.cancel(true);
+			aiTask = null;
 		}
 		
 		super.deleteMe();

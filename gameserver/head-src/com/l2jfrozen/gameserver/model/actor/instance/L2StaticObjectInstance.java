@@ -1,26 +1,3 @@
-/*
- * $Header: /cvsroot/l2j/L2_Gameserver/java/net/sf/l2j/gameserver/model/L2StaticObjectInstance.java,v 1.3.2.2.2.2 2005/02/04 13:05:27 maximas Exp $
- *
- *
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.model.actor.instance;
 
 import org.apache.log4j.Logger;
@@ -36,31 +13,19 @@ import com.l2jfrozen.gameserver.network.serverpackets.NpcHtmlMessage;
 import com.l2jfrozen.gameserver.network.serverpackets.ShowTownMap;
 
 /**
- * GODSON ROX!.
+ * @author GODSON ROX!.
  */
 public class L2StaticObjectInstance extends L2Object
 {
-	
-	/** The LOGGER. */
 	private static Logger LOGGER = Logger.getLogger(L2StaticObjectInstance.class);
 	
 	/** The interaction distance of the L2StaticObjectInstance. */
 	public static final int INTERACTION_DISTANCE = 150;
-	
-	/** The _static object id. */
-	private int _staticObjectId;
-	
-	/** The _type. */
-	private int _type = -1; // 0 - map signs, 1 - throne , 2 - arena signs
-	
-	/** The _x. */
-	private int _x;
-	
-	/** The _y. */
-	private int _y;
-	
-	/** The _texture. */
-	private String _texture;
+	private int staticObjectId;
+	private int type = -1; // 0 - map signs, 1 - throne , 2 - arena signs
+	private int x;
+	private int y;
+	private String texture;
 	
 	/**
 	 * Gets the static object id.
@@ -68,7 +33,7 @@ public class L2StaticObjectInstance extends L2Object
 	 */
 	public int getStaticObjectId()
 	{
-		return _staticObjectId;
+		return staticObjectId;
 	}
 	
 	/**
@@ -77,7 +42,7 @@ public class L2StaticObjectInstance extends L2Object
 	 */
 	public void setStaticObjectId(final int StaticObjectId)
 	{
-		_staticObjectId = StaticObjectId;
+		staticObjectId = StaticObjectId;
 	}
 	
 	/**
@@ -96,7 +61,7 @@ public class L2StaticObjectInstance extends L2Object
 	 */
 	public int getType()
 	{
-		return _type;
+		return type;
 	}
 	
 	/**
@@ -105,20 +70,20 @@ public class L2StaticObjectInstance extends L2Object
 	 */
 	public void setType(final int type)
 	{
-		_type = type;
+		this.type = type;
 	}
 	
 	/**
 	 * Sets the map.
 	 * @param texture the texture
-	 * @param x the x
-	 * @param y the y
+	 * @param x       the x
+	 * @param y       the y
 	 */
 	public void setMap(final String texture, final int x, final int y)
 	{
-		_texture = "town_map." + texture;
-		_x = x;
-		_y = y;
+		this.texture = "town_map." + texture;
+		this.x = x;
+		this.y = y;
 	}
 	
 	/**
@@ -127,7 +92,7 @@ public class L2StaticObjectInstance extends L2Object
 	 */
 	private int getMapX()
 	{
-		return _x;
+		return x;
 	}
 	
 	/**
@@ -136,7 +101,7 @@ public class L2StaticObjectInstance extends L2Object
 	 */
 	private int getMapY()
 	{
-		return _y;
+		return y;
 	}
 	
 	/**
@@ -146,7 +111,7 @@ public class L2StaticObjectInstance extends L2Object
 	@Override
 	public void onAction(final L2PcInstance player)
 	{
-		if (_type < 0)
+		if (type < 0)
 		{
 			LOGGER.info("L2StaticObjectInstance: StaticObject with invalid type! StaticObjectId: " + getStaticObjectId());
 		}
@@ -174,7 +139,7 @@ public class L2StaticObjectInstance extends L2Object
 			}
 			else
 			{
-				if (_type == 2)
+				if (type == 2)
 				{
 					String filename = "data/html/signboard.htm";
 					String content = HtmCache.getInstance().getHtm(filename);
@@ -195,9 +160,9 @@ public class L2StaticObjectInstance extends L2Object
 					filename = null;
 					content = null;
 				}
-				else if (_type == 0)
+				else if (type == 0)
 				{
-					player.sendPacket(new ShowTownMap(_texture, getMapX(), getMapY()));
+					player.sendPacket(new ShowTownMap(texture, getMapX(), getMapY()));
 				}
 				
 				// Send a Server->Client ActionFailed to the L2PcInstance in order to avoid that the client wait another packet
@@ -206,10 +171,6 @@ public class L2StaticObjectInstance extends L2Object
 		}
 	}
 	
-	/*
-	 * (non-Javadoc)
-	 * @see com.l2jfrozen.gameserver.model.L2Object#isAttackable()
-	 */
 	@Override
 	public boolean isAutoAttackable(final L2Character attacker)
 	{

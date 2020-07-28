@@ -1,29 +1,9 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.handler.itemhandlers;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
-
-import javolution.util.FastMap;
+import java.util.Map;
 
 import org.apache.log4j.Logger;
 
@@ -42,7 +22,6 @@ import com.l2jfrozen.gameserver.model.actor.instance.L2PlayableInstance;
 import com.l2jfrozen.gameserver.model.entity.event.CTF;
 import com.l2jfrozen.gameserver.model.entity.event.DM;
 import com.l2jfrozen.gameserver.model.entity.event.TvT;
-import com.l2jfrozen.gameserver.model.entity.event.VIP;
 import com.l2jfrozen.gameserver.network.SystemMessageId;
 import com.l2jfrozen.gameserver.network.serverpackets.ActionFailed;
 import com.l2jfrozen.gameserver.network.serverpackets.SystemMessage;
@@ -56,40 +35,39 @@ import com.l2jfrozen.gameserver.thread.ThreadPoolManager;
 public class Potions implements IItemHandler
 {
 	protected static final Logger LOGGER = Logger.getLogger(Potions.class);
-	private int _herbstask = 0;
+	private int herbstask = 0;
 	
-	private static FastMap<Integer, PotionsSkills> potions = new FastMap<>();
+	private static Map<Integer, PotionsSkills> potions = new HashMap<>();
 	
 	private static void loadPotions()
 	{
-		
 		for (final PotionsSkills actual_potion : PotionsSkills.values())
 		{
-			
 			potions.put(actual_potion.potion_id, actual_potion);
-			
 		}
 	}
 	
 	public static PotionsSkills get_skills_for_potion(final Integer potion_id)
 	{
-		
 		if (potions.isEmpty())
+		{
 			loadPotions();
+		}
 		
 		return potions.get(potion_id);
-		
 	}
 	
 	public static List<Integer> get_potions_for_skill(final Integer skill_id, final Integer skill_level)
 	{
 		if (potions.isEmpty())
+		{
 			loadPotions();
+		}
 		
 		final List<Integer> output_potions = new ArrayList<>();
 		for (final Integer actual_potion_item : potions.keySet())
 		{
-			FastMap<Integer, Integer> actual_item_skills = null;
+			Map<Integer, Integer> actual_item_skills = null;
 			if (potions.get(actual_potion_item) != null)
 			{
 				actual_item_skills = potions.get(actual_potion_item).skills;
@@ -107,15 +85,15 @@ public class Potions implements IItemHandler
 	/** Task for Herbs */
 	private class HerbTask implements Runnable
 	{
-		private final L2PcInstance _activeChar;
-		private final int _magicId;
-		private final int _level;
+		private final L2PcInstance activeChar;
+		private final int magicId;
+		private final int level;
 		
 		HerbTask(final L2PcInstance activeChar, final int magicId, final int level)
 		{
-			_activeChar = activeChar;
-			_magicId = magicId;
-			_level = level;
+			this.activeChar = activeChar;
+			this.magicId = magicId;
+			this.level = level;
 		}
 		
 		@Override
@@ -123,12 +101,14 @@ public class Potions implements IItemHandler
 		{
 			try
 			{
-				usePotion(_activeChar, _magicId, _level);
+				usePotion(activeChar, magicId, level);
 			}
 			catch (final Throwable t)
 			{
 				if (Config.ENABLE_ALL_EXCEPTIONS)
+				{
 					t.printStackTrace();
+				}
 				
 				LOGGER.warn("", t);
 			}
@@ -226,28 +206,21 @@ public class Potions implements IItemHandler
 			activeChar = (L2PcInstance) playable;
 			
 			// if(activeChar._inEventTvT && TvT._started && !Config.TVT_ALLOW_POTIONS)
-			if (activeChar._inEventTvT && TvT.is_started() && !Config.TVT_ALLOW_POTIONS)
+			if (activeChar.inEventTvT && TvT.isStarted() && !Config.TVT_ALLOW_POTIONS)
 			{
 				activeChar.sendPacket(ActionFailed.STATIC_PACKET);
 				return;
 			}
 			
 			// if(activeChar._inEventDM && DM._started && !Config.DM_ALLOW_POTIONS)
-			if (activeChar._inEventDM && DM.is_started() && !Config.DM_ALLOW_POTIONS)
+			if (activeChar.inEventDM && DM.isStarted() && !Config.DM_ALLOW_POTIONS)
 			{
 				activeChar.sendPacket(ActionFailed.STATIC_PACKET);
 				return;
 			}
 			
 			// if(activeChar._inEventCTF && CTF._started && !Config.CTF_ALLOW_POTIONS)
-			if (activeChar._inEventCTF && CTF.is_started() && !Config.CTF_ALLOW_POTIONS)
-			{
-				activeChar.sendPacket(ActionFailed.STATIC_PACKET);
-				return;
-			}
-			
-			// if(activeChar._inEventVIP && VIP._started)
-			if (activeChar._inEventVIP && VIP._started)
+			if (activeChar.inEventCTF && CTF.isStarted() && !Config.CTF_ALLOW_POTIONS)
 			{
 				activeChar.sendPacket(ActionFailed.STATIC_PACKET);
 				return;
@@ -272,10 +245,12 @@ public class Potions implements IItemHandler
 			final int itemId = item.getItemId();
 			switch (itemId)
 			{
-			// MANA POTIONS
+				// MANA POTIONS
 				case 726: // mana drug, xml: 2003
 					if (!isEffectReplaceable(playable, L2Effect.EffectType.MANA_HEAL_OVER_TIME, itemId))
+					{
 						return;
+					}
 					usePotion(activeChar, 2003, 1);
 					break;
 				case 728: // mana_potion, xml: 2005
@@ -288,12 +263,16 @@ public class Potions implements IItemHandler
 					break;
 				case 725: // healing_drug, xml: 2002
 					if (!isEffectReplaceable(playable, L2Effect.EffectType.HEAL_OVER_TIME, itemId))
+					{
 						return;
+					}
 					usePotion(activeChar, 2002, 1);
 					break;
-				case 727: // _healing_potion, xml: 2032
+				case 727: // healing_potion, xml: 2032
 					if (!isEffectReplaceable(playable, L2Effect.EffectType.HEAL_OVER_TIME, itemId))
+					{
 						return;
+					}
 					usePotion(activeChar, 2032, 1);
 					break;
 				case 733: // endeavor_potion
@@ -308,12 +287,16 @@ public class Potions implements IItemHandler
 				case 1060: // lesser_healing_potion,
 				case 1073: // beginner's potion, xml: 2031
 					if (!isEffectReplaceable(playable, L2Effect.EffectType.HEAL_OVER_TIME, itemId))
+					{
 						return;
+					}
 					usePotion(activeChar, 2031, 1);
 					break;
 				case 1061: // healing_potion, xml: 2032
 					if (!isEffectReplaceable(playable, L2Effect.EffectType.HEAL_OVER_TIME, itemId))
+					{
 						return;
+					}
 					usePotion(activeChar, 2032, 1);
 					break;
 				case 1062: // haste_potion, xml: 2011
@@ -327,7 +310,9 @@ public class Potions implements IItemHandler
 					break;
 				case 1539: // greater_healing_potion, xml: 2037
 					if (!isEffectReplaceable(playable, L2Effect.EffectType.HEAL_OVER_TIME, itemId))
+					{
 						return;
+					}
 					usePotion(activeChar, 2037, 1);
 					break;
 				case 1540: // quick_healing_potion, xml: 2038
@@ -344,7 +329,9 @@ public class Potions implements IItemHandler
 					break;
 				case 5283: // Rice Cake, xml: 2136
 					if (!isEffectReplaceable(playable, L2Effect.EffectType.HEAL_OVER_TIME, itemId))
+					{
 						return;
+					}
 					usePotion(activeChar, 2136, 1);
 					break;
 				case 5591: // CP
@@ -369,7 +356,9 @@ public class Potions implements IItemHandler
 				case 8627:
 					// elixir of Life
 					if (!isEffectReplaceable(activeChar, L2Effect.EffectType.HEAL_OVER_TIME, itemId))
+					{
 						return;
+					}
 					
 					if (itemId == 8622 && activeChar.getExpertiseIndex() == 0 || itemId == 8623 && activeChar.getExpertiseIndex() == 1 || itemId == 8624 && activeChar.getExpertiseIndex() == 2 || itemId == 8625 && activeChar.getExpertiseIndex() == 3 || itemId == 8626 && activeChar.getExpertiseIndex() == 4 || itemId == 8627 && activeChar.getExpertiseIndex() == 5)
 					{
@@ -393,7 +382,9 @@ public class Potions implements IItemHandler
 				case 8633:
 					// elixir of Strength
 					if (!isEffectReplaceable(activeChar, L2Effect.EffectType.HEAL_OVER_TIME, itemId))
+					{
 						return;
+					}
 					
 					if (itemId == 8628 && activeChar.getExpertiseIndex() == 0 || itemId == 8629 && activeChar.getExpertiseIndex() == 1 || itemId == 8630 && activeChar.getExpertiseIndex() == 2 || itemId == 8631 && activeChar.getExpertiseIndex() == 3 || itemId == 8632 && activeChar.getExpertiseIndex() == 4 || itemId == 8633 && activeChar.getExpertiseIndex() == 5)
 					{
@@ -417,7 +408,9 @@ public class Potions implements IItemHandler
 				case 8639:
 					// elixir of cp
 					if (!isEffectReplaceable(activeChar, L2Effect.EffectType.HEAL_OVER_TIME, itemId))
+					{
 						return;
+					}
 					
 					if (itemId == 8634 && activeChar.getExpertiseIndex() == 0 || itemId == 8635 && activeChar.getExpertiseIndex() == 1 || itemId == 8636 && activeChar.getExpertiseIndex() == 2 || itemId == 8637 && activeChar.getExpertiseIndex() == 3 || itemId == 8638 && activeChar.getExpertiseIndex() == 4 || itemId == 8639 && activeChar.getExpertiseIndex() == 5)
 					{
@@ -597,7 +590,7 @@ public class Potions implements IItemHandler
 			final int itemId = item.getItemId();
 			switch (itemId)
 			{
-			// MANA POTIONS
+				// MANA POTIONS
 				case 728: // mana_potion, xml: 2005
 					usePotion(activeChar, 2005, 1);
 					break;
@@ -606,12 +599,16 @@ public class Potions implements IItemHandler
 				case 1060: // lesser_healing_potion,
 				case 1073: // beginner's potion, xml: 2031
 					if (!isEffectReplaceable(playable, L2Effect.EffectType.HEAL_OVER_TIME, itemId))
+					{
 						return;
+					}
 					usePotion(activeChar, 2031, 1);
 					break;
 				case 1061: // healing_potion, xml: 2032
 					if (!isEffectReplaceable(playable, L2Effect.EffectType.HEAL_OVER_TIME, itemId))
+					{
 						return;
+					}
 					usePotion(activeChar, 2032, 1);
 					break;
 				case 1062: // haste_potion, xml: 2011
@@ -619,7 +616,9 @@ public class Potions implements IItemHandler
 					break;
 				case 1539:
 					if (!isEffectReplaceable(playable, L2Effect.EffectType.HEAL_OVER_TIME, itemId))
+					{
 						return;
+					}
 					usePotion(activeChar, 2037, 1);
 					break;
 				case 6035: // Magic Haste Potion, xml: 2169
@@ -632,7 +631,9 @@ public class Potions implements IItemHandler
 			activeChar = null;
 		}
 		else
+		{
 			return;
+		}
 		
 		/*
 		 * if(res) { playable.destroyItem("Consume", item.getObjectId(), 1, null, false); }
@@ -645,7 +646,9 @@ public class Potions implements IItemHandler
 		final L2Effect[] effects = activeChar.getAllEffects();
 		
 		if (effects == null)
+		{
 			return true;
+		}
 		
 		for (final L2Effect e : effects)
 		{
@@ -656,7 +659,9 @@ public class Potions implements IItemHandler
 					// One can reuse pots after 2/3 of their duration is over.
 					// It would be faster to check if its > 10 but that would screw custom pot durations...
 					if (e.getTaskTime() > e.getSkill().getBuffDuration() * 67 / 100000)
+					{
 						return true;
+					}
 					SystemMessage sm = new SystemMessage(SystemMessageId.S1_PREPARED_FOR_REUSE);
 					sm.addItemName(itemId);
 					activeChar.sendPacket(sm);
@@ -677,13 +682,15 @@ public class Potions implements IItemHandler
 			
 			if (activeChar.isCastingNow() && magicId > 2277 && magicId < 2285)
 			{
-				_herbstask += 100;
-				ThreadPoolManager.getInstance().scheduleAi(new HerbTask(activeChar, magicId, level), _herbstask);
+				herbstask += 100;
+				ThreadPoolManager.getInstance().scheduleAi(new HerbTask(activeChar, magicId, level), herbstask);
 			}
 			else
 			{
-				if (magicId > 2277 && magicId < 2285 && _herbstask >= 100)
-					_herbstask -= 100;
+				if (magicId > 2277 && magicId < 2285 && herbstask >= 100)
+				{
+					herbstask -= 100;
+				}
 				final L2Skill skill = SkillTable.getInstance().getInfo(magicId, level);
 				if (skill != null)
 				{
@@ -701,9 +708,13 @@ public class Potions implements IItemHandler
 						else if (skill.getId() == 2166)
 						{
 							if (skill.getLevel() == 2)
+							{
 								activeChar.sendMessage("Greater CP Potion is not available at this time: being prepared for reuse.");
+							}
 							else if (skill.getLevel() == 1)
+							{
 								activeChar.sendMessage("CP Potion is not available at this time: being prepared for reuse.");
+							}
 						}
 						
 						return false;
@@ -718,7 +729,9 @@ public class Potions implements IItemHandler
 					}
 					
 					if (!(activeChar.isSitting() && !skill.isPotion()))
+					{
 						return true;
+					}
 				}
 			}
 		}
@@ -744,7 +757,9 @@ public class Potions implements IItemHandler
 				activeChar.doCast(skill);
 				
 				if (!(!skill.isPotion()))
+				{
 					return true;
+				}
 			}
 		}
 		return false;
@@ -790,7 +805,9 @@ public class Potions implements IItemHandler
 					else
 					{
 						if (Config.DEBUG)
+						{
 							LOGGER.warn("Attention: playable " + playable.getName() + " has not potions " + potion + "!");
+						}
 					}
 				}
 				else if (playable instanceof L2Summon)
@@ -805,7 +822,9 @@ public class Potions implements IItemHandler
 					else
 					{
 						if (Config.DEBUG)
+						{
 							LOGGER.warn("Attention: playable " + playable.getName() + " has not potions " + potion + "!");
+						}
 					}
 				}
 				
@@ -925,26 +944,22 @@ public class Potions implements IItemHandler
 		Primeval_Potion1(8787, 2305, 1);
 		
 		public Integer potion_id;
-		public FastMap<Integer, Integer> skills = new FastMap<>();
+		public Map<Integer, Integer> skills = new HashMap<>();
 		
 		private PotionsSkills(final int potion_item, final int skill_identifier, final int skill_level)
 		{
-			// FastMap<Integer, Integer> skills = new FastMap<Integer, Integer>();
 			skills.put(skill_identifier, skill_level);
-			// potion_id_skills.put(potion_item, skills);
 			potion_id = potion_item;
 		}
 		
 		private PotionsSkills(final int potion_item, final Integer[] skill_identifiers, final Integer[] skill_levels)
 		{
-			// FastMap<Integer, Integer> skills = new FastMap<Integer, Integer>();
 			for (int i = 0; i < skill_identifiers.length; i++)
 			{
 				skills.put(skill_identifiers[i], skill_levels[i]); // each skill of a particular potion
 																	// can have just 1 level, not more
 			}
 			potion_id = potion_item;
-			// potion_id_skills.put(potion_item, skills);
 		}
 	}
 }

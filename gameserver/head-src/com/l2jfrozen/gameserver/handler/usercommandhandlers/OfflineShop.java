@@ -1,23 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 
 package com.l2jfrozen.gameserver.handler.usercommandhandlers;
 
@@ -28,7 +8,6 @@ import com.l2jfrozen.gameserver.model.L2Character;
 import com.l2jfrozen.gameserver.model.L2Party;
 import com.l2jfrozen.gameserver.model.TradeList;
 import com.l2jfrozen.gameserver.model.actor.instance.L2PcInstance;
-import com.l2jfrozen.gameserver.model.entity.olympiad.Olympiad;
 import com.l2jfrozen.gameserver.model.entity.sevensigns.SevenSignsFestival;
 import com.l2jfrozen.gameserver.network.SystemMessageId;
 import com.l2jfrozen.gameserver.network.serverpackets.ActionFailed;
@@ -46,16 +25,13 @@ public class OfflineShop implements IUserCommandHandler
 		114
 	};
 	
-	/*
-	 * (non-Javadoc)
-	 * @see com.l2jfrozen.gameserver.handler.IUserCommandHandler#useUserCommand(int, com.l2jfrozen.gameserver.model.L2PcInstance)
-	 */
-	@SuppressWarnings("null")
 	@Override
 	public synchronized boolean useUserCommand(final int id, final L2PcInstance player)
 	{
 		if (player == null)
+		{
 			return false;
+		}
 		
 		// Message like L2OFF
 		if ((!player.isInStoreMode() && (!player.isInCraftMode())) || !player.isSitting())
@@ -73,7 +49,15 @@ public class OfflineShop implements IUserCommandHandler
 		}
 		
 		final TradeList storeListBuy = player.getBuyList();
-		if (storeListBuy == null && storeListBuy.getItemCount() == 0)
+		
+		if (storeListBuy == null)
+		{
+			player.sendMessage("Your buy list is empty.");
+			player.sendPacket(ActionFailed.STATIC_PACKET);
+			return false;
+		}
+		
+		if (storeListBuy.getItemCount() == 0)
 		{
 			player.sendMessage("Your buy list is empty.");
 			player.sendPacket(ActionFailed.STATIC_PACKET);
@@ -81,7 +65,15 @@ public class OfflineShop implements IUserCommandHandler
 		}
 		
 		final TradeList storeListSell = player.getSellList();
-		if (storeListSell == null && storeListSell.getItemCount() == 0)
+		
+		if (storeListSell == null)
+		{
+			player.sendMessage("Your sell list is empty.");
+			player.sendPacket(ActionFailed.STATIC_PACKET);
+			return false;
+		}
+		
+		if (storeListSell.getItemCount() == 0)
 		{
 			player.sendMessage("Your sell list is empty.");
 			player.sendPacket(ActionFailed.STATIC_PACKET);
@@ -125,7 +117,7 @@ public class OfflineShop implements IUserCommandHandler
 			return false;
 		}
 		
-		if (player.isInOlympiadMode() || Olympiad.getInstance().isRegistered(player))
+		if (player.isInOlympiadMode())
 		{
 			player.sendMessage("You can't Logout in Olympiad mode.");
 			return false;
@@ -143,17 +135,23 @@ public class OfflineShop implements IUserCommandHandler
 			
 			final L2Party playerParty = player.getParty();
 			if (playerParty != null)
+			{
 				player.getParty().broadcastToPartyMembers(SystemMessage.sendString(player.getName() + " has been removed from the upcoming Festival."));
+			}
 		}
 		
 		if (player.isFlying())
+		{
 			player.removeSkill(SkillTable.getInstance().getInfo(4289, 1));
+		}
 		
 		if ((player.isInStoreMode() && Config.OFFLINE_TRADE_ENABLE) || (player.isInCraftMode() && Config.OFFLINE_CRAFT_ENABLE))
 		{
 			// Sleep effect, not official feature but however L2OFF features (like offline trade)
 			if (Config.OFFLINE_SLEEP_EFFECT)
+			{
 				player.startAbnormalEffect(L2Character.ABNORMAL_EFFECT_SLEEP);
+			}
 			
 			player.sendMessage("Your private store has succesfully been flagged as an offline shop and will remain active for ever.");
 			
@@ -164,10 +162,6 @@ public class OfflineShop implements IUserCommandHandler
 		return false;
 	}
 	
-	/*
-	 * (non-Javadoc)
-	 * @see com.l2jfrozen.gameserver.handler.IUserCommandHandler#getUserCommandList()
-	 */
 	@Override
 	public int[] getUserCommandList()
 	{

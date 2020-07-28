@@ -3,24 +3,13 @@ package com.l2jfrozen.netcore;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 import java.util.StringTokenizer;
 
-import javolution.util.FastList;
-
 public class NetcoreConfig
 {
-	
-	// public short MMOCORE_IP_TOS;
-	// public boolean MMOCORE_TCP_NO_DELAY;
-	// public boolean MMOCORE_KEEP_ALIVE;
-	// public int MMOCORE_BACKLOG;
-	// public int MMOCORE_SO_TIMEOUT;
-	// public boolean MMOCORE_SO_REUSEADDR;
-	/*
-	 * public int NETWORK_READ_BUFFER_SIZE; public int NETWORK_WRITE_BUFFER_SIZE; public int NETWORK_HELPER_BUFFER_SIZE; public int NETWORK_HELPER_BUFFER_COUNT;
-	 */
-	
 	public boolean PACKET_HANDLER_DEBUG;
 	
 	/** MMO settings */
@@ -29,9 +18,7 @@ public class NetcoreConfig
 	public int MMO_MAX_READ_PER_PASS = 12; // default 12
 	public int MMO_HELPER_BUFFER_COUNT = 20; // default 20
 	
-	public boolean ENABLE_MMOCORE_EXCEPTIONS = false;
 	public boolean ENABLE_MMOCORE_DEBUG = false;
-	public boolean ENABLE_MMOCORE_DEVELOP = false;
 	
 	/** Client Packets Queue settings */
 	public static boolean ENABLE_CLIENT_FLOOD_PROTECTION;
@@ -53,24 +40,26 @@ public class NetcoreConfig
 	public String PACKET_FLOODING_PUNISHMENT_TYPE;
 	
 	public String PROTECTED_OPCODES;
-	public FastList<Integer> GS_LIST_PROTECTED_OPCODES = new FastList<>();
-	public FastList<Integer> GS_LIST_PROTECTED_OPCODES2 = new FastList<>();
-	public FastList<Integer> LS_LIST_PROTECTED_OPCODES = new FastList<>();
+	public List<Integer> GS_LIST_PROTECTED_OPCODES = new ArrayList<>();
+	public List<Integer> GS_LIST_PROTECTED_OPCODES2 = new ArrayList<>();
+	public List<Integer> LS_LIST_PROTECTED_OPCODES = new ArrayList<>();
 	
 	public String ALLOWED_OFFLINE_OPCODES;
-	public FastList<Integer> LIST_ALLOWED_OFFLINE_OPCODES = new FastList<>();
-	public FastList<Integer> LIST_ALLOWED_OFFLINE_OPCODES2 = new FastList<>();
+	public List<Integer> LIST_ALLOWED_OFFLINE_OPCODES = new ArrayList<>();
+	public List<Integer> LIST_ALLOWED_OFFLINE_OPCODES2 = new ArrayList<>();
 	
 	public boolean DUMP_CLOSE_CONNECTIONS;
 	
 	// ============================================================
-	private static NetcoreConfig _instance;
+	private static NetcoreConfig instance;
 	
 	public static NetcoreConfig getInstance()
 	{
-		if (_instance == null)
-			_instance = new NetcoreConfig();
-		return _instance;
+		if (instance == null)
+		{
+			instance = new NetcoreConfig();
+		}
+		return instance;
 	}
 	
 	private NetcoreConfig()
@@ -84,22 +73,7 @@ public class NetcoreConfig
 			mmoSetting.load(is);
 			is.close();
 			
-			// MMOCORE_BACKLOG = TypeFormat.parseInt(mmoSetting.getProperty("NetworkBackLog", "50"));
-			// MMOCORE_IP_TOS = TypeFormat.parseShort(mmoSetting.getProperty("NetworkIpTOS", "0"));
-			// MMOCORE_TCP_NO_DELAY = TypeFormat.parseBoolean(mmoSetting.getProperty("NetworkTcpNoDelay", "false"));
-			// MMOCORE_KEEP_ALIVE = TypeFormat.parseBoolean(mmoSetting.getProperty("NetworkKeepAlive", "false"));
-			// MMOCORE_SO_TIMEOUT = TypeFormat.parseInt(mmoSetting.getProperty("NetworkSoTimeOut", "0"));
-			// MMOCORE_SO_REUSEADDR = TypeFormat.parseBoolean(mmoSetting.getProperty("NetworkSoReuseAddr", "true"));
-			
-			// Buffer options
-			/*
-			 * NETWORK_READ_BUFFER_SIZE = TypeFormat.parseInt(mmoSetting.getProperty("NetworkReadBufferSize", "64")); NETWORK_WRITE_BUFFER_SIZE = TypeFormat.parseInt(mmoSetting.getProperty("NetworkWriteBufferSize", "64")); NETWORK_HELPER_BUFFER_SIZE =
-			 * TypeFormat.parseInt(mmoSetting.getProperty("NetworkHelperBufferSize", "64")); NETWORK_HELPER_BUFFER_COUNT = TypeFormat.parseInt(mmoSetting.getProperty("NetworkHelperBufferCount", "20"));
-			 */
-			
-			ENABLE_MMOCORE_EXCEPTIONS = Boolean.parseBoolean(mmoSetting.getProperty("EnableMMOCoreExceptions", "False"));
 			ENABLE_MMOCORE_DEBUG = Boolean.parseBoolean(mmoSetting.getProperty("EnableMMOCoreDebug", "False"));
-			ENABLE_MMOCORE_DEVELOP = Boolean.parseBoolean(mmoSetting.getProperty("EnableMMOCoreDevelop", "False"));
 			PACKET_HANDLER_DEBUG = Boolean.parseBoolean(mmoSetting.getProperty("PacketHandlerDebug", "False"));
 			
 			// flooding protection
@@ -124,9 +98,9 @@ public class NetcoreConfig
 			// OPCODES Flood Protector
 			PROTECTED_OPCODES = mmoSetting.getProperty("ListOfProtectedOpCodes");
 			
-			LS_LIST_PROTECTED_OPCODES = new FastList<>();
-			GS_LIST_PROTECTED_OPCODES = new FastList<>();
-			GS_LIST_PROTECTED_OPCODES2 = new FastList<>();
+			LS_LIST_PROTECTED_OPCODES = new ArrayList<>();
+			GS_LIST_PROTECTED_OPCODES = new ArrayList<>();
+			GS_LIST_PROTECTED_OPCODES2 = new ArrayList<>();
 			
 			if (PROTECTED_OPCODES != null && !PROTECTED_OPCODES.equals(""))
 			{
@@ -158,7 +132,7 @@ public class NetcoreConfig
 					
 					if (server.equalsIgnoreCase("g"))
 					{ // gameserver opcode
-					
+						
 						final String opcode1 = token_splitted[1].substring(2);
 						String opcode2 = "";
 						
@@ -180,7 +154,7 @@ public class NetcoreConfig
 					}
 					else if (server.equalsIgnoreCase("l"))
 					{ // login opcode
-					
+						
 						LS_LIST_PROTECTED_OPCODES.add(Integer.parseInt(token_splitted[1].substring(2), 16));
 						
 					}
@@ -192,8 +166,8 @@ public class NetcoreConfig
 			// OPCODES Offline Protection
 			ALLOWED_OFFLINE_OPCODES = mmoSetting.getProperty("ListOfAllowedOfflineOpCodes", "0x03;0x9d;0xd0,0x08;0x13;0x81;");
 			
-			LIST_ALLOWED_OFFLINE_OPCODES = new FastList<>();
-			LIST_ALLOWED_OFFLINE_OPCODES2 = new FastList<>();
+			LIST_ALLOWED_OFFLINE_OPCODES = new ArrayList<>();
+			LIST_ALLOWED_OFFLINE_OPCODES2 = new ArrayList<>();
 			
 			if (ALLOWED_OFFLINE_OPCODES != null && !ALLOWED_OFFLINE_OPCODES.equals(""))
 			{

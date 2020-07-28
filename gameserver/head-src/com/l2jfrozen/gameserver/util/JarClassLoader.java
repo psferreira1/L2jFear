@@ -1,23 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 
 package com.l2jfrozen.gameserver.util;
 
@@ -35,15 +15,15 @@ import com.l2jfrozen.Config;
 /**
  * This is a class loader for the dynamic extensions used by DynamicExtension class.
  * @version $Revision: $ $Date: $
- * @author galun
+ * @author  galun
  */
 public class JarClassLoader extends ClassLoader
 {
-	private final HashSet<String> _jars = new HashSet<>();
+	private final HashSet<String> jars = new HashSet<>();
 	
 	public void addJarFile(final String filename)
 	{
-		_jars.add(filename);
+		jars.add(filename);
 	}
 	
 	@Override
@@ -57,7 +37,9 @@ public class JarClassLoader extends ClassLoader
 		catch (final Exception e)
 		{
 			if (Config.ENABLE_ALL_EXCEPTIONS)
+			{
 				e.printStackTrace();
+			}
 			
 			throw new ClassNotFoundException(name);
 		}
@@ -67,7 +49,7 @@ public class JarClassLoader extends ClassLoader
 	{
 		byte[] classData = null;
 		
-		for (final String jarFile : _jars)
+		for (final String jarFile : jars)
 		{
 			boolean breakable = false;
 			final File file = new File(jarFile);
@@ -107,6 +89,7 @@ public class JarClassLoader extends ClassLoader
 			{
 				
 				if (zipStream != null)
+				{
 					try
 					{
 						zipStream.close();
@@ -115,6 +98,7 @@ public class JarClassLoader extends ClassLoader
 					{
 						e1.printStackTrace();
 					}
+				}
 				
 				if (is != null)
 				{
@@ -131,12 +115,16 @@ public class JarClassLoader extends ClassLoader
 			}
 			
 			if (breakable)
+			{
 				break;
+			}
 			
 		}
 		
 		if (classData == null)
-			throw new IOException("class not found in " + _jars);
+		{
+			throw new IOException("class not found in " + jars);
+		}
 		
 		return classData;
 	}

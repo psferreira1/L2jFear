@@ -1,22 +1,3 @@
-/* L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.handler.itemhandlers;
 
 import com.l2jfrozen.gameserver.datatables.SkillTable;
@@ -61,18 +42,22 @@ public class Scrolls implements IItemHandler
 		5805,
 		5806,
 		5807, // lucky charm
+		// --- charm of courage
 		8515,
 		8516,
 		8517,
 		8518,
 		8519,
-		8520, // charm of courage
+		8520,
+		// --- charm of courage
+		// --- scrolls of recovery
 		8594,
 		8595,
 		8596,
 		8597,
 		8598,
-		8599, // scrolls of recovery
+		8599,
+		// --- scrolls of recovery
 		8954,
 		8955,
 		8956, // primeval crystal
@@ -102,7 +87,9 @@ public class Scrolls implements IItemHandler
 			activeChar = ((L2PetInstance) playable).getOwner();
 		}
 		else
+		{
 			return;
+		}
 		
 		if (activeChar.isAllSkillsDisabled())
 		{
@@ -121,17 +108,21 @@ public class Scrolls implements IItemHandler
 		if (itemId >= 8594 && itemId <= 8599) // Scrolls of recovery XML: 2286
 		{
 			if (activeChar.getKarma() > 0)
+			{
 				return; // Chaotic can not use it
-				
+			}
+			
 			if (itemId == 8594 && activeChar.getExpertiseIndex() == 0 || // Scroll: Recovery (No Grade)
-			itemId == 8595 && activeChar.getExpertiseIndex() == 1 || // Scroll: Recovery (D Grade)
-			itemId == 8596 && activeChar.getExpertiseIndex() == 2 || // Scroll: Recovery (C Grade)
-			itemId == 8597 && activeChar.getExpertiseIndex() == 3 || // Scroll: Recovery (B Grade)
-			itemId == 8598 && activeChar.getExpertiseIndex() == 4 || // Scroll: Recovery (A Grade)
-			itemId == 8599 && activeChar.getExpertiseIndex() == 5) // Scroll: Recovery (S Grade)
+				itemId == 8595 && activeChar.getExpertiseIndex() == 1 || // Scroll: Recovery (D Grade)
+				itemId == 8596 && activeChar.getExpertiseIndex() == 2 || // Scroll: Recovery (C Grade)
+				itemId == 8597 && activeChar.getExpertiseIndex() == 3 || // Scroll: Recovery (B Grade)
+				itemId == 8598 && activeChar.getExpertiseIndex() == 4 || // Scroll: Recovery (A Grade)
+				itemId == 8599 && activeChar.getExpertiseIndex() == 5) // Scroll: Recovery (S Grade)
 			{
 				if (!playable.destroyItem("Consume", item.getObjectId(), 1, null, false))
+				{
 					return;
+				}
 				activeChar.broadcastPacket(new MagicSkillUser(playable, playable, 2286, 1, 1, 0));
 				activeChar.reduceDeathPenaltyBuffLevel();
 				useScroll(activeChar, 2286, itemId - 8593);
@@ -145,14 +136,16 @@ public class Scrolls implements IItemHandler
 		else if (itemId == 5703 || itemId >= 5803 && itemId <= 5807)
 		{
 			if (itemId == 5703 && activeChar.getExpertiseIndex() == 0 || // Lucky Charm (No Grade)
-			itemId == 5803 && activeChar.getExpertiseIndex() == 1 || // Lucky Charm (D Grade)
-			itemId == 5804 && activeChar.getExpertiseIndex() == 2 || // Lucky Charm (C Grade)
-			itemId == 5805 && activeChar.getExpertiseIndex() == 3 || // Lucky Charm (B Grade)
-			itemId == 5806 && activeChar.getExpertiseIndex() == 4 || // Lucky Charm (A Grade)
-			itemId == 5807 && activeChar.getExpertiseIndex() == 5) // Lucky Charm (S Grade)
+				itemId == 5803 && activeChar.getExpertiseIndex() == 1 || // Lucky Charm (D Grade)
+				itemId == 5804 && activeChar.getExpertiseIndex() == 2 || // Lucky Charm (C Grade)
+				itemId == 5805 && activeChar.getExpertiseIndex() == 3 || // Lucky Charm (B Grade)
+				itemId == 5806 && activeChar.getExpertiseIndex() == 4 || // Lucky Charm (A Grade)
+				itemId == 5807 && activeChar.getExpertiseIndex() == 5) // Lucky Charm (S Grade)
 			{
 				if (!playable.destroyItem("Consume", item.getObjectId(), 1, null, false))
+				{
 					return;
+				}
 				activeChar.broadcastPacket(new MagicSkillUser(playable, playable, 2168, activeChar.getExpertiseIndex() + 1, 1, 0));
 				useScroll(activeChar, 2168, activeChar.getExpertiseIndex() + 1);
 				activeChar.setCharmOfLuck(true);
@@ -166,14 +159,16 @@ public class Scrolls implements IItemHandler
 		else if (itemId >= 8515 && itemId <= 8520) // Charm of Courage XML: 5041
 		{
 			if (itemId == 8515 && activeChar.getExpertiseIndex() == 0 || // Charm of Courage (No Grade)
-			itemId == 8516 && activeChar.getExpertiseIndex() == 1 || // Charm of Courage (D Grade)
-			itemId == 8517 && activeChar.getExpertiseIndex() == 2 || // Charm of Courage (C Grade)
-			itemId == 8518 && activeChar.getExpertiseIndex() == 3 || // Charm of Courage (B Grade)
-			itemId == 8519 && activeChar.getExpertiseIndex() == 4 || // Charm of Courage (A Grade)
-			itemId == 8520 && activeChar.getExpertiseIndex() == 5) // Charm of Courage (S Grade)
+				itemId == 8516 && activeChar.getExpertiseIndex() == 1 || // Charm of Courage (D Grade)
+				itemId == 8517 && activeChar.getExpertiseIndex() == 2 || // Charm of Courage (C Grade)
+				itemId == 8518 && activeChar.getExpertiseIndex() == 3 || // Charm of Courage (B Grade)
+				itemId == 8519 && activeChar.getExpertiseIndex() == 4 || // Charm of Courage (A Grade)
+				itemId == 8520 && activeChar.getExpertiseIndex() == 5) // Charm of Courage (S Grade)
 			{
 				if (!playable.destroyItem("Consume", item.getObjectId(), 1, null, false))
+				{
 					return;
+				}
 				
 				activeChar.broadcastPacket(new MagicSkillUser(playable, playable, 5041, 1, 1, 0));
 				useScroll(activeChar, 5041, 1);
@@ -188,10 +183,14 @@ public class Scrolls implements IItemHandler
 		else if (itemId >= 8954 && itemId <= 8956)
 		{
 			if (activeChar.getLevel() < 76)
+			{
 				return;
+			}
 			
 			if (!playable.destroyItem("Consume", item.getObjectId(), 1, null, false))
+			{
 				return;
+			}
 			switch (itemId)
 			{
 				case 8954: // Blue Primeval Crystal XML: 2306
@@ -326,7 +325,9 @@ public class Scrolls implements IItemHandler
 		
 		// for the rest, there are no extra conditions
 		if (!playable.destroyItem("Consume", item.getObjectId(), 1, null, true))
+		{
 			return;
+		}
 		
 		activeChar = null;
 	}

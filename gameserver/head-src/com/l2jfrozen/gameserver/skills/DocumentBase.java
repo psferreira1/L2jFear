@@ -1,36 +1,13 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.skills;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
 
 import javax.xml.parsers.DocumentBuilderFactory;
-
-import javolution.text.TextBuilder;
-import javolution.util.FastList;
-import javolution.util.FastMap;
 
 import org.apache.log4j.Logger;
 import org.w3c.dom.Document;
@@ -82,6 +59,8 @@ import com.l2jfrozen.gameserver.templates.L2Weapon;
 import com.l2jfrozen.gameserver.templates.L2WeaponType;
 import com.l2jfrozen.gameserver.templates.StatsSet;
 
+import javolution.text.TextBuilder;
+
 /**
  * @author mkizub
  */
@@ -89,13 +68,13 @@ abstract class DocumentBase
 {
 	static Logger LOGGER = Logger.getLogger(DocumentBase.class);
 	
-	private final File _file;
-	protected Map<String, String[]> _tables;
+	private final File file;
+	protected Map<String, String[]> tables;
 	
 	DocumentBase(final File pFile)
 	{
-		_file = pFile;
-		_tables = new FastMap<>();
+		file = pFile;
+		tables = new HashMap<>();
 	}
 	
 	Document parse()
@@ -106,14 +85,16 @@ abstract class DocumentBase
 			final DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 			factory.setValidating(false);
 			factory.setIgnoringComments(true);
-			doc = factory.newDocumentBuilder().parse(_file);
+			doc = factory.newDocumentBuilder().parse(file);
 		}
 		catch (final Exception e)
 		{
 			if (Config.ENABLE_ALL_EXCEPTIONS)
+			{
 				e.printStackTrace();
+			}
 			
-			LOGGER.error("Error loading file " + _file, e);
+			LOGGER.error("Error loading file " + file, e);
 			return null;
 		}
 		
@@ -124,9 +105,11 @@ abstract class DocumentBase
 		catch (final Exception e)
 		{
 			if (Config.ENABLE_ALL_EXCEPTIONS)
+			{
 				e.printStackTrace();
+			}
 			
-			LOGGER.error("Error in file " + _file, e);
+			LOGGER.error("Error in file " + file, e);
 			return null;
 		}
 		return doc;
@@ -142,12 +125,12 @@ abstract class DocumentBase
 	
 	protected void resetTable()
 	{
-		_tables = new FastMap<>();
+		tables = new HashMap<>();
 	}
 	
 	protected void setTable(final String name, final String[] table)
 	{
-		_tables.put(name, table);
+		tables.put(name, table);
 	}
 	
 	protected void parseTemplate(Node n, final Object template)
@@ -155,7 +138,9 @@ abstract class DocumentBase
 		Condition condition = null;
 		n = n.getFirstChild();
 		if (n == null)
+		{
 			return;
+		}
 		
 		if ("cond".equalsIgnoreCase(n.getNodeName()))
 		{
@@ -205,7 +190,9 @@ abstract class DocumentBase
 			else if ("effect".equalsIgnoreCase(n.getNodeName()))
 			{
 				if (template instanceof EffectTemplate)
+				{
 					throw new RuntimeException("Nested effects");
+				}
 				
 				attachEffect(n, template, condition);
 			}
@@ -348,7 +335,9 @@ abstract class DocumentBase
 		
 		double effectPower = -1;
 		if (attrs.getNamedItem("effectPower") != null)
+		{
 			effectPower = Double.parseDouble(getValue(attrs.getNamedItem("effectPower").getNodeValue(), template));
+		}
 		
 		SkillType type = null;
 		if (attrs.getNamedItem("effectType") != null)
@@ -442,31 +431,49 @@ abstract class DocumentBase
 			n = n.getNextSibling();
 		}
 		if (n == null)
+		{
 			return null;
+		}
 		
 		if ("and".equalsIgnoreCase(n.getNodeName()))
+		{
 			return parseLogicAnd(n, template);
+		}
 		
 		if ("or".equalsIgnoreCase(n.getNodeName()))
+		{
 			return parseLogicOr(n, template);
+		}
 		
 		if ("not".equalsIgnoreCase(n.getNodeName()))
+		{
 			return parseLogicNot(n, template);
+		}
 		
 		if ("player".equalsIgnoreCase(n.getNodeName()))
+		{
 			return parsePlayerCondition(n);
+		}
 		
 		if ("target".equalsIgnoreCase(n.getNodeName()))
+		{
 			return parseTargetCondition(n, template);
+		}
 		
 		if ("skill".equalsIgnoreCase(n.getNodeName()))
+		{
 			return parseSkillCondition(n);
+		}
 		
 		if ("using".equalsIgnoreCase(n.getNodeName()))
+		{
 			return parseUsingCondition(n);
+		}
 		
 		if ("game".equalsIgnoreCase(n.getNodeName()))
+		{
 			return parseGameCondition(n);
+		}
 		
 		return null;
 	}
@@ -484,7 +491,7 @@ abstract class DocumentBase
 		
 		if (cond.conditions == null || cond.conditions.length == 0)
 		{
-			LOGGER.warn("Empty <and> condition in " + _file);
+			LOGGER.warn("Empty <and> condition in " + file);
 		}
 		
 		return cond;
@@ -503,7 +510,7 @@ abstract class DocumentBase
 		
 		if (cond.conditions == null || cond.conditions.length == 0)
 		{
-			LOGGER.warn("Empty <or> condition in " + _file);
+			LOGGER.warn("Empty <or> condition in " + file);
 		}
 		
 		return cond;
@@ -514,10 +521,12 @@ abstract class DocumentBase
 		for (n = n.getFirstChild(); n != null; n = n.getNextSibling())
 		{
 			if (n.getNodeType() == Node.ELEMENT_NODE)
+			{
 				return new ConditionLogicNot(parseCondition(n, template));
+			}
 		}
 		
-		LOGGER.warn("Empty <not> condition in " + _file);
+		LOGGER.warn("Empty <not> condition in " + file);
 		return null;
 	}
 	
@@ -648,7 +657,7 @@ abstract class DocumentBase
 		
 		if (cond == null)
 		{
-			LOGGER.warn("Unrecognized <player> condition in " + _file);
+			LOGGER.warn("Unrecognized <player> condition in " + file);
 		}
 		return cond;
 	}
@@ -672,7 +681,7 @@ abstract class DocumentBase
 			}
 			else if ("class_id_restriction".equalsIgnoreCase(a.getNodeName()))
 			{
-				final FastList<Integer> array = new FastList<>();
+				final List<Integer> array = new ArrayList<>();
 				final StringTokenizer st = new StringTokenizer(a.getNodeValue(), ",");
 				while (st.hasMoreTokens())
 				{
@@ -683,7 +692,7 @@ abstract class DocumentBase
 			}
 			else if ("race_id".equalsIgnoreCase(a.getNodeName()))
 			{
-				final FastList<Integer> array = new FastList<>();
+				final List<Integer> array = new ArrayList<>();
 				final StringTokenizer st = new StringTokenizer(a.getNodeValue(), ",");
 				while (st.hasMoreTokens())
 				{
@@ -694,7 +703,7 @@ abstract class DocumentBase
 			}
 			else if ("pvp".equalsIgnoreCase(a.getNodeName()))
 			{
-				final FastList<Integer> array = new FastList<>();
+				final List<Integer> array = new ArrayList<>();
 				final StringTokenizer st = new StringTokenizer(a.getNodeValue(), ",");
 				while (st.hasMoreTokens())
 				{
@@ -733,7 +742,7 @@ abstract class DocumentBase
 		}
 		if (cond == null)
 		{
-			LOGGER.warn("Unrecognized <target> condition in " + _file);
+			LOGGER.warn("Unrecognized <target> condition in " + file);
 		}
 		return cond;
 	}
@@ -800,7 +809,7 @@ abstract class DocumentBase
 		}
 		if (cond == null)
 		{
-			LOGGER.warn("Unrecognized <using> condition in " + _file);
+			LOGGER.warn("Unrecognized <using> condition in " + file);
 		}
 		return cond;
 	}
@@ -833,7 +842,7 @@ abstract class DocumentBase
 		
 		if (cond == null)
 		{
-			LOGGER.warn("Unrecognized <game> condition in " + _file);
+			LOGGER.warn("Unrecognized <game> condition in " + file);
 		}
 		return cond;
 	}
@@ -843,10 +852,12 @@ abstract class DocumentBase
 		final NamedNodeMap attrs = n.getAttributes();
 		final String name = attrs.getNamedItem("name").getNodeValue();
 		if (name.charAt(0) != '#')
+		{
 			throw new IllegalArgumentException("Table name must start with #");
+		}
 		
 		final StringTokenizer data = new StringTokenizer(n.getFirstChild().getNodeValue());
-		final List<String> array = new FastList<>();
+		final List<String> array = new ArrayList<>();
 		while (data.hasMoreTokens())
 		{
 			array.add(data.nextToken());
@@ -882,31 +893,45 @@ abstract class DocumentBase
 		{
 			final String val = nval.getNodeValue();
 			if (val.charAt(0) == '#')
+			{
 				return new LambdaConst(Double.parseDouble(getTableValue(val)));
+			}
 			else if (val.charAt(0) == '$')
 			{
 				if (val.equalsIgnoreCase("$player_level"))
+				{
 					return new LambdaStats(LambdaStats.StatsType.PLAYER_LEVEL);
+				}
 				
 				if (val.equalsIgnoreCase("$target_level"))
+				{
 					return new LambdaStats(LambdaStats.StatsType.TARGET_LEVEL);
+				}
 				
 				if (val.equalsIgnoreCase("$player_max_hp"))
+				{
 					return new LambdaStats(LambdaStats.StatsType.PLAYER_MAX_HP);
+				}
 				
 				if (val.equalsIgnoreCase("$player_max_mp"))
+				{
 					return new LambdaStats(LambdaStats.StatsType.PLAYER_MAX_MP);
+				}
 				
 				// try to find value out of item fields
 				final StatsSet set = getStatsSet();
 				final String field = set.getString(val.substring(1));
 				if (field != null)
+				{
 					return new LambdaConst(Double.parseDouble(getValue(field, template)));
+				}
 				// failed
 				throw new IllegalArgumentException("Unknown value " + val);
 			}
 			else
+			{
 				return new LambdaConst(Double.parseDouble(val));
+			}
 		}
 		final LambdaCalc calc = new LambdaCalc();
 		n = n.getFirstChild();
@@ -916,7 +941,9 @@ abstract class DocumentBase
 		}
 		
 		if (n == null || !"val".equals(n.getNodeName()))
+		{
 			throw new IllegalArgumentException("Value not specified");
+		}
 		
 		for (n = n.getFirstChild(); n != null; n = n.getNextSibling())
 		{
@@ -935,11 +962,17 @@ abstract class DocumentBase
 		if (value.charAt(0) == '#')
 		{
 			if (template instanceof L2Skill)
+			{
 				return getTableValue(value);
+			}
 			else if (template instanceof Integer)
+			{
 				return getTableValue(value, ((Integer) template).intValue());
+			}
 			else
+			{
 				throw new IllegalStateException();
+			}
 		}
 		return value;
 	}
@@ -947,7 +980,9 @@ abstract class DocumentBase
 	protected Condition joinAnd(final Condition cond, final Condition c)
 	{
 		if (cond == null)
+		{
 			return c;
+		}
 		if (cond instanceof ConditionLogicAnd)
 		{
 			((ConditionLogicAnd) cond).add(c);

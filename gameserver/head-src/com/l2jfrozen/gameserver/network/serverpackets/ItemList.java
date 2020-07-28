@@ -1,23 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.network.serverpackets;
 
 import org.apache.log4j.Logger;
@@ -35,43 +15,50 @@ import com.l2jfrozen.gameserver.model.actor.instance.L2PcInstance;
 public class ItemList extends L2GameServerPacket
 {
 	private static Logger LOGGER = Logger.getLogger(ItemList.class);
-	private static final String _S__27_ITEMLIST = "[S] 1b ItemList";
-	private final L2ItemInstance[] _items;
-	private final boolean _showWindow;
+	private final L2ItemInstance[] items;
+	private final boolean showWindow;
 	
 	public ItemList(final L2PcInstance cha, final boolean showWindow)
 	{
-		_items = cha.getInventory().getItems();
-		_showWindow = showWindow;
+		items = cha.getInventory().getItems();
+		this.showWindow = showWindow;
 		if (Config.DEBUG)
+		{
 			showDebug();
+		}
 	}
 	
 	public ItemList(final L2ItemInstance[] items, final boolean showWindow)
 	{
-		_items = items;
-		_showWindow = showWindow;
+		this.items = items;
+		this.showWindow = showWindow;
 		if (Config.DEBUG)
+		{
 			showDebug();
+		}
 	}
 	
 	private void showDebug()
 	{
-		for (final L2ItemInstance temp : _items)
+		for (final L2ItemInstance temp : items)
+		{
 			LOGGER.debug("item:" + temp.getItem().getName() + " type1:" + temp.getItem().getType1() + " type2:" + temp.getItem().getType2());
+		}
 	}
 	
 	@Override
 	protected final void writeImpl()
 	{
 		writeC(0x1b);
-		writeH(_showWindow ? 0x01 : 0x00);
-		final int count = _items.length;
+		writeH(showWindow ? 0x01 : 0x00);
+		final int count = items.length;
 		writeH(count);
-		for (final L2ItemInstance temp : _items)
+		for (final L2ItemInstance temp : items)
 		{
 			if ((temp == null) || (temp.getItem() == null))
+			{
 				continue;
+			}
 			writeH(temp.getItem().getType1()); // item type1
 			writeD(temp.getObjectId());
 			writeD(temp.getItemId());
@@ -84,20 +71,20 @@ public class ItemList extends L2GameServerPacket
 			// race tickets
 			writeH(temp.getCustomType2()); // item type3
 			if (temp.isAugmented())
+			{
 				writeD(temp.getAugmentation().getAugmentationId());
+			}
 			else
+			{
 				writeD(0x00);
+			}
 			writeD(temp.getMana());
 		}
 	}
 	
-	/*
-	 * (non-Javadoc)
-	 * @see com.l2jfrozen.gameserver.network.serverpackets.ServerBasePacket#getType()
-	 */
 	@Override
 	public String getType()
 	{
-		return _S__27_ITEMLIST;
+		return "[S] 1b ItemList";
 	}
 }

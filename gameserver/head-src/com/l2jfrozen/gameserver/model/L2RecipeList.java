@@ -1,23 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.model;
 
 import com.l2jfrozen.gameserver.model.actor.instance.L2RecipeInstance;
@@ -29,34 +9,36 @@ import com.l2jfrozen.gameserver.model.actor.instance.L2RecipeInstance;
 public class L2RecipeList
 {
 	/** The table containing all L2RecipeInstance (1 line of the recipe : Item-Quantity needed) of the L2RecipeList */
-	private L2RecipeInstance[] _recipes;
+	private L2RecipeInstance[] recipes;
 	
 	/** The Identifier of the Instance */
-	private final int _id;
+	private final int id;
 	
 	/** The crafting level needed to use this L2RecipeList */
-	private final int _level;
+	private final int level;
 	
 	/** The Identifier of the L2RecipeList */
-	private final int _recipeId;
+	private final int recipeId;
 	
 	/** The name of the L2RecipeList */
-	private final String _recipeName;
+	private final String recipeName;
 	
 	/** The crafting succes rate when using the L2RecipeList */
-	private final int _successRate;
+	private final int successRate;
 	
 	/** The crafting MP cost of this L2RecipeList */
-	private final int _mpCost;
+	private final int mpCost;
 	
 	/** The Identifier of the Item crafted with this L2RecipeList */
-	private final int _itemId;
+	private final int itemId;
 	
 	/** The quantity of Item crafted when using this L2RecipeList */
-	private final int _count;
+	private final int count;
 	
 	/** If this a common or a dwarven recipe */
-	private final boolean _isDwarvenRecipe;
+	private final boolean isDwarvenRecipe;
+	
+	private boolean fromDB;
 	
 	/**
 	 * Constructor of L2RecipeList (create a new Recipe).
@@ -72,16 +54,17 @@ public class L2RecipeList
 	 */
 	public L2RecipeList(final int id, final int level, final int recipeId, final String recipeName, final int successRate, final int mpCost, final int itemId, final int count, final boolean isDwarvenRecipe)
 	{
-		_id = id;
-		_recipes = new L2RecipeInstance[0];
-		_level = level;
-		_recipeId = recipeId;
-		_recipeName = recipeName;
-		_successRate = successRate;
-		_mpCost = mpCost;
-		_itemId = itemId;
-		_count = count;
-		_isDwarvenRecipe = isDwarvenRecipe;
+		this.id = id;
+		recipes = new L2RecipeInstance[0];
+		this.level = level;
+		this.recipeId = recipeId;
+		this.recipeName = recipeName;
+		this.successRate = successRate;
+		this.mpCost = mpCost;
+		this.itemId = itemId;
+		this.count = count;
+		this.isDwarvenRecipe = isDwarvenRecipe;
+		fromDB = false;
 	}
 	
 	/**
@@ -90,11 +73,11 @@ public class L2RecipeList
 	 */
 	public void addRecipe(final L2RecipeInstance recipe)
 	{
-		final int len = _recipes.length;
+		final int len = recipes.length;
 		L2RecipeInstance[] tmp = new L2RecipeInstance[len + 1];
-		System.arraycopy(_recipes, 0, tmp, 0, len);
+		System.arraycopy(recipes, 0, tmp, 0, len);
 		tmp[len] = recipe;
-		_recipes = tmp;
+		recipes = tmp;
 		tmp = null;
 	}
 	
@@ -103,7 +86,7 @@ public class L2RecipeList
 	 */
 	public int getId()
 	{
-		return _id;
+		return id;
 	}
 	
 	/**
@@ -111,7 +94,7 @@ public class L2RecipeList
 	 */
 	public int getLevel()
 	{
-		return _level;
+		return level;
 	}
 	
 	/**
@@ -119,7 +102,7 @@ public class L2RecipeList
 	 */
 	public int getRecipeId()
 	{
-		return _recipeId;
+		return recipeId;
 	}
 	
 	/**
@@ -127,7 +110,7 @@ public class L2RecipeList
 	 */
 	public String getRecipeName()
 	{
-		return _recipeName;
+		return recipeName;
 	}
 	
 	/**
@@ -135,7 +118,7 @@ public class L2RecipeList
 	 */
 	public int getSuccessRate()
 	{
-		return _successRate;
+		return successRate;
 	}
 	
 	/**
@@ -143,7 +126,7 @@ public class L2RecipeList
 	 */
 	public int getMpCost()
 	{
-		return _mpCost;
+		return mpCost;
 	}
 	
 	/**
@@ -151,7 +134,7 @@ public class L2RecipeList
 	 */
 	public boolean isConsumable()
 	{
-		return _itemId >= 1463 && _itemId <= 1467 || _itemId >= 2509 && _itemId <= 2514 || _itemId >= 3947 && _itemId <= 3952 || _itemId >= 1341 && _itemId <= 1345;
+		return itemId >= 1463 && itemId <= 1467 || itemId >= 2509 && itemId <= 2514 || itemId >= 3947 && itemId <= 3952 || itemId >= 1341 && itemId <= 1345;
 	}
 	
 	/**
@@ -159,7 +142,7 @@ public class L2RecipeList
 	 */
 	public int getItemId()
 	{
-		return _itemId;
+		return itemId;
 	}
 	
 	/**
@@ -167,7 +150,7 @@ public class L2RecipeList
 	 */
 	public int getCount()
 	{
-		return _count;
+		return count;
 	}
 	
 	/**
@@ -175,7 +158,7 @@ public class L2RecipeList
 	 */
 	public boolean isDwarvenRecipe()
 	{
-		return _isDwarvenRecipe;
+		return isDwarvenRecipe;
 	}
 	
 	/**
@@ -183,6 +166,16 @@ public class L2RecipeList
 	 */
 	public L2RecipeInstance[] getRecipes()
 	{
-		return _recipes;
+		return recipes;
+	}
+	
+	public boolean isFromDB()
+	{
+		return fromDB;
+	}
+	
+	public void setIsFromDB(boolean value)
+	{
+		fromDB = value;
 	}
 }

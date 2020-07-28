@@ -1,26 +1,8 @@
-/* L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.network.serverpackets;
 
-import javolution.util.FastList;
-import javolution.util.FastMap;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import com.l2jfrozen.gameserver.managers.CastleManorManager.CropProcure;
 import com.l2jfrozen.gameserver.model.L2Manor;
@@ -34,33 +16,31 @@ import com.l2jfrozen.gameserver.model.actor.instance.L2PcInstance;
 
 public class ExShowSellCropList extends L2GameServerPacket
 {
-	private static final String _S__FE_21_EXSHOWSELLCROPLIST = "[S] FE:21 ExShowSellCropList";
+	private int manorId = 1;
+	private final Map<Integer, L2ItemInstance> cropsItems;
+	private final Map<Integer, CropProcure> castleCrops;
 	
-	private int _manorId = 1;
-	private final FastMap<Integer, L2ItemInstance> _cropsItems;
-	private final FastMap<Integer, CropProcure> _castleCrops;
-	
-	public ExShowSellCropList(final L2PcInstance player, final int manorId, final FastList<CropProcure> crops)
+	public ExShowSellCropList(final L2PcInstance player, final int manorId, final List<CropProcure> crops)
 	{
-		_manorId = manorId;
-		_castleCrops = new FastMap<>();
-		_cropsItems = new FastMap<>();
+		this.manorId = manorId;
+		castleCrops = new HashMap<>();
+		cropsItems = new HashMap<>();
 		
-		final FastList<Integer> allCrops = L2Manor.getInstance().getAllCrops();
+		List<Integer> allCrops = L2Manor.getInstance().getAllCrops();
 		for (final int cropId : allCrops)
 		{
 			final L2ItemInstance item = player.getInventory().getItemByItemId(cropId);
 			if (item != null)
 			{
-				_cropsItems.put(cropId, item);
+				cropsItems.put(cropId, item);
 			}
 		}
 		
 		for (final CropProcure crop : crops)
 		{
-			if (_cropsItems.containsKey(crop.getId()) && crop.getAmount() > 0)
+			if (cropsItems.containsKey(crop.getId()) && crop.getAmount() > 0)
 			{
-				_castleCrops.put(crop.getId(), crop);
+				castleCrops.put(crop.getId(), crop);
 			}
 		}
 	}
@@ -77,10 +57,10 @@ public class ExShowSellCropList extends L2GameServerPacket
 		writeC(0xFE);
 		writeH(0x21);
 		
-		writeD(_manorId); // manor id
-		writeD(_cropsItems.size()); // size
+		writeD(manorId); // manor id
+		writeD(cropsItems.size()); // size
 		
-		for (final L2ItemInstance item : _cropsItems.values())
+		for (final L2ItemInstance item : cropsItems.values())
 		{
 			writeD(item.getObjectId()); // Object id
 			writeD(item.getItemId()); // crop id
@@ -90,10 +70,10 @@ public class ExShowSellCropList extends L2GameServerPacket
 			writeC(1);
 			writeD(L2Manor.getInstance().getRewardItem(item.getItemId(), 2)); // reward 2 id
 			
-			if (_castleCrops.containsKey(item.getItemId()))
+			if (castleCrops.containsKey(item.getItemId()))
 			{
-				final CropProcure crop = _castleCrops.get(item.getItemId());
-				writeD(_manorId); // manor
+				final CropProcure crop = castleCrops.get(item.getItemId());
+				writeD(manorId); // manor
 				writeD(crop.getAmount()); // buy residual
 				writeD(crop.getPrice()); // buy price
 				writeC(crop.getReward()); // reward
@@ -112,6 +92,6 @@ public class ExShowSellCropList extends L2GameServerPacket
 	@Override
 	public String getType()
 	{
-		return _S__FE_21_EXSHOWSELLCROPLIST;
+		return "[S] FE:21 ExShowSellCropList";
 	}
 }

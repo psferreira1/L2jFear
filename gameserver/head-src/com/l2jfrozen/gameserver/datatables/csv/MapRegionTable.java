@@ -1,23 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.datatables.csv;
 
 import java.io.BufferedReader;
@@ -51,17 +31,17 @@ import com.l2jfrozen.gameserver.model.zone.type.L2TownZone;
 
 /**
  * @version $Revision: 1.2 $ $Date: 2009/04/29 13:58:30 $
- * @author programmos
+ * @author  programmos
  */
 public class MapRegionTable
 {
 	private static Logger LOGGER = Logger.getLogger(MapRegionTable.class);
 	
-	private static MapRegionTable _instance;
+	private static MapRegionTable instance;
 	
-	private final int[][] _regions = new int[19][21];
+	private final int[][] regions = new int[19][21];
 	
-	private final int[][] _pointsWithKarmas;
+	private final int[][] pointsWithKarmas;
 	
 	public static enum TeleportWhereType
 	{
@@ -74,28 +54,22 @@ public class MapRegionTable
 	
 	public static MapRegionTable getInstance()
 	{
-		if (_instance == null)
+		if (instance == null)
 		{
-			_instance = new MapRegionTable();
+			instance = new MapRegionTable();
 		}
 		
-		return _instance;
+		return instance;
 	}
 	
 	private MapRegionTable()
 	{
-		FileReader reader = null;
-		BufferedReader buff = null;
-		LineNumberReader lnr = null;
+		File fileData = new File(Config.DATAPACK_ROOT + "/data/csv/mapregion.csv");
 		
-		try
+		try (FileReader reader = new FileReader(fileData);
+			BufferedReader buff = new BufferedReader(reader);
+			LineNumberReader lnr = new LineNumberReader(buff))
 		{
-			final File fileData = new File(Config.DATAPACK_ROOT + "/data/csv/mapregion.csv");
-			
-			reader = new FileReader(fileData);
-			buff = new BufferedReader(reader);
-			lnr = new LineNumberReader(buff);
-			
 			String line = null;
 			
 			int region;
@@ -114,139 +88,101 @@ public class MapRegionTable
 				
 				for (int j = 0; j < 10; j++)
 				{
-					_regions[j][region] = Integer.parseInt(st.nextToken());
+					regions[j][region] = Integer.parseInt(st.nextToken());
 				}
 			}
 		}
-		catch (final FileNotFoundException e)
+		catch (FileNotFoundException e)
 		{
-			if (Config.ENABLE_ALL_EXCEPTIONS)
-				e.printStackTrace();
-			
-			LOGGER.warn("mapregion.csv is missing in data folder");
+			LOGGER.error("MapRegionTable.MapRegionTable : mapregion.csv is missing in data folder");
 		}
-		catch (final NoSuchElementException e1)
+		catch (NoSuchElementException e)
 		{
-			LOGGER.warn("Error for structure CSV file: ");
-			e1.printStackTrace();
+			LOGGER.error("MapRegionTable.MapRegionTable : Error for structure CSV file. ", e);
 		}
-		catch (final IOException e0)
+		catch (IOException e)
 		{
-			LOGGER.warn("Error while creating table: " + e0);
-			e0.printStackTrace();
-		}
-		finally
-		{
-			if (lnr != null)
-				try
-				{
-					lnr.close();
-				}
-				catch (final Exception e1)
-				{
-					e1.printStackTrace();
-				}
-			
-			if (buff != null)
-				try
-				{
-					buff.close();
-				}
-				catch (final Exception e1)
-				{
-					e1.printStackTrace();
-				}
-			
-			if (reader != null)
-				try
-				{
-					reader.close();
-				}
-				catch (final Exception e1)
-				{
-					e1.printStackTrace();
-				}
-			
+			LOGGER.error("MapRegionTable.MapRegionTable : Error while creating table. ", e);
 		}
 		
-		_pointsWithKarmas = new int[19][3];
+		pointsWithKarmas = new int[19][3];
 		// Talking Island
-		_pointsWithKarmas[0][0] = -79077;
-		_pointsWithKarmas[0][1] = 240355;
-		_pointsWithKarmas[0][2] = -3440;
+		pointsWithKarmas[0][0] = -79077;
+		pointsWithKarmas[0][1] = 240355;
+		pointsWithKarmas[0][2] = -3440;
 		// Elven
-		_pointsWithKarmas[1][0] = 43503;
-		_pointsWithKarmas[1][1] = 40398;
-		_pointsWithKarmas[1][2] = -3450;
+		pointsWithKarmas[1][0] = 43503;
+		pointsWithKarmas[1][1] = 40398;
+		pointsWithKarmas[1][2] = -3450;
 		// DarkElven
-		_pointsWithKarmas[2][0] = 1675;
-		_pointsWithKarmas[2][1] = 19581;
-		_pointsWithKarmas[2][2] = -3110;
+		pointsWithKarmas[2][0] = 1675;
+		pointsWithKarmas[2][1] = 19581;
+		pointsWithKarmas[2][2] = -3110;
 		// Orc
-		_pointsWithKarmas[3][0] = -44413;
-		_pointsWithKarmas[3][1] = -121762;
-		_pointsWithKarmas[3][2] = -235;
+		pointsWithKarmas[3][0] = -44413;
+		pointsWithKarmas[3][1] = -121762;
+		pointsWithKarmas[3][2] = -235;
 		// Dwalf
-		_pointsWithKarmas[4][0] = 12009;
-		_pointsWithKarmas[4][1] = -187319;
-		_pointsWithKarmas[4][2] = -3309;
+		pointsWithKarmas[4][0] = 12009;
+		pointsWithKarmas[4][1] = -187319;
+		pointsWithKarmas[4][2] = -3309;
 		// Gludio
-		_pointsWithKarmas[5][0] = -18872;
-		_pointsWithKarmas[5][1] = 126216;
-		_pointsWithKarmas[5][2] = -3280;
+		pointsWithKarmas[5][0] = -18872;
+		pointsWithKarmas[5][1] = 126216;
+		pointsWithKarmas[5][2] = -3280;
 		// Gludin
-		_pointsWithKarmas[6][0] = -85915;
-		_pointsWithKarmas[6][1] = 150402;
-		_pointsWithKarmas[6][2] = -3060;
+		pointsWithKarmas[6][0] = -85915;
+		pointsWithKarmas[6][1] = 150402;
+		pointsWithKarmas[6][2] = -3060;
 		// Dion
-		_pointsWithKarmas[7][0] = 23652;
-		_pointsWithKarmas[7][1] = 144823;
-		_pointsWithKarmas[7][2] = -3330;
+		pointsWithKarmas[7][0] = 23652;
+		pointsWithKarmas[7][1] = 144823;
+		pointsWithKarmas[7][2] = -3330;
 		// Giran
-		_pointsWithKarmas[8][0] = 79125;
-		_pointsWithKarmas[8][1] = 154197;
-		_pointsWithKarmas[8][2] = -3490;
+		pointsWithKarmas[8][0] = 79125;
+		pointsWithKarmas[8][1] = 154197;
+		pointsWithKarmas[8][2] = -3490;
 		// Oren
-		_pointsWithKarmas[9][0] = 73840;
-		_pointsWithKarmas[9][1] = 58193;
-		_pointsWithKarmas[9][2] = -2730;
+		pointsWithKarmas[9][0] = 73840;
+		pointsWithKarmas[9][1] = 58193;
+		pointsWithKarmas[9][2] = -2730;
 		// Aden
-		_pointsWithKarmas[10][0] = 44413;
-		_pointsWithKarmas[10][1] = 22610;
-		_pointsWithKarmas[10][2] = 235;
+		pointsWithKarmas[10][0] = 44413;
+		pointsWithKarmas[10][1] = 22610;
+		pointsWithKarmas[10][2] = 235;
 		// Hunters
-		_pointsWithKarmas[11][0] = 114137;
-		_pointsWithKarmas[11][1] = 72993;
-		_pointsWithKarmas[11][2] = -2445;
+		pointsWithKarmas[11][0] = 114137;
+		pointsWithKarmas[11][1] = 72993;
+		pointsWithKarmas[11][2] = -2445;
 		// Giran
-		_pointsWithKarmas[12][0] = 79125;
-		_pointsWithKarmas[12][1] = 154197;
-		_pointsWithKarmas[12][2] = -3490;
+		pointsWithKarmas[12][0] = 79125;
+		pointsWithKarmas[12][1] = 154197;
+		pointsWithKarmas[12][2] = -3490;
 		// heine
-		_pointsWithKarmas[13][0] = 119536;
-		_pointsWithKarmas[13][1] = 218558;
-		_pointsWithKarmas[13][2] = -3495;
+		pointsWithKarmas[13][0] = 119536;
+		pointsWithKarmas[13][1] = 218558;
+		pointsWithKarmas[13][2] = -3495;
 		// Rune Castle Town
-		_pointsWithKarmas[14][0] = 42931;
-		_pointsWithKarmas[14][1] = -44733;
-		_pointsWithKarmas[14][2] = -1326;
+		pointsWithKarmas[14][0] = 42931;
+		pointsWithKarmas[14][1] = -44733;
+		pointsWithKarmas[14][2] = -1326;
 		// Goddard
-		_pointsWithKarmas[15][0] = 147419;
-		_pointsWithKarmas[15][1] = -64980;
-		_pointsWithKarmas[15][2] = -3457;
+		pointsWithKarmas[15][0] = 147419;
+		pointsWithKarmas[15][1] = -64980;
+		pointsWithKarmas[15][2] = -3457;
 		// Schuttgart
-		_pointsWithKarmas[16][0] = 85184;
-		_pointsWithKarmas[16][1] = -138560;
-		_pointsWithKarmas[16][2] = -2256;
+		pointsWithKarmas[16][0] = 85184;
+		pointsWithKarmas[16][1] = -138560;
+		pointsWithKarmas[16][2] = -2256;
 		// TODO Primeval Isle
-		_pointsWithKarmas[18][0] = 10468;
-		_pointsWithKarmas[18][1] = -24569;
-		_pointsWithKarmas[18][2] = -3645;
+		pointsWithKarmas[18][0] = 10468;
+		pointsWithKarmas[18][1] = -24569;
+		pointsWithKarmas[18][2] = -3645;
 	}
 	
 	public final int getMapRegion(final int posX, final int posY)
 	{
-		return _regions[getMapRegionX(posX)][getMapRegionY(posY)];
+		return regions[getMapRegionX(posX)][getMapRegionY(posY)];
 	}
 	
 	public final int getMapRegionX(final int posX)
@@ -399,7 +335,7 @@ public class MapRegionTable
 			default:
 				nearestTown = "Town of Aden";
 				break;
-		
+			
 		}
 		
 		return nearestTown;
@@ -415,7 +351,9 @@ public class MapRegionTable
 			
 			// If in Monster Derby Track
 			if (player.isInsideZone(L2Character.ZONE_MONSTERTRACK))
+			{
 				return new Location(12661, 181687, -3560);
+			}
 			
 			Castle castle = null;
 			Fort fort = null;
@@ -432,7 +370,9 @@ public class MapRegionTable
 					{
 						final L2ClanHallZone zone = clanhall.getZone();
 						if (zone != null)
+						{
 							return zone.getSpawn();
+						}
 					}
 				}
 				
@@ -516,15 +456,19 @@ public class MapRegionTable
 			
 			// teleport RED PK 5+ to Floran Village
 			if (player.getPkKills() > 5 && player.getKarma() > 1)
+			{
 				return new Location(17817, 170079, -3530);
+			}
 			
 			// Karma player land out of city
 			if (player.getKarma() > 1)
 			{
 				final int closest = getMapRegion(activeChar.getX(), activeChar.getY());
 				
-				if (closest >= 0 && closest < _pointsWithKarmas.length)
-					return new Location(_pointsWithKarmas[closest][0], _pointsWithKarmas[closest][1], _pointsWithKarmas[closest][2]);
+				if (closest >= 0 && closest < pointsWithKarmas.length)
+				{
+					return new Location(pointsWithKarmas[closest][0], pointsWithKarmas[closest][1], pointsWithKarmas[closest][2]);
+				}
 				return new Location(17817, 170079, -3530);
 			}
 			

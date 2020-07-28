@@ -1,43 +1,22 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.model.multisell;
 
+import java.util.ArrayList;
 import java.util.List;
-
-import javolution.util.FastList;
 
 /**
  * @author programmos
  */
 public class MultiSellListContainer
 {
-	private int _listId;
-	private boolean _applyTaxes = false;
-	private boolean _maintainEnchantment = false;
+	private int listId;
+	private boolean applyTaxes = false;
+	private boolean maintainEnchantment = false;
 	
-	List<MultiSellEntry> _entriesC;
+	List<MultiSellEntry> entriesC;
 	
 	public MultiSellListContainer()
 	{
-		_entriesC = new FastList<>();
+		entriesC = new ArrayList<>();
 	}
 	
 	/**
@@ -45,17 +24,17 @@ public class MultiSellListContainer
 	 */
 	public void setListId(final int listId)
 	{
-		_listId = listId;
+		this.listId = listId;
 	}
 	
 	public void setApplyTaxes(final boolean applyTaxes)
 	{
-		_applyTaxes = applyTaxes;
+		this.applyTaxes = applyTaxes;
 	}
 	
 	public void setMaintainEnchantment(final boolean maintainEnchantment)
 	{
-		_maintainEnchantment = maintainEnchantment;
+		this.maintainEnchantment = maintainEnchantment;
 	}
 	
 	/**
@@ -63,26 +42,26 @@ public class MultiSellListContainer
 	 */
 	public int getListId()
 	{
-		return _listId;
+		return listId;
 	}
 	
 	public boolean getApplyTaxes()
 	{
-		return _applyTaxes;
+		return applyTaxes;
 	}
 	
 	public boolean getMaintainEnchantment()
 	{
-		return _maintainEnchantment;
+		return maintainEnchantment;
 	}
 	
 	public void addEntry(final MultiSellEntry e)
 	{
-		_entriesC.add(e);
+		entriesC.add(e);
 	}
 	
 	public List<MultiSellEntry> getEntries()
 	{
-		return _entriesC;
+		return entriesC;
 	}
 }

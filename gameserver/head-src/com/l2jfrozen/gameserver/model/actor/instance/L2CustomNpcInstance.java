@@ -1,22 +1,7 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any later
- * version.
- * 
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
- * 
- * You should have received a copy of the GNU General Public License along with
- * this program. If not, see <http://www.gnu.org/licenses/>.
- */
 package com.l2jfrozen.gameserver.model.actor.instance;
 
 import com.l2jfrozen.gameserver.managers.CustomNpcInstanceManager;
+import com.l2jfrozen.gameserver.managers.CustomNpcInstanceManager.NpcToPlayer;
 import com.l2jfrozen.gameserver.model.base.ClassId;
 import com.l2jfrozen.gameserver.model.base.Race;
 import com.l2jfrozen.gameserver.templates.L2WeaponType;
@@ -26,80 +11,82 @@ import com.l2jfrozen.util.random.Rnd;
  * This class manages Npc Polymorph into player instances, they look like regular players. This effect will show up on all clients.
  * @author Darki699
  */
-public final class L2CustomNpcInstance
+public class L2CustomNpcInstance
 {
 	
-	private boolean _allowRandomWeapons = true; // Default value
-	private boolean _allowRandomClass = true; // Default value
-	private boolean _allowRandomAppearance = true; // Default value
-	private String _name;
-	private String _title;
+	private boolean allowRandomWeapons = true; // Default value
+	private boolean allowRandomClass = true; // Default value
+	private boolean allowRandomAppearance = true; // Default value
+	private String name;
+	private String title;
 	
-	private int _int[]; // PcInstance integer stats
-	private boolean _boolean[]; // PcInstance booolean stats
-	private L2NpcInstance _NpcInstance; // Reference to Npc with this stats
-	private ClassId _classId; // ClassId of this (N)Pc
+	private int pcInt[]; // PcInstance integer stats
+	private boolean pcBoolean[]; // PcInstance booolean stats
+	private L2NpcInstance npcInstance; // Reference to Npc with this stats
+	private ClassId classId; // ClassId of this (N)Pc
 	
 	/**
-	 * A constructor
-	 * @param myNpc - Receives the L2NpcInstance as a reference.
+	 * @param npc - Receives the L2NpcInstance as a reference.
 	 */
-	public L2CustomNpcInstance(final L2NpcInstance myNpc)
+	public L2CustomNpcInstance(L2NpcInstance npc)
 	{
-		_NpcInstance = myNpc;
-		if (_NpcInstance == null)
-			return;
-		else if (_NpcInstance.getSpawn() == null)
-			return;
-		else
+		if (npc == null)
 		{
-			initialize();
+			return;
 		}
+		
+		npcInstance = npc;
+		if (npcInstance.getSpawn() == null)
+		{
+			return;
+		}
+		
+		initialize();
 	}
 	
 	/**
 	 * Initializes the semi PcInstance stats for this NpcInstance, making it appear as a PcInstance on all clients
 	 */
-	private final void initialize()
+	private void initialize()
 	{
-		_int = new int[25];
+		pcInt = new int[25];
 		// karma=1, clanId=2, allyId=3, clanCrest=4, allyCrest=5, race=6, classId=7
 		// EnchantWeapon=8, PledgeClass=9, CursedWeaponLevel=10
 		// RightHand=11, LeftHand=12, Gloves=13, Chest=14, Legs=15, Feet=16, Hair1=17, Hair2=18
 		// HairStyle=19, HairColor=20, Face=21
 		// NameColor=22, TitleColor=23
 		
-		_boolean = new boolean[4];
+		pcBoolean = new boolean[4];
 		// pvp=0 , noble=1, hero=2, isFemaleSex=3
 		
-		// load the Pc Morph Data
-		CustomNpcInstanceManager.customInfo ci = CustomNpcInstanceManager.getInstance().getCustomData(_NpcInstance.getSpawn().getId(), _NpcInstance.getNpcId());
+		// load the Player Morph Data
+		NpcToPlayer ci = CustomNpcInstanceManager.getInstance().getCustomData(npcInstance.getSpawn().getId(), npcInstance.getNpcId());
 		
 		if (ci == null)
 		{
-			_NpcInstance.setCustomNpcInstance(null);
-			_NpcInstance = null;
+			npcInstance.setCustomNpcInstance(null);
+			npcInstance = null;
 			return;
 		}
 		
-		_NpcInstance.setCustomNpcInstance(this);
+		npcInstance.setCustomNpcInstance(this);
 		
 		setPcInstanceData(ci);
 		
-		if (_allowRandomClass)
+		if (allowRandomClass)
 		{
 			chooseRandomClass();
 		}
-		if (_allowRandomAppearance)
+		
+		if (allowRandomAppearance)
 		{
 			chooseRandomAppearance();
 		}
-		if (_allowRandomWeapons)
+		
+		if (allowRandomWeapons)
 		{
 			chooseRandomWeapon();
 		}
-		
-		ci = null;
 	}
 	
 	/**
@@ -107,7 +94,7 @@ public final class L2CustomNpcInstance
 	 */
 	public final String getName()
 	{
-		return _name == null ? _NpcInstance.getName() : _name;
+		return name == null ? npcInstance.getName() : name;
 	}
 	
 	/**
@@ -115,7 +102,7 @@ public final class L2CustomNpcInstance
 	 */
 	public final String getTitle()
 	{
-		return _title == null ? _NpcInstance.getTitle() : _NpcInstance.isChampion() ? "The Champion" + _title : _title;
+		return title == null ? npcInstance.getTitle() : npcInstance.isChampion() ? "The Champion" + title : title;
 	}
 	
 	/**
@@ -123,7 +110,7 @@ public final class L2CustomNpcInstance
 	 */
 	public final int getKarma()
 	{
-		return _int[1] > 0 ? _int[1] : _NpcInstance.getAggroRange();
+		return pcInt[1] > 0 ? pcInt[1] : npcInstance.getAggroRange();
 	}
 	
 	/**
@@ -131,7 +118,7 @@ public final class L2CustomNpcInstance
 	 */
 	public final int getClanId()
 	{
-		return _int[2];
+		return pcInt[2];
 	}
 	
 	/**
@@ -139,7 +126,7 @@ public final class L2CustomNpcInstance
 	 */
 	public final int getAllyId()
 	{
-		return _int[3];
+		return pcInt[3];
 	}
 	
 	/**
@@ -147,7 +134,7 @@ public final class L2CustomNpcInstance
 	 */
 	public final int getClanCrestId()
 	{
-		return _int[4];
+		return pcInt[4];
 	}
 	
 	/**
@@ -155,7 +142,7 @@ public final class L2CustomNpcInstance
 	 */
 	public final int getAllyCrestId()
 	{
-		return _int[5];
+		return pcInt[5];
 	}
 	
 	/**
@@ -163,7 +150,7 @@ public final class L2CustomNpcInstance
 	 */
 	public final int getRace()
 	{
-		return _int[6];
+		return pcInt[6];
 	}
 	
 	/**
@@ -171,7 +158,7 @@ public final class L2CustomNpcInstance
 	 */
 	public final int getClassId()
 	{
-		return _int[7];
+		return pcInt[7];
 	}
 	
 	/**
@@ -179,7 +166,7 @@ public final class L2CustomNpcInstance
 	 */
 	public final int getEnchantWeapon()
 	{
-		return PAPERDOLL_RHAND() == 0 || getCursedWeaponLevel() != 0 ? 0 : _int[8] > 127 ? 127 : _int[8];
+		return PAPERDOLL_RHAND() == 0 || getCursedWeaponLevel() != 0 ? 0 : pcInt[8] > 127 ? 127 : pcInt[8];
 	}
 	
 	/**
@@ -188,7 +175,7 @@ public final class L2CustomNpcInstance
 	 */
 	public final int getPledgeClass()
 	{
-		return _NpcInstance.isChampion() ? 8 : _int[9];
+		return npcInstance.isChampion() ? 8 : pcInt[9];
 	}
 	
 	/**
@@ -196,7 +183,7 @@ public final class L2CustomNpcInstance
 	 */
 	public final int getCursedWeaponLevel()
 	{
-		return PAPERDOLL_RHAND() == 0 || _int[8] > 0 ? 0 : _int[10];
+		return PAPERDOLL_RHAND() == 0 || pcInt[8] > 0 ? 0 : pcInt[10];
 	}
 	
 	/**
@@ -204,15 +191,15 @@ public final class L2CustomNpcInstance
 	 */
 	public final int PAPERDOLL_RHAND()
 	{
-		return _int[11] != 0 ? _int[11] : _NpcInstance.getRightHandItem();
+		return pcInt[11] != 0 ? pcInt[11] : npcInstance.getRightHandItem();
 	}
 	
 	/**
-	 * @return the item id for the item in the left hand, if a custom item is not equipped the value returned is the original npc left-hand weapon id. Setting this value _int[12] = -1 will not allow a npc to have anything in the left hand
+	 * @return the item id for the item in the left hand, if a custom item is not equipped the value returned is the original npc left-hand weapon id. Setting this value int[12] = -1 will not allow a npc to have anything in the left hand
 	 */
 	public final int PAPERDOLL_LHAND()
 	{
-		return _int[12] > 0 ? _int[12] : _int[12] == 0 ? _NpcInstance.getLeftHandItem() : 0;
+		return pcInt[12] > 0 ? pcInt[12] : pcInt[12] == 0 ? npcInstance.getLeftHandItem() : 0;
 	}
 	
 	/**
@@ -220,7 +207,7 @@ public final class L2CustomNpcInstance
 	 */
 	public final int PAPERDOLL_GLOVES()
 	{
-		return _int[13];
+		return pcInt[13];
 	}
 	
 	/**
@@ -228,7 +215,7 @@ public final class L2CustomNpcInstance
 	 */
 	public final int PAPERDOLL_CHEST()
 	{
-		return _int[14];
+		return pcInt[14];
 	}
 	
 	/**
@@ -236,7 +223,7 @@ public final class L2CustomNpcInstance
 	 */
 	public final int PAPERDOLL_LEGS()
 	{
-		return _int[15];
+		return pcInt[15];
 	}
 	
 	/**
@@ -244,7 +231,7 @@ public final class L2CustomNpcInstance
 	 */
 	public final int PAPERDOLL_FEET()
 	{
-		return _int[16];
+		return pcInt[16];
 	}
 	
 	/**
@@ -252,7 +239,7 @@ public final class L2CustomNpcInstance
 	 */
 	public final int PAPERDOLL_HAIR()
 	{
-		return _int[17];
+		return pcInt[17];
 	}
 	
 	/**
@@ -260,7 +247,7 @@ public final class L2CustomNpcInstance
 	 */
 	public final int PAPERDOLL_HAIR2()
 	{
-		return _int[18];
+		return pcInt[18];
 	}
 	
 	/**
@@ -268,7 +255,7 @@ public final class L2CustomNpcInstance
 	 */
 	public final int getHairStyle()
 	{
-		return _int[19];
+		return pcInt[19];
 	}
 	
 	/**
@@ -276,7 +263,7 @@ public final class L2CustomNpcInstance
 	 */
 	public final int getHairColor()
 	{
-		return _int[20];
+		return pcInt[20];
 	}
 	
 	/**
@@ -284,7 +271,7 @@ public final class L2CustomNpcInstance
 	 */
 	public final int getFace()
 	{
-		return _int[21];
+		return pcInt[21];
 	}
 	
 	/**
@@ -292,7 +279,7 @@ public final class L2CustomNpcInstance
 	 */
 	public final int nameColor()
 	{
-		return _int[22] == 0 ? 0xFFFFFF : _int[22];
+		return pcInt[22] == 0 ? 0xFFFFFF : pcInt[22];
 	}
 	
 	/**
@@ -300,7 +287,7 @@ public final class L2CustomNpcInstance
 	 */
 	public final int titleColor()
 	{
-		return _int[23] == 0 ? 0xFFFF77 : _int[23];
+		return pcInt[23] == 0 ? 0xFFFF77 : pcInt[23];
 	}
 	
 	/**
@@ -308,7 +295,7 @@ public final class L2CustomNpcInstance
 	 */
 	public final boolean getPvpFlag()
 	{
-		return _boolean[0];
+		return pcBoolean[0];
 	}
 	
 	/**
@@ -316,7 +303,7 @@ public final class L2CustomNpcInstance
 	 */
 	public final int getHeading()
 	{
-		return _NpcInstance.getHeading();
+		return npcInstance.getHeading();
 	}
 	
 	/**
@@ -324,7 +311,7 @@ public final class L2CustomNpcInstance
 	 */
 	public final boolean isNoble()
 	{
-		return _boolean[1];
+		return pcBoolean[1];
 	}
 	
 	/**
@@ -333,19 +320,19 @@ public final class L2CustomNpcInstance
 	 */
 	public final boolean isHero()
 	{
-		return _NpcInstance.isChampion() ? true : _boolean[2];
+		return npcInstance.isChampion() ? true : pcBoolean[2];
 	}
 	
 	/**
 	 * @return true if female, false if male
 	 * @remark In the DB, if you set
-	 * @MALE value=0
+	 * @MALE   value=0
 	 * @FEMALE value=1
-	 * @MAYBE value=2 % chance for the <b>Entire Template</b> to become male or female (it's a maybe value) If female, all template will be female, if Male, all template will be male
+	 * @MAYBE  value=2 % chance for the <b>Entire Template</b> to become male or female (it's a maybe value) If female, all template will be female, if Male, all template will be male
 	 */
 	public final boolean isFemaleSex()
 	{
-		return _boolean[3];
+		return pcBoolean[3];
 	}
 	
 	/**
@@ -372,7 +359,7 @@ public final class L2CustomNpcInstance
 				{
 					continue;
 				}
-				else if (_classId.getRace() == Race.human)
+				else if (classId.getRace() == Race.human)
 				{
 				}
 				break;
@@ -390,18 +377,18 @@ public final class L2CustomNpcInstance
 	{
 		while (true)
 		{
-			_classId = ClassId.values()[Rnd.get(ClassId.values().length)];
-			if (_classId == null)
+			classId = ClassId.values()[Rnd.get(ClassId.values().length)];
+			if (classId == null)
 			{
 				continue;
 			}
-			else if (_classId.getRace() != null && _classId.getParent() != null)
+			else if (classId.getRace() != null && classId.getParent() != null)
 			{
 				break;
 			}
 		}
-		_int[6] = _classId.getRace().ordinal();
-		_int[7] = _classId.getId();
+		pcInt[6] = classId.getRace().ordinal();
+		pcInt[7] = classId.getId();
 	}
 	
 	/**
@@ -413,60 +400,60 @@ public final class L2CustomNpcInstance
 		// HairStyle=19, HairColor=20, Face=21
 		// NameColor=22, TitleColor=23
 		// noble=1, hero=2, isFemaleSex=3
-		_boolean[1] = Rnd.get(100) < 15 ? true : false;
-		_boolean[3] = Rnd.get(100) < 50 ? true : false;
-		_int[22] = _int[23] = 0;
+		pcBoolean[1] = Rnd.get(100) < 15 ? true : false;
+		pcBoolean[3] = Rnd.get(100) < 50 ? true : false;
+		pcInt[22] = pcInt[23] = 0;
 		if (Rnd.get(100) < 5)
 		{
-			_int[22] = 0x0000FF;
+			pcInt[22] = 0x0000FF;
 		}
 		else if (Rnd.get(100) < 5)
 		{
-			_int[22] = 0x00FF00;
+			pcInt[22] = 0x00FF00;
 		}
 		if (Rnd.get(100) < 5)
 		{
-			_int[23] = 0x0000FF;
+			pcInt[23] = 0x0000FF;
 		}
 		else if (Rnd.get(100) < 5)
 		{
-			_int[23] = 0x00FF00;
+			pcInt[23] = 0x00FF00;
 		}
-		_int[1] = Rnd.get(100) > 95 ? 0 : Rnd.get(100) > 10 ? 50 : 1000;
-		_int[19] = Rnd.get(100) < 34 ? 0 : Rnd.get(100) < 34 ? 1 : 2;
-		_int[20] = Rnd.get(100) < 34 ? 0 : Rnd.get(100) < 34 ? 1 : 2;
-		_int[21] = Rnd.get(100) < 34 ? 0 : Rnd.get(100) < 34 ? 1 : 2;
+		pcInt[1] = Rnd.get(100) > 95 ? 0 : Rnd.get(100) > 10 ? 50 : 1000;
+		pcInt[19] = Rnd.get(100) < 34 ? 0 : Rnd.get(100) < 34 ? 1 : 2;
+		pcInt[20] = Rnd.get(100) < 34 ? 0 : Rnd.get(100) < 34 ? 1 : 2;
+		pcInt[21] = Rnd.get(100) < 34 ? 0 : Rnd.get(100) < 34 ? 1 : 2;
 		
 		final int pledgeLevel = Rnd.get(100);
 		// 30% is left for either pledge=0 or default sql data
 		// Only Marqiz are Champion mobs
 		if (pledgeLevel > 30)
 		{
-			_int[9] = 1;
+			pcInt[9] = 1;
 		}
 		if (pledgeLevel > 50)
 		{
-			_int[9] = 2;
+			pcInt[9] = 2;
 		}
 		if (pledgeLevel > 60)
 		{
-			_int[9] = 3;
+			pcInt[9] = 3;
 		}
 		if (pledgeLevel > 80)
 		{
-			_int[9] = 4;
+			pcInt[9] = 4;
 		}
 		if (pledgeLevel > 90)
 		{
-			_int[9] = 5;
+			pcInt[9] = 5;
 		}
 		if (pledgeLevel > 95)
 		{
-			_int[9] = 6;
+			pcInt[9] = 6;
 		}
 		if (pledgeLevel > 98)
 		{
-			_int[9] = 7;
+			pcInt[9] = 7;
 		}
 	}
 	
@@ -474,54 +461,58 @@ public final class L2CustomNpcInstance
 	 * Sets the data received from the CustomNpcInstanceManager
 	 * @param ci the customInfo data
 	 */
-	public void setPcInstanceData(final CustomNpcInstanceManager.customInfo ci)
+	public void setPcInstanceData(NpcToPlayer ci)
 	{
 		if (ci == null)
+		{
 			return;
+		}
 		
 		// load the "massive" data
 		for (int i = 0; i < 25; i++)
 		{
-			_int[i] = ci.integerData[i];
+			pcInt[i] = ci.integerData[i];
 		}
 		for (int i = 0; i < 4; i++)
 		{
-			_boolean[i] = ci.booleanData[i];
+			pcBoolean[i] = ci.booleanData[i];
 		}
 		
 		// random variables to apply to this L2NpcInstance polymorph
-		_allowRandomClass = ci.booleanData[4];
-		_allowRandomAppearance = ci.booleanData[5];
-		_allowRandomWeapons = ci.booleanData[6];
+		allowRandomClass = ci.booleanData[4];
+		allowRandomAppearance = ci.booleanData[5];
+		allowRandomWeapons = ci.booleanData[6];
 		
 		// name & title override
-		_name = ci.stringData[0];
-		_title = ci.stringData[1];
-		if (_name != null && _name.equals(""))
+		name = ci.stringData[0];
+		title = ci.stringData[1];
+		if (name != null && name.equals(""))
 		{
-			_name = null;
+			name = null;
 		}
-		if (_title != null && _title.equals(""))
+		if (title != null && title.equals(""))
 		{
-			_title = null;
+			title = null;
 		}
 		
 		// Not really necessary but maybe called upon on wrong random settings:
 		// Initiate this PcInstance class id to the correct pcInstance class.
-		final ClassId ids[] = ClassId.values();
+		ClassId ids[] = ClassId.values();
 		if (ids != null)
 		{
-			for (final ClassId id : ids)
+			for (ClassId id : ids)
+			{
 				if (id == null)
 				{
 					continue;
 				}
-				else if (id.getId() == _int[7])
+				else if (id.getId() == pcInt[7])
 				{
-					_classId = id;
-					_int[6] = id.getRace().ordinal();
+					classId = id;
+					pcInt[6] = id.getRace().ordinal();
 					break;
 				}
+			}
 		}
 	}
 }

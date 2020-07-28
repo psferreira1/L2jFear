@@ -1,31 +1,10 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.datatables.sql;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.Map;
-
-import javolution.util.FastMap;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.log4j.Logger;
 
@@ -34,31 +13,35 @@ import com.l2jfrozen.gameserver.managers.DayNightSpawnManager;
 import com.l2jfrozen.gameserver.model.actor.instance.L2PcInstance;
 import com.l2jfrozen.gameserver.model.entity.olympiad.Olympiad;
 import com.l2jfrozen.gameserver.model.spawn.L2Spawn;
+import com.l2jfrozen.gameserver.network.serverpackets.NpcHtmlMessage;
 import com.l2jfrozen.gameserver.templates.L2NpcTemplate;
-import com.l2jfrozen.util.CloseUtil;
-import com.l2jfrozen.util.database.DatabaseUtils;
 import com.l2jfrozen.util.database.L2DatabaseFactory;
 
 /**
  * This class ...
- * @author Nightmare
+ * @author  Nightmare
  * @version $Revision: 1.5.2.6.2.7 $ $Date: 2005/03/27 15:29:18 $
  */
 public class SpawnTable
 {
 	private final static Logger LOGGER = Logger.getLogger(SpawnTable.class);
+	private static final String SELECT_SPAWNLIST = "SELECT id, count, npc_templateid, locx, locy, locz, heading, respawn_delay, loc_id, periodOfDay FROM spawnlist ORDER BY id";
+	private static final String DELETE_SPAWN_BY_ID = "DELETE FROM spawnlist WHERE id=?";
+	private static final String SELECT_CUSTOM_SPAWNLIST = "SELECT id, count, npc_templateid, locx, locy, locz, heading, respawn_delay, loc_id, periodOfDay FROM custom_spawnlist ORDER BY id";
+	private static final String INSERT_CUSTOM_SPAWNLIST = "INSERT INTO custom_spawnlist (id,count,npc_templateid,locx,locy,locz,heading,respawn_delay,loc_id) VALUES (?,?,?,?,?,?,?,?,?)";
+	private static final String DELETE_CUSTOM_SPAWN_BY_ID = "DELETE FROM custom_spawnlist WHERE id=?";
 	
-	private static final SpawnTable _instance = new SpawnTable();
+	private static final SpawnTable instance = new SpawnTable();
 	
-	private final Map<Integer, L2Spawn> spawntable = new FastMap<Integer, L2Spawn>().shared();
+	private final Map<Integer, L2Spawn> spawntable = new ConcurrentHashMap<>();
 	private int npcSpawnCount;
 	private int customSpawnCount;
 	
-	private int _highestId;
+	private int highestId;
 	
 	public static SpawnTable getInstance()
 	{
-		return _instance;
+		return instance;
 	}
 	
 	private SpawnTable()
@@ -76,51 +59,22 @@ public class SpawnTable
 	
 	private void fillSpawnTable()
 	{
-		Connection con = null;
-		
-		try
+		try (Connection con = L2DatabaseFactory.getInstance().getConnection();
+			PreparedStatement statement = con.prepareStatement(SELECT_SPAWNLIST);
+			ResultSet rset = statement.executeQuery())
 		{
-			con = L2DatabaseFactory.getInstance().getConnection(false);
-			PreparedStatement statement;
-			
-			if (Config.DELETE_GMSPAWN_ON_CUSTOM)
-			{
-				statement = con.prepareStatement("SELECT id, count, npc_templateid, locx, locy, locz, heading, respawn_delay, loc_id, periodOfDay FROM spawnlist where id NOT in ( select id from custom_notspawned where isCustom = false ) ORDER BY id");
-			}
-			else
-			{
-				statement = con.prepareStatement("SELECT id, count, npc_templateid, locx, locy, locz, heading, respawn_delay, loc_id, periodOfDay FROM spawnlist ORDER BY id");
-			}
-			
-			final ResultSet rset = statement.executeQuery();
-			
-			L2Spawn spawnDat;
-			L2NpcTemplate template1;
-			
 			while (rset.next())
 			{
-				template1 = NpcTable.getInstance().getTemplate(rset.getInt("npc_templateid"));
-				if (template1 != null)
+				L2NpcTemplate template = NpcTable.getInstance().getTemplate(rset.getInt("npc_templateid"));
+				if (template != null)
 				{
-					if (template1.type.equalsIgnoreCase("L2SiegeGuard"))
+					if (ignoreTemplate(template))
 					{
-						// Don't spawn
-					}
-					else if (template1.type.equalsIgnoreCase("L2RaidBoss"))
-					{
-						// Don't spawn raidboss
-					}
-					else if (template1.type.equalsIgnoreCase("L2GrandBoss"))
-					{
-						// Don't spawn grandboss
-					}
-					else if (!Config.ALLOW_CLASS_MASTERS && template1.type.equals("L2ClassMaster"))
-					{
-						// Dont' spawn class masters
+						// Read the method
 					}
 					else
 					{
-						spawnDat = new L2Spawn(template1);
+						L2Spawn spawnDat = new L2Spawn(template);
 						spawnDat.setId(rset.getInt("id"));
 						spawnDat.setAmount(rset.getInt("count"));
 						spawnDat.setLocx(rset.getInt("locx"));
@@ -129,11 +83,9 @@ public class SpawnTable
 						spawnDat.setHeading(rset.getInt("heading"));
 						spawnDat.setRespawnDelay(rset.getInt("respawn_delay"));
 						
-						final int loc_id = rset.getInt("loc_id");
+						int loc_id = rset.getInt("loc_id");
 						
 						spawnDat.setLocation(loc_id);
-						
-						// template1 = null;
 						
 						switch (rset.getInt("periodOfDay"))
 						{
@@ -151,136 +103,102 @@ public class SpawnTable
 						}
 						
 						spawntable.put(spawnDat.getId(), spawnDat);
-						if (spawnDat.getId() > _highestId)
+						
+						if (spawnDat.getId() > highestId)
 						{
-							_highestId = spawnDat.getId();
+							highestId = spawnDat.getId();
 						}
+						
 						if (spawnDat.getTemplate().getNpcId() == Olympiad.OLY_MANAGER)
 						{
 							Olympiad.olymanagers.add(spawnDat);
 						}
-						spawnDat = null;
 					}
 				}
 				else
 				{
-					LOGGER.warn("SpawnTable: Data missing in NPC table for ID: {}. " + rset.getInt("npc_templateid"));
+					LOGGER.warn("SpawnTable.fillSpawnTable : Data missing in NPC table for ID: " + rset.getInt("npc_templateid"));
 				}
 			}
-			DatabaseUtils.close(statement);
-			DatabaseUtils.close(rset);
 		}
-		catch (final Exception e)
+		catch (Exception e)
 		{
-			LOGGER.error("SpawnTable: Spawn could not be initialized ", e);
-		}
-		finally
-		{
-			CloseUtil.close(con);
+			LOGGER.error("SpawnTable.fillSpawnTable : Spawn could not be initialized ", e);
 		}
 		
-		LOGGER.info("SpawnTable: Loaded " + spawntable.size() + " Npc Spawn Locations. ");
-		LOGGER.info("SpawnTable: Spawning completed, total number of NPCs in the world: " + npcSpawnCount);
+		LOGGER.info("SpawnTable: Loaded " + spawntable.size() + " NPC spawn locations. ");
 		
 		// -------------------------------Custom Spawnlist----------------------------//
-		if (Config.CUSTOM_SPAWNLIST_TABLE)
+		try (Connection con = L2DatabaseFactory.getInstance().getConnection();
+			PreparedStatement statement = con.prepareStatement(SELECT_CUSTOM_SPAWNLIST);
+			ResultSet rset = statement.executeQuery())
 		{
-			try
+			while (rset.next())
 			{
-				con = L2DatabaseFactory.getInstance().getConnection(false);
+				L2NpcTemplate template = NpcTable.getInstance().getTemplate(rset.getInt("npc_templateid"));
 				
-				final PreparedStatement statement;
-				
-				if (Config.DELETE_GMSPAWN_ON_CUSTOM)
+				if (template != null)
 				{
-					statement = con.prepareStatement("SELECT id, count, npc_templateid, locx, locy, locz, heading, respawn_delay, loc_id, periodOfDay FROM custom_spawnlist where id NOT in ( select id from custom_notspawned where isCustom = false ) ORDER BY id");
-				}
-				else
-				{
-					statement = con.prepareStatement("SELECT id, count, npc_templateid, locx, locy, locz, heading, respawn_delay, loc_id, periodOfDay FROM custom_spawnlist ORDER BY id");
-				}
-				
-				// PreparedStatement statement = con.prepareStatement("SELECT id, count, npc_templateid, locx, locy, locz, heading, respawn_delay, loc_id, periodOfDay FROM custom_spawnlist ORDER BY id");
-				final ResultSet rset = statement.executeQuery();
-				
-				L2Spawn spawnDat;
-				L2NpcTemplate template1;
-				
-				while (rset.next())
-				{
-					template1 = NpcTable.getInstance().getTemplate(rset.getInt("npc_templateid"));
-					
-					if (template1 != null)
+					if (ignoreTemplate(template))
 					{
-						if (template1.type.equalsIgnoreCase("L2SiegeGuard"))
-						{
-							// Don't spawn
-						}
-						else if (template1.type.equalsIgnoreCase("L2RaidBoss"))
-						{
-							// Don't spawn raidboss
-						}
-						else if (!Config.ALLOW_CLASS_MASTERS && template1.type.equals("L2ClassMaster"))
-						{
-							// Dont' spawn class masters
-						}
-						else
-						{
-							spawnDat = new L2Spawn(template1);
-							spawnDat.setId(rset.getInt("id"));
-							spawnDat.setAmount(rset.getInt("count"));
-							spawnDat.setLocx(rset.getInt("locx"));
-							spawnDat.setLocy(rset.getInt("locy"));
-							spawnDat.setLocz(rset.getInt("locz"));
-							spawnDat.setHeading(rset.getInt("heading"));
-							spawnDat.setRespawnDelay(rset.getInt("respawn_delay"));
-							
-							final int loc_id = rset.getInt("loc_id");
-							
-							spawnDat.setLocation(loc_id);
-							
-							switch (rset.getInt("periodOfDay"))
-							{
-								case 0: // default
-									customSpawnCount += spawnDat.init();
-									break;
-								case 1: // Day
-									DayNightSpawnManager.getInstance().addDayCreature(spawnDat);
-									customSpawnCount++;
-									break;
-								case 2: // Night
-									DayNightSpawnManager.getInstance().addNightCreature(spawnDat);
-									customSpawnCount++;
-									break;
-							}
-							
-							spawntable.put(spawnDat.getId(), spawnDat);
-							if (spawnDat.getId() > _highestId)
-							{
-								_highestId = spawnDat.getId();
-							}
-						}
+						// Read the method
 					}
 					else
 					{
-						LOGGER.warn("CustomSpawnTable: Data missing in NPC table for ID: {}. " + rset.getInt("npc_templateid"));
+						L2Spawn spawnDat = new L2Spawn(template);
+						spawnDat.setIsCustomSpawn(true);
+						spawnDat.setId(rset.getInt("id"));
+						spawnDat.setAmount(rset.getInt("count"));
+						spawnDat.setLocx(rset.getInt("locx"));
+						spawnDat.setLocy(rset.getInt("locy"));
+						spawnDat.setLocz(rset.getInt("locz"));
+						spawnDat.setHeading(rset.getInt("heading"));
+						spawnDat.setRespawnDelay(rset.getInt("respawn_delay"));
+						
+						int loc_id = rset.getInt("loc_id");
+						
+						spawnDat.setLocation(loc_id);
+						
+						switch (rset.getInt("periodOfDay"))
+						{
+							case 0: // default
+								customSpawnCount += spawnDat.init();
+								break;
+							case 1: // Day
+								DayNightSpawnManager.getInstance().addDayCreature(spawnDat);
+								customSpawnCount++;
+								break;
+							case 2: // Night
+								DayNightSpawnManager.getInstance().addNightCreature(spawnDat);
+								customSpawnCount++;
+								break;
+						}
+						
+						spawntable.put(spawnDat.getId(), spawnDat);
+						
+						if (spawnDat.getId() > highestId)
+						{
+							highestId = spawnDat.getId();
+						}
 					}
 				}
-				DatabaseUtils.close(statement);
-				DatabaseUtils.close(rset);
+				else
+				{
+					LOGGER.warn("SpawnTable.fillSpawnTable : Data missing in Custom NPC table for ID: " + rset.getInt("npc_templateid"));
+				}
 			}
-			catch (final Exception e)
-			{
-				LOGGER.error("CustomSpawnTable: Spawn could not be initialized ", e);
-			}
-			finally
-			{
-				CloseUtil.close(con);
-			}
-			
-			LOGGER.info("CustomSpawnTable: Loaded " + customSpawnCount + " Npc Spawn Locations. ");
-			LOGGER.info("CustomSpawnTable: Spawning completed, total number of NPCs in the world: " + customSpawnCount);
 		}
+		catch (Exception e)
+		{
+			LOGGER.error("SpawnTable.fillSpawnTable: Custom spawn could not be initialized ", e);
+		}
+		
+		if (customSpawnCount > 0)
+		{
+			LOGGER.info("CustomSpawnTable: Loaded " + customSpawnCount + " Npc Spawn Locations. ");
+		}
+		
+		LOGGER.info("SpawnTable: Spawning completed, total number of NPCs in the world: " + (npcSpawnCount + customSpawnCount));
 	}
 	
 	public L2Spawn getTemplate(final int id)
@@ -288,20 +206,23 @@ public class SpawnTable
 		return spawntable.get(id);
 	}
 	
-	public void addNewSpawn(final L2Spawn spawn, final boolean storeInDb)
+	/**
+	 * All new NPCs spawns will be stored in custom_spawn_list.
+	 * @param spawn
+	 * @param storeInDb : <B>true</B> --> Wil be stored in db, <B>false</B> --> Will not store in db
+	 */
+	public void addNewSpawn(L2Spawn spawn, boolean storeInDb)
 	{
-		_highestId++;
-		spawn.setId(_highestId);
-		spawntable.put(_highestId, spawn);
+		highestId++;
+		spawn.setId(highestId);
+		spawntable.put(highestId, spawn);
 		
 		if (storeInDb)
 		{
-			Connection con = null;
-			
-			try
+			// OLD SQL ---> "INSERT INTO " + (spawn.isCustom() ? "custom_spawnlist" : "spawnlist") + "(id,count,npc_templateid,locx,locy,locz,heading,respawn_delay,loc_id) VALUES (?,?,?,?,?,?,?,?,?)"
+			try (Connection con = L2DatabaseFactory.getInstance().getConnection();
+				PreparedStatement statement = con.prepareStatement(INSERT_CUSTOM_SPAWNLIST))
 			{
-				con = L2DatabaseFactory.getInstance().getConnection(false);
-				final PreparedStatement statement = con.prepareStatement("INSERT INTO " + (spawn.isCustom() ? "custom_spawnlist" : "spawnlist") + "(id,count,npc_templateid,locx,locy,locz,heading,respawn_delay,loc_id) values(?,?,?,?,?,?,?,?,?)");
 				statement.setInt(1, spawn.getId());
 				statement.setInt(2, spawn.getAmount());
 				statement.setInt(3, spawn.getNpcid());
@@ -311,88 +232,72 @@ public class SpawnTable
 				statement.setInt(7, spawn.getHeading());
 				statement.setInt(8, spawn.getRespawnDelay() / 1000);
 				statement.setInt(9, spawn.getLocation());
-				statement.execute();
-				DatabaseUtils.close(statement);
+				statement.executeUpdate();
 			}
-			catch (final Exception e)
+			catch (Exception e)
 			{
-				LOGGER.error("SpawnTable: Could not store spawn in the DB ", e);
-			}
-			finally
-			{
-				CloseUtil.close(con);
+				LOGGER.error("SpawnTable: Could not insert NPC spawn in custom_spawnlist table", e);
 			}
 		}
 	}
 	
-	public void deleteSpawn(final L2Spawn spawn, final boolean updateDb)
+	public void deleteSpawn(L2Spawn spawn, boolean updateDb)
 	{
 		if (spawntable.remove(spawn.getId()) == null)
+		{
 			return;
+		}
 		
 		if (updateDb)
 		{
-			Connection con = null;
-			
-			if (Config.DELETE_GMSPAWN_ON_CUSTOM)
+			try (Connection con = L2DatabaseFactory.getInstance().getConnection();
+				PreparedStatement statement = con.prepareStatement(spawn.isCustomSpawn() ? DELETE_CUSTOM_SPAWN_BY_ID : DELETE_SPAWN_BY_ID))
 			{
-				try
-				{
-					con = L2DatabaseFactory.getInstance().getConnection(false);
-					final PreparedStatement statement = con.prepareStatement("Replace into custom_notspawned VALUES (?,?)");
-					statement.setInt(1, spawn.getId());
-					statement.setBoolean(2, false);
-					statement.execute();
-					DatabaseUtils.close(statement);
-				}
-				catch (final Exception e)
-				{
-					LOGGER.error("SpawnTable: Spawn {} could not be insert into DB " + spawn.getId(), e);
-				}
-				finally
-				{
-					CloseUtil.close(con);
-				}
+				statement.setInt(1, spawn.getId());
+				statement.executeUpdate();
 			}
-			else
+			catch (Exception e)
 			{
-				try
-				{
-					con = L2DatabaseFactory.getInstance().getConnection(false);
-					final PreparedStatement statement = con.prepareStatement("DELETE FROM " + (spawn.isCustom() ? "custom_spawnlist" : "spawnlist") + " WHERE id=?");
-					statement.setInt(1, spawn.getId());
-					statement.execute();
-					DatabaseUtils.close(statement);
-				}
-				catch (final Exception e)
-				{
-					LOGGER.error("SpawnTable: Spawn {} could not be removed from DB " + spawn.getId(), e);
-				}
-				finally
-				{
-					CloseUtil.close(con);
-				}
+				LOGGER.error("SpawnTable: Spawn {} could not be removed from DB " + spawn.getId(), e);
 			}
 		}
 	}
 	
-	// just wrapper
 	public void reloadAll()
 	{
 		fillSpawnTable();
 	}
 	
 	/**
-	 * Get all the spawn of a NPC<BR>
+	 * Send html dialog to player with all the spawns of a NPC<BR>
 	 * <BR>
-	 * @param activeChar
-	 * @param npcId : ID of the NPC to find.
-	 * @param teleportIndex
+	 * @param activeChar    : Player to send htm dialog
+	 * @param npcId         : ID of the NPC to find.
+	 * @param teleportIndex : If there is 2 spawns and this parameter is equals to 2, player will be teleported
+	 * @param spawnId       : In the list showed of spawns, the same spawn of the NPC will be ignored
 	 */
-	public void findNPCInstances(final L2PcInstance activeChar, final int npcId, final int teleportIndex)
+	public void showSpawnList(L2PcInstance activeChar, int npcId, int teleportIndex, int spawnId)
 	{
+		if (activeChar == null)
+		{
+			return;
+		}
+		
+		L2NpcTemplate npc = NpcTable.getInstance().getTemplate(npcId);
+		
+		if (npc == null)
+		{
+			activeChar.sendMessage("No spawn found with NPC ID: " + npcId);
+			return;
+		}
+		
+		StringBuilder sb = new StringBuilder();
 		int index = 0;
-		for (final L2Spawn spawn : spawntable.values())
+		
+		sb.append("<html><title>").append(npc.getName()).append(" (").append(npc.getNpcId()).append(")").append("</title>");
+		sb.append("<body>");
+		
+		for (L2Spawn spawn : spawntable.values())
 		{
 			if (npcId == spawn.getNpcid())
 			{
@@ -403,23 +308,69 @@ public class SpawnTable
 					if (teleportIndex == index)
 					{
 						activeChar.teleToLocation(spawn.getLocx(), spawn.getLocy(), spawn.getLocz(), true);
+						return;
 					}
 				}
 				else
 				{
-					activeChar.sendMessage(index + " - " + spawn.getTemplate().name + " (" + spawn.getId() + "): " + spawn.getLocx() + " " + spawn.getLocy() + " " + spawn.getLocz());
+					if (spawn.getId() == spawnId)
+					{
+						sb.append("<br1>");
+						sb.append(index).append(" [").append(spawn.getLocx()).append(" ").append(spawn.getLocy()).append(" ").append(spawn.getLocz()).append("] -- Current");
+						sb.append("<br1>");
+					}
+					else
+					{
+						sb.append("<a action=\"bypass -h admin_move_to ").append(spawn.getLocx()).append(" ").append(spawn.getLocy()).append(" ").append(spawn.getLocz()).append("\">");
+						sb.append(index).append(" [").append(spawn.getLocx()).append(" ").append(spawn.getLocy()).append(" ").append(spawn.getLocz()).append("]</a><br1>");
+					}
 				}
 			}
 		}
+		sb.append("</body></html>");
 		
-		if (index == 0)
-		{
-			activeChar.sendMessage("No current spawns found.");
-		}
+		NpcHtmlMessage dialog = new NpcHtmlMessage(5);
+		dialog.setHtml(sb.toString());
+		activeChar.sendPacket(dialog);
 	}
 	
-	public Map<Integer, L2Spawn> getAllTemplates()
+	public Map<Integer, L2Spawn> getAllSpawns()
 	{
 		return spawntable;
+	}
+	
+	/**
+	 * @param  template This NPC SHOULD NOT be SPAWNED when loading database spawnlist or custom_spawnlist
+	 * @return          For example NPCs with TYPE <b>L2SiegeGuard</b> Should NOT spawn when server is loading, cause <b>L2SiegeGuard</b> will spawn ONLY in SIEGE.
+	 */
+	public boolean ignoreTemplate(L2NpcTemplate template)
+	{
+		if (template.type.equalsIgnoreCase("L2SiegeGuard"))
+		{
+			// Don't spawn
+			return true;
+		}
+		else if (template.type.equalsIgnoreCase("L2RaidBoss"))
+		{
+			// Don't spawn raidboss
+			return true;
+		}
+		else if (template.type.equalsIgnoreCase("L2GrandBoss"))
+		{
+			// Don't spawn grandboss
+			return true;
+		}
+		else if (!Config.ALLOW_CLASS_MASTERS && template.type.equals("L2ClassMaster"))
+		{
+			// Dont' spawn class masters
+			return true;
+		}
+		else if (!Config.SPAWN_CHRISTMAS_TREE && template.type.equals("L2XmasTree"))
+		{
+			// Dont' spawn Christ mass Tree
+			return true;
+		}
+		
+		return false;
 	}
 }

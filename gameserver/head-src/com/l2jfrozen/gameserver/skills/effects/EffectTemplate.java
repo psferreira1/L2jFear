@@ -1,23 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.skills.effects;
 
 import java.lang.reflect.Constructor;
@@ -40,8 +20,8 @@ public final class EffectTemplate
 {
 	static Logger LOGGER = Logger.getLogger(EffectTemplate.class);
 	
-	private final Class<?> _func;
-	private final Constructor<?> _constructor;
+	public final Class<?> function;
+	private final Constructor<?> constructor;
 	
 	public final Condition attachCond;
 	public final Condition applayCond;
@@ -73,23 +53,27 @@ public final class EffectTemplate
 		
 		try
 		{
-			_func = Class.forName("com.l2jfrozen.gameserver.skills.effects.Effect" + func);
+			function = Class.forName("com.l2jfrozen.gameserver.skills.effects.Effect" + func);
 		}
 		catch (final ClassNotFoundException e)
 		{
 			if (Config.ENABLE_ALL_EXCEPTIONS)
+			{
 				e.printStackTrace();
+			}
 			
 			throw new RuntimeException(e);
 		}
 		try
 		{
-			_constructor = _func.getConstructor(Env.class, EffectTemplate.class);
+			constructor = function.getConstructor(Env.class, EffectTemplate.class);
 		}
 		catch (final NoSuchMethodException e)
 		{
 			if (Config.ENABLE_ALL_EXCEPTIONS)
+			{
 				e.printStackTrace();
+			}
 			
 			throw new RuntimeException(e);
 		}
@@ -98,10 +82,12 @@ public final class EffectTemplate
 	public L2Effect getEffect(final Env env)
 	{
 		if (attachCond != null && !attachCond.test(env))
+		{
 			return null;
+		}
 		try
 		{
-			final L2Effect effect = (L2Effect) _constructor.newInstance(env, this);
+			final L2Effect effect = (L2Effect) constructor.newInstance(env, this);
 			// if (_applayCond != null)
 			// effect.setCondition(_applayCond);
 			return effect;
@@ -118,7 +104,7 @@ public final class EffectTemplate
 		}
 		catch (final InvocationTargetException e)
 		{
-			LOGGER.warn("Error creating new instance of Class " + _func + " Exception was:");
+			LOGGER.warn("Error creating new instance of Class " + function + " Exception was:");
 			e.getTargetException().printStackTrace();
 			return null;
 		}
@@ -142,6 +128,17 @@ public final class EffectTemplate
 			tmp[len] = f;
 			funcTemplates = tmp;
 		}
+	}
+	
+	/**
+	 * This is the value of "time" in "for" tags:<BR>
+	 * <B>For example:</B><BR>
+	 * effect count="1" name="Buff" <B>time</B>="1200" val="0" stackOrder="#runSpd" stackType="SpeedUp"
+	 * @param time : Value in seconds
+	 */
+	public void setPeriod(int time)
+	{
+		period = time;
 	}
 	
 }

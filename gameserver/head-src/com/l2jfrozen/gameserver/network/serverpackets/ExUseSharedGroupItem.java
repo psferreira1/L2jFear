@@ -1,22 +1,3 @@
-/* L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.network.serverpackets;
 
 /**
@@ -25,25 +6,14 @@ package com.l2jfrozen.gameserver.network.serverpackets;
  */
 public class ExUseSharedGroupItem extends L2GameServerPacket
 {
-	/** The Constant _S__FE_49_EXUSESHAREDGROUPITEM. */
-	private static final String _S__FE_49_EXUSESHAREDGROUPITEM = "[S] FE:49 ExUseSharedGroupItem";
+	private final int unk1, unk2, unk3, unk4;
 	
-	/** The _unk4. */
-	private final int _unk1, _unk2, _unk3, _unk4;
-	
-	/**
-	 * Instantiates a new ex use shared group item.
-	 * @param unk1 the unk1
-	 * @param unk2 the unk2
-	 * @param unk3 the unk3
-	 * @param unk4 the unk4
-	 */
 	public ExUseSharedGroupItem(final int unk1, final int unk2, final int unk3, final int unk4)
 	{
-		_unk1 = unk1;
-		_unk2 = unk2;
-		_unk3 = unk3;
-		_unk4 = unk4;
+		this.unk1 = unk1;
+		this.unk2 = unk2;
+		this.unk3 = unk3;
+		this.unk4 = unk4;
 	}
 	
 	@Override
@@ -52,19 +22,15 @@ public class ExUseSharedGroupItem extends L2GameServerPacket
 		writeC(0xfe);
 		writeH(0x49);
 		
-		writeD(_unk1);
-		writeD(_unk2);
-		writeD(_unk3);
-		writeD(_unk4);
+		writeD(unk1);
+		writeD(unk2);
+		writeD(unk3);
+		writeD(unk4);
 	}
 	
-	/**
-	 * Gets the type.
-	 * @return the type
-	 */
 	@Override
 	public String getType()
 	{
-		return _S__FE_49_EXUSESHAREDGROUPITEM;
+		return "[S] FE:49 ExUseSharedGroupItem";
 	}
 }

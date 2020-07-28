@@ -1,25 +1,7 @@
-/* L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.model;
 
-import javolution.util.FastList;
+import java.util.ArrayList;
+import java.util.List;
 
 import com.l2jfrozen.Config;
 import com.l2jfrozen.util.random.Rnd;
@@ -29,44 +11,44 @@ import com.l2jfrozen.util.random.Rnd;
  */
 public class L2DropCategory
 {
-	private final FastList<L2DropData> _drops;
-	private int _categoryChance; // a sum of chances for calculating if an item will be dropped from this category
-	private int _categoryBalancedChance; // sum for balancing drop selection inside categories in high rate servers
-	private final int _categoryType;
+	private final List<L2DropData> drops;
+	private int categoryChance; // a sum of chances for calculating if an item will be dropped from this category
+	private int categoryBalancedChance; // sum for balancing drop selection inside categories in high rate servers
+	private final int categoryType;
 	
 	public L2DropCategory(final int categoryType)
 	{
-		_categoryType = categoryType;
-		_drops = new FastList<>(0);
-		_categoryChance = 0;
-		_categoryBalancedChance = 0;
+		this.categoryType = categoryType;
+		drops = new ArrayList<>();
+		categoryChance = 0;
+		categoryBalancedChance = 0;
 	}
 	
 	public void addDropData(final L2DropData drop, final boolean raid)
 	{
 		if (drop.isQuestDrop())
 		{
-			// if (_questDrops == null)
-			// _questDrops = new FastList<L2DropData>(0);
-			// _questDrops.add(drop);
+			// if (questDrops == null)
+			// questDrops = new ArrayList<L2DropData>(0);
+			// questDrops.add(drop);
 		}
 		else
 		{
-			_drops.add(drop);
-			_categoryChance += drop.getChance();
+			drops.add(drop);
+			categoryChance += drop.getChance();
 			// for drop selection inside a category: max 100 % chance for getting an item, scaling all values to that.
-			_categoryBalancedChance += Math.min((drop.getChance() * (raid ? 1 : Config.RATE_DROP_ITEMS)), L2DropData.MAX_CHANCE);
+			categoryBalancedChance += Math.min((drop.getChance() * (raid ? 1 : Config.RATE_DROP_ITEMS)), L2DropData.MAX_CHANCE);
 		}
 	}
 	
-	public FastList<L2DropData> getAllDrops()
+	public List<L2DropData> getAllDrops()
 	{
-		return _drops;
+		return drops;
 	}
 	
 	public void clearAllDrops()
 	{
-		_drops.clear();
+		drops.clear();
 	}
 	
 	public boolean isSweep()
@@ -80,20 +62,24 @@ public class L2DropCategory
 	public int getCategoryChance()
 	{
 		if (getCategoryType() >= 0)
-			return _categoryChance;
+		{
+			return categoryChance;
+		}
 		return L2DropData.MAX_CHANCE;
 	}
 	
 	public int getCategoryBalancedChance()
 	{
 		if (getCategoryType() >= 0)
-			return _categoryBalancedChance;
+		{
+			return categoryBalancedChance;
+		}
 		return L2DropData.MAX_CHANCE;
 	}
 	
 	public int getCategoryType()
 	{
-		return _categoryType;
+		return categoryType;
 	}
 	
 	/**
@@ -103,7 +89,7 @@ public class L2DropCategory
 	 */
 	public synchronized L2DropData dropSeedAllowedDropsOnly()
 	{
-		FastList<L2DropData> drops = new FastList<>();
+		List<L2DropData> drops = new ArrayList<>();
 		int subCatChance = 0;
 		for (final L2DropData drop : getAllDrops())
 		{
@@ -137,13 +123,13 @@ public class L2DropCategory
 	
 	/**
 	 * ONE of the drops in this category is to be dropped now. to see which one will be dropped, weight all items' chances such that their sum of chances equals MAX_CHANCE. since the individual drops have their base chance, we also ought to use the base category chance for the weight. So weight =
-	 * MAX_CHANCE/basecategoryDropChance. Then get a single random number within this range. The first item (in order of the list) whose contribution to the sum makes the sum greater than the random number, will be dropped. Edited: How _categoryBalancedChance works in high rate servers: Let's say
-	 * item1 has a drop chance (when considered alone, without category) of 1 % * RATE_DROP_ITEMS and item2 has 20 % * RATE_DROP_ITEMS, and the server's RATE_DROP_ITEMS is for example 50x. Without this balancer, the relative chance inside the category to select item1 to be dropped would be 1/26 and
-	 * item2 25/26, no matter what rates are used. In high rate servers people usually consider the 1 % individual drop chance should become higher than this relative chance (1/26) inside the category, since having the both items for example in their own categories would result in having a drop
-	 * chance for item1 50 % and item2 1000 %. _categoryBalancedChance limits the individual chances to 100 % max, making the chance for item1 to be selected from this category 50/(50+100) = 1/3 and item2 100/150 = 2/3. This change doesn't affect calculation when drop_chance * RATE_DROP_ITEMS < 100
-	 * %, meaning there are no big changes for low rate servers and no changes at all for 1x servers.
-	 * @param raid
-	 * @return selected drop from category, or null if nothing is dropped.
+	 * MAX_CHANCE/basecategoryDropChance. Then get a single random number within this range. The first item (in order of the list) whose contribution to the sum makes the sum greater than the random number, will be dropped. Edited: How categoryBalancedChance works in high rate servers: Let's say item1
+	 * has a drop chance (when considered alone, without category) of 1 % * RATE_DROP_ITEMS and item2 has 20 % * RATE_DROP_ITEMS, and the server's RATE_DROP_ITEMS is for example 50x. Without this balancer, the relative chance inside the category to select item1 to be dropped would be 1/26 and item2
+	 * 25/26, no matter what rates are used. In high rate servers people usually consider the 1 % individual drop chance should become higher than this relative chance (1/26) inside the category, since having the both items for example in their own categories would result in having a drop chance for
+	 * item1 50 % and item2 1000 %. categoryBalancedChance limits the individual chances to 100 % max, making the chance for item1 to be selected from this category 50/(50+100) = 1/3 and item2 100/150 = 2/3. This change doesn't affect calculation when drop_chance * RATE_DROP_ITEMS < 100 %, meaning there
+	 * are no big changes for low rate servers and no changes at all for 1x servers.
+	 * @param  raid
+	 * @return      selected drop from category, or null if nothing is dropped.
 	 */
 	public synchronized L2DropData dropOne(final boolean raid)
 	{
@@ -153,8 +139,10 @@ public class L2DropCategory
 		{
 			sum += Math.min((drop.getChance() * (raid ? 1 : Config.RATE_DROP_ITEMS)), L2DropData.MAX_CHANCE);
 			
-			if (sum >= randomIndex) // drop this item and exit the function
+			if (sum >= randomIndex)
+			{
 				return drop;
+			}
 		}
 		return null;
 	}

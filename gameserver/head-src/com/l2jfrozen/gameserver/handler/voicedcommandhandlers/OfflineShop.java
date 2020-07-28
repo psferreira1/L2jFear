@@ -1,19 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any later
- * version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
- *
- * You should have received a copy of the GNU General Public License along with
- * this program. If not, see <http://www.gnu.org/licenses/>.
- */
 package com.l2jfrozen.gameserver.handler.voicedcommandhandlers;
 
 import com.l2jfrozen.Config;
@@ -23,7 +7,6 @@ import com.l2jfrozen.gameserver.model.L2Character;
 import com.l2jfrozen.gameserver.model.L2Party;
 import com.l2jfrozen.gameserver.model.TradeList;
 import com.l2jfrozen.gameserver.model.actor.instance.L2PcInstance;
-import com.l2jfrozen.gameserver.model.entity.olympiad.Olympiad;
 import com.l2jfrozen.gameserver.model.entity.sevensigns.SevenSignsFestival;
 import com.l2jfrozen.gameserver.network.SystemMessageId;
 import com.l2jfrozen.gameserver.network.serverpackets.ActionFailed;
@@ -36,24 +19,21 @@ import com.l2jfrozen.gameserver.taskmanager.AttackStanceTaskManager;
  */
 public class OfflineShop implements IVoicedCommandHandler
 {
-	private static String[] _voicedCommands =
+	private static String[] voicedCommands =
 	{
 		"offline_shop"
 	};
 	
-	@SuppressWarnings("null")
 	@Override
-	public boolean useVoicedCommand(final String command, final L2PcInstance player, final String target)
+	public boolean useVoicedCommand(String command, L2PcInstance player, String target)
 	{
-		
 		if (player == null)
-			return false;
-		
-		// Message like L2OFF
-		if ((!player.isInStoreMode() && (!player.isInCraftMode())) || !player.isSitting())
 		{
-			player.sendMessage("You are not running a private store or private work shop.");
-			player.sendPacket(ActionFailed.STATIC_PACKET);
+			return false;
+		}
+		
+		if (!Config.OFFLINE_TRADE_ENABLE && !Config.OFFLINE_CRAFT_ENABLE)
+		{
 			return false;
 		}
 		
@@ -64,34 +44,9 @@ public class OfflineShop implements IVoicedCommandHandler
 			return false;
 		}
 		
-		final TradeList storeListBuy = player.getBuyList();
-		if (storeListBuy == null && storeListBuy.getItemCount() == 0)
-		{
-			player.sendMessage("Your buy list is empty.");
-			player.sendPacket(ActionFailed.STATIC_PACKET);
-			return false;
-		}
-		
-		final TradeList storeListSell = player.getSellList();
-		if (storeListSell == null && storeListSell.getItemCount() == 0)
-		{
-			player.sendMessage("Your sell list is empty.");
-			player.sendPacket(ActionFailed.STATIC_PACKET);
-			return false;
-		}
-		
 		if (player.isAway())
 		{
 			player.sendMessage("You can't restart in Away mode.");
-			return false;
-		}
-		
-		player.getInventory().updateDatabase();
-		
-		if (AttackStanceTaskManager.getInstance().getAttackStanceTask(player) && !(player.isGM() && Config.GM_RESTART_FIGHTING))
-		{
-			player.sendPacket(new SystemMessage(SystemMessageId.CANT_LOGOUT_WHILE_FIGHTING));
-			player.sendPacket(ActionFailed.STATIC_PACKET);
 			return false;
 		}
 		
@@ -117,9 +72,43 @@ public class OfflineShop implements IVoicedCommandHandler
 			return false;
 		}
 		
-		if (player.isInOlympiadMode() || Olympiad.getInstance().isRegistered(player))
+		if (player.isInOlympiadMode())
 		{
 			player.sendMessage("You can't Logout in Olympiad mode.");
+			return false;
+		}
+		
+		// Message like L2OFF
+		if ((!player.isInStoreMode() && (!player.isInCraftMode())) || !player.isSitting())
+		{
+			player.sendMessage("You are not running a private store or private work shop.");
+			player.sendPacket(ActionFailed.STATIC_PACKET);
+			return false;
+		}
+		
+		TradeList storeListBuy = player.getBuyList();
+		TradeList storeListSell = player.getSellList();
+		
+		if (storeListBuy == null && storeListSell == null)
+		{
+			player.sendMessage("Your private store list is empty.");
+			player.sendPacket(ActionFailed.STATIC_PACKET);
+			return false;
+		}
+		
+		if ((storeListBuy != null && storeListBuy.getItemCount() == 0) && (storeListSell != null && storeListSell.getItemCount() == 0) && !player.isInCraftMode())
+		{
+			player.sendMessage("Your private store has no items.");
+			player.sendPacket(ActionFailed.STATIC_PACKET);
+			return false;
+		}
+		
+		player.getInventory().updateDatabase();
+		
+		if (AttackStanceTaskManager.getInstance().getAttackStanceTask(player) && !(player.isGM() && Config.GM_RESTART_FIGHTING))
+		{
+			player.sendPacket(new SystemMessage(SystemMessageId.CANT_LOGOUT_WHILE_FIGHTING));
+			player.sendPacket(ActionFailed.STATIC_PACKET);
 			return false;
 		}
 		
@@ -133,24 +122,27 @@ public class OfflineShop implements IVoicedCommandHandler
 				return false;
 			}
 			
-			final L2Party playerParty = player.getParty();
+			L2Party playerParty = player.getParty();
 			if (playerParty != null)
+			{
 				player.getParty().broadcastToPartyMembers(SystemMessage.sendString(player.getName() + " has been removed from the upcoming Festival."));
+			}
 		}
 		
 		if (player.isFlying())
+		{
 			player.removeSkill(SkillTable.getInstance().getInfo(4289, 1));
+		}
 		
 		if ((player.isInStoreMode() && Config.OFFLINE_TRADE_ENABLE) || (player.isInCraftMode() && Config.OFFLINE_CRAFT_ENABLE))
 		{
 			// Sleep effect, not official feature but however L2OFF features (like offline trade)
 			if (Config.OFFLINE_SLEEP_EFFECT)
+			{
 				player.startAbnormalEffect(L2Character.ABNORMAL_EFFECT_SLEEP);
-			
-			player.sendMessage("Your private store has succesfully been flagged as an offline shop and will remain active for ever.");
+			}
 			
 			player.logout();
-			
 			return true;
 		}
 		
@@ -160,6 +152,6 @@ public class OfflineShop implements IVoicedCommandHandler
 	@Override
 	public String[] getVoicedCommandList()
 	{
-		return _voicedCommands;
+		return voicedCommands;
 	}
 }

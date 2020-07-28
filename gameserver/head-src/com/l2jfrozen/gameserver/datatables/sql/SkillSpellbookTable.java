@@ -1,37 +1,14 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.datatables.sql;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.util.HashMap;
 import java.util.Map;
-
-import javolution.util.FastMap;
 
 import org.apache.log4j.Logger;
 
 import com.l2jfrozen.gameserver.model.L2Skill;
-import com.l2jfrozen.util.CloseUtil;
-import com.l2jfrozen.util.database.DatabaseUtils;
 import com.l2jfrozen.util.database.L2DatabaseFactory;
 
 /**
@@ -40,48 +17,40 @@ import com.l2jfrozen.util.database.L2DatabaseFactory;
 public class SkillSpellbookTable
 {
 	private final static Logger LOGGER = Logger.getLogger(SkillTreeTable.class);
-	private static SkillSpellbookTable _instance;
+	private static final String SELECT_SKILL_SPELLBOOKS = "SELECT skill_id, item_id FROM skill_spellbooks";
+	
+	private static SkillSpellbookTable instance;
 	
 	private static Map<Integer, Integer> skillSpellbooks;
 	
 	public static SkillSpellbookTable getInstance()
 	{
-		if (_instance == null)
+		if (instance == null)
 		{
-			_instance = new SkillSpellbookTable();
+			instance = new SkillSpellbookTable();
 		}
 		
-		return _instance;
+		return instance;
 	}
 	
 	private SkillSpellbookTable()
 	{
-		skillSpellbooks = new FastMap<>();
-		Connection con = null;
+		skillSpellbooks = new HashMap<>();
 		
-		try
+		try (Connection con = L2DatabaseFactory.getInstance().getConnection();
+			PreparedStatement statement = con.prepareStatement(SELECT_SKILL_SPELLBOOKS);
+			ResultSet rset = statement.executeQuery())
 		{
-			con = L2DatabaseFactory.getInstance().getConnection(false);
-			final PreparedStatement statement = con.prepareStatement("SELECT skill_id, item_id FROM skill_spellbooks");
-			final ResultSet spbooks = statement.executeQuery();
-			
-			while (spbooks.next())
+			while (rset.next())
 			{
-				skillSpellbooks.put(spbooks.getInt("skill_id"), spbooks.getInt("item_id"));
+				skillSpellbooks.put(rset.getInt("skill_id"), rset.getInt("item_id"));
 			}
-			
-			spbooks.close();
-			DatabaseUtils.close(statement);
 			
 			LOGGER.info("SkillSpellbookTable: Loaded " + skillSpellbooks.size() + " spellbooks");
 		}
-		catch (final Exception e)
+		catch (Exception e)
 		{
-			LOGGER.error("Error while loading spellbook data", e);
-		}
-		finally
-		{
-			CloseUtil.close(con);
+			LOGGER.error("SkillSpellbookTable.SkillSpellbookTable : Error while loading spellbook data", e);
 		}
 	}
 	
@@ -105,7 +74,9 @@ public class SkillSpellbookTable
 		}
 		
 		if (!skillSpellbooks.containsKey(skillId))
+		{
 			return -1;
+		}
 		
 		return skillSpellbooks.get(skillId);
 	}

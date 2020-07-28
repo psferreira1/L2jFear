@@ -1,23 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.cache;
 
 import java.io.File;
@@ -29,17 +9,15 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
-import javolution.util.FastMap;
-
 import org.apache.log4j.Logger;
 
 import com.l2jfrozen.Config;
 import com.l2jfrozen.gameserver.datatables.sql.ClanTable;
 import com.l2jfrozen.gameserver.idfactory.IdFactory;
 import com.l2jfrozen.gameserver.model.L2Clan;
-import com.l2jfrozen.util.CloseUtil;
-import com.l2jfrozen.util.database.DatabaseUtils;
 import com.l2jfrozen.util.database.L2DatabaseFactory;
+
+import javolution.util.FastMap;
 
 /**
  * @author Layane
@@ -47,27 +25,28 @@ import com.l2jfrozen.util.database.L2DatabaseFactory;
 public class CrestCache
 {
 	private static Logger LOGGER = Logger.getLogger(CrestCache.class);
+	private static final String UPDATE_CLAN_CREST = "UPDATE clan_data SET crest_id=? WHERE clan_id=?";
 	
-	private static CrestCache _instance;
+	private static CrestCache instance;
 	
-	private final FastMRUCache<Integer, byte[]> _cachePledge = new FastMRUCache<>();
+	private final FastMRUCache<Integer, byte[]> cachePledge = new FastMRUCache<>();
 	
-	private final FastMRUCache<Integer, byte[]> _cachePledgeLarge = new FastMRUCache<>();
+	private final FastMRUCache<Integer, byte[]> cachePledgeLarge = new FastMRUCache<>();
 	
-	private final FastMRUCache<Integer, byte[]> _cacheAlly = new FastMRUCache<>();
+	private final FastMRUCache<Integer, byte[]> cacheAlly = new FastMRUCache<>();
 	
-	private int _loadedFiles;
+	private int loadedFiles;
 	
-	private long _bytesBuffLen;
+	private long bytesBuffLen;
 	
 	public static CrestCache getInstance()
 	{
-		if (_instance == null)
+		if (instance == null)
 		{
-			_instance = new CrestCache();
+			instance = new CrestCache();
 		}
 		
-		return _instance;
+		return instance;
 	}
 	
 	public CrestCache()
@@ -86,17 +65,17 @@ public class CrestCache
 		byte[] content;
 		synchronized (this)
 		{
-			_loadedFiles = 0;
-			_bytesBuffLen = 0;
+			loadedFiles = 0;
+			bytesBuffLen = 0;
 			
-			_cachePledge.clear();
-			_cachePledgeLarge.clear();
-			_cacheAlly.clear();
+			cachePledge.clear();
+			cachePledgeLarge.clear();
+			cacheAlly.clear();
 		}
 		
-		final FastMap<Integer, byte[]> _mapPledge = _cachePledge.getContentMap();
-		final FastMap<Integer, byte[]> _mapPledgeLarge = _cachePledgeLarge.getContentMap();
-		final FastMap<Integer, byte[]> _mapAlly = _cacheAlly.getContentMap();
+		final FastMap<Integer, byte[]> mapPledge = cachePledge.getContentMap();
+		final FastMap<Integer, byte[]> mapPledgeLarge = cachePledgeLarge.getContentMap();
+		final FastMap<Integer, byte[]> mapAlly = cacheAlly.getContentMap();
 		
 		for (final File file : files)
 		{
@@ -111,30 +90,33 @@ public class CrestCache
 					
 					if (file.getName().startsWith("Crest_Large_"))
 					{
-						_mapPledgeLarge.put(Integer.valueOf(file.getName().substring(12, file.getName().length() - 4)), content);
+						mapPledgeLarge.put(Integer.valueOf(file.getName().substring(12, file.getName().length() - 4)), content);
 					}
 					else if (file.getName().startsWith("Crest_"))
 					{
-						_mapPledge.put(Integer.valueOf(file.getName().substring(6, file.getName().length() - 4)), content);
+						mapPledge.put(Integer.valueOf(file.getName().substring(6, file.getName().length() - 4)), content);
 					}
 					else if (file.getName().startsWith("AllyCrest_"))
 					{
-						_mapAlly.put(Integer.valueOf(file.getName().substring(10, file.getName().length() - 4)), content);
+						mapAlly.put(Integer.valueOf(file.getName().substring(10, file.getName().length() - 4)), content);
 					}
 					
-					_loadedFiles++;
-					_bytesBuffLen += content.length;
+					loadedFiles++;
+					bytesBuffLen += content.length;
 				}
 				catch (final Exception e)
 				{
 					if (Config.ENABLE_ALL_EXCEPTIONS)
+					{
 						e.printStackTrace();
+					}
 					
 					LOGGER.warn("problem with crest bmp file " + e);
 				}
 				finally
 				{
 					if (f != null)
+					{
 						try
 						{
 							f.close();
@@ -143,11 +125,12 @@ public class CrestCache
 						{
 							e1.printStackTrace();
 						}
+					}
 				}
 			}
 		}
 		
-		LOGGER.info("Cache[Crest]: " + String.format("%.3f", getMemoryUsage()) + "MB on " + getLoadedFiles() + " files loaded. (Forget Time: " + _cachePledge.getForgetTime() / 1000 + "s , Capacity: " + _cachePledge.capacity() + ")");
+		LOGGER.info("Cache[Crest]: " + String.format("%.3f", getMemoryUsage()) + "MB on " + getLoadedFiles() + " files loaded. (Forget Time: " + cachePledge.getForgetTime() / 1000 + "s , Capacity: " + cachePledge.capacity() + ")");
 	}
 	
 	public void convertOldPedgeFiles()
@@ -179,28 +162,16 @@ public class CrestCache
 				file.renameTo(new File(Config.DATAPACK_ROOT, "data/crests/Crest_" + newId + ".bmp"));
 				LOGGER.info("Renamed Clan crest to new format: Crest_" + newId + ".bmp");
 				
-				Connection con = null;
-				
-				try
+				try (Connection con = L2DatabaseFactory.getInstance().getConnection();
+					PreparedStatement statement = con.prepareStatement(UPDATE_CLAN_CREST))
 				{
-					con = L2DatabaseFactory.getInstance().getConnection(false);
-					PreparedStatement statement = con.prepareStatement("UPDATE clan_data SET crest_id = ? WHERE clan_id = ?");
 					statement.setInt(1, newId);
 					statement.setInt(2, clan.getClanId());
 					statement.executeUpdate();
-					DatabaseUtils.close(statement);
-					statement = null;
 				}
 				catch (final SQLException e)
 				{
-					if (Config.ENABLE_ALL_EXCEPTIONS)
-						e.printStackTrace();
-					
-					LOGGER.warn("could not update the crest id:" + e.getMessage());
-				}
-				finally
-				{
-					CloseUtil.close(con);
+					LOGGER.error("CrestCache.convertOldPedgeFiles : Could not update the crest id", e);
 				}
 				
 				clan.setCrestId(newId);
@@ -221,33 +192,33 @@ public class CrestCache
 	
 	public float getMemoryUsage()
 	{
-		return (float) _bytesBuffLen / 1048576;
+		return (float) bytesBuffLen / 1048576;
 	}
 	
 	public int getLoadedFiles()
 	{
-		return _loadedFiles;
+		return loadedFiles;
 	}
 	
 	public byte[] getPledgeCrest(final int id)
 	{
-		return _cachePledge.get(id);
+		return cachePledge.get(id);
 	}
 	
 	public byte[] getPledgeCrestLarge(final int id)
 	{
-		return _cachePledgeLarge.get(id);
+		return cachePledgeLarge.get(id);
 	}
 	
 	public byte[] getAllyCrest(final int id)
 	{
-		return _cacheAlly.get(id);
+		return cacheAlly.get(id);
 	}
 	
 	public void removePledgeCrest(final int id)
 	{
 		File crestFile = new File(Config.DATAPACK_ROOT, "data/crests/Crest_" + id + ".bmp");
-		_cachePledge.remove(id);
+		cachePledge.remove(id);
 		
 		try
 		{
@@ -257,7 +228,9 @@ public class CrestCache
 		catch (final Exception e)
 		{
 			if (Config.ENABLE_ALL_EXCEPTIONS)
+			{
 				e.printStackTrace();
+			}
 			
 		}
 	}
@@ -265,7 +238,7 @@ public class CrestCache
 	public void removePledgeCrestLarge(final int id)
 	{
 		File crestFile = new File(Config.DATAPACK_ROOT, "data/crests/Crest_Large_" + id + ".bmp");
-		_cachePledgeLarge.remove(id);
+		cachePledgeLarge.remove(id);
 		
 		try
 		{
@@ -275,7 +248,9 @@ public class CrestCache
 		catch (final Exception e)
 		{
 			if (Config.ENABLE_ALL_EXCEPTIONS)
+			{
 				e.printStackTrace();
+			}
 			
 		}
 	}
@@ -292,7 +267,9 @@ public class CrestCache
 		catch (final Exception e)
 		{
 			if (Config.ENABLE_ALL_EXCEPTIONS)
+			{
 				e.printStackTrace();
+			}
 			
 		}
 	}
@@ -300,7 +277,7 @@ public class CrestCache
 	public void removeAllyCrest(final int id)
 	{
 		File crestFile = new File(Config.DATAPACK_ROOT, "data/crests/AllyCrest_" + id + ".bmp");
-		_cacheAlly.remove(id);
+		cacheAlly.remove(id);
 		
 		try
 		{
@@ -310,7 +287,9 @@ public class CrestCache
 		catch (final Exception e)
 		{
 			if (Config.ENABLE_ALL_EXCEPTIONS)
+			{
 				e.printStackTrace();
+			}
 			
 		}
 	}
@@ -325,7 +304,7 @@ public class CrestCache
 		{
 			out = new FileOutputStream(crestFile);
 			out.write(data);
-			_cachePledge.getContentMap().put(newId, data);
+			cachePledge.getContentMap().put(newId, data);
 			
 			output = true;
 		}
@@ -337,6 +316,7 @@ public class CrestCache
 		{
 			
 			if (out != null)
+			{
 				try
 				{
 					out.close();
@@ -345,6 +325,7 @@ public class CrestCache
 				{
 					e.printStackTrace();
 				}
+			}
 			
 		}
 		
@@ -360,7 +341,7 @@ public class CrestCache
 		{
 			out = new FileOutputStream(crestFile);
 			out.write(data);
-			_cachePledgeLarge.getContentMap().put(newId, data);
+			cachePledgeLarge.getContentMap().put(newId, data);
 			
 			output = true;
 		}
@@ -373,6 +354,7 @@ public class CrestCache
 		{
 			
 			if (out != null)
+			{
 				try
 				{
 					out.close();
@@ -381,6 +363,7 @@ public class CrestCache
 				{
 					e.printStackTrace();
 				}
+			}
 			
 		}
 		
@@ -396,7 +379,7 @@ public class CrestCache
 		{
 			out = new FileOutputStream(crestFile);
 			out.write(data);
-			_cacheAlly.getContentMap().put(newId, data);
+			cacheAlly.getContentMap().put(newId, data);
 			
 			output = true;
 		}
@@ -409,6 +392,7 @@ public class CrestCache
 		{
 			
 			if (out != null)
+			{
 				try
 				{
 					out.close();
@@ -417,6 +401,7 @@ public class CrestCache
 				{
 					e.printStackTrace();
 				}
+			}
 			
 		}
 		

@@ -1,23 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.scripting;
 
 import java.io.BufferedReader;
@@ -29,14 +9,13 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.util.HashMap;
 import java.util.Map;
 
 import javax.script.Compilable;
 import javax.script.CompiledScript;
 import javax.script.ScriptEngine;
 import javax.script.ScriptException;
-
-import javolution.util.FastMap;
 
 import org.apache.log4j.Logger;
 
@@ -55,15 +34,15 @@ public class CompiledScriptCache implements Serializable
 	
 	private static final Logger LOG = Logger.getLogger(CompiledScriptCache.class);
 	
-	private final Map<String, CompiledScriptHolder> _compiledScriptCache = new FastMap<>();
-	private transient boolean _modified = false;
+	private final Map<String, CompiledScriptHolder> compiledScriptCache = new HashMap<>();
+	private transient boolean modified = false;
 	
 	public CompiledScript loadCompiledScript(final ScriptEngine engine, final File file) throws ScriptException
 	{
 		final int len = L2ScriptEngineManager.SCRIPT_FOLDER.getPath().length() + 1;
 		final String relativeName = file.getPath().substring(len);
 		
-		final CompiledScriptHolder csh = _compiledScriptCache.get(relativeName);
+		final CompiledScriptHolder csh = compiledScriptCache.get(relativeName);
 		if (csh != null && csh.matches(file))
 		{
 			if (Config.DEBUG)
@@ -96,10 +75,10 @@ public class CompiledScriptCache implements Serializable
 			cs = eng.compile(buff);
 			if (cs instanceof Serializable)
 			{
-				synchronized (_compiledScriptCache)
+				synchronized (compiledScriptCache)
 				{
-					_compiledScriptCache.put(relativeName, new CompiledScriptHolder(cs, file));
-					_modified = true;
+					compiledScriptCache.put(relativeName, new CompiledScriptHolder(cs, file));
+					modified = true;
 				}
 			}
 			
@@ -114,6 +93,7 @@ public class CompiledScriptCache implements Serializable
 		{
 			
 			if (buff != null)
+			{
 				try
 				{
 					buff.close();
@@ -122,7 +102,9 @@ public class CompiledScriptCache implements Serializable
 				{
 					e.printStackTrace();
 				}
+			}
 			if (isr != null)
+			{
 				try
 				{
 					isr.close();
@@ -131,7 +113,9 @@ public class CompiledScriptCache implements Serializable
 				{
 					e.printStackTrace();
 				}
+			}
 			if (fis != null)
+			{
 				try
 				{
 					fis.close();
@@ -140,6 +124,7 @@ public class CompiledScriptCache implements Serializable
 				{
 					e.printStackTrace();
 				}
+			}
 		}
 		
 		return cs;
@@ -147,20 +132,20 @@ public class CompiledScriptCache implements Serializable
 	
 	public boolean isModified()
 	{
-		return _modified;
+		return modified;
 	}
 	
 	public void purge()
 	{
-		synchronized (_compiledScriptCache)
+		synchronized (compiledScriptCache)
 		{
-			for (final String path : _compiledScriptCache.keySet())
+			for (final String path : compiledScriptCache.keySet())
 			{
 				final File file = new File(L2ScriptEngineManager.SCRIPT_FOLDER, path);
 				if (!file.isFile())
 				{
-					_compiledScriptCache.remove(path);
-					_modified = true;
+					compiledScriptCache.remove(path);
+					modified = true;
 				}
 			}
 		}
@@ -168,7 +153,7 @@ public class CompiledScriptCache implements Serializable
 	
 	public void save()
 	{
-		synchronized (_compiledScriptCache)
+		synchronized (compiledScriptCache)
 		{
 			File file = null;
 			FileOutputStream out = null;
@@ -180,7 +165,7 @@ public class CompiledScriptCache implements Serializable
 				out = new FileOutputStream(file);
 				oos = new ObjectOutputStream(out);
 				oos.writeObject(this);
-				_modified = false;
+				modified = false;
 			}
 			catch (final FileNotFoundException e)
 			{
@@ -195,6 +180,7 @@ public class CompiledScriptCache implements Serializable
 			{
 				
 				if (oos != null)
+				{
 					try
 					{
 						oos.close();
@@ -203,8 +189,10 @@ public class CompiledScriptCache implements Serializable
 					{
 						e.printStackTrace();
 					}
+				}
 				
 				if (out != null)
+				{
 					try
 					{
 						out.close();
@@ -213,6 +201,7 @@ public class CompiledScriptCache implements Serializable
 					{
 						e.printStackTrace();
 					}
+				}
 				
 			}
 			

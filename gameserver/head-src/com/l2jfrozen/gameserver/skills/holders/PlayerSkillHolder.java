@@ -1,21 +1,3 @@
-/*
- * Copyright (C) 2004-2013 L2J Server
- * 
- * This file is part of L2J Server.
- * 
- * L2J Server is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- * 
- * L2J Server is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
- */
 package com.l2jfrozen.gameserver.skills.holders;
 
 import java.util.HashMap;
@@ -28,11 +10,11 @@ import com.l2jfrozen.gameserver.model.L2Skill;
  */
 public class PlayerSkillHolder implements ISkillsHolder
 {
-	private final Map<Integer, L2Skill> _skills = new HashMap<>();
+	private final Map<Integer, L2Skill> skills = new HashMap<>();
 	
 	public PlayerSkillHolder(final Map<Integer, L2Skill> map)
 	{
-		_skills.putAll(map);
+		skills.putAll(map);
 	}
 	
 	/**
@@ -41,7 +23,7 @@ public class PlayerSkillHolder implements ISkillsHolder
 	@Override
 	public Map<Integer, L2Skill> getSkills()
 	{
-		return _skills;
+		return skills;
 	}
 	
 	/**
@@ -51,13 +33,13 @@ public class PlayerSkillHolder implements ISkillsHolder
 	@Override
 	public L2Skill addSkill(final L2Skill skill)
 	{
-		return _skills.put(skill.getId(), skill);
+		return skills.put(skill.getId(), skill);
 	}
 	
 	/**
 	 * Return the level of a skill owned by the L2Character.
-	 * @param skillId The identifier of the L2Skill whose level must be returned
-	 * @return The level of the L2Skill identified by skillId
+	 * @param  skillId The identifier of the L2Skill whose level must be returned
+	 * @return         The level of the L2Skill identified by skillId
 	 */
 	@Override
 	public int getSkillLevel(final int skillId)
@@ -67,12 +49,12 @@ public class PlayerSkillHolder implements ISkillsHolder
 	}
 	
 	/**
-	 * @param skillId The identifier of the L2Skill to check the knowledge
-	 * @return the skill from the known skill.
+	 * @param  skillId The identifier of the L2Skill to check the knowledge
+	 * @return         the skill from the known skill.
 	 */
 	@Override
 	public L2Skill getKnownSkill(final int skillId)
 	{
-		return _skills.get(skillId);
+		return skills.get(skillId);
 	}
 }

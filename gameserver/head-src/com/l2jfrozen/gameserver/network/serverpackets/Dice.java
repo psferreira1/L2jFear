@@ -1,23 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.network.serverpackets;
 
 /**
@@ -26,13 +6,12 @@ package com.l2jfrozen.gameserver.network.serverpackets;
  */
 public class Dice extends L2GameServerPacket
 {
-	private static final String _S__D4_Dice = "[S] D4 Dice";
-	private final int _charObjId;
-	private final int _itemId;
-	private final int _number;
-	private final int _x;
-	private final int _y;
-	private final int _z;
+	private final int charObjId;
+	private final int itemId;
+	private final int number;
+	private final int x;
+	private final int y;
+	private final int z;
 	
 	/**
 	 * 0xd4 Dice dddddd
@@ -45,33 +24,29 @@ public class Dice extends L2GameServerPacket
 	 */
 	public Dice(final int charObjId, final int itemId, final int number, final int x, final int y, final int z)
 	{
-		_charObjId = charObjId;
-		_itemId = itemId;
-		_number = number;
-		_x = x;
-		_y = y;
-		_z = z;
+		this.charObjId = charObjId;
+		this.itemId = itemId;
+		this.number = number;
+		this.x = x;
+		this.y = y;
+		this.z = z;
 	}
 	
 	@Override
 	protected final void writeImpl()
 	{
 		writeC(0xD4);
-		writeD(_charObjId); // object id of player
-		writeD(_itemId); // item id of dice (spade) 4625,4626,4627,4628
-		writeD(_number); // number rolled
-		writeD(_x); // x
-		writeD(_y); // y
-		writeD(_z); // z
+		writeD(charObjId); // object id of player
+		writeD(itemId); // item id of dice (spade) 4625,4626,4627,4628
+		writeD(number); // number rolled
+		writeD(x); // x
+		writeD(y); // y
+		writeD(z); // z
 	}
 	
-	/*
-	 * (non-Javadoc)
-	 * @see com.l2jfrozen.gameserver.serverpackets.ServerBasePacket#getType()
-	 */
 	@Override
 	public String getType()
 	{
-		return _S__D4_Dice;
+		return "[S] D4 Dice";
 	}
 }

@@ -1,25 +1,7 @@
-/* L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.skills.effects;
 
-import javolution.util.FastList;
+import java.util.ArrayList;
+import java.util.List;
 
 import com.l2jfrozen.gameserver.ai.CtrlEvent;
 import com.l2jfrozen.gameserver.datatables.sql.NpcTable;
@@ -47,7 +29,7 @@ import com.l2jfrozen.util.Point3D;
  */
 public final class EffectSignetMDam extends L2Effect
 {
-	private L2EffectPointInstance _actor;
+	private L2EffectPointInstance actor;
 	private boolean bss;
 	private boolean sps;
 	
@@ -70,10 +52,12 @@ public final class EffectSignetMDam extends L2Effect
 		L2NpcTemplate template;
 		if (getSkill() instanceof L2SkillSignetCasttime)
 		{
-			template = NpcTable.getInstance().getTemplate(((L2SkillSignetCasttime) getSkill())._effectNpcId);
+			template = NpcTable.getInstance().getTemplate(((L2SkillSignetCasttime) getSkill()).effectNpcId);
 		}
 		else
+		{
 			return;
+		}
 		
 		final L2EffectPointInstance effectPoint = new L2EffectPointInstance(IdFactory.getInstance().getNextId(), template, getEffector());
 		effectPoint.getStatus().setCurrentHp(effectPoint.getMaxHp());
@@ -99,7 +83,7 @@ public final class EffectSignetMDam extends L2Effect
 		effectPoint.setIsInvul(true);
 		effectPoint.spawnMe(x, y, z);
 		
-		_actor = effectPoint;
+		actor = effectPoint;
 		
 		// skill_task = new SigmetMDAMTask();
 	}
@@ -108,17 +92,19 @@ public final class EffectSignetMDam extends L2Effect
 	public boolean onActionTime()
 	{
 		if (getCount() >= getTotalCount() - 2)
+		{
 			return true; // do nothing first 2 times
-			
+		}
+		
 		final int mpConsume = getSkill().getMpConsume();
 		final L2PcInstance caster = (L2PcInstance) getEffector();
 		
 		sps = caster.checkSps();
 		bss = caster.checkBss();
 		
-		final FastList<L2Character> targets = new FastList<>();
+		List<L2Character> targets = new ArrayList<>();
 		
-		for (final L2Character cha : _actor.getKnownList().getKnownCharactersInRadius(getSkill().getSkillRadius()))
+		for (final L2Character cha : actor.getKnownList().getKnownCharactersInRadius(getSkill().getSkillRadius()))
 		{
 			if (cha == null || cha == caster)
 			{
@@ -185,7 +171,7 @@ public final class EffectSignetMDam extends L2Effect
 	@Override
 	public void onExit()
 	{
-		if (_actor != null)
+		if (actor != null)
 		{
 			final L2PcInstance caster = (L2PcInstance) getEffector();
 			
@@ -199,7 +185,7 @@ public final class EffectSignetMDam extends L2Effect
 			{
 				caster.removeSps();
 			}
-			_actor.deleteMe();
+			actor.deleteMe();
 		}
 	}
 	

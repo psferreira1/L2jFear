@@ -1,32 +1,15 @@
-/* L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.model.zone.type;
 
-import javolution.util.FastList;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.w3c.dom.Node;
 
-import com.l2jfrozen.Config;
 import com.l2jfrozen.gameserver.model.L2Character;
-import com.l2jfrozen.gameserver.model.actor.instance.L2PcInstance;
+import com.l2jfrozen.gameserver.model.entity.event.TownWar;
 import com.l2jfrozen.gameserver.model.zone.L2ZoneType;
+import com.l2jfrozen.gameserver.network.SystemMessageId;
+import com.l2jfrozen.gameserver.network.serverpackets.SystemMessage;
 import com.l2jfrozen.util.random.Rnd;
 
 /**
@@ -35,25 +18,25 @@ import com.l2jfrozen.util.random.Rnd;
  */
 public class L2TownZone extends L2ZoneType
 {
-	private String _townName;
-	private int _townId;
-	private int _redirectTownId;
-	private int _taxById;
-	private boolean _noPeace;
-	private final FastList<int[]> _spawnLoc;
+	private String townName;
+	private int townId;
+	private int redirectTownId;
+	private int taxById;
+	private boolean noPeace;
+	private final List<int[]> spawnLoc;
 	
 	public L2TownZone(final int id)
 	{
 		super(id);
 		
-		_taxById = 0;
-		_spawnLoc = new FastList<>();
+		taxById = 0;
+		spawnLoc = new ArrayList<>();
 		
 		// Default to Giran
-		_redirectTownId = 9;
+		redirectTownId = 9;
 		
 		// Default peace zone
-		_noPeace = false;
+		noPeace = false;
 	}
 	
 	@Override
@@ -61,23 +44,23 @@ public class L2TownZone extends L2ZoneType
 	{
 		if (name.equals("name"))
 		{
-			_townName = value;
+			townName = value;
 		}
 		else if (name.equals("townId"))
 		{
-			_townId = Integer.parseInt(value);
+			townId = Integer.parseInt(value);
 		}
 		else if (name.equals("redirectTownId"))
 		{
-			_redirectTownId = Integer.parseInt(value);
+			redirectTownId = Integer.parseInt(value);
 		}
 		else if (name.equals("taxById"))
 		{
-			_taxById = Integer.parseInt(value);
+			taxById = Integer.parseInt(value);
 		}
 		else if (name.equals("noPeace"))
 		{
-			_noPeace = Boolean.parseBoolean(value);
+			noPeace = Boolean.parseBoolean(value);
 		}
 		else
 		{
@@ -88,46 +71,45 @@ public class L2TownZone extends L2ZoneType
 	@Override
 	public void setSpawnLocs(final Node node)
 	{
-		final int ai[] = new int[3];
+		int loc[] = new int[3];
 		
 		Node node1 = node.getAttributes().getNamedItem("X");
 		
 		if (node1 != null)
 		{
-			ai[0] = Integer.parseInt(node1.getNodeValue());
+			loc[0] = Integer.parseInt(node1.getNodeValue());
 		}
 		
 		node1 = node.getAttributes().getNamedItem("Y");
 		
 		if (node1 != null)
 		{
-			ai[1] = Integer.parseInt(node1.getNodeValue());
+			loc[1] = Integer.parseInt(node1.getNodeValue());
 		}
 		
 		node1 = node.getAttributes().getNamedItem("Z");
 		
 		if (node1 != null)
 		{
-			ai[2] = Integer.parseInt(node1.getNodeValue());
+			loc[2] = Integer.parseInt(node1.getNodeValue());
 		}
-		_spawnLoc.add(ai);
+		spawnLoc.add(loc);
 	}
 	
 	@Override
-	protected void onEnter(final L2Character character)
+	protected void onEnter(L2Character character)
 	{
-		if (character instanceof L2PcInstance)
+		if (noPeace && TownWar.getInstance().isInProgress())
 		{
-			// PVP possible during siege, now for siege participants only
-			// Could also check if this town is in siege, or if any siege is going on
-			if (((L2PcInstance) character).getSiegeState() != 0 && Config.ZONE_TOWN == 1)
-				return;
+			character.setInsideZone(L2Character.ZONE_PVP, true);
+			character.setInTownWar(true);
 			
-			if (Config.ZONE_DEBUG)
-				((L2PcInstance) character).sendMessage("You entered " + _townName);
+			if (character.isPlayer())
+			{
+				character.sendPacket(new SystemMessage(SystemMessageId.ENTERED_COMBAT_ZONE));
+			}
 		}
-		
-		if (!_noPeace && Config.ZONE_TOWN != 2)
+		else
 		{
 			character.setInsideZone(L2Character.ZONE_PEACE, true);
 		}
@@ -135,79 +117,80 @@ public class L2TownZone extends L2ZoneType
 	}
 	
 	@Override
-	protected void onExit(final L2Character character)
+	protected void onExit(L2Character character)
 	{
-		if (!_noPeace)
+		if (noPeace && TownWar.getInstance().isInProgress())
+		{
+			character.setInsideZone(L2Character.ZONE_PVP, false);
+			if (character.isinTownWar())
+			{
+				character.setInTownWar(false);
+			}
+			
+			if (character.isPlayer())
+			{
+				character.sendPacket(new SystemMessage(SystemMessageId.LEFT_COMBAT_ZONE));
+			}
+		}
+		else
 		{
 			character.setInsideZone(L2Character.ZONE_PEACE, false);
 		}
-		
-		if (Config.ZONE_DEBUG)
-			if (character instanceof L2PcInstance)
-			{
-				((L2PcInstance) character).sendMessage("You left " + _townName);
-			}
-		
 	}
 	
 	@Override
-	protected void onDieInside(final L2Character character)
+	protected void onDieInside(L2Character character)
 	{
 	}
 	
 	@Override
-	protected void onReviveInside(final L2Character character)
+	protected void onReviveInside(L2Character character)
 	{
 	}
 	
 	/**
-	 * Returns this town zones name
-	 * @return
+	 * @return this town zones name
 	 */
-	@Deprecated
-	public String getName()
+	@Override
+	public String getZoneName()
 	{
-		return _townName;
+		return townName;
 	}
 	
 	/**
-	 * Returns this zones town id (if any)
-	 * @return
+	 * @return this zones town id (if any)
 	 */
 	public int getTownId()
 	{
-		return _townId;
+		return townId;
 	}
 	
 	/**
-	 * Gets the id for this town zones redir town
-	 * @return
+	 * @return the id for this town zones redir town
 	 */
 	@Deprecated
 	public int getRedirectTownId()
 	{
-		return _redirectTownId;
+		return redirectTownId;
 	}
 	
 	/**
-	 * Returns this zones spawn location
-	 * @return
+	 * @return this zones spawn location
 	 */
-	public final int[] getSpawnLoc()
+	public int[] getSpawnLoc()
 	{
-		int ai[] = new int[3];
+		int loc[] = new int[3];
 		
-		ai = _spawnLoc.get(Rnd.get(_spawnLoc.size()));
+		loc = spawnLoc.get(Rnd.get(spawnLoc.size()));
 		
-		return ai;
+		return loc;
 	}
 	
 	/**
-	 * Returns this town zones castle id
-	 * @return
+	 * @return this town zones castle id
 	 */
-	public final int getTaxById()
+	public int getTaxById()
 	{
-		return _taxById;
+		return taxById;
 	}
 }

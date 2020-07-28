@@ -1,23 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.managers;
 
 import java.util.ArrayList;
@@ -31,35 +11,39 @@ import com.l2jfrozen.logs.Log;
  */
 public class PacketsLoggerManager
 {
-	private final List<String> _monitored_characters = new ArrayList<>();
-	private final Hashtable<String, List<String>> _character_blocked_packets = new Hashtable<>();
+	private final List<String> monitored_characters = new ArrayList<>();
+	private final Hashtable<String, List<String>> character_blocked_packets = new Hashtable<>();
 	
 	protected PacketsLoggerManager()
 	{
-		_character_blocked_packets.clear();
-		_monitored_characters.clear();
+		character_blocked_packets.clear();
+		monitored_characters.clear();
 	}
 	
 	public void startCharacterPacketsMonitoring(final String character)
 	{
 		
-		if (!_monitored_characters.contains(character))
-			_monitored_characters.add(character);
+		if (!monitored_characters.contains(character))
+		{
+			monitored_characters.add(character);
+		}
 		
 	}
 	
 	public void stopCharacterPacketsMonitoring(final String character)
 	{
 		
-		if (_monitored_characters.contains(character))
-			_monitored_characters.remove(character);
+		if (monitored_characters.contains(character))
+		{
+			monitored_characters.remove(character);
+		}
 		
 	}
 	
 	public void blockCharacterPacket(final String character, final String packet)
 	{
 		
-		List<String> blocked_packets = _character_blocked_packets.get(character);
+		List<String> blocked_packets = character_blocked_packets.get(character);
 		if (blocked_packets == null)
 		{
 			blocked_packets = new ArrayList<>();
@@ -69,14 +53,14 @@ public class PacketsLoggerManager
 		{
 			blocked_packets.add(packet);
 		}
-		_character_blocked_packets.put(character, blocked_packets);
+		character_blocked_packets.put(character, blocked_packets);
 		
 	}
 	
 	public void restoreCharacterPacket(final String character, final String packet)
 	{
 		
-		final List<String> blocked_packets = _character_blocked_packets.get(character);
+		final List<String> blocked_packets = character_blocked_packets.get(character);
 		if (blocked_packets != null)
 		{
 			
@@ -85,7 +69,7 @@ public class PacketsLoggerManager
 				blocked_packets.remove(packet);
 			}
 			
-			_character_blocked_packets.put(character, blocked_packets);
+			character_blocked_packets.put(character, blocked_packets);
 			
 		}
 		
@@ -93,13 +77,13 @@ public class PacketsLoggerManager
 	
 	public boolean isCharacterMonitored(final String character)
 	{
-		return _monitored_characters.contains(character);
+		return monitored_characters.contains(character);
 	}
 	
 	public boolean isCharacterPacketBlocked(final String character, final String packet)
 	{
 		
-		final List<String> blocked_packets = _character_blocked_packets.get(character);
+		final List<String> blocked_packets = character_blocked_packets.get(character);
 		if (blocked_packets != null)
 		{
 			
@@ -123,11 +107,11 @@ public class PacketsLoggerManager
 	
 	public static PacketsLoggerManager getInstance()
 	{
-		return SingletonHolder._instance;
+		return SingletonHolder.instance;
 	}
 	
 	private static class SingletonHolder
 	{
-		public static final PacketsLoggerManager _instance = new PacketsLoggerManager();
+		public static final PacketsLoggerManager instance = new PacketsLoggerManager();
 	}
 }

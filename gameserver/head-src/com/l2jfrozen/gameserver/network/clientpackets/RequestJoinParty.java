@@ -1,23 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.network.clientpackets;
 
 import org.apache.log4j.Logger;
@@ -37,24 +17,26 @@ public final class RequestJoinParty extends L2GameClientPacket
 {
 	private static Logger LOGGER = Logger.getLogger(RequestJoinParty.class);
 	
-	private String _name;
-	private int _itemDistribution;
+	private String name;
+	private int itemDistribution;
 	
 	@Override
 	protected void readImpl()
 	{
-		_name = readS();
-		_itemDistribution = readD();
+		name = readS();
+		itemDistribution = readD();
 	}
 	
 	@Override
 	protected void runImpl()
 	{
 		final L2PcInstance requestor = getClient().getActiveChar();
-		final L2PcInstance target = L2World.getInstance().getPlayer(_name);
+		final L2PcInstance target = L2World.getInstance().getPlayer(name);
 		
 		if (requestor == null)
+		{
 			return;
+		}
 		
 		if (!getClient().getFloodProtectors().getPartyInvitation().tryPerformAction("PartyInvitation"))
 		{
@@ -68,13 +50,13 @@ public final class RequestJoinParty extends L2GameClientPacket
 			return;
 		}
 		
-		if ((requestor._inEventDM && (DM.is_teleport() || DM.is_started())) || (target._inEventDM && (DM.is_teleport() || DM.is_started())))
+		if ((requestor.inEventDM && (DM.is_teleport() || DM.isStarted())) || (target.inEventDM && (DM.is_teleport() || DM.isStarted())))
 		{
 			requestor.sendMessage("You can't invite that player in party!");
 			return;
 		}
 		
-		if ((requestor._inEventTvT && !target._inEventTvT && (TvT.is_started() || TvT.is_teleport())) || (!requestor._inEventTvT && target._inEventTvT && (TvT.is_started() || TvT.is_teleport())) || (requestor._inEventCTF && !target._inEventCTF && (CTF.is_started() || CTF.is_teleport())) || (!requestor._inEventCTF && target._inEventCTF && (CTF.is_started() || CTF.is_teleport())))
+		if ((requestor.inEventTvT && !target.inEventTvT && (TvT.isStarted() || TvT.isTeleport())) || (!requestor.inEventTvT && target.inEventTvT && (TvT.isStarted() || TvT.isTeleport())) || (requestor.inEventCTF && !target.inEventCTF && (CTF.isStarted() || CTF.isTeleport())) || (!requestor.inEventCTF && target.inEventCTF && (CTF.isStarted() || CTF.isTeleport())))
 		{
 			requestor.sendMessage("You can't invite that player in party: you or your target are in Event");
 			return;
@@ -100,7 +82,7 @@ public final class RequestJoinParty extends L2GameClientPacket
 			return;
 		}
 		
-		if (target.isGM() && target.getAppearance().getInvisible())
+		if (target.isGM() && target.getAppearance().isInvisible())
 		{
 			requestor.sendMessage("You can't invite GM in invisible mode.");
 			return;
@@ -122,10 +104,14 @@ public final class RequestJoinParty extends L2GameClientPacket
 		}
 		
 		if (target.isInOlympiadMode() || requestor.isInOlympiadMode())
+		{
 			return;
+		}
 		
 		if (target.isInDuel() || requestor.isInDuel())
+		{
 			return;
+		}
 		
 		if (!requestor.isInParty()) // Asker has no party
 		{
@@ -175,7 +161,7 @@ public final class RequestJoinParty extends L2GameClientPacket
 		if (!target.isProcessingRequest())
 		{
 			requestor.onTransactionRequest(target);
-			target.sendPacket(new AskJoinParty(requestor.getName(), _itemDistribution));
+			target.sendPacket(new AskJoinParty(requestor.getName(), itemDistribution));
 			requestor.getParty().setPendingInvitation(true);
 			
 			if (Config.DEBUG)
@@ -211,10 +197,10 @@ public final class RequestJoinParty extends L2GameClientPacket
 		
 		if (!target.isProcessingRequest())
 		{
-			requestor.setParty(new L2Party(requestor, _itemDistribution));
+			requestor.setParty(new L2Party(requestor, itemDistribution));
 			
 			requestor.onTransactionRequest(target);
-			target.sendPacket(new AskJoinParty(requestor.getName(), _itemDistribution));
+			target.sendPacket(new AskJoinParty(requestor.getName(), itemDistribution));
 			requestor.getParty().setPendingInvitation(true);
 			
 			if (Config.DEBUG)

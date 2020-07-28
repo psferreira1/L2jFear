@@ -1,22 +1,4 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any later
- * version.
- * 
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
- * 
- * You should have received a copy of the GNU General Public License along with
- * this program. If not, see <http://www.gnu.org/licenses/>.
- */
 package com.l2jfrozen.gameserver.model.actor.instance;
-
-import javolution.text.TextBuilder;
 
 import com.l2jfrozen.gameserver.ai.CtrlIntention;
 import com.l2jfrozen.gameserver.network.serverpackets.ActionFailed;
@@ -24,6 +6,8 @@ import com.l2jfrozen.gameserver.network.serverpackets.MyTargetSelected;
 import com.l2jfrozen.gameserver.network.serverpackets.NpcHtmlMessage;
 import com.l2jfrozen.gameserver.network.serverpackets.ValidateLocation;
 import com.l2jfrozen.gameserver.templates.L2NpcTemplate;
+
+import javolution.text.TextBuilder;
 
 /**
  * @author xAddytzu moded by Bobi
@@ -39,7 +23,9 @@ public class L2RaidBossManagerInstance extends L2NpcInstance
 	public void onAction(final L2PcInstance player)
 	{
 		if (!canTarget(player))
+		{
 			return;
+		}
 		
 		// Check if the L2PcInstance already target the L2Npc
 		if (this != player.getTarget())
@@ -74,9 +60,9 @@ public class L2RaidBossManagerInstance extends L2NpcInstance
 	@Override
 	public void showChatWindow(final L2PcInstance player, final int val)
 	{
-		final NpcHtmlMessage msg = new NpcHtmlMessage(this.getObjectId());
+		final NpcHtmlMessage msg = new NpcHtmlMessage(getObjectId());
 		msg.setHtml(rbWindow(player));
-		msg.replace("%objectId%", String.valueOf(this.getObjectId()));
+		msg.replace("%objectId%", String.valueOf(getObjectId()));
 		player.sendPacket(msg);
 	}
 	

@@ -1,227 +1,141 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.model;
 
 /**
  * This class ...
- * @author NightMarez
+ * @author  NightMarez
  * @version $Revision: 1.2.2.1.2.1 $ $Date: 2005/03/27 15:29:32 $
  */
 public class L2LvlupData
 {
-	private int _classid;
-	private int _classLvl;
-	private float _classHpAdd;
-	private float _classHpBase;
-	private float _classHpModifier;
-	private float _classCpAdd;
-	private float _classCpBase;
-	private float _classCpModifier;
-	private float _classMpAdd;
-	private float _classMpBase;
-	private float _classMpModifier;
+	private int classId;
+	private int classLvl;
+	private float classHpAdd;
+	private float classHpBase;
+	private float classHpModifier;
+	private float classCpAdd;
+	private float classCpBase;
+	private float classCpModifier;
+	private float classMpAdd;
+	private float classMpBase;
+	private float classMpModifier;
 	
-	/**
-	 * @return Returns the _classHpAdd.
-	 */
 	@Deprecated
 	public float getClassHpAdd()
 	{
-		return _classHpAdd;
+		return classHpAdd;
 	}
 	
-	/**
-	 * @param hpAdd The _classHpAdd to set.
-	 */
 	public void setClassHpAdd(final float hpAdd)
 	{
-		_classHpAdd = hpAdd;
+		classHpAdd = hpAdd;
 	}
 	
-	/**
-	 * @return Returns the _classHpBase.
-	 */
 	@Deprecated
 	public float getClassHpBase()
 	{
-		return _classHpBase;
+		return classHpBase;
 	}
 	
-	/**
-	 * @param hpBase The _classHpBase to set.
-	 */
 	public void setClassHpBase(final float hpBase)
 	{
-		_classHpBase = hpBase;
+		classHpBase = hpBase;
 	}
 	
-	/**
-	 * @return Returns the _classHpModifier.
-	 */
 	@Deprecated
 	public float getClassHpModifier()
 	{
-		return _classHpModifier;
+		return classHpModifier;
 	}
 	
-	/**
-	 * @param hpModifier The _classHpModifier to set.
-	 */
 	public void setClassHpModifier(final float hpModifier)
 	{
-		_classHpModifier = hpModifier;
+		classHpModifier = hpModifier;
 	}
 	
-	/**
-	 * @return Returns the _classCpAdd.
-	 */
 	@Deprecated
 	public float getClassCpAdd()
 	{
-		return _classCpAdd;
+		return classCpAdd;
 	}
 	
-	/**
-	 * @param cpAdd
-	 */
 	public void setClassCpAdd(final float cpAdd)
 	{
-		_classCpAdd = cpAdd;
+		classCpAdd = cpAdd;
 	}
 	
-	/**
-	 * @return Returns the _classCpBase.
-	 */
 	@Deprecated
 	public float getClassCpBase()
 	{
-		return _classCpBase;
+		return classCpBase;
 	}
 	
-	/**
-	 * @param cpBase
-	 */
 	public void setClassCpBase(final float cpBase)
 	{
-		_classCpBase = cpBase;
+		classCpBase = cpBase;
 	}
 	
-	/**
-	 * @return Returns the _classCpModifier.
-	 */
 	@Deprecated
 	public float getClassCpModifier()
 	{
-		return _classCpModifier;
+		return classCpModifier;
 	}
 	
-	/**
-	 * @param cpModifier The _classCpModifier to set.
-	 */
 	public void setClassCpModifier(final float cpModifier)
 	{
-		_classCpModifier = cpModifier;
+		classCpModifier = cpModifier;
 	}
 	
-	/**
-	 * @return Returns the _classid.
-	 */
 	public int getClassid()
 	{
-		return _classid;
+		return classId;
 	}
 	
-	/**
-	 * @param pClassid
-	 */
 	public void setClassid(final int pClassid)
 	{
-		_classid = pClassid;
+		classId = pClassid;
 	}
 	
-	/**
-	 * @return Returns the _classLvl.
-	 */
 	@Deprecated
 	public int getClassLvl()
 	{
-		return _classLvl;
+		return classLvl;
 	}
 	
-	/**
-	 * @param lvl The _classLvl to set.
-	 */
 	public void setClassLvl(final int lvl)
 	{
-		_classLvl = lvl;
+		classLvl = lvl;
 	}
 	
-	/**
-	 * @return Returns the _classMpAdd.
-	 */
 	@Deprecated
 	public float getClassMpAdd()
 	{
-		return _classMpAdd;
+		return classMpAdd;
 	}
 	
-	/**
-	 * @param mpAdd The _classMpAdd to set.
-	 */
 	public void setClassMpAdd(final float mpAdd)
 	{
-		_classMpAdd = mpAdd;
+		classMpAdd = mpAdd;
 	}
 	
-	/**
-	 * @return Returns the _classMpBase.
-	 */
 	@Deprecated
 	public float getClassMpBase()
 	{
-		return _classMpBase;
+		return classMpBase;
 	}
 	
-	/**
-	 * @param mpBase The _classMpBase to set.
-	 */
 	public void setClassMpBase(final float mpBase)
 	{
-		_classMpBase = mpBase;
+		classMpBase = mpBase;
 	}
 	
-	/**
-	 * @return Returns the _classMpModifier.
-	 */
 	@Deprecated
 	public float getClassMpModifier()
 	{
-		return _classMpModifier;
+		return classMpModifier;
 	}
 	
-	/**
-	 * @param mpModifier The _classMpModifier to set.
-	 */
 	public void setClassMpModifier(final float mpModifier)
 	{
-		_classMpModifier = mpModifier;
+		classMpModifier = mpModifier;
 	}
 }

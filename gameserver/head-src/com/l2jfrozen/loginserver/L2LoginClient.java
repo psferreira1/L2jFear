@@ -1,22 +1,3 @@
-/* L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.loginserver;
 
 import java.io.IOException;
@@ -55,22 +36,22 @@ public final class L2LoginClient extends MMOClient<MMOConnection<L2LoginClient>>
 		AUTHED_LOGIN
 	}
 	
-	private LoginClientState _state;
+	private LoginClientState state;
 	
 	// Crypt
-	private final LoginCrypt _loginCrypt;
-	private final ScrambledKeyPair _scrambledPair;
-	private final byte[] _blowfishKey;
+	private final LoginCrypt loginCrypt;
+	private final ScrambledKeyPair scrambledPair;
+	private final byte[] blowfishKey;
 	
-	private String _account = "";
-	private int _accessLevel;
-	private int _lastServer;
-	private boolean _usesInternalIP;
-	private SessionKey _sessionKey;
-	private final int _sessionId;
-	private boolean _joinedGS;
-	private final String _ip;
-	private long _connectionStartTime;
+	private String account = "";
+	private int accessLevel;
+	private int lastServer;
+	private boolean usesInternalIP;
+	private SessionKey sessionKey;
+	private final int sessionId;
+	private boolean joinedGS;
+	private final String ip;
+	private long connectionStartTime;
 	
 	/**
 	 * @param con
@@ -78,24 +59,24 @@ public final class L2LoginClient extends MMOClient<MMOConnection<L2LoginClient>>
 	public L2LoginClient(final MMOConnection<L2LoginClient> con)
 	{
 		super(con);
-		_state = LoginClientState.CONNECTED;
+		state = LoginClientState.CONNECTED;
 		final String ip = getConnection().getInetAddress().getHostAddress();
-		_ip = ip;
+		this.ip = ip;
 		final String[] localip = Config.NETWORK_IP_LIST.split(";");
 		for (final String oneIp : localip)
 		{
 			if (ip.startsWith(oneIp) || ip.startsWith("127.0"))
 			{
-				_usesInternalIP = true;
+				usesInternalIP = true;
 			}
 		}
 		
-		_scrambledPair = LoginController.getInstance().getScrambledRSAKeyPair();
-		_blowfishKey = LoginController.getInstance().getBlowfishKey();
-		_sessionId = Rnd.nextInt(Integer.MAX_VALUE);
-		_connectionStartTime = System.currentTimeMillis();
-		_loginCrypt = new LoginCrypt();
-		_loginCrypt.setKey(_blowfishKey);
+		scrambledPair = LoginController.getInstance().getScrambledRSAKeyPair();
+		blowfishKey = LoginController.getInstance().getBlowfishKey();
+		sessionId = Rnd.nextInt(Integer.MAX_VALUE);
+		connectionStartTime = System.currentTimeMillis();
+		loginCrypt = new LoginCrypt();
+		loginCrypt.setKey(blowfishKey);
 		LoginController.getInstance().addLoginClient(this);
 		// This checkup must go next to BAN because it can cause decrease ban account time
 		if (!BruteProtector.canLogin(ip))
@@ -108,12 +89,12 @@ public final class L2LoginClient extends MMOClient<MMOConnection<L2LoginClient>>
 	
 	public String getIntetAddress()
 	{
-		return _ip;
+		return ip;
 	}
 	
 	public boolean usesInternalIP()
 	{
-		return _usesInternalIP;
+		return usesInternalIP;
 	}
 	
 	@Override
@@ -122,8 +103,8 @@ public final class L2LoginClient extends MMOClient<MMOConnection<L2LoginClient>>
 		boolean ret = false;
 		try
 		{
-			ret = _loginCrypt.decrypt(buf.array(), buf.position(), size);
-			_connectionStartTime = System.currentTimeMillis();
+			ret = loginCrypt.decrypt(buf.array(), buf.position(), size);
+			connectionStartTime = System.currentTimeMillis();
 		}
 		catch (final IOException e)
 		{
@@ -150,7 +131,7 @@ public final class L2LoginClient extends MMOClient<MMOConnection<L2LoginClient>>
 		final int offset = buf.position();
 		try
 		{
-			size = _loginCrypt.encrypt(buf.array(), offset, size);
+			size = loginCrypt.encrypt(buf.array(), offset, size);
 		}
 		catch (final IOException e)
 		{
@@ -164,96 +145,94 @@ public final class L2LoginClient extends MMOClient<MMOConnection<L2LoginClient>>
 	
 	public LoginClientState getState()
 	{
-		return _state;
+		return state;
 	}
 	
 	public void setState(final LoginClientState state)
 	{
-		_state = state;
+		this.state = state;
 	}
 	
 	public byte[] getBlowfishKey()
 	{
-		return _blowfishKey;
+		return blowfishKey;
 	}
 	
 	public byte[] getScrambledModulus()
 	{
-		return _scrambledPair._scrambledModulus;
+		return scrambledPair.scrambledModulus;
 	}
 	
 	public RSAPrivateKey getRSAPrivateKey()
 	{
-		return (RSAPrivateKey) _scrambledPair._pair.getPrivate();
+		return (RSAPrivateKey) scrambledPair.pair.getPrivate();
 	}
 	
 	public String getAccount()
 	{
-		return _account;
+		return account;
 	}
 	
 	public void setAccount(final String account)
 	{
-		_account = account;
+		this.account = account;
 	}
 	
 	public void setAccessLevel(final int accessLevel)
 	{
-		_accessLevel = accessLevel;
+		this.accessLevel = accessLevel;
 	}
 	
 	public int getAccessLevel()
 	{
-		return _accessLevel;
+		return accessLevel;
 	}
 	
 	public void setLastServer(final int lastServer)
 	{
-		_lastServer = lastServer;
+		this.lastServer = lastServer;
 	}
 	
 	public int getLastServer()
 	{
-		return _lastServer;
+		return lastServer;
 	}
 	
 	public int getSessionId()
 	{
-		return _sessionId;
+		return sessionId;
 	}
 	
 	public boolean hasJoinedGS()
 	{
-		return _joinedGS;
+		return joinedGS;
 	}
 	
 	public void setJoinedGS(final boolean val)
 	{
-		_joinedGS = val;
+		joinedGS = val;
 	}
 	
 	public void setSessionKey(final SessionKey sessionKey)
 	{
-		_sessionKey = sessionKey;
+		this.sessionKey = sessionKey;
 	}
 	
 	public SessionKey getSessionKey()
 	{
-		return _sessionKey;
+		return sessionKey;
 	}
 	
 	public long getConnectionStartTime()
 	{
-		return _connectionStartTime;
+		return connectionStartTime;
 	}
 	
 	public void sendPacket(final L2LoginServerPacket lsp)
 	{
 		if (Config.DEBUG_PACKETS)
 		{
-			
-			Log.add("[ServerPacket] SendingLoginServerPacket, Client: " + this.toString() + " Packet:" + lsp.getType(), "LoginServerPacketsLog");
-			
+			Log.add("[ServerPacket] SendingLoginServerPacket, Client: " + toString() + " Packet:" + lsp.getType(), "log/packets/", "LoginServerPacketsLog");
 		}
 		
 		getConnection().sendPacket(lsp);
@@ -295,7 +274,9 @@ public final class L2LoginClient extends MMOClient<MMOConnection<L2LoginClient>>
 	{
 		final InetAddress address = getConnection().getInetAddress();
 		if (getState() == LoginClientState.AUTHED_LOGIN)
+		{
 			return "[" + getAccount() + " (" + (address == null ? "disconnected" : address.getHostAddress()) + ")]";
+		}
 		return "[" + (address == null ? "disconnected" : address.getHostAddress()) + "]";
 	}
 	

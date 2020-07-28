@@ -1,23 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.model.actor.instance;
 
 import java.util.concurrent.Future;
@@ -40,18 +20,18 @@ public class L2SummonInstance extends L2Summon
 {
 	protected static final Logger LOGGER = Logger.getLogger(L2SummonInstance.class);
 	
-	private float _expPenalty = 0; // exp decrease multiplier (i.e. 0.3 (= 30%) for shadow)
-	private int _itemConsumeId;
-	private int _itemConsumeCount;
-	private int _itemConsumeSteps;
-	private final int _totalLifeTime;
-	private final int _timeLostIdle;
-	private final int _timeLostActive;
-	private int _timeRemaining;
-	private int _nextItemConsumeTime;
+	private float expPenalty = 0; // exp decrease multiplier (i.e. 0.3 (= 30%) for shadow)
+	private int itemConsumeId;
+	private int itemConsumeCount;
+	private int itemConsumeSteps;
+	private final int totalLifeTime;
+	private final int timeLostIdle;
+	private final int timeLostActive;
+	private int timeRemaining;
+	private int nextItemConsumeTime;
 	public int lastShowntimeRemaining; // Following FbiAgent's example to avoid sending useless packets
 	
-	private Future<?> _summonLifeTask;
+	private Future<?> summonLifeTask;
 	
 	public L2SummonInstance(final int objectId, final L2NpcTemplate template, final L2PcInstance owner, final L2Skill skill)
 	{
@@ -60,46 +40,46 @@ public class L2SummonInstance extends L2Summon
 		
 		if (skill != null)
 		{
-			_itemConsumeId = skill.getItemConsumeIdOT();
-			_itemConsumeCount = skill.getItemConsumeOT();
-			_itemConsumeSteps = skill.getItemConsumeSteps();
-			_totalLifeTime = skill.getTotalLifeTime();
-			_timeLostIdle = skill.getTimeLostIdle();
-			_timeLostActive = skill.getTimeLostActive();
+			itemConsumeId = skill.getItemConsumeIdOT();
+			itemConsumeCount = skill.getItemConsumeOT();
+			itemConsumeSteps = skill.getItemConsumeSteps();
+			totalLifeTime = skill.getTotalLifeTime();
+			timeLostIdle = skill.getTimeLostIdle();
+			timeLostActive = skill.getTimeLostActive();
 		}
 		else
 		{
 			// defaults
-			_itemConsumeId = 0;
-			_itemConsumeCount = 0;
-			_itemConsumeSteps = 0;
-			_totalLifeTime = 1200000; // 20 minutes
-			_timeLostIdle = 1000;
-			_timeLostActive = 1000;
+			itemConsumeId = 0;
+			itemConsumeCount = 0;
+			itemConsumeSteps = 0;
+			totalLifeTime = 1200000; // 20 minutes
+			timeLostIdle = 1000;
+			timeLostActive = 1000;
 		}
-		_timeRemaining = _totalLifeTime;
-		lastShowntimeRemaining = _totalLifeTime;
+		timeRemaining = totalLifeTime;
+		lastShowntimeRemaining = totalLifeTime;
 		
-		if (_itemConsumeId == 0)
+		if (itemConsumeId == 0)
 		{
-			_nextItemConsumeTime = -1; // do not consume
+			nextItemConsumeTime = -1; // do not consume
 		}
-		else if (_itemConsumeSteps == 0)
+		else if (itemConsumeSteps == 0)
 		{
-			_nextItemConsumeTime = -1; // do not consume
+			nextItemConsumeTime = -1; // do not consume
 		}
 		else
 		{
-			_nextItemConsumeTime = _totalLifeTime - _totalLifeTime / (_itemConsumeSteps + 1);
+			nextItemConsumeTime = totalLifeTime - totalLifeTime / (itemConsumeSteps + 1);
 		}
 		
 		// When no item consume is defined task only need to check when summon life time has ended.
 		// Otherwise have to destroy items from owner's inventory in order to let summon live.
 		final int delay = 1000;
 		
-		if (Config.DEBUG && _itemConsumeCount != 0)
+		if (Config.DEBUG && itemConsumeCount != 0)
 		{
-			LOGGER.warn("L2SummonInstance: Item Consume ID: " + _itemConsumeId + ", Count: " + _itemConsumeCount + ", Rate: " + _itemConsumeSteps + " times.");
+			LOGGER.warn("L2SummonInstance: Item Consume ID: " + itemConsumeId + ", Count: " + itemConsumeCount + ", Rate: " + itemConsumeSteps + " times.");
 		}
 		
 		if (Config.DEBUG)
@@ -107,7 +87,7 @@ public class L2SummonInstance extends L2Summon
 			LOGGER.warn("L2SummonInstance: Task Delay " + delay / 1000 + " seconds.");
 		}
 		
-		_summonLifeTask = ThreadPoolManager.getInstance().scheduleGeneralAtFixedRate(new SummonLifetime(getOwner(), this), delay, delay);
+		summonLifeTask = ThreadPoolManager.getInstance().scheduleGeneralAtFixedRate(new SummonLifetime(getOwner(), this), delay, delay);
 	}
 	
 	@Override
@@ -124,67 +104,67 @@ public class L2SummonInstance extends L2Summon
 	
 	public void setExpPenalty(final float expPenalty)
 	{
-		_expPenalty = expPenalty;
+		this.expPenalty = expPenalty;
 	}
 	
 	public float getExpPenalty()
 	{
-		return _expPenalty;
+		return expPenalty;
 	}
 	
 	public int getItemConsumeCount()
 	{
-		return _itemConsumeCount;
+		return itemConsumeCount;
 	}
 	
 	public int getItemConsumeId()
 	{
-		return _itemConsumeId;
+		return itemConsumeId;
 	}
 	
 	public int getItemConsumeSteps()
 	{
-		return _itemConsumeSteps;
+		return itemConsumeSteps;
 	}
 	
 	public int getNextItemConsumeTime()
 	{
-		return _nextItemConsumeTime;
+		return nextItemConsumeTime;
 	}
 	
 	public int getTotalLifeTime()
 	{
-		return _totalLifeTime;
+		return totalLifeTime;
 	}
 	
 	public int getTimeLostIdle()
 	{
-		return _timeLostIdle;
+		return timeLostIdle;
 	}
 	
 	public int getTimeLostActive()
 	{
-		return _timeLostActive;
+		return timeLostActive;
 	}
 	
 	public int getTimeRemaining()
 	{
-		return _timeRemaining;
+		return timeRemaining;
 	}
 	
 	public void setNextItemConsumeTime(final int value)
 	{
-		_nextItemConsumeTime = value;
+		nextItemConsumeTime = value;
 	}
 	
 	public void decNextItemConsumeTime(final int value)
 	{
-		_nextItemConsumeTime -= value;
+		nextItemConsumeTime -= value;
 	}
 	
 	public void decTimeRemaining(final int value)
 	{
-		_timeRemaining -= value;
+		timeRemaining -= value;
 	}
 	
 	public void addExpAndSp(final int addToExp, final int addToSp)
@@ -215,17 +195,19 @@ public class L2SummonInstance extends L2Summon
 	public boolean doDie(final L2Character killer)
 	{
 		if (!super.doDie(killer))
+		{
 			return false;
+		}
 		
 		if (Config.DEBUG)
 		{
 			LOGGER.warn("L2SummonInstance: " + getTemplate().name + " (" + getOwner().getName() + ") has been killed.");
 		}
 		
-		if (_summonLifeTask != null)
+		if (summonLifeTask != null)
 		{
-			_summonLifeTask.cancel(true);
-			_summonLifeTask = null;
+			summonLifeTask.cancel(true);
+			summonLifeTask = null;
 		}
 		return true;
 		
@@ -238,13 +220,13 @@ public class L2SummonInstance extends L2Summon
 	
 	static class SummonLifetime implements Runnable
 	{
-		private final L2PcInstance _activeChar;
-		private final L2SummonInstance _summon;
+		private final L2PcInstance activeChar;
+		private final L2SummonInstance summon;
 		
 		SummonLifetime(final L2PcInstance activeChar, final L2SummonInstance newpet)
 		{
-			_activeChar = activeChar;
-			_summon = newpet;
+			this.activeChar = activeChar;
+			summon = newpet;
 		}
 		
 		@Override
@@ -252,57 +234,59 @@ public class L2SummonInstance extends L2Summon
 		{
 			if (Config.DEBUG)
 			{
-				LOGGER.warn("L2SummonInstance: " + _summon.getTemplate().name + " (" + _activeChar.getName() + ") run task.");
+				LOGGER.warn("L2SummonInstance: " + summon.getTemplate().name + " (" + activeChar.getName() + ") run task.");
 			}
 			
 			try
 			{
-				final double oldTimeRemaining = _summon.getTimeRemaining();
-				final int maxTime = _summon.getTotalLifeTime();
+				final double oldTimeRemaining = summon.getTimeRemaining();
+				final int maxTime = summon.getTotalLifeTime();
 				double newTimeRemaining;
 				
 				// if pet is attacking
-				if (_summon.isAttackingNow())
+				if (summon.isAttackingNow())
 				{
-					_summon.decTimeRemaining(_summon.getTimeLostActive());
+					summon.decTimeRemaining(summon.getTimeLostActive());
 				}
 				else
 				{
-					_summon.decTimeRemaining(_summon.getTimeLostIdle());
+					summon.decTimeRemaining(summon.getTimeLostIdle());
 				}
-				newTimeRemaining = _summon.getTimeRemaining();
+				newTimeRemaining = summon.getTimeRemaining();
 				// check if the summon's lifetime has ran out
 				if (newTimeRemaining < 0)
 				{
-					_summon.unSummon(_activeChar);
+					summon.unSummon(activeChar);
 				}
 				// check if it is time to consume another item
-				else if (newTimeRemaining <= _summon.getNextItemConsumeTime() && oldTimeRemaining > _summon.getNextItemConsumeTime())
+				else if (newTimeRemaining <= summon.getNextItemConsumeTime() && oldTimeRemaining > summon.getNextItemConsumeTime())
 				{
-					_summon.decNextItemConsumeTime(maxTime / (_summon.getItemConsumeSteps() + 1));
+					summon.decNextItemConsumeTime(maxTime / (summon.getItemConsumeSteps() + 1));
 					
 					// check if owner has enought itemConsume, if requested
-					if (_summon.getItemConsumeCount() > 0 && _summon.getItemConsumeId() != 0 && !_summon.isDead() && !_summon.destroyItemByItemId("Consume", _summon.getItemConsumeId(), _summon.getItemConsumeCount(), _activeChar, true))
+					if (summon.getItemConsumeCount() > 0 && summon.getItemConsumeId() != 0 && !summon.isDead() && !summon.destroyItemByItemId("Consume", summon.getItemConsumeId(), summon.getItemConsumeCount(), activeChar, true))
 					{
-						_summon.unSummon(_activeChar);
+						summon.unSummon(activeChar);
 					}
 				}
 				
 				// prevent useless packet-sending when the difference isn't visible.
-				if (_summon.lastShowntimeRemaining - newTimeRemaining > maxTime / 352)
+				if (summon.lastShowntimeRemaining - newTimeRemaining > maxTime / 352)
 				{
-					_summon.getOwner().sendPacket(new SetSummonRemainTime(maxTime, (int) newTimeRemaining));
-					_summon.lastShowntimeRemaining = (int) newTimeRemaining;
+					summon.getOwner().sendPacket(new SetSummonRemainTime(maxTime, (int) newTimeRemaining));
+					summon.lastShowntimeRemaining = (int) newTimeRemaining;
 				}
 			}
 			catch (final Throwable e)
 			{
 				if (Config.ENABLE_ALL_EXCEPTIONS)
+				{
 					e.printStackTrace();
+				}
 				
 				if (Config.DEBUG)
 				{
-					LOGGER.warn("Summon of player [#" + _activeChar.getName() + "] has encountered item consumption errors: " + e);
+					LOGGER.warn("Summon of player [#" + activeChar.getName() + "] has encountered item consumption errors: " + e);
 				}
 			}
 		}
@@ -316,10 +300,10 @@ public class L2SummonInstance extends L2Summon
 			LOGGER.warn("L2SummonInstance: " + getTemplate().name + " (" + owner.getName() + ") unsummoned.");
 		}
 		
-		if (_summonLifeTask != null)
+		if (summonLifeTask != null)
 		{
-			_summonLifeTask.cancel(true);
-			_summonLifeTask = null;
+			summonLifeTask.cancel(true);
+			summonLifeTask = null;
 		}
 		
 		super.unSummon(owner);
@@ -346,7 +330,9 @@ public class L2SummonInstance extends L2Summon
 	public final void sendDamageMessage(final L2Character target, final int damage, final boolean mcrit, final boolean pcrit, final boolean miss)
 	{
 		if (miss)
+		{
 			return;
+		}
 		
 		// Prevents the double spam of system messages, if the target is the owning player.
 		if (target.getObjectId() != getOwner().getObjectId())

@@ -1,23 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.handler.admincommandhandlers;
 
 import java.io.File;
@@ -31,7 +11,7 @@ import com.l2jfrozen.gameserver.model.actor.instance.L2PcInstance;
 
 /**
  * @version $Revision: 1.1 $
- * @author ProGramMoS
+ * @author  ProGramMoS
  */
 public class AdminCache implements IAdminCommandHandler
 {
@@ -60,17 +40,14 @@ public class AdminCache implements IAdminCommandHandler
 	@Override
 	public boolean useAdminCommand(final String command, final L2PcInstance activeChar)
 	{
-		/*
-		 * if(!AdminCommandAccessRights.getInstance().hasAccess(command, activeChar.getAccessLevel())){ return false; } if(Config.GMAUDIT) { Logger _logAudit = Logger.getLogger("gmaudit"); LogRecord record = new LogRecord(Level.INFO, command); record.setParameters(new Object[] { "GM: " +
-		 * activeChar.getName(), " to target [" + activeChar.getTarget() + "] " }); _logAudit.LOGGER(record); }
-		 */
-		
 		final StringTokenizer st = new StringTokenizer(command, " ");
 		
 		final CommandEnum comm = CommandEnum.valueOf(st.nextToken());
 		
 		if (comm == null)
+		{
 			return false;
+		}
 		
 		switch (comm)
 		{
@@ -79,7 +56,7 @@ public class AdminCache implements IAdminCommandHandler
 				HtmCache.getInstance().reload(Config.DATAPACK_ROOT);
 				activeChar.sendMessage("Cache[HTML]: " + HtmCache.getInstance().getMemoryUsage() + " MB on " + HtmCache.getInstance().getLoadedFiles() + " file(s) loaded.");
 				return true;
-				
+			
 			case admin_cache_reload_path:
 				if (st.hasMoreTokens())
 				{
@@ -110,13 +87,13 @@ public class AdminCache implements IAdminCommandHandler
 				}
 				activeChar.sendMessage("Usage: //cache_reload_file <relative_path/file>");
 				return false;
-				
+			
 			case admin_cache_crest_rebuild:
 			case admin_cache_crest_reload:
 				CrestCache.getInstance().reload();
 				activeChar.sendMessage("Cache[Crest]: " + String.format("%.3f", CrestCache.getInstance().getMemoryUsage()) + " megabytes on " + CrestCache.getInstance().getLoadedFiles() + " files loaded");
 				return true;
-				
+			
 			case admin_cache_crest_fix:
 				CrestCache.getInstance().convertOldPedgeFiles();
 				activeChar.sendMessage("Cache[Crest]: crests fixed");

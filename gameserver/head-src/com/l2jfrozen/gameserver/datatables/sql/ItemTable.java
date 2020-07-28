@@ -1,35 +1,16 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.datatables.sql;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ScheduledFuture;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
-
-import javolution.util.FastMap;
 
 import org.apache.log4j.Logger;
 
@@ -54,8 +35,6 @@ import com.l2jfrozen.gameserver.templates.L2Weapon;
 import com.l2jfrozen.gameserver.templates.L2WeaponType;
 import com.l2jfrozen.gameserver.templates.StatsSet;
 import com.l2jfrozen.gameserver.thread.ThreadPoolManager;
-import com.l2jfrozen.util.CloseUtil;
-import com.l2jfrozen.util.database.DatabaseUtils;
 import com.l2jfrozen.util.database.L2DatabaseFactory;
 
 /**
@@ -65,98 +44,100 @@ import com.l2jfrozen.util.database.L2DatabaseFactory;
 public class ItemTable
 {
 	private final static Logger LOGGER = Logger.getLogger(ItemTable.class);
-	private final static java.util.logging.Logger _logItems = java.util.logging.Logger.getLogger("item");
+	private final static java.util.logging.Logger logItems = java.util.logging.Logger.getLogger("item");
 	
-	private static final Map<String, Integer> _crystalTypes = new FastMap<>();
-	private static final Map<String, L2WeaponType> _weaponTypes = new FastMap<>();
-	private static final Map<String, L2ArmorType> _armorTypes = new FastMap<>();
-	private static final Map<String, Integer> _slots = new FastMap<>();
+	private static final Map<String, Integer> crystalTypes = new HashMap<>();
+	private static final Map<String, L2WeaponType> weaponTypes = new HashMap<>();
+	private static final Map<String, L2ArmorType> armorTypes = new HashMap<>();
+	private static final Map<String, Integer> slots = new HashMap<>();
 	
-	private L2Item[] _allTemplates;
+	private L2Item[] allTemplates;
 	
-	private final boolean _initialized = true;
+	private final boolean initialized = true;
 	
 	static
 	{
-		_crystalTypes.put("s", L2Item.CRYSTAL_S);
-		_crystalTypes.put("a", L2Item.CRYSTAL_A);
-		_crystalTypes.put("b", L2Item.CRYSTAL_B);
-		_crystalTypes.put("c", L2Item.CRYSTAL_C);
-		_crystalTypes.put("d", L2Item.CRYSTAL_D);
-		_crystalTypes.put("none", L2Item.CRYSTAL_NONE);
+		crystalTypes.put("s", L2Item.CRYSTAL_S);
+		crystalTypes.put("a", L2Item.CRYSTAL_A);
+		crystalTypes.put("b", L2Item.CRYSTAL_B);
+		crystalTypes.put("c", L2Item.CRYSTAL_C);
+		crystalTypes.put("d", L2Item.CRYSTAL_D);
+		crystalTypes.put("none", L2Item.CRYSTAL_NONE);
 		
-		_weaponTypes.put("blunt", L2WeaponType.BLUNT);
-		_weaponTypes.put("bow", L2WeaponType.BOW);
-		_weaponTypes.put("dagger", L2WeaponType.DAGGER);
-		_weaponTypes.put("dual", L2WeaponType.DUAL);
-		_weaponTypes.put("dualfist", L2WeaponType.DUALFIST);
-		_weaponTypes.put("etc", L2WeaponType.ETC);
-		_weaponTypes.put("fist", L2WeaponType.FIST);
-		_weaponTypes.put("none", L2WeaponType.NONE); // these are shields !
-		_weaponTypes.put("pole", L2WeaponType.POLE);
-		_weaponTypes.put("sword", L2WeaponType.SWORD);
-		_weaponTypes.put("bigsword", L2WeaponType.BIGSWORD); // Two-Handed Swords
-		_weaponTypes.put("pet", L2WeaponType.PET); // Pet Weapon
-		_weaponTypes.put("rod", L2WeaponType.ROD); // Fishing Rods
-		_weaponTypes.put("bigblunt", L2WeaponType.BIGBLUNT); // Two handed blunt
-		_armorTypes.put("none", L2ArmorType.NONE);
-		_armorTypes.put("light", L2ArmorType.LIGHT);
-		_armorTypes.put("heavy", L2ArmorType.HEAVY);
-		_armorTypes.put("magic", L2ArmorType.MAGIC);
-		_armorTypes.put("pet", L2ArmorType.PET);
+		weaponTypes.put("blunt", L2WeaponType.BLUNT);
+		weaponTypes.put("bow", L2WeaponType.BOW);
+		weaponTypes.put("dagger", L2WeaponType.DAGGER);
+		weaponTypes.put("dual", L2WeaponType.DUAL);
+		weaponTypes.put("dualfist", L2WeaponType.DUALFIST);
+		weaponTypes.put("etc", L2WeaponType.ETC);
+		weaponTypes.put("fist", L2WeaponType.FIST);
+		weaponTypes.put("none", L2WeaponType.NONE); // these are shields !
+		weaponTypes.put("pole", L2WeaponType.POLE);
+		weaponTypes.put("sword", L2WeaponType.SWORD);
+		weaponTypes.put("bigsword", L2WeaponType.BIGSWORD); // Two-Handed Swords
+		weaponTypes.put("pet", L2WeaponType.PET); // Pet Weapon
+		weaponTypes.put("rod", L2WeaponType.ROD); // Fishing Rods
+		weaponTypes.put("bigblunt", L2WeaponType.BIGBLUNT); // Two handed blunt
+		armorTypes.put("none", L2ArmorType.NONE);
+		armorTypes.put("light", L2ArmorType.LIGHT);
+		armorTypes.put("heavy", L2ArmorType.HEAVY);
+		armorTypes.put("magic", L2ArmorType.MAGIC);
+		armorTypes.put("pet", L2ArmorType.PET);
 		
-		_slots.put("chest", L2Item.SLOT_CHEST);
-		_slots.put("fullarmor", L2Item.SLOT_FULL_ARMOR);
-		_slots.put("head", L2Item.SLOT_HEAD);
-		_slots.put("hair", L2Item.SLOT_HAIR);
-		_slots.put("face", L2Item.SLOT_FACE);
-		_slots.put("dhair", L2Item.SLOT_DHAIR);
-		_slots.put("underwear", L2Item.SLOT_UNDERWEAR);
-		_slots.put("back", L2Item.SLOT_BACK);
-		_slots.put("neck", L2Item.SLOT_NECK);
-		_slots.put("legs", L2Item.SLOT_LEGS);
-		_slots.put("feet", L2Item.SLOT_FEET);
-		_slots.put("gloves", L2Item.SLOT_GLOVES);
-		_slots.put("chest,legs", L2Item.SLOT_CHEST | L2Item.SLOT_LEGS);
-		_slots.put("rhand", L2Item.SLOT_R_HAND);
-		_slots.put("lhand", L2Item.SLOT_L_HAND);
-		_slots.put("lrhand", L2Item.SLOT_LR_HAND);
-		_slots.put("rear,lear", L2Item.SLOT_R_EAR | L2Item.SLOT_L_EAR);
-		_slots.put("rfinger,lfinger", L2Item.SLOT_R_FINGER | L2Item.SLOT_L_FINGER);
-		_slots.put("none", L2Item.SLOT_NONE);
-		_slots.put("wolf", L2Item.SLOT_WOLF); // for wolf
-		_slots.put("hatchling", L2Item.SLOT_HATCHLING); // for hatchling
-		_slots.put("strider", L2Item.SLOT_STRIDER); // for strider
-		_slots.put("babypet", L2Item.SLOT_BABYPET); // for babypet
+		slots.put("chest", L2Item.SLOT_CHEST);
+		slots.put("fullarmor", L2Item.SLOT_FULL_ARMOR);
+		slots.put("head", L2Item.SLOT_HEAD);
+		slots.put("hair", L2Item.SLOT_HAIR);
+		slots.put("face", L2Item.SLOT_FACE);
+		slots.put("dhair", L2Item.SLOT_DHAIR);
+		slots.put("underwear", L2Item.SLOT_UNDERWEAR);
+		slots.put("back", L2Item.SLOT_BACK);
+		slots.put("neck", L2Item.SLOT_NECK);
+		slots.put("legs", L2Item.SLOT_LEGS);
+		slots.put("feet", L2Item.SLOT_FEET);
+		slots.put("gloves", L2Item.SLOT_GLOVES);
+		slots.put("chest,legs", L2Item.SLOT_CHEST | L2Item.SLOT_LEGS);
+		slots.put("rhand", L2Item.SLOT_R_HAND);
+		slots.put("lhand", L2Item.SLOT_L_HAND);
+		slots.put("lrhand", L2Item.SLOT_LR_HAND);
+		slots.put("rear,lear", L2Item.SLOT_R_EAR | L2Item.SLOT_L_EAR);
+		slots.put("rfinger,lfinger", L2Item.SLOT_R_FINGER | L2Item.SLOT_L_FINGER);
+		slots.put("none", L2Item.SLOT_NONE);
+		slots.put("wolf", L2Item.SLOT_WOLF); // for wolf
+		slots.put("hatchling", L2Item.SLOT_HATCHLING); // for hatchling
+		slots.put("strider", L2Item.SLOT_STRIDER); // for strider
+		slots.put("babypet", L2Item.SLOT_BABYPET); // for babypet
 	}
 	
-	private static ItemTable _instance;
+	private static ItemTable instance;
 	
 	/** Table of SQL request in order to obtain items from tables [etcitem], [armor], [weapon] */
 	private static final String[] SQL_ITEM_SELECTS =
 	{
 		"SELECT item_id, name, crystallizable, item_type, weight, consume_type, crystal_type, duration, price, crystal_count, sellable, dropable, destroyable, tradeable FROM etcitem",
 		
-		"SELECT item_id, name, bodypart, crystallizable, armor_type, weight," + " crystal_type, avoid_modify, duration, p_def, m_def, mp_bonus," + " price, crystal_count, sellable, dropable, destroyable, tradeable, item_skill_id, item_skill_lvl FROM armor",
+		"SELECT item_id, name, bodypart, crystallizable, armor_type, weight, crystal_type, avoid_modify, duration, p_def, m_def, mp_bonus, price, crystal_count, sellable, dropable, destroyable, tradeable, item_skill_id, item_skill_lvl FROM armor",
 		
-		"SELECT item_id, name, bodypart, crystallizable, weight, soulshots, spiritshots," + " crystal_type, p_dam, rnd_dam, weaponType, critical, hit_modify, avoid_modify," + " shield_def, shield_def_rate, atk_speed, mp_consume, m_dam, duration, price, crystal_count," + " sellable, dropable, destroyable, tradeable, item_skill_id, item_skill_lvl,enchant4_skill_id,enchant4_skill_lvl, onCast_skill_id, onCast_skill_lvl," + " onCast_skill_chance, onCrit_skill_id, onCrit_skill_lvl, onCrit_skill_chance FROM weapon"
+		"SELECT item_id, name, bodypart, crystallizable, weight, soulshots, spiritshots, crystal_type, p_dam, rnd_dam, weaponType, critical, hit_modify, avoid_modify, shield_def, shield_def_rate, atk_speed, mp_consume, m_dam, duration, price, crystal_count, sellable, dropable, destroyable, tradeable, item_skill_id, item_skill_lvl,enchant4_skill_id,enchant4_skill_lvl, onCast_skill_id, onCast_skill_lvl, onCast_skill_chance, onCrit_skill_id, onCrit_skill_lvl, onCrit_skill_chance FROM weapon"
 	};
 	
 	private static final String[] SQL_CUSTOM_ITEM_SELECTS =
 	{
 		"SELECT item_id, name, crystallizable, item_type, weight, consume_type, crystal_type, duration, price, crystal_count, sellable, dropable, destroyable, tradeable FROM custom_etcitem",
 		
-		"SELECT item_id, name, bodypart, crystallizable, armor_type, weight," + " crystal_type, avoid_modify, duration, p_def, m_def, mp_bonus," + " price, crystal_count, sellable, dropable, destroyable, tradeable, item_skill_id, item_skill_lvl FROM custom_armor",
+		"SELECT item_id, name, bodypart, crystallizable, armor_type, weight, crystal_type, avoid_modify, duration, p_def, m_def, mp_bonus, price, crystal_count, sellable, dropable, destroyable, tradeable, item_skill_id, item_skill_lvl FROM custom_armor",
 		
-		"SELECT item_id, name, bodypart, crystallizable, weight, soulshots, spiritshots," + " crystal_type, p_dam, rnd_dam, weaponType, critical, hit_modify, avoid_modify," + " shield_def, shield_def_rate, atk_speed, mp_consume, m_dam, duration, price, crystal_count," + " sellable, dropable, destroyable, tradeable, item_skill_id, item_skill_lvl,enchant4_skill_id,enchant4_skill_lvl, onCast_skill_id, onCast_skill_lvl," + " onCast_skill_chance, onCrit_skill_id, onCrit_skill_lvl, onCrit_skill_chance FROM custom_weapon"
+		"SELECT item_id, name, bodypart, crystallizable, weight, soulshots, spiritshots, crystal_type, p_dam, rnd_dam, weaponType, critical, hit_modify, avoid_modify, shield_def, shield_def_rate, atk_speed, mp_consume, m_dam, duration, price, crystal_count, sellable, dropable, destroyable, tradeable, item_skill_id, item_skill_lvl,enchant4_skill_id,enchant4_skill_lvl, onCast_skill_id, onCast_skill_lvl, onCast_skill_chance, onCrit_skill_id, onCrit_skill_lvl, onCrit_skill_chance FROM custom_weapon"
 	};
 	
+	private static final String DELETE_PET_BY_ITEM_OBJ_ID = "DELETE FROM pets WHERE item_obj_id=?";
+	
 	/** List of etcItem */
-	private static final Map<Integer, Item> itemData = new FastMap<>();
+	private static final Map<Integer, Item> itemData = new HashMap<>();
 	/** List of weapons */
-	private static final Map<Integer, Item> weaponData = new FastMap<>();
+	private static final Map<Integer, Item> weaponData = new HashMap<>();
 	/** List of armor */
-	private static final Map<Integer, Item> armorData = new FastMap<>();
+	private static final Map<Integer, Item> armorData = new HashMap<>();
 	
 	/**
 	 * Returns instance of ItemTable
@@ -164,11 +145,11 @@ public class ItemTable
 	 */
 	public static ItemTable getInstance()
 	{
-		if (_instance == null)
+		if (instance == null)
 		{
-			_instance = new ItemTable();
+			instance = new ItemTable();
 		}
-		return _instance;
+		return instance;
 	}
 	
 	/**
@@ -180,154 +161,137 @@ public class ItemTable
 		return new Item();
 	}
 	
-	/**
-	 * Constructor.
-	 */
 	public ItemTable()
 	{
-		final Map<Integer, L2EtcItem> etcItems = new FastMap<>();
-		final Map<Integer, L2Armor> armors = new FastMap<>();
-		final Map<Integer, L2Weapon> weapons = new FastMap<>();
+		Map<Integer, L2EtcItem> etcItems = new HashMap<>();
+		Map<Integer, L2Armor> armors = new HashMap<>();
+		Map<Integer, L2Weapon> weapons = new HashMap<>();
 		
-		Connection con = null;
-		try
+		try (Connection con = L2DatabaseFactory.getInstance().getConnection())
 		{
-			con = L2DatabaseFactory.getInstance().getConnection(false);
-			for (final String selectQuery : SQL_ITEM_SELECTS)
+			for (String selectQuery : SQL_ITEM_SELECTS)
 			{
-				final PreparedStatement statement = con.prepareStatement(selectQuery);
-				final ResultSet rset = statement.executeQuery();
-				
-				// Add item in correct FastMap
-				while (rset.next())
+				try (PreparedStatement statement = con.prepareStatement(selectQuery);
+					ResultSet rset = statement.executeQuery())
 				{
-					if (selectQuery.endsWith("etcitem"))
-					{
-						final Item newItem = readItem(rset);
-						itemData.put(newItem.id, newItem);
-					}
-					else if (selectQuery.endsWith("armor"))
-					{
-						final Item newItem = readArmor(rset);
-						armorData.put(newItem.id, newItem);
-					}
-					else if (selectQuery.endsWith("weapon"))
-					{
-						final Item newItem = readWeapon(rset);
-						weaponData.put(newItem.id, newItem);
-					}
-				}
-				
-				DatabaseUtils.close(statement);
-				DatabaseUtils.close(rset);
-			}
-		}
-		catch (final Exception e)
-		{
-			LOGGER.error("Data error on item", e);
-		}
-		finally
-		{
-			CloseUtil.close(con);
-		}
-		
-		if (Config.CUSTOM_ITEM_TABLES)
-		{
-			try
-			{
-				con = L2DatabaseFactory.getInstance().getConnection(false);
-				for (final String selectQuery : SQL_CUSTOM_ITEM_SELECTS)
-				{
-					final PreparedStatement statement = con.prepareStatement(selectQuery);
-					final ResultSet rset = statement.executeQuery();
-					
-					// Add item in correct FastMap
+					// Add item in correct HashMap
 					while (rset.next())
 					{
 						if (selectQuery.endsWith("etcitem"))
 						{
-							final Item newItem = readItem(rset);
-							
-							if (itemData.containsKey(newItem.id))
-							{
-								itemData.remove(newItem.id);
-							}
-							
+							Item newItem = readItem(rset);
 							itemData.put(newItem.id, newItem);
 						}
 						else if (selectQuery.endsWith("armor"))
 						{
-							final Item newItem = readArmor(rset);
-							
-							if (armorData.containsKey(newItem.id))
-							{
-								armorData.remove(newItem.id);
-							}
-							
+							Item newItem = readArmor(rset);
 							armorData.put(newItem.id, newItem);
 						}
 						else if (selectQuery.endsWith("weapon"))
 						{
-							final Item newItem = readWeapon(rset);
-							
-							if (weaponData.containsKey(newItem.id))
-							{
-								weaponData.remove(newItem.id);
-							}
-							
+							Item newItem = readWeapon(rset);
 							weaponData.put(newItem.id, newItem);
 						}
 					}
-					
-					DatabaseUtils.close(statement);
-					DatabaseUtils.close(rset);
+				}
+				catch (Exception e)
+				{
+					LOGGER.error("ItemTable.CustomTables : Something happened while etcitem, armor and weapon table loading data. ", e);
 				}
 			}
-			catch (final Exception e)
+			
+			if (Config.CUSTOM_ITEM_TABLES)
 			{
-				LOGGER.error("Data error on custom_item", e);
-			}
-			finally
-			{
-				CloseUtil.close(con);
+				for (String selectQuery : SQL_CUSTOM_ITEM_SELECTS)
+				{
+					try (PreparedStatement statement = con.prepareStatement(selectQuery);
+						ResultSet rset = statement.executeQuery())
+					{
+						// Add item in correct HashMap
+						while (rset.next())
+						{
+							if (selectQuery.endsWith("etcitem"))
+							{
+								Item newItem = readItem(rset);
+								
+								if (itemData.containsKey(newItem.id))
+								{
+									LOGGER.warn("ItemTable.custom_etcitem: Item with ID: " + newItem.id + " already exist in etcitem table. ");
+								}
+								
+								itemData.put(newItem.id, newItem);
+							}
+							else if (selectQuery.endsWith("armor"))
+							{
+								Item newItem = readArmor(rset);
+								
+								if (armorData.containsKey(newItem.id))
+								{
+									LOGGER.warn("ItemTable.custom_armor: Armor with ID: " + newItem.id + " already exist in armor table.");
+								}
+								
+								armorData.put(newItem.id, newItem);
+							}
+							else if (selectQuery.endsWith("weapon"))
+							{
+								Item newItem = readWeapon(rset);
+								
+								if (weaponData.containsKey(newItem.id))
+								{
+									LOGGER.warn("ItemTable.custom_weapon: Weapon with ID: " + newItem.id + " already exist in weapon table.");
+								}
+								
+								weaponData.put(newItem.id, newItem);
+							}
+						}
+					}
+					catch (Exception e)
+					{
+						LOGGER.error("ItemTable.CustomTables : Something happened while custom_etcitem, custom_armor and custom_weapon table loading data. ", e);
+					}
+				}
 			}
 		}
+		catch (Exception e)
+		{
+			LOGGER.error("ItemTable.ItemTable : Can not connect to database. ", e);
+		}
 		
-		for (final L2Armor armor : SkillsEngine.getInstance().loadArmors(armorData))
+		for (L2Armor armor : SkillsEngine.getInstance().loadArmors(armorData))
 		{
 			armors.put(armor.getItemId(), armor);
 		}
+		
 		LOGGER.info("ItemTable: Loaded " + armors.size() + " Armors.");
 		
-		for (final L2EtcItem item : SkillsEngine.getInstance().loadItems(itemData))
+		for (L2EtcItem item : SkillsEngine.getInstance().loadItems(itemData))
 		{
 			etcItems.put(item.getItemId(), item);
 		}
+		
 		LOGGER.info("ItemTable: Loaded " + etcItems.size() + " Items.");
 		
-		for (final L2Weapon weapon : SkillsEngine.getInstance().loadWeapons(weaponData))
+		for (L2Weapon weapon : SkillsEngine.getInstance().loadWeapons(weaponData))
 		{
 			weapons.put(weapon.getItemId(), weapon);
 		}
+		
 		LOGGER.info("ItemTable: Loaded " + weapons.size() + " Weapons.");
 		
-		// fillEtcItemsTable();
-		// fillArmorsTable();
-		// FillWeaponsTable();
 		buildFastLookupTable(armors, weapons, etcItems);
 	}
 	
 	/**
 	 * Returns object Item from the record of the database
-	 * @param rset : ResultSet designating a record of the [weapon] table of database
-	 * @return Item : object created from the database record
+	 * @param  rset         : ResultSet designating a record of the [weapon] table of database
+	 * @return              Item : object created from the database record
 	 * @throws SQLException
 	 */
 	private Item readWeapon(final ResultSet rset) throws SQLException
 	{
 		final Item item = new Item();
 		item.set = new StatsSet();
-		item.type = _weaponTypes.get(rset.getString("weaponType"));
+		item.type = weaponTypes.get(rset.getString("weaponType"));
 		item.id = rset.getInt("item_id");
 		item.name = rset.getString("name");
 		
@@ -346,8 +310,8 @@ public class ItemTable
 			item.set.set("type2", L2Item.TYPE2_WEAPON);
 		}
 		
-		item.set.set("bodypart", _slots.get(rset.getString("bodypart")));
-		item.set.set("crystal_type", _crystalTypes.get(rset.getString("crystal_type")));
+		item.set.set("bodypart", slots.get(rset.getString("bodypart")));
+		item.set.set("crystal_type", crystalTypes.get(rset.getString("crystal_type")));
 		item.set.set("crystallizable", Boolean.valueOf(rset.getString("crystallizable")).booleanValue());
 		item.set.set("weight", rset.getInt("weight"));
 		item.set.set("soulshots", rset.getInt("soulshots"));
@@ -413,21 +377,21 @@ public class ItemTable
 	
 	/**
 	 * Returns object Item from the record of the database
-	 * @param rset : ResultSet designating a record of the [armor] table of database
-	 * @return Item : object created from the database record
+	 * @param  rset         : ResultSet designating a record of the [armor] table of database
+	 * @return              Item : object created from the database record
 	 * @throws SQLException
 	 */
 	private Item readArmor(final ResultSet rset) throws SQLException
 	{
 		final Item item = new Item();
 		item.set = new StatsSet();
-		item.type = _armorTypes.get(rset.getString("armor_type"));
+		item.type = armorTypes.get(rset.getString("armor_type"));
 		item.id = rset.getInt("item_id");
 		item.name = rset.getString("name");
 		
 		item.set.set("item_id", item.id);
 		item.set.set("name", item.name);
-		final int bodypart = _slots.get(rset.getString("bodypart"));
+		final int bodypart = slots.get(rset.getString("bodypart"));
 		item.set.set("bodypart", bodypart);
 		item.set.set("crystallizable", Boolean.valueOf(rset.getString("crystallizable")));
 		item.set.set("crystal_count", rset.getInt("crystal_count"));
@@ -450,7 +414,7 @@ public class ItemTable
 		}
 		
 		item.set.set("weight", rset.getInt("weight"));
-		item.set.set("crystal_type", _crystalTypes.get(rset.getString("crystal_type")));
+		item.set.set("crystal_type", crystalTypes.get(rset.getString("crystal_type")));
 		item.set.set("avoid_modify", rset.getInt("avoid_modify"));
 		item.set.set("duration", rset.getInt("duration"));
 		item.set.set("p_def", rset.getInt("p_def"));
@@ -487,8 +451,8 @@ public class ItemTable
 	
 	/**
 	 * Returns object Item from the record of the database
-	 * @param rset : ResultSet designating a record of the [etcitem] table of database
-	 * @return Item : object created from the database record
+	 * @param  rset         : ResultSet designating a record of the [etcitem] table of database
+	 * @return              Item : object created from the database record
 	 * @throws SQLException
 	 */
 	private Item readItem(final ResultSet rset) throws SQLException
@@ -558,7 +522,9 @@ public class ItemTable
 				break;
 			default:
 				if (Config.DEBUG)
+				{
 					LOGGER.info("Unknown etcitem type:" + itemType);
+				}
 				item.type = L2EtcItemType.OTHER;
 				break;
 		}
@@ -580,7 +546,7 @@ public class ItemTable
 				break;
 		}
 		
-		final int crystal = _crystalTypes.get(rset.getString("crystal_type"));
+		final int crystal = crystalTypes.get(rset.getString("crystal_type"));
 		item.set.set("crystal_type", crystal);
 		
 		final int weight = rset.getInt("weight");
@@ -600,15 +566,8 @@ public class ItemTable
 	 */
 	public boolean isInitialized()
 	{
-		return _initialized;
+		return initialized;
 	}
-	
-	/*
-	 * private void fillEtcItemsTable() { for (Item itemInfo : itemData.values()) { L2EtcItem item = SkillsEngine.getInstance().loadEtcItem(itemInfo.id, itemInfo.type, itemInfo.name, itemInfo.set); if (item == null) { item = new L2EtcItem((L2EtcItemType)itemInfo.type, itemInfo.set); }
-	 * _etcItems.put(item.getItemId(), item); } } private void fillArmorsTable() { List<L2Armor> armorList = SkillsEngine.getInstance().loadArmors(armorData); /*for (Item itemInfo : armorData.values()) { L2Armor armor = SkillsEngine.getInstance().loadArmor(itemInfo.id, itemInfo.type, itemInfo.name,
-	 * itemInfo.set); if (armor == null) armor = new L2Armor((L2ArmorType)itemInfo.type, itemInfo.set); _armors.put(armor.getItemId(), armor); }* } private void FillWeaponsTable() { for (Item itemInfo : weaponData.values()) { L2Weapon weapon = SkillsEngine.getInstance().loadWeapon(itemInfo.id,
-	 * itemInfo.type, itemInfo.name, itemInfo.set); if (weapon == null) weapon = new L2Weapon((L2WeaponType)itemInfo.type, itemInfo.set); _weapons.put(weapon.getItemId(), weapon); } }
-	 */
 	
 	/**
 	 * Builds a variable in which all items are putting in in function of their ID.
@@ -620,7 +579,7 @@ public class ItemTable
 	{
 		int highestId = 0;
 		
-		// Get highest ID of item in armor FastMap, then in weapon FastMap, and finally in etcitem FastMap
+		// Get highest ID of item in armor HashMap, then in weapon HashMap, and finally in etcitem HashMap
 		for (final L2Armor item : armors.values())
 		{
 			if (item.getItemId() > highestId)
@@ -645,40 +604,66 @@ public class ItemTable
 			}
 		}
 		
-		// Create a FastLookUp Table called _allTemplates of size : value of the highest item ID
 		LOGGER.info("Highest item id used: " + highestId);
 		
-		_allTemplates = new L2Item[highestId + 1];
+		allTemplates = new L2Item[highestId + 1];
 		
 		// Insert armor item in Fast Look Up Table
 		for (final int id : armors.keySet())
 		{
-			_allTemplates[id] = armors.get(id);
+			allTemplates[id] = armors.get(id);
 		}
 		
 		// Insert weapon item in Fast Look Up Table
 		for (final int id : weapons.keySet())
 		{
-			_allTemplates[id] = weapons.get(id);
+			allTemplates[id] = weapons.get(id);
 		}
 		
 		// Insert etcItem item in Fast Look Up Table
 		for (final int id : etcItems.keySet())
 		{
-			_allTemplates[id] = etcItems.get(id);
+			allTemplates[id] = etcItems.get(id);
 		}
 	}
 	
 	/**
 	 * Returns the item corresponding to the item ID
-	 * @param id : int designating the item
-	 * @return L2Item
+	 * @param  id : int designating the item
+	 * @return    L2Item
 	 */
 	public L2Item getTemplate(final int id)
 	{
-		if (id > _allTemplates.length)
+		if (id > allTemplates.length)
+		{
 			return null;
-		return _allTemplates[id];
+		}
+		return allTemplates[id];
+	}
+	
+	public List<L2Item> getAllTemplatesByText(String text)
+	{
+		List<L2Item> list = new ArrayList<>();
+		
+		if (text.equals("") || text.equals(" "))
+		{
+			return list;
+		}
+		
+		for (L2Item item : allTemplates)
+		{
+			if (item == null)
+			{
+				continue;
+			}
+			
+			if (item.getName().toLowerCase().contains(text.trim().toLowerCase()))
+			{
+				list.add(item);
+			}
+		}
+		
+		return list;
 	}
 	
 	/**
@@ -686,14 +671,16 @@ public class ItemTable
 	 * <BR>
 	 * <B><U> Actions</U> :</B><BR>
 	 * <BR>
-	 * <li>Create and Init the L2ItemInstance corresponding to the Item Identifier and quantity</li> <li>Add the L2ItemInstance object to _allObjects of L2world</li> <li>Logs Item creation according to LOGGER settings</li><BR>
+	 * <li>Create and Init the L2ItemInstance corresponding to the Item Identifier and quantity</li>
+	 * <li>Add the L2ItemInstance object to allObjects of L2world</li>
+	 * <li>Logs Item creation according to LOGGER settings</li><BR>
 	 * <BR>
-	 * @param process : String Identifier of process triggering this action
-	 * @param itemId : int Item Identifier of the item to be created
-	 * @param count : int Quantity of items to be created for stackable items
-	 * @param actor : L2PcInstance Player requesting the item creation
-	 * @param reference : L2Object Object referencing current action like NPC selling item or previous item in transformation
-	 * @return L2ItemInstance corresponding to the new item
+	 * @param  process   : String Identifier of process triggering this action
+	 * @param  itemId    : int Item Identifier of the item to be created
+	 * @param  count     : int Quantity of items to be created for stackable items
+	 * @param  actor     : L2PcInstance Player requesting the item creation
+	 * @param  reference : L2Object Object referencing current action like NPC selling item or previous item in transformation
+	 * @return           L2ItemInstance corresponding to the new item
 	 */
 	public L2ItemInstance createItem(final String process, final int itemId, final int count, final L2PcInstance actor, final L2Object reference)
 	{
@@ -729,9 +716,11 @@ public class ItemTable
 		}
 		
 		if (Config.DEBUG)
+		{
 			LOGGER.info("ItemTable: Item created  oid: {} itemid: {}" + " " + item.getObjectId() + " " + itemId);
+		}
 		
-		// Add the L2ItemInstance object to _allObjects of L2world
+		// Add the L2ItemInstance object to allObjects of L2world
 		L2World.getInstance().storeObject(item);
 		
 		// Set Item parameters
@@ -750,7 +739,7 @@ public class ItemTable
 				actor,
 				reference
 			});
-			_logItems.log(record);
+			logItems.log(record);
 		}
 		return item;
 	}
@@ -765,15 +754,17 @@ public class ItemTable
 	 * <BR>
 	 * <U><I>Concept :</I></U><BR>
 	 * Dummy item is created by setting the ID of the object in the world at null value
-	 * @param itemId : int designating the item
-	 * @return L2ItemInstance designating the dummy item created
+	 * @param  itemId : int designating the item
+	 * @return        L2ItemInstance designating the dummy item created
 	 */
 	public L2ItemInstance createDummyItem(final int itemId)
 	{
 		final L2Item item = getTemplate(itemId);
 		
 		if (item == null)
+		{
 			return null;
+		}
 		
 		L2ItemInstance temp = new L2ItemInstance(0, item);
 		
@@ -784,7 +775,9 @@ public class ItemTable
 		catch (final ArrayIndexOutOfBoundsException e)
 		{
 			if (Config.ENABLE_ALL_EXCEPTIONS)
+			{
 				e.printStackTrace();
+			}
 			
 			// this can happen if the item templates were not initialized
 		}
@@ -802,14 +795,16 @@ public class ItemTable
 	 * <BR>
 	 * <B><U> Actions</U> :</B><BR>
 	 * <BR>
-	 * <li>Sets L2ItemInstance parameters to be unusable</li> <li>Removes the L2ItemInstance object to _allObjects of L2world</li> <li>Logs Item delettion according to LOGGER settings</li><BR>
+	 * <li>Sets L2ItemInstance parameters to be unusable</li>
+	 * <li>Removes the L2ItemInstance object to allObjects of L2world</li>
+	 * <li>Logs Item delettion according to LOGGER settings</li><BR>
 	 * <BR>
-	 * @param process : String Identifier of process triggering this action
+	 * @param process   : String Identifier of process triggering this action
 	 * @param item
-	 * @param actor : L2PcInstance Player requesting the item destroy
+	 * @param actor     : L2PcInstance Player requesting the item destroy
 	 * @param reference : L2Object Object referencing current action like NPC selling item or previous item in transformation
 	 */
-	public void destroyItem(final String process, final L2ItemInstance item, final L2PcInstance actor, final L2Object reference)
+	public void destroyItem(String process, L2ItemInstance item, L2PcInstance actor, L2Object reference)
 	{
 		synchronized (item)
 		{
@@ -821,28 +816,20 @@ public class ItemTable
 			L2World.getInstance().removeObject(item);
 			IdFactory.getInstance().releaseId(item.getObjectId());
 			/*
-			 * if(Config.LOG_ITEMS) { LogRecord record = new LogRecord(Level.INFO, "DELETE:" + process); record.setLoggerName("item"); record.setParameters(new Object[] { item, actor, reference }); _logItems.LOGGER(record); }
+			 * if(Config.LOG_ITEMS) { LogRecord record = new LogRecord(Level.INFO, "DELETE:" + process); record.setLoggerName("item"); record.setParameters(new Object[] { item, actor, reference }); logItems.LOGGER(record); }
 			 */
 			// if it's a pet control item, delete the pet as well
 			if (L2PetDataTable.isPetItem(item.getItemId()))
 			{
-				Connection con = null;
-				try
+				try (Connection con = L2DatabaseFactory.getInstance().getConnection();
+					PreparedStatement statement = con.prepareStatement(DELETE_PET_BY_ITEM_OBJ_ID))
 				{
-					// Delete the pet in db
-					con = L2DatabaseFactory.getInstance().getConnection(false);
-					final PreparedStatement statement = con.prepareStatement("DELETE FROM pets WHERE item_obj_id=?");
 					statement.setInt(1, item.getObjectId());
-					statement.execute();
-					DatabaseUtils.close(statement);
+					statement.executeUpdate();
 				}
-				catch (final Exception e)
+				catch (Exception e)
 				{
-					LOGGER.error("Could not delete pet objectid", e);
-				}
-				finally
-				{
-					CloseUtil.close(con);
+					LOGGER.error("ItemTable.destroyItem : Could not delete pet objectid", e);
 				}
 			}
 		}
@@ -850,27 +837,27 @@ public class ItemTable
 	
 	public void reload()
 	{
-		synchronized (_instance)
+		synchronized (instance)
 		{
-			_instance = null;
-			_instance = new ItemTable();
+			instance = null;
+			instance = new ItemTable();
 		}
 	}
 	
 	protected class resetOwner implements Runnable
 	{
-		L2ItemInstance _item;
+		L2ItemInstance item;
 		
 		public resetOwner(final L2ItemInstance item)
 		{
-			_item = item;
+			this.item = item;
 		}
 		
 		@Override
 		public void run()
 		{
-			_item.setOwnerId(0);
-			_item.setItemLootShedule(null);
+			item.setOwnerId(0);
+			item.setItemLootShedule(null);
 		}
 	}
 	

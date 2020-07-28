@@ -27,13 +27,21 @@ public class EnergyStone implements IItemHandler
 	{
 		L2PcInstance activeChar;
 		if (playable instanceof L2PcInstance)
+		{
 			activeChar = (L2PcInstance) playable;
+		}
 		else if (playable instanceof L2PetInstance)
+		{
 			activeChar = ((L2PetInstance) playable).getOwner();
+		}
 		else
+		{
 			return;
+		}
 		if (item.getItemId() != 5589)
+		{
 			return;
+		}
 		if (activeChar.isAllSkillsDisabled())
 		{
 			activeChar.sendPacket(ActionFailed.STATIC_PACKET);
@@ -44,8 +52,8 @@ public class EnergyStone implements IItemHandler
 			activeChar.sendPacket(new SystemMessage(SystemMessageId.CANT_MOVE_SITTING));
 			return;
 		}
-		_skill = getChargeSkill(activeChar);
-		if (_skill == null)
+		skill = getChargeSkill(activeChar);
+		if (skill == null)
 		{
 			final SystemMessage sm = new SystemMessage(SystemMessageId.S1_CANNOT_BE_USED);
 			sm.addItemName(5589);
@@ -57,34 +65,36 @@ public class EnergyStone implements IItemHandler
 		sm1.addItemName(5589);
 		activeChar.sendPacket(sm1);
 		
-		_effect = activeChar.getChargeEffect();
-		if (_effect == null)
+		effect = activeChar.getChargeEffect();
+		if (effect == null)
 		{
-			final L2Skill dummy = SkillTable.getInstance().getInfo(_skill.getId(), _skill.getLevel());
+			final L2Skill dummy = SkillTable.getInstance().getInfo(skill.getId(), skill.getLevel());
 			if (dummy != null)
 			{
 				dummy.getEffects(activeChar, activeChar);
-				final MagicSkillUser MSU = new MagicSkillUser(playable, activeChar, _skill.getId(), 1, 1, 0);
+				final MagicSkillUser MSU = new MagicSkillUser(playable, activeChar, skill.getId(), 1, 1, 0);
 				activeChar.sendPacket(MSU);
 				activeChar.destroyItemWithoutTrace("Consume", item.getObjectId(), 1, null, false);
 			}
 			return;
 		}
 		
-		if (_effect.numCharges < 2)
+		if (effect.numCharges < 2)
 		{
-			_effect.addNumCharges(1);
+			effect.addNumCharges(1);
 			final SystemMessage sm = new SystemMessage(SystemMessageId.FORCE_INCREASED_TO_S1);
-			sm.addNumber(_effect.getLevel());
+			sm.addNumber(effect.getLevel());
 			activeChar.sendPacket(sm);
 		}
 		else
 		{
-			if (_effect.numCharges == 2)
+			if (effect.numCharges == 2)
+			{
 				activeChar.sendPacket(new SystemMessage(SystemMessageId.FORCE_MAXLEVEL_REACHED));
+			}
 		}
 		
-		final MagicSkillUser MSU = new MagicSkillUser(playable, activeChar, _skill.getId(), 1, 1, 0);
+		final MagicSkillUser MSU = new MagicSkillUser(playable, activeChar, skill.getId(), 1, 1, 0);
 		activeChar.sendPacket(MSU);
 		activeChar.broadcastPacket(MSU);
 		activeChar.sendPacket(new EtcStatusUpdate(activeChar));
@@ -98,7 +108,9 @@ public class EnergyStone implements IItemHandler
 		for (final L2Skill s : arr$)
 		{
 			if (s.getId() == 50 || s.getId() == 8)
+			{
 				return (L2SkillCharge) s;
+			}
 		}
 		
 		return null;
@@ -114,7 +126,7 @@ public class EnergyStone implements IItemHandler
 	{
 		5589
 	};
-	private EffectCharge _effect;
-	private L2SkillCharge _skill;
+	private EffectCharge effect;
+	private L2SkillCharge skill;
 	
 }

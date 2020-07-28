@@ -1,22 +1,7 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any later
- * version.
- * 
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
- * 
- * You should have received a copy of the GNU General Public License along with
- * this program. If not, see <http://www.gnu.org/licenses/>.
- */
 package com.l2jfrozen.gameserver.network.serverpackets;
 
-import javolution.util.FastList;
+import java.util.ArrayList;
+import java.util.List;
 
 import com.l2jfrozen.gameserver.model.PartyMatchRoom;
 import com.l2jfrozen.gameserver.model.PartyMatchRoomList;
@@ -28,22 +13,22 @@ import com.l2jfrozen.gameserver.model.actor.instance.L2PcInstance;
  */
 public class ExListPartyMatchingWaitingRoom extends L2GameServerPacket
 {
-	private final L2PcInstance _activeChar;
+	private final L2PcInstance activeChar;
 	@SuppressWarnings("unused")
-	private final int _page;
-	private final int _minlvl;
-	private final int _maxlvl;
-	private final int _mode;
-	private final FastList<L2PcInstance> _members;
+	private final int page;
+	private final int minlvl;
+	private final int maxlvl;
+	private final int mode;
+	private final List<L2PcInstance> members;
 	
 	public ExListPartyMatchingWaitingRoom(final L2PcInstance player, final int page, final int minlvl, final int maxlvl, final int mode)
 	{
-		_activeChar = player;
-		_page = page;
-		_minlvl = minlvl;
-		_maxlvl = maxlvl;
-		_mode = mode;
-		_members = new FastList<>();
+		activeChar = player;
+		this.page = page;
+		this.minlvl = minlvl;
+		this.maxlvl = maxlvl;
+		this.mode = mode;
+		members = new ArrayList<>();
 	}
 	
 	@Override
@@ -53,11 +38,11 @@ public class ExListPartyMatchingWaitingRoom extends L2GameServerPacket
 		writeH(0x35);
 		
 		// If the mode is 0 and the activeChar isn't the PartyRoom leader, return an empty list.
-		if (_mode == 0)
+		if (mode == 0)
 		{
 			// Retrieve the activeChar PartyMatchRoom
-			final PartyMatchRoom _room = PartyMatchRoomList.getInstance().getRoom(_activeChar.getPartyRoom());
-			if (_room != null && _room.getOwner() != null && !_room.getOwner().equals(_activeChar))
+			final PartyMatchRoom room = PartyMatchRoomList.getInstance().getRoom(activeChar.getPartyRoom());
+			if (room != null && room.getOwner() != null && !room.getOwner().equals(activeChar))
 			{
 				writeD(0);
 				writeD(0);
@@ -68,8 +53,10 @@ public class ExListPartyMatchingWaitingRoom extends L2GameServerPacket
 		for (final L2PcInstance cha : PartyMatchWaitingList.getInstance().getPlayers())
 		{
 			// Don't add yourself in the list
-			if (cha == null || cha == _activeChar)
+			if (cha == null || cha == activeChar)
+			{
 				continue;
+			}
 			
 			if (!cha.isPartyWaiting())
 			{
@@ -77,23 +64,25 @@ public class ExListPartyMatchingWaitingRoom extends L2GameServerPacket
 				continue;
 			}
 			
-			if ((cha.getLevel() < _minlvl) || (cha.getLevel() > _maxlvl))
+			if ((cha.getLevel() < minlvl) || (cha.getLevel() > maxlvl))
+			{
 				continue;
+			}
 			
-			_members.add(cha);
+			members.add(cha);
 		}
 		
-		int _count = 0;
-		final int _size = _members.size();
+		int count = 0;
+		final int size = members.size();
 		
 		writeD(1);
-		writeD(_size);
-		while (_size > _count)
+		writeD(size);
+		while (size > count)
 		{
-			writeS(_members.get(_count).getName());
-			writeD(_members.get(_count).getActiveClass());
-			writeD(_members.get(_count).getLevel());
-			_count++;
+			writeS(members.get(count).getName());
+			writeD(members.get(count).getActiveClass());
+			writeD(members.get(count).getLevel());
+			count++;
 		}
 	}
 	

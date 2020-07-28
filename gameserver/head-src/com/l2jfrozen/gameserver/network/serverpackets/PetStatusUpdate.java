@@ -1,23 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.network.serverpackets;
 
 import com.l2jfrozen.gameserver.model.L2Summon;
@@ -30,28 +10,26 @@ import com.l2jfrozen.gameserver.model.actor.instance.L2SummonInstance;
  */
 public class PetStatusUpdate extends L2GameServerPacket
 {
-	private static final String _S__CE_PETSTATUSSHOW = "[S] B5 PetStatusUpdate";
-	
-	private final L2Summon _summon;
-	private final int _maxHp, _maxMp;
-	private int _maxFed, _curFed;
+	private final L2Summon summonInstance;
+	private final int maxHp, maxMp;
+	private int maxFed, curFed;
 	
 	public PetStatusUpdate(final L2Summon summon)
 	{
-		_summon = summon;
-		_maxHp = _summon.getMaxHp();
-		_maxMp = _summon.getMaxMp();
-		if (_summon instanceof L2PetInstance)
+		summonInstance = summon;
+		maxHp = summonInstance.getMaxHp();
+		maxMp = summonInstance.getMaxMp();
+		if (summonInstance instanceof L2PetInstance)
 		{
-			final L2PetInstance pet = (L2PetInstance) _summon;
-			_curFed = pet.getCurrentFed(); // how fed it is
-			_maxFed = pet.getMaxFed(); // max fed it can be
+			final L2PetInstance pet = (L2PetInstance) summonInstance;
+			curFed = pet.getCurrentFed(); // how fed it is
+			maxFed = pet.getMaxFed(); // max fed it can be
 		}
-		else if (_summon instanceof L2SummonInstance)
+		else if (summonInstance instanceof L2SummonInstance)
 		{
-			final L2SummonInstance sum = (L2SummonInstance) _summon;
-			_curFed = sum.getTimeRemaining();
-			_maxFed = sum.getTotalLifeTime();
+			final L2SummonInstance sum = (L2SummonInstance) summonInstance;
+			curFed = sum.getTimeRemaining();
+			maxFed = sum.getTotalLifeTime();
 		}
 	}
 	
@@ -59,27 +37,27 @@ public class PetStatusUpdate extends L2GameServerPacket
 	protected final void writeImpl()
 	{
 		writeC(0xb5);
-		writeD(_summon.getSummonType());
-		writeD(_summon.getObjectId());
-		writeD(_summon.getX());
-		writeD(_summon.getY());
-		writeD(_summon.getZ());
-		writeS(_summon.getOwner().getName());
-		writeD(_curFed);
-		writeD(_maxFed);
-		writeD((int) _summon.getCurrentHp());
-		writeD(_maxHp);
-		writeD((int) _summon.getCurrentMp());
-		writeD(_maxMp);
-		writeD(_summon.getLevel());
-		writeQ(_summon.getStat().getExp());
-		writeQ(_summon.getExpForThisLevel());// 0% absolute value
-		writeQ(_summon.getExpForNextLevel());// 100% absolute value
+		writeD(summonInstance.getSummonType());
+		writeD(summonInstance.getObjectId());
+		writeD(summonInstance.getX());
+		writeD(summonInstance.getY());
+		writeD(summonInstance.getZ());
+		writeS(summonInstance.getOwner().getName());
+		writeD(curFed);
+		writeD(maxFed);
+		writeD((int) summonInstance.getCurrentHp());
+		writeD(maxHp);
+		writeD((int) summonInstance.getCurrentMp());
+		writeD(maxMp);
+		writeD(summonInstance.getLevel());
+		writeQ(summonInstance.getStat().getExp());
+		writeQ(summonInstance.getExpForThisLevel());// 0% absolute value
+		writeQ(summonInstance.getExpForNextLevel());// 100% absolute value
 	}
 	
 	@Override
 	public String getType()
 	{
-		return _S__CE_PETSTATUSSHOW;
+		return "[S] B5 PetStatusUpdate";
 	}
 }

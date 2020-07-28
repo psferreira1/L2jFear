@@ -1,19 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any later
- * version.
- * 
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
- * 
- * You should have received a copy of the GNU General Public License along with
- * this program. If not, see <http://www.gnu.org/licenses/>.
- */
 package com.l2jfrozen.gameserver.network.clientpackets;
 
 import java.nio.BufferOverflowException;
@@ -45,17 +29,23 @@ public abstract class L2GameClientPacket extends ReceivablePacket<L2GameClient>
 		catch (final BufferOverflowException e)
 		{
 			if (Config.ENABLE_ALL_EXCEPTIONS)
+			{
 				e.printStackTrace();
+			}
 			
 			if (getClient() != null)
+			{
 				getClient().closeNow();
+			}
 			
 			LOGGER.warn("Client: " + getClient().toString() + " - Buffer overflow and has been kicked");
 		}
 		catch (final BufferUnderflowException e)
 		{
 			if (Config.ENABLE_ALL_EXCEPTIONS)
+			{
 				e.printStackTrace();
+			}
 			
 			getClient().onBufferUnderflow();
 		}
@@ -76,8 +66,12 @@ public abstract class L2GameClientPacket extends ReceivablePacket<L2GameClient>
 		{
 			runImpl();
 			if (this instanceof MoveBackwardToLocation || this instanceof AttackRequest || this instanceof RequestMagicSkillUse)
+			{
 				if (getClient().getActiveChar() != null)
+				{
 					getClient().getActiveChar().onActionRequest(); // Removes onSpawn Protection
+				}
+			}
 		}
 		catch (final Throwable t)
 		{
@@ -85,7 +79,9 @@ public abstract class L2GameClientPacket extends ReceivablePacket<L2GameClient>
 			t.printStackTrace();
 			
 			if (this instanceof EnterWorld)
+			{
 				getClient().closeNow();
+			}
 		}
 	}
 	

@@ -1,24 +1,7 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.network.serverpackets;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * sample 0000: 6d 0c 00 00 00 00 00 00 00 03 00 00 00 f3 03 00 m............... 0010: 00 00 00 00 00 01 00 00 00 f4 03 00 00 00 00 00 ................ 0020: 00 01 00 00 00 10 04 00 00 00 00 00 00 01 00 00 ................ 0030: 00 2c 04 00 00 00 00 00 00 03 00 00 00 99 04 00 .,.............. 0040:
@@ -28,92 +11,65 @@ package com.l2jfrozen.gameserver.network.serverpackets;
  */
 public class SkillList extends L2GameServerPacket
 {
-	private static final String _S__6D_SKILLLIST = "[S] 58 SkillList";
-	private Skill[] _skills;
+	private final List<Skill> skills;
 	
-	class Skill
+	static class Skill
 	{
 		public int id;
 		public int level;
 		public boolean passive;
+		public boolean disabled;
 		
-		Skill(final int pId, final int pLevel, final boolean pPassive)
+		Skill(int pId, int pLevel, boolean pPassive)
 		{
 			id = pId;
 			level = pLevel;
 			passive = pPassive;
+			disabled = false;
+		}
+		
+		Skill(int pId, int pLevel, boolean pPassive, boolean pDisable)
+		{
+			id = pId;
+			level = pLevel;
+			passive = pPassive;
+			disabled = pDisable;
 		}
 	}
 	
 	public SkillList()
 	{
-		_skills = new Skill[] {};
+		skills = new ArrayList<>();
 	}
 	
-	public void addSkill(final int id, final int level, final boolean passive)
+	public void addSkill(int id, int level, boolean passive)
 	{
-		final Skill sk = new Skill(id, level, passive);
-		if (_skills == null || _skills.length == 0)
-		{
-			_skills = new Skill[]
-			{
-				sk
-			};
-		}
-		else
-		{
-			final Skill[] ns = new Skill[_skills.length + 1];
-			
-			boolean added = false;
-			int i = 0;
-			
-			for (final Skill s : _skills)
-			{
-				if (sk.id < s.id && !added)
-				{
-					ns[i] = sk;
-					i++;
-					ns[i] = s;
-					i++;
-					added = true;
-				}
-				else
-				{
-					ns[i] = s;
-					i++;
-				}
-			}
-			if (!added)
-			{
-				ns[i] = sk;
-			}
-			
-			_skills = ns;
-		}
+		skills.add(new Skill(id, level, passive, false));
+	}
+	
+	public void addSkill(int id, int level, boolean passive, boolean disabled)
+	{
+		skills.add(new Skill(id, level, passive, disabled));
 	}
 	
 	@Override
 	protected final void writeImpl()
 	{
 		writeC(0x58);
-		writeD(_skills.length);
+		writeD(skills.size());
 		
-		for (final Skill temp : _skills)
+		for (Skill temp : skills)
 		{
 			writeD(temp.passive ? 1 : 0);
 			writeD(temp.level);
 			writeD(temp.id);
-			writeC(0x00); // c5
+			writeC(temp.disabled ? 1 : 0);
 		}
 	}
 	
-	/*
-	 * (non-Javadoc)
-	 * @see com.l2jfrozen.gameserver.serverpackets.ServerBasePacket#getType()
-	 */
 	@Override
 	public String getType()
 	{
-		return _S__6D_SKILLLIST;
+		return "[S] 58 SkillList";
 	}
 }

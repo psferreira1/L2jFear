@@ -1,31 +1,10 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.cache;
 
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FileInputStream;
-
-import javolution.util.FastMap;
+import java.util.HashMap;
 
 import org.apache.log4j.Logger;
 
@@ -38,26 +17,26 @@ import com.l2jfrozen.gameserver.util.Util;
 public class HtmCache
 {
 	private static Logger LOGGER = Logger.getLogger(HtmCache.class);
-	private static HtmCache _instance;
+	private static HtmCache instance;
 	
-	private final FastMap<Integer, String> _cache;
+	private final HashMap<Integer, String> cache;
 	
-	private int _loadedFiles;
-	private long _bytesBuffLen;
+	private int loadedFiles;
+	private long bytesBuffLen;
 	
 	public static HtmCache getInstance()
 	{
-		if (_instance == null)
+		if (instance == null)
 		{
-			_instance = new HtmCache();
+			instance = new HtmCache();
 		}
 		
-		return _instance;
+		return instance;
 	}
 	
 	public HtmCache()
 	{
-		_cache = new FastMap<>();
+		cache = new HashMap<>();
 		reload();
 	}
 	
@@ -76,9 +55,9 @@ public class HtmCache
 		}
 		else
 		{
-			_cache.clear();
-			_loadedFiles = 0;
-			_bytesBuffLen = 0;
+			cache.clear();
+			loadedFiles = 0;
+			bytesBuffLen = 0;
 			LOGGER.info("Cache[HTML]: Running lazy cache");
 		}
 	}
@@ -91,12 +70,12 @@ public class HtmCache
 	
 	public double getMemoryUsage()
 	{
-		return (float) _bytesBuffLen / 1048576;
+		return (float) bytesBuffLen / 1048576;
 	}
 	
 	public int getLoadedFiles()
 	{
-		return _loadedFiles;
+		return loadedFiles;
 	}
 	
 	class HtmFilter implements FileFilter
@@ -105,7 +84,9 @@ public class HtmCache
 		public boolean accept(final File file)
 		{
 			if (!file.isDirectory())
+			{
 				return file.getName().endsWith(".htm") || file.getName().endsWith(".html");
+			}
 			return true;
 		}
 	}
@@ -151,24 +132,30 @@ public class HtmCache
 				bis.read(raw);
 				
 				content = new String(raw, "UTF-8");
-				content = content.replaceAll("\r\n", "\n");
+				
+				// Minify html as posible
+				content = content.replace("\r", "");
+				content = content.replace("\n", "");
+				content = content.replace("\t", "");
+				content = content.replaceAll("\\s{2,}", " "); // two blank space of more
+				content = content.replace("> <", "><");
 				
 				final String relpath = Util.getRelativePath(Config.DATAPACK_ROOT, file);
 				final int hashcode = relpath.hashCode();
 				
-				final String oldContent = _cache.get(hashcode);
+				final String oldContent = cache.get(hashcode);
 				
 				if (oldContent == null)
 				{
-					_bytesBuffLen += bytes;
-					_loadedFiles++;
+					bytesBuffLen += bytes;
+					loadedFiles++;
 				}
 				else
 				{
-					_bytesBuffLen = _bytesBuffLen - oldContent.length() + bytes;
+					bytesBuffLen = bytesBuffLen - oldContent.length() + bytes;
 				}
 				
-				_cache.put(hashcode, content);
+				cache.put(hashcode, content);
 				
 			}
 			catch (final Exception e)
@@ -179,6 +166,7 @@ public class HtmCache
 			finally
 			{
 				if (bis != null)
+				{
 					try
 					{
 						bis.close();
@@ -187,8 +175,10 @@ public class HtmCache
 					{
 						e1.printStackTrace();
 					}
+				}
 				
 				if (fis != null)
+				{
 					try
 					{
 						fis.close();
@@ -197,6 +187,7 @@ public class HtmCache
 					{
 						e1.printStackTrace();
 					}
+				}
 			}
 			
 		}
@@ -219,7 +210,7 @@ public class HtmCache
 	
 	public String getHtm(final String path)
 	{
-		String content = _cache.get(path.hashCode());
+		String content = cache.get(path.hashCode());
 		
 		if (Config.LAZY_CACHE && content == null)
 		{
@@ -231,12 +222,12 @@ public class HtmCache
 	
 	public boolean contains(final String path)
 	{
-		return _cache.containsKey(path.hashCode());
+		return cache.containsKey(path.hashCode());
 	}
 	
 	/**
 	 * Check if an HTM exists and can be loaded
-	 * @param path The path to the HTM
+	 * @param  path The path to the HTM
 	 * @return
 	 */
 	public boolean isLoadable(final String path)
@@ -245,7 +236,9 @@ public class HtmCache
 		HtmFilter filter = new HtmFilter();
 		
 		if (file.exists() && filter.accept(file) && !file.isDirectory())
+		{
 			return true;
+		}
 		
 		filter = null;
 		file = null;

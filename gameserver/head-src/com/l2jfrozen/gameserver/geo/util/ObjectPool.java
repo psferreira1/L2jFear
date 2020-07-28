@@ -1,23 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.geo.util;
 
 import java.util.Arrays;
@@ -42,14 +22,20 @@ public abstract class ObjectPool<E>
 				try
 				{
 					for (final ObjectPool<?> pool : POOLS.keySet())
+					{
 						if (pool != null)
+						{
 							pool.purge();
+						}
+					}
 				}
 				catch (final ConcurrentModificationException e)
 				{
 					// skip it
 					if (Config.ENABLE_ALL_EXCEPTIONS)
+					{
 						e.printStackTrace();
+					}
 					
 				}
 			}
@@ -62,11 +48,11 @@ public abstract class ObjectPool<E>
 		}.start();
 	}
 	
-	private final ReentrantLock _lock = new ReentrantLock();
+	private final ReentrantLock lock = new ReentrantLock();
 	
-	private Object[] _elements = new Object[0];
-	private long[] _access = new long[0];
-	private int _size = 0;
+	private Object[] elements = new Object[0];
+	private long[] access = new long[0];
+	private int size = 0;
 	
 	protected ObjectPool()
 	{
@@ -75,14 +61,14 @@ public abstract class ObjectPool<E>
 	
 	public int getCurrentSize()
 	{
-		_lock.lock();
+		lock.lock();
 		try
 		{
-			return _size;
+			return size;
 		}
 		finally
 		{
-			_lock.unlock();
+			lock.unlock();
 		}
 	}
 	
@@ -98,43 +84,45 @@ public abstract class ObjectPool<E>
 	
 	public void clear()
 	{
-		_lock.lock();
+		lock.lock();
 		try
 		{
-			_elements = new Object[0];
-			_access = new long[0];
-			_size = 0;
+			elements = new Object[0];
+			access = new long[0];
+			size = 0;
 		}
 		finally
 		{
-			_lock.unlock();
+			lock.unlock();
 		}
 	}
 	
 	public void store(final E e)
 	{
 		if (getCurrentSize() >= getMaximumSize())
+		{
 			return;
+		}
 		
 		reset(e);
 		
-		_lock.lock();
+		lock.lock();
 		try
 		{
-			if (_size == _elements.length)
+			if (size == elements.length)
 			{
-				_elements = Arrays.copyOf(_elements, _elements.length + 10);
-				_access = Arrays.copyOf(_access, _access.length + 10);
+				elements = Arrays.copyOf(elements, elements.length + 10);
+				access = Arrays.copyOf(access, access.length + 10);
 			}
 			
-			_elements[_size] = e;
-			_access[_size] = System.currentTimeMillis();
+			elements[size] = e;
+			access[size] = System.currentTimeMillis();
 			
-			_size++;
+			size++;
 		}
 		finally
 		{
-			_lock.unlock();
+			lock.unlock();
 		}
 	}
 	
@@ -147,22 +135,22 @@ public abstract class ObjectPool<E>
 	{
 		Object obj = null;
 		
-		_lock.lock();
+		lock.lock();
 		try
 		{
-			if (_size > 0)
+			if (size > 0)
 			{
-				_size--;
+				size--;
 				
-				obj = _elements[_size];
+				obj = elements[size];
 				
-				_elements[_size] = null;
-				_access[_size] = 0;
+				elements[size] = null;
+				access[size] = 0;
 			}
 		}
 		finally
 		{
-			_lock.unlock();
+			lock.unlock();
 		}
 		
 		return obj == null ? create() : (E) obj;
@@ -172,34 +160,36 @@ public abstract class ObjectPool<E>
 	
 	public void purge()
 	{
-		_lock.lock();
+		lock.lock();
 		try
 		{
 			int newIndex = 0;
-			for (int oldIndex = 0; oldIndex < _elements.length; oldIndex++)
+			for (int oldIndex = 0; oldIndex < elements.length; oldIndex++)
 			{
-				final Object obj = _elements[oldIndex];
-				final long time = _access[oldIndex];
+				final Object obj = elements[oldIndex];
+				final long time = access[oldIndex];
 				
-				_elements[oldIndex] = null;
-				_access[oldIndex] = 0;
+				elements[oldIndex] = null;
+				access[oldIndex] = 0;
 				
 				if (obj == null || time + getMaxLifeTime() < System.currentTimeMillis())
+				{
 					continue;
+				}
 				
-				_elements[newIndex] = obj;
-				_access[newIndex] = time;
+				elements[newIndex] = obj;
+				access[newIndex] = time;
 				
 				newIndex++;
 			}
 			
-			_elements = Arrays.copyOf(_elements, newIndex);
-			_access = Arrays.copyOf(_access, newIndex);
-			_size = newIndex;
+			elements = Arrays.copyOf(elements, newIndex);
+			access = Arrays.copyOf(access, newIndex);
+			size = newIndex;
 		}
 		finally
 		{
-			_lock.unlock();
+			lock.unlock();
 		}
 	}
 }

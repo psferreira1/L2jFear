@@ -1,29 +1,4 @@
-/*
- * $Header$
- *
- *
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.model.actor.instance;
-
-import javolution.text.TextBuilder;
 
 import com.l2jfrozen.gameserver.datatables.sql.HennaTreeTable;
 import com.l2jfrozen.gameserver.model.L2Character;
@@ -31,14 +6,10 @@ import com.l2jfrozen.gameserver.network.serverpackets.HennaEquipList;
 import com.l2jfrozen.gameserver.network.serverpackets.ItemList;
 import com.l2jfrozen.gameserver.templates.L2NpcTemplate;
 
-/**
- * This class ...
- * @version $Revision$ $Date$
- */
+import javolution.text.TextBuilder;
+
 public class L2SymbolMakerInstance extends L2FolkInstance
 {
-	// private static Logger LOGGER = Logger.getLogger(L2SymbolMakerInstance.class);
-	
 	@Override
 	public void onBypassFeedback(final L2PcInstance player, final String command)
 	{
@@ -57,7 +28,9 @@ public class L2SymbolMakerInstance extends L2FolkInstance
 		else if (command.startsWith("Remove "))
 		{
 			if (!player.getClient().getFloodProtectors().getTransaction().tryPerformAction("HennaRemove"))
+			{
 				return;
+			}
 			
 			final int slot = Integer.parseInt(command.substring(7));
 			player.removeHenna(slot);
@@ -108,10 +81,6 @@ public class L2SymbolMakerInstance extends L2FolkInstance
 		return "data/html/symbolmaker/SymbolMaker.htm";
 	}
 	
-	/*
-	 * (non-Javadoc)
-	 * @see com.l2jfrozen.gameserver.model.L2Object#isAttackable()
-	 */
 	@Override
 	public boolean isAutoAttackable(final L2Character attacker)
 	{

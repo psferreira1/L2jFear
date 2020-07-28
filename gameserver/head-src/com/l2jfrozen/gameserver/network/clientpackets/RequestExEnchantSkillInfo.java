@@ -1,23 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.network.clientpackets;
 
 import com.l2jfrozen.Config;
@@ -36,28 +16,34 @@ import com.l2jfrozen.gameserver.network.serverpackets.ExEnchantSkillInfo;
  */
 public final class RequestExEnchantSkillInfo extends L2GameClientPacket
 {
-	private int _skillId;
-	private int _skillLvl;
+	private int skillId;
+	private int skillLvl;
 	
 	@Override
 	protected void readImpl()
 	{
-		_skillId = readD();
-		_skillLvl = readD();
+		skillId = readD();
+		skillLvl = readD();
 	}
 	
 	@Override
 	protected void runImpl()
 	{
-		if (_skillId <= 0 || _skillLvl <= 0) // minimal sanity check
+		if (skillId <= 0 || skillLvl <= 0)
+		{
 			return;
+		}
 		
 		final L2PcInstance activeChar = getClient().getActiveChar();
 		if (activeChar == null)
+		{
 			return;
+		}
 		
 		if (activeChar.getLevel() < 76)
+		{
 			return;
+		}
 		
 		final L2FolkInstance trainer = activeChar.getLastFolkNPC();
 		if (trainer == null)
@@ -72,18 +58,22 @@ public final class RequestExEnchantSkillInfo extends L2GameClientPacket
 		
 		boolean canteach = false;
 		
-		final L2Skill skill = SkillTable.getInstance().getInfo(_skillId, _skillLvl);
-		if (skill == null || skill.getId() != _skillId)
+		final L2Skill skill = SkillTable.getInstance().getInfo(skillId, skillLvl);
+		if (skill == null || skill.getId() != skillId)
+		{
 			return;
+		}
 		
 		if (!trainer.getTemplate().canTeach(activeChar.getClassId()))
+		{
 			return; // cheater
-			
+		}
+		
 		final L2EnchantSkillLearn[] skills = SkillTreeTable.getInstance().getAvailableEnchantSkills(activeChar);
 		
 		for (final L2EnchantSkillLearn s : skills)
 		{
-			if (s.getId() == _skillId && s.getLevel() == _skillLvl)
+			if (s.getId() == skillId && s.getLevel() == skillLvl)
 			{
 				canteach = true;
 				break;
@@ -91,8 +81,10 @@ public final class RequestExEnchantSkillInfo extends L2GameClientPacket
 		}
 		
 		if (!canteach)
+		{
 			return; // cheater
-			
+		}
+		
 		final int requiredSp = SkillTreeTable.getInstance().getSkillSpCost(activeChar, skill);
 		final int requiredExp = SkillTreeTable.getInstance().getSkillExpCost(activeChar, skill);
 		final byte rate = SkillTreeTable.getInstance().getSkillRate(activeChar, skill);

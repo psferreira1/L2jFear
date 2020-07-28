@@ -1,23 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.network.clientpackets;
 
 import org.apache.log4j.Logger;
@@ -35,14 +15,14 @@ public final class RequestGiveItemToPet extends L2GameClientPacket
 {
 	private static Logger LOGGER = Logger.getLogger(RequestGetItemFromPet.class);
 	
-	private int _objectId;
-	private int _amount;
+	private int objectId;
+	private int amount;
 	
 	@Override
 	protected void readImpl()
 	{
-		_objectId = readD();
-		_amount = readD();
+		objectId = readD();
+		amount = readD();
 	}
 	
 	@Override
@@ -50,7 +30,9 @@ public final class RequestGiveItemToPet extends L2GameClientPacket
 	{
 		final L2PcInstance player = getClient().getActiveChar();
 		if (player == null || !(player.getPet() instanceof L2PetInstance))
+		{
 			return;
+		}
 		
 		if (!getClient().getFloodProtectors().getTransaction().tryPerformAction("giveitemtopet"))
 		{
@@ -60,7 +42,9 @@ public final class RequestGiveItemToPet extends L2GameClientPacket
 		
 		// Alt game - Karma punishment
 		if (!Config.ALT_GAME_KARMA_PLAYER_CAN_TRADE && player.getKarma() > 0)
+		{
 			return;
+		}
 		
 		if (player.getPrivateStoreType() != 0)
 		{
@@ -79,13 +63,17 @@ public final class RequestGiveItemToPet extends L2GameClientPacket
 			return;
 		}
 		
-		final L2ItemInstance item = player.getInventory().getItemByObjectId(_objectId);
+		final L2ItemInstance item = player.getInventory().getItemByObjectId(objectId);
 		
 		if (item == null)
+		{
 			return;
+		}
 		
 		if (item.isAugmented())
+		{
 			return;
+		}
 		
 		if (!item.isDropable() || !item.isDestroyable() || !item.isTradeable())
 		{
@@ -101,10 +89,12 @@ public final class RequestGiveItemToPet extends L2GameClientPacket
 			return;
 		}
 		
-		if (_amount < 0)
+		if (amount < 0)
+		{
 			return;
+		}
 		
-		if (player.transferItem("Transfer", _objectId, _amount, pet.getInventory(), pet) == null)
+		if (player.transferItem("Transfer", objectId, amount, pet.getInventory(), pet) == null)
 		{
 			LOGGER.warn("Invalid item transfer request: " + pet.getName() + "(pet) --> " + player.getName());
 		}

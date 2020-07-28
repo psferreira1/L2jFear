@@ -1,22 +1,3 @@
-/* L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 
 package com.l2jfrozen.gameserver.network.clientpackets;
 
@@ -33,16 +14,16 @@ import com.l2jfrozen.gameserver.network.serverpackets.SystemMessage;
  */
 public final class RequestJoinSiege extends L2GameClientPacket
 {
-	private int _castleId;
-	private int _isAttacker;
-	private int _isJoining;
+	private int castleId;
+	private int isAttacker;
+	private int isJoining;
 	
 	@Override
 	protected void readImpl()
 	{
-		_castleId = readD();
-		_isAttacker = readD();
-		_isJoining = readD();
+		castleId = readD();
+		isAttacker = readD();
+		isJoining = readD();
 	}
 	
 	@Override
@@ -51,19 +32,25 @@ public final class RequestJoinSiege extends L2GameClientPacket
 		final L2PcInstance player = getClient().getActiveChar();
 		
 		if (player == null)
+		{
 			return;
+		}
 		
 		if (!player.isClanLeader())
-			return;
-		
-		if (_castleId < 100)
 		{
-			final Castle castle = CastleManager.getInstance().getCastleById(_castleId);
+			return;
+		}
+		
+		if (castleId < 100)
+		{
+			final Castle castle = CastleManager.getInstance().getCastleById(castleId);
 			
 			if (castle == null)
+			{
 				return;
+			}
 			
-			if (_isJoining == 1)
+			if (isJoining == 1)
 			{
 				if (System.currentTimeMillis() < player.getClan().getDissolvingExpiryTime())
 				{
@@ -71,7 +58,7 @@ public final class RequestJoinSiege extends L2GameClientPacket
 					return;
 				}
 				
-				if (_isAttacker == 1)
+				if (isAttacker == 1)
 				{
 					castle.getSiege().registerAttacker(player);
 				}
@@ -89,12 +76,14 @@ public final class RequestJoinSiege extends L2GameClientPacket
 		}
 		else
 		{
-			final Fort fort = FortManager.getInstance().getFortById(_castleId);
+			final Fort fort = FortManager.getInstance().getFortById(castleId);
 			
 			if (fort == null)
+			{
 				return;
+			}
 			
-			if (_isJoining == 1)
+			if (isJoining == 1)
 			{
 				if (System.currentTimeMillis() < player.getClan().getDissolvingExpiryTime())
 				{
@@ -102,7 +91,7 @@ public final class RequestJoinSiege extends L2GameClientPacket
 					return;
 				}
 				
-				if (_isAttacker == 1)
+				if (isAttacker == 1)
 				{
 					fort.getSiege().registerAttacker(player);
 				}

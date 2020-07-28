@@ -1,23 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.network.clientpackets;
 
 import org.apache.log4j.Logger;
@@ -32,14 +12,14 @@ public class RequestGiveNickName extends L2GameClientPacket
 {
 	static Logger LOGGER = Logger.getLogger(RequestGiveNickName.class);
 	
-	private String _target;
-	private String _title;
+	private String target;
+	private String title;
 	
 	@Override
 	protected void readImpl()
 	{
-		_target = readS();
-		_title = readS();
+		target = readS();
+		title = readS();
 	}
 	
 	@Override
@@ -47,12 +27,14 @@ public class RequestGiveNickName extends L2GameClientPacket
 	{
 		final L2PcInstance activeChar = getClient().getActiveChar();
 		if (activeChar == null)
+		{
 			return;
+		}
 		
 		// Noblesse can bestow a title to themselves
-		if (activeChar.isNoble() && _target.matches(activeChar.getName()))
+		if (activeChar.isNoble() && target.matches(activeChar.getName()))
 		{
-			activeChar.setTitle(_title);
+			activeChar.setTitle(title);
 			final SystemMessage sm = new SystemMessage(SystemMessageId.TITLE_CHANGED);
 			activeChar.sendPacket(sm);
 			activeChar.broadcastTitleInfo();
@@ -68,14 +50,14 @@ public class RequestGiveNickName extends L2GameClientPacket
 				return;
 			}
 			
-			final L2ClanMember member1 = activeChar.getClan().getClanMember(_target);
+			final L2ClanMember member1 = activeChar.getClan().getClanMember(target);
 			if (member1 != null)
 			{
 				final L2PcInstance member = member1.getPlayerInstance();
 				if (member != null)
 				{
 					// is target from the same clan?
-					member.setTitle(_title);
+					member.setTitle(title);
 					SystemMessage sm = new SystemMessage(SystemMessageId.TITLE_CHANGED);
 					member.sendPacket(sm);
 					member.broadcastTitleInfo();

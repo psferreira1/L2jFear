@@ -1,29 +1,7 @@
-/*
- * $HeadURL: $
- * 
- * $Author: $ $Date: $ $Revision: $
- * 
- * 
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any later
- * version.
- * 
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
- * 
- * You should have received a copy of the GNU General Public License along with
- * this program. If not, see <http://www.gnu.org/licenses/>.
- */
 package com.l2jfrozen.gameserver.taskmanager;
 
 import java.util.Map;
-
-import javolution.util.FastMap;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.log4j.Logger;
 
@@ -37,22 +15,22 @@ import com.l2jfrozen.gameserver.thread.ThreadPoolManager;
 /**
  * This class ...
  * @version $Revision: $ $Date: $
- * @author Luca Baldi
+ * @author  Luca Baldi
  */
 public class AttackStanceTaskManager
 {
 	protected static final Logger LOGGER = Logger.getLogger(AttackStanceTaskManager.class);
 	
-	protected Map<L2Character, Long> _attackStanceTasks = new FastMap<L2Character, Long>().shared();
+	protected Map<L2Character, Long> attackStanceTasks = new ConcurrentHashMap<>();
 	
-	private AttackStanceTaskManager()
+	public AttackStanceTaskManager()
 	{
 		ThreadPoolManager.getInstance().scheduleAiAtFixedRate(new FightModeScheduler(), 0, 1000);
 	}
 	
 	public static AttackStanceTaskManager getInstance()
 	{
-		return SingletonHolder._instance;
+		return SingletonHolder.instance;
 	}
 	
 	public void addAttackStanceTask(L2Character actor)
@@ -66,10 +44,14 @@ public class AttackStanceTaskManager
 		{
 			final L2PcInstance player = (L2PcInstance) actor;
 			for (final L2CubicInstance cubic : player.getCubics().values())
+			{
 				if (cubic.getId() != L2CubicInstance.LIFE_CUBIC)
+				{
 					cubic.doAction();
+				}
+			}
 		}
-		_attackStanceTasks.put(actor, System.currentTimeMillis());
+		attackStanceTasks.put(actor, System.currentTimeMillis());
 	}
 	
 	public void removeAttackStanceTask(L2Character actor)
@@ -79,7 +61,7 @@ public class AttackStanceTaskManager
 			final L2Summon summon = (L2Summon) actor;
 			actor = summon.getOwner();
 		}
-		_attackStanceTasks.remove(actor);
+		attackStanceTasks.remove(actor);
 	}
 	
 	public boolean getAttackStanceTask(L2Character actor)
@@ -89,7 +71,7 @@ public class AttackStanceTaskManager
 			final L2Summon summon = (L2Summon) actor;
 			actor = summon.getOwner();
 		}
-		return _attackStanceTasks.containsKey(actor);
+		return attackStanceTasks.containsKey(actor);
 	}
 	
 	private class FightModeScheduler implements Runnable
@@ -105,21 +87,25 @@ public class AttackStanceTaskManager
 			final Long current = System.currentTimeMillis();
 			try
 			{
-				if (_attackStanceTasks != null)
+				if (attackStanceTasks != null)
+				{
 					synchronized (this)
 					{
-						for (final L2Character actor : _attackStanceTasks.keySet())
+						for (final L2Character actor : attackStanceTasks.keySet())
 						{
-							if ((current - _attackStanceTasks.get(actor)) > 15000)
+							if ((current - attackStanceTasks.get(actor)) > 15000)
 							{
 								actor.broadcastPacket(new AutoAttackStop(actor.getObjectId()));
 								if (actor instanceof L2PcInstance && ((L2PcInstance) actor).getPet() != null)
+								{
 									((L2PcInstance) actor).getPet().broadcastPacket(new AutoAttackStop(((L2PcInstance) actor).getPet().getObjectId()));
+								}
 								actor.getAI().setAutoAttacking(false);
-								_attackStanceTasks.remove(actor);
+								attackStanceTasks.remove(actor);
 							}
 						}
 					}
+				}
 			}
 			catch (final Exception e)
 			{
@@ -130,9 +116,8 @@ public class AttackStanceTaskManager
 		}
 	}
 	
-	@SuppressWarnings("synthetic-access")
 	private static class SingletonHolder
 	{
-		protected static final AttackStanceTaskManager _instance = new AttackStanceTaskManager();
+		protected static final AttackStanceTaskManager instance = new AttackStanceTaskManager();
 	}
 }

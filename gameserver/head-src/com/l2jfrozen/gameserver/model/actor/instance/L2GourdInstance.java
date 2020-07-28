@@ -1,20 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any later
- * version.
- * 
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
- * 
- * You should have received a copy of the GNU General Public License along with
- * this program. If not, see <http://www.gnu.org/licenses/>.
- */
-
 package com.l2jfrozen.gameserver.model.actor.instance;
 
 import com.l2jfrozen.gameserver.model.L2Character;
@@ -25,9 +8,9 @@ public final class L2GourdInstance extends L2MonsterInstance
 {
 	// private static Logger LOGGER = Logger.getLogger(L2GourdInstance.class);
 	
-	private String _name;
-	private byte _nectar = 0;
-	private byte _good = 0;
+	private String name;
+	private byte nectar = 0;
+	private byte good = 0;
 	
 	public L2GourdInstance(final int objectId, final L2NpcTemplate template)
 	{
@@ -37,32 +20,32 @@ public final class L2GourdInstance extends L2MonsterInstance
 	
 	public void setOwner(final String name)
 	{
-		_name = name;
+		this.name = name;
 	}
 	
 	public String getOwner()
 	{
-		return _name;
+		return name;
 	}
 	
 	public void addNectar()
 	{
-		_nectar++;
+		nectar++;
 	}
 	
 	public byte getNectar()
 	{
-		return _nectar;
+		return nectar;
 	}
 	
 	public void addGood()
 	{
-		_good++;
+		good++;
 	}
 	
 	public byte getGood()
 	{
-		return _good;
+		return good;
 	}
 	
 	@Override
@@ -73,6 +56,7 @@ public final class L2GourdInstance extends L2MonsterInstance
 			damage = 0;
 		}
 		if (getTemplate().npcId == 12778 || getTemplate().npcId == 12779)
+		{
 			if (attacker.getActiveWeaponInstance().getItemId() == 4202 || attacker.getActiveWeaponInstance().getItemId() == 5133 || attacker.getActiveWeaponInstance().getItemId() == 5817 || attacker.getActiveWeaponInstance().getItemId() == 7058)
 			{
 				super.reduceCurrentHp(damage, attacker, awake);
@@ -81,6 +65,7 @@ public final class L2GourdInstance extends L2MonsterInstance
 			{
 				damage = 0;
 			}
+		}
 		super.reduceCurrentHp(damage, attacker, awake);
 	}
 }

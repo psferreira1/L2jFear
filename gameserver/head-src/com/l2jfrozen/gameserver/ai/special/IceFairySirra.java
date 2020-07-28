@@ -1,24 +1,8 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any later
- * version.
- * 
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
- * 
- * You should have received a copy of the GNU General Public License along with
- * this program. If not, see <http://www.gnu.org/licenses/>.
- */
 package com.l2jfrozen.gameserver.ai.special;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.Future;
-
-import javolution.util.FastList;
 
 import com.l2jfrozen.Config;
 import com.l2jfrozen.gameserver.cache.HtmCache;
@@ -47,10 +31,10 @@ public class IceFairySirra extends Quest implements Runnable
 {
 	private static final int STEWARD = 32029;
 	private static final int SILVER_HEMOCYTE = 8057;
-	private static L2BossZone _freyasZone;
-	private static L2PcInstance _player = null;
-	protected FastList<L2NpcInstance> _allMobs = new FastList<>();
-	protected Future<?> _onDeadEventTask = null;
+	private static L2BossZone freyasZone;
+	private static L2PcInstance playerTarget = null;
+	protected List<L2NpcInstance> allMobs = new ArrayList<>();
+	protected Future<?> onDeadEventTask = null;
 	
 	public IceFairySirra(final int id, final String name, final String descr)
 	{
@@ -100,8 +84,10 @@ public class IceFairySirra extends Quest implements Runnable
 	{
 		if (event.equalsIgnoreCase("check_condition"))
 		{
-			if (npc.isBusy())// should never happen
+			if (npc.isBusy())
+			{
 				return super.onAdvEvent(event, npc, player);
+			}
 			
 			String filename = "";
 			if (player.isInParty() && player.getParty().getPartyLeaderOID() == player.getObjectId())
@@ -109,7 +95,7 @@ public class IceFairySirra extends Quest implements Runnable
 				if (checkItems(player))
 				{
 					startQuestTimer("start", 100000, null, player);
-					_player = player;
+					playerTarget = player;
 					destroyItems(player);
 					player.getInventory().addItem("Scroll", 8379, 3, player, null);
 					npc.setBusy(true);
@@ -129,13 +115,13 @@ public class IceFairySirra extends Quest implements Runnable
 		}
 		else if (event.equalsIgnoreCase("start"))
 		{
-			if (_freyasZone == null)
+			if (freyasZone == null)
 			{
 				LOGGER.warn("IceFairySirraManager: Failed to load zone");
 				cleanUp();
 				return super.onAdvEvent(event, npc, player);
 			}
-			_freyasZone.setZoneEnabled(true);
+			freyasZone.setZoneEnabled(true);
 			closeGates();
 			doSpawns();
 			startQuestTimer("Party_Port", 2000, null, player);
@@ -171,13 +157,13 @@ public class IceFairySirra extends Quest implements Runnable
 	
 	public void init()
 	{
-		_freyasZone = GrandBossManager.getInstance().getZone(105546, -127892, -2768);
-		if (_freyasZone == null)
+		freyasZone = GrandBossManager.getInstance().getZone(105546, -127892, -2768);
+		if (freyasZone == null)
 		{
 			LOGGER.warn("IceFairySirraManager: Failed to load zone");
 			return;
 		}
-		_freyasZone.setZoneEnabled(false);
+		freyasZone.setZoneEnabled(false);
 		final L2NpcInstance steward = findTemplate(STEWARD);
 		if (steward != null)
 		{
@@ -189,11 +175,11 @@ public class IceFairySirra extends Quest implements Runnable
 	public void cleanUp()
 	{
 		init();
-		cancelQuestTimer("30MinutesRemaining", null, _player);
-		cancelQuestTimer("20MinutesRemaining", null, _player);
-		cancelQuestTimer("10MinutesRemaining", null, _player);
-		cancelQuestTimer("End", null, _player);
-		for (final L2NpcInstance mob : _allMobs)
+		cancelQuestTimer("30MinutesRemaining", null, playerTarget);
+		cancelQuestTimer("20MinutesRemaining", null, playerTarget);
+		cancelQuestTimer("10MinutesRemaining", null, playerTarget);
+		cancelQuestTimer("End", null, playerTarget);
+		for (final L2NpcInstance mob : allMobs)
 		{
 			try
 			{
@@ -203,12 +189,14 @@ public class IceFairySirra extends Quest implements Runnable
 			catch (final Exception e)
 			{
 				if (Config.ENABLE_ALL_EXCEPTIONS)
+				{
 					e.printStackTrace();
+				}
 				
 				LOGGER.error("IceFairySirraManager: Failed deleting mob.", e);
 			}
 		}
-		_allMobs.clear();
+		allMobs.clear();
 	}
 	
 	public L2NpcInstance findTemplate(final int npcId)
@@ -244,7 +232,9 @@ public class IceFairySirra extends Quest implements Runnable
 			catch (final Exception e)
 			{
 				if (Config.ENABLE_ALL_EXCEPTIONS)
+				{
 					e.printStackTrace();
+				}
 				
 				LOGGER.error("IceFairySirraManager: Failed closing door", e);
 			}
@@ -270,7 +260,9 @@ public class IceFairySirra extends Quest implements Runnable
 			catch (final Exception e)
 			{
 				if (Config.ENABLE_ALL_EXCEPTIONS)
+				{
 					e.printStackTrace();
+				}
 				
 				LOGGER.error("IceFairySirraManager: Failed closing door", e);
 			}
@@ -285,11 +277,15 @@ public class IceFairySirra extends Quest implements Runnable
 			{
 				final L2ItemInstance i = pc.getInventory().getItemByItemId(SILVER_HEMOCYTE);
 				if (i == null || i.getCount() < 10)
+				{
 					return false;
+				}
 			}
 		}
 		else
+		{
 			return false;
+		}
 		return true;
 	}
 	
@@ -316,13 +312,13 @@ public class IceFairySirra extends Quest implements Runnable
 			for (final L2PcInstance pc : player.getParty().getPartyMembers())
 			{
 				pc.teleToLocation(113533, -126159, -3488, false);
-				if (_freyasZone == null)
+				if (freyasZone == null)
 				{
 					LOGGER.warn("IceFairySirraManager: Failed to load zone");
 					cleanUp();
 					return;
 				}
-				_freyasZone.allowPlayerEntry(pc, 2103);
+				freyasZone.allowPlayerEntry(pc, 2103);
 			}
 		}
 		else
@@ -398,7 +394,7 @@ public class IceFairySirra extends Quest implements Runnable
 					spawnDat.setHeading(0);
 					spawnDat.setRespawnDelay(60);
 					SpawnTable.getInstance().addNewSpawn(spawnDat, false);
-					_allMobs.add(spawnDat.doSpawn());
+					allMobs.add(spawnDat.doSpawn());
 					spawnDat.stopRespawn();
 				}
 				else
@@ -410,7 +406,9 @@ public class IceFairySirra extends Quest implements Runnable
 		catch (final Exception e)
 		{
 			if (Config.ENABLE_ALL_EXCEPTIONS)
+			{
 				e.printStackTrace();
+			}
 			
 			LOGGER.warn("IceFairySirraManager: Spawns could not be initialized: " + e);
 		}
@@ -432,12 +430,16 @@ public class IceFairySirra extends Quest implements Runnable
 		{
 			// If not running lazy cache the file must be in the cache or it doesnt exist
 			if (HtmCache.getInstance().contains(temp))
+			{
 				return temp;
+			}
 		}
 		else
 		{
 			if (HtmCache.getInstance().isLoadable(temp))
+			{
 				return temp;
+			}
 		}
 		
 		// If the file is not found, the standard message "I have nothing to say to you" is returned

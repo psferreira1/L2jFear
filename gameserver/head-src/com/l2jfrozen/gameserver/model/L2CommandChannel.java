@@ -1,27 +1,7 @@
-/* L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.model;
 
+import java.util.ArrayList;
 import java.util.List;
-
-import javolution.util.FastList;
 
 import com.l2jfrozen.gameserver.model.actor.instance.L2GrandBossInstance;
 import com.l2jfrozen.gameserver.model.actor.instance.L2PcInstance;
@@ -38,9 +18,9 @@ import com.l2jfrozen.gameserver.network.serverpackets.SystemMessage;
  */
 public class L2CommandChannel
 {
-	private final List<L2Party> _partys;
-	private L2PcInstance _commandLeader = null;
-	private int _channelLvl;
+	private final List<L2Party> partys;
+	private L2PcInstance commandLeader = null;
+	private int channelLvl;
 	
 	/**
 	 * Creates a New Command Channel and Add the Leaders party to the CC
@@ -48,10 +28,10 @@ public class L2CommandChannel
 	 */
 	public L2CommandChannel(final L2PcInstance leader)
 	{
-		_commandLeader = leader;
-		_partys = new FastList<>();
-		_partys.add(leader.getParty());
-		_channelLvl = leader.getParty().getLevel();
+		commandLeader = leader;
+		partys = new ArrayList<>();
+		partys.add(leader.getParty());
+		channelLvl = leader.getParty().getLevel();
 		leader.getParty().setCommandChannel(this);
 		leader.getParty().broadcastToPartyMembers(new SystemMessage(SystemMessageId.COMMAND_CHANNEL_FORMED));
 		leader.getParty().broadcastToPartyMembers(new ExOpenMPCC());
@@ -64,13 +44,15 @@ public class L2CommandChannel
 	public void addParty(final L2Party party)
 	{
 		if (party == null)
-			return;
-		
-		_partys.add(party);
-		
-		if (party.getLevel() > _channelLvl)
 		{
-			_channelLvl = party.getLevel();
+			return;
+		}
+		
+		partys.add(party);
+		
+		if (party.getLevel() > channelLvl)
+		{
+			channelLvl = party.getLevel();
 		}
 		
 		party.setCommandChannel(this);
@@ -85,23 +67,25 @@ public class L2CommandChannel
 	public void removeParty(final L2Party party)
 	{
 		if (party == null)
-			return;
-		
-		_partys.remove(party);
-		_channelLvl = 0;
-		
-		for (final L2Party pty : _partys)
 		{
-			if (pty.getLevel() > _channelLvl)
+			return;
+		}
+		
+		partys.remove(party);
+		channelLvl = 0;
+		
+		for (final L2Party pty : partys)
+		{
+			if (pty.getLevel() > channelLvl)
 			{
-				_channelLvl = pty.getLevel();
+				channelLvl = pty.getLevel();
 			}
 		}
 		
 		party.setCommandChannel(null);
 		party.broadcastToPartyMembers(new ExCloseMPCC());
 		
-		if (_partys.size() < 2)
+		if (partys.size() < 2)
 		{
 			broadcastToChannelMembers(new SystemMessage(SystemMessageId.COMMAND_CHANNEL_DISBANDED));
 			disbandChannel();
@@ -113,14 +97,16 @@ public class L2CommandChannel
 	 */
 	public void disbandChannel()
 	{
-		if (_partys != null)
+		if (partys != null)
 		{
-			for (final L2Party party : _partys)
+			for (final L2Party party : partys)
 			{
 				if (party != null)
+				{
 					removeParty(party);
+				}
 			}
-			_partys.clear();
+			partys.clear();
 		}
 	}
 	
@@ -131,7 +117,7 @@ public class L2CommandChannel
 	{
 		int count = 0;
 		
-		for (final L2Party party : _partys)
+		for (final L2Party party : partys)
 		{
 			if (party != null)
 			{
@@ -147,9 +133,9 @@ public class L2CommandChannel
 	 */
 	public void broadcastToChannelMembers(final L2GameServerPacket gsp)
 	{
-		if (_partys != null && !_partys.isEmpty())
+		if (partys != null && !partys.isEmpty())
 		{
-			for (final L2Party party : _partys)
+			for (final L2Party party : partys)
 			{
 				if (party != null)
 				{
@@ -161,12 +147,14 @@ public class L2CommandChannel
 	
 	public void broadcastCSToChannelMembers(final CreatureSay gsp, final L2PcInstance broadcaster)
 	{
-		if (_partys != null && !_partys.isEmpty())
+		if (partys != null && !partys.isEmpty())
 		{
-			for (final L2Party party : _partys)
+			for (final L2Party party : partys)
 			{
 				if (party != null)
+				{
 					party.broadcastCSToPartyMembers(gsp, broadcaster);
+				}
 			}
 		}
 	}
@@ -176,7 +164,7 @@ public class L2CommandChannel
 	 */
 	public List<L2Party> getPartys()
 	{
-		return _partys;
+		return partys;
 	}
 	
 	/**
@@ -184,8 +172,9 @@ public class L2CommandChannel
 	 */
 	public List<L2PcInstance> getMembers()
 	{
-		final List<L2PcInstance> members = new FastList<>();
-		for (final L2Party party : getPartys())
+		List<L2PcInstance> members = new ArrayList<>();
+		
+		for (L2Party party : getPartys())
 		{
 			members.addAll(party.getPartyMembers());
 		}
@@ -198,7 +187,7 @@ public class L2CommandChannel
 	 */
 	public int getLevel()
 	{
-		return _channelLvl;
+		return channelLvl;
 	}
 	
 	/**
@@ -206,7 +195,7 @@ public class L2CommandChannel
 	 */
 	public void setChannelLeader(final L2PcInstance leader)
 	{
-		_commandLeader = leader;
+		commandLeader = leader;
 	}
 	
 	/**
@@ -214,7 +203,7 @@ public class L2CommandChannel
 	 */
 	public L2PcInstance getChannelLeader()
 	{
-		return _commandLeader;
+		return commandLeader;
 	}
 	
 	/**
@@ -223,13 +212,15 @@ public class L2CommandChannel
 	 * Antharas: MemberCount > 225<br>
 	 * Valakas: MemberCount > 99<br>
 	 * normal RaidBoss: MemberCount > 18
-	 * @param obj
-	 * @return true if proper condition for RaidWar
+	 * @param  obj
+	 * @return     true if proper condition for RaidWar
 	 */
 	public boolean meetRaidWarCondition(final L2Object obj)
 	{
 		if (!(obj instanceof L2RaidBossInstance) || !(obj instanceof L2GrandBossInstance))
+		{
 			return false;
+		}
 		
 		final int npcId = ((L2Attackable) obj).getNpcId();
 		

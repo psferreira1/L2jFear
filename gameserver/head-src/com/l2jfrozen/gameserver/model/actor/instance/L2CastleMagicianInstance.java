@@ -1,19 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any later
- * version.
- * 
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
- * 
- * You should have received a copy of the GNU General Public License along with
- * this program. If not, see <http://www.gnu.org/licenses/>.
- */
 package com.l2jfrozen.gameserver.model.actor.instance;
 
 import com.l2jfrozen.gameserver.model.L2Character;
@@ -49,10 +33,6 @@ public class L2CastleMagicianInstance extends L2NpcInstance
 		super(objectId, template);
 	}
 	
-	/*
-	 * (non-Javadoc)
-	 * @see com.l2jfrozen.gameserver.model.actor.instance.L2NpcInstance#showChatWindow(com.l2jfrozen.gameserver.model.actor.instance.L2PcInstance, int)
-	 */
 	@Override
 	public void showChatWindow(final L2PcInstance player, final int val)
 	{
@@ -63,13 +43,19 @@ public class L2CastleMagicianInstance extends L2NpcInstance
 		if (condition > COND_ALL_FALSE)
 		{
 			if (condition == COND_BUSY_BECAUSE_OF_SIEGE)
+			{
 				filename = "data/html/castlemagician/magician-busy.htm"; // Busy because of siege
+			}
 			else if (condition == COND_OWNER) // Clan owns castle
 			{
 				if (val == 0)
+				{
 					filename = "data/html/castlemagician/magician.htm";
+				}
 				else
+				{
 					filename = "data/html/castlemagician/magician-" + val + ".htm";
+				}
 			}
 		}
 		
@@ -79,10 +65,6 @@ public class L2CastleMagicianInstance extends L2NpcInstance
 		player.sendPacket(html);
 	}
 	
-	/*
-	 * (non-Javadoc)
-	 * @see com.l2jfrozen.gameserver.model.actor.instance.L2NpcInstance#onBypassFeedback(com.l2jfrozen.gameserver.model.actor.instance.L2PcInstance, java.lang.String)
-	 */
 	@Override
 	public void onBypassFeedback(final L2PcInstance player, final String command)
 	{
@@ -105,12 +87,16 @@ public class L2CastleMagicianInstance extends L2NpcInstance
 			{
 				final L2PcInstance clanLeader = player.getClan().getLeader().getPlayerInstance();
 				if (clanLeader == null)
+				{
 					return;
+				}
 				
 				if (clanLeader.getFirstEffect(EffectType.CLAN_GATE) != null)
 				{
 					if (!validateGateCondition(clanLeader, player))
+					{
 						return;
+					}
 					
 					player.teleToLocation(clanLeader.getX(), clanLeader.getY(), clanLeader.getZ(), false);
 					return;
@@ -121,13 +107,15 @@ public class L2CastleMagicianInstance extends L2NpcInstance
 			return;
 		}
 		else
+		{
 			super.onBypassFeedback(player, command);
+		}
 	}
 	
 	/**
 	 * Validate condition.
-	 * @param player the player
-	 * @return the int
+	 * @param  player the player
+	 * @return        the int
 	 */
 	protected int validateCondition(final L2PcInstance player)
 	{
@@ -136,9 +124,13 @@ public class L2CastleMagicianInstance extends L2NpcInstance
 			if (player.getClan() != null)
 			{
 				if (getCastle().getZone().isSiegeActive())
+				{
 					return COND_BUSY_BECAUSE_OF_SIEGE; // Busy because of siege
-				else if (getCastle().getOwnerId() == player.getClanId()) // Clan owns castle
+				}
+				else if (getCastle().getOwnerId() == player.getClanId())
+				{
 					return COND_OWNER;
+				}
 			}
 		}
 		return COND_ALL_FALSE;
@@ -146,9 +138,9 @@ public class L2CastleMagicianInstance extends L2NpcInstance
 	
 	/**
 	 * Validate gate condition.
-	 * @param clanLeader the clan leader
-	 * @param player the player
-	 * @return true, if successful
+	 * @param  clanLeader the clan leader
+	 * @param  player     the player
+	 * @return            true, if successful
 	 */
 	private static final boolean validateGateCondition(final L2PcInstance clanLeader, final L2PcInstance player)
 	{

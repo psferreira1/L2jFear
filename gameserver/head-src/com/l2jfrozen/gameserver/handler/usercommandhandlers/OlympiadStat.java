@@ -1,23 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.handler.usercommandhandlers;
 
 import com.l2jfrozen.gameserver.handler.IUserCommandHandler;
@@ -40,7 +20,9 @@ public class OlympiadStat implements IUserCommandHandler
 	public boolean useUserCommand(final int id, final L2PcInstance activeChar)
 	{
 		if (id != COMMAND_IDS[0])
+		{
 			return false;
+		}
 		
 		final SystemMessage sm = new SystemMessage(SystemMessageId.THE_CURRENT_RECORD_FOR_THIS_OLYMPIAD_SESSION_IS_S1_MATCHES_S2_WINS_S3_DEFEATS_YOU_HAVE_EARNED_S4_OLYMPIAD_POINTS);
 		sm.addNumber(Olympiad.getInstance().getCompetitionDone(activeChar.getObjectId()));

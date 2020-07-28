@@ -1,23 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.model.actor.instance;
 
 import com.l2jfrozen.gameserver.ai.L2AttackableAI;
@@ -35,15 +15,16 @@ public final class L2MinionInstance extends L2MonsterInstance
 	// private static Logger LOGGER = Logger.getLogger(L2RaidMinionInstance.class);
 	
 	/** The master L2Character whose depends this L2MinionInstance on. */
-	private L2MonsterInstance _master;
+	private L2MonsterInstance master;
 	
 	/**
 	 * Constructor of L2MinionInstance (use L2Character and L2NpcInstance constructor).<BR>
 	 * <BR>
 	 * <B><U> Actions</U> :</B><BR>
 	 * <BR>
-	 * <li>Call the L2Character constructor to set the _template of the L2MinionInstance (copy skills from template to object and link _calculators to NPC_STD_CALCULATOR)</li> <li>Set the name of the L2MinionInstance</li> <li>Create a RandomAnimation Task that will be launched after the calculated
-	 * delay if the server allow it</li><BR>
+	 * <li>Call the L2Character constructor to set the template of the L2MinionInstance (copy skills from template to object and link calculators to NPC_STD_CALCULATOR)</li>
+	 * <li>Set the name of the L2MinionInstance</li>
+	 * <li>Create a RandomAnimation Task that will be launched after the calculated delay if the server allow it</li><BR>
 	 * <BR>
 	 * @param objectId Identifier of the object to initialized
 	 * @param template the template
@@ -70,13 +51,9 @@ public final class L2MinionInstance extends L2MonsterInstance
 	 */
 	public L2MonsterInstance getLeader()
 	{
-		return _master;
+		return master;
 	}
 	
-	/*
-	 * (non-Javadoc)
-	 * @see com.l2jfrozen.gameserver.model.actor.instance.L2MonsterInstance#onSpawn()
-	 */
 	@Override
 	public void onSpawn()
 	{
@@ -100,23 +77,25 @@ public final class L2MinionInstance extends L2MonsterInstance
 	 */
 	public void setLeader(final L2MonsterInstance leader)
 	{
-		_master = leader;
+		master = leader;
 	}
 	
 	/**
 	 * Manages the doDie event for this L2MinionInstance.<BR>
 	 * <BR>
-	 * @param killer The L2Character that killed this L2MinionInstance.<BR>
-	 * <BR>
-	 * @return true, if successful
+	 * @param  killer The L2Character that killed this L2MinionInstance.<BR>
+	 *                    <BR>
+	 * @return        true, if successful
 	 */
 	@Override
 	public boolean doDie(final L2Character killer)
 	{
 		if (!super.doDie(killer))
+		{
 			return false;
+		}
 		
-		_master.notifyMinionDied(this);
+		master.notifyMinionDied(this);
 		return true;
 	}
 }

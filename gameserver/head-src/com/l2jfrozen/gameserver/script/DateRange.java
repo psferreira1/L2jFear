@@ -1,23 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.script;
 
 import java.text.DateFormat;
@@ -33,12 +13,12 @@ public class DateRange
 {
 	private static Logger LOGGER = Logger.getLogger(DateRange.class);
 	
-	private final Date _startDate, _endDate;
+	private final Date startDate, endDate;
 	
 	public DateRange(final Date from, final Date to)
 	{
-		_startDate = from;
-		_endDate = to;
+		startDate = from;
+		endDate = to;
 	}
 	
 	public static DateRange parse(final String dateRange, final DateFormat format)
@@ -64,21 +44,21 @@ public class DateRange
 	
 	public boolean isValid()
 	{
-		return _startDate == null || _endDate == null;
+		return startDate == null || endDate == null;
 	}
 	
 	public boolean isWithinRange(final Date date)
 	{
-		return date.after(_startDate) && date.before(_endDate);
+		return date.after(startDate) && date.before(endDate);
 	}
 	
 	public Date getEndDate()
 	{
-		return _endDate;
+		return endDate;
 	}
 	
 	public Date getStartDate()
 	{
-		return _startDate;
+		return startDate;
 	}
 }

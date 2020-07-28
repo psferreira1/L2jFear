@@ -1,22 +1,3 @@
-/* L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.network.clientpackets;
 
 import org.apache.log4j.Logger;
@@ -35,23 +16,25 @@ import com.l2jfrozen.gameserver.network.serverpackets.SystemMessage;
 public final class RequestDuelStart extends L2GameClientPacket
 {
 	private static Logger LOGGER = Logger.getLogger(RequestDuelStart.class);
-	private String _player;
-	private int _partyDuel;
+	private String player;
+	private int partyDuel;
 	
 	@Override
 	protected void readImpl()
 	{
-		_player = readS();
-		_partyDuel = readD();
+		player = readS();
+		partyDuel = readD();
 	}
 	
 	@Override
 	protected void runImpl()
 	{
 		final L2PcInstance activeChar = getClient().getActiveChar();
-		final L2PcInstance targetChar = L2World.getInstance().getPlayer(_player);
+		final L2PcInstance targetChar = L2World.getInstance().getPlayer(player);
 		if (activeChar == null)
+		{
 			return;
+		}
 		
 		if (targetChar == null)
 		{
@@ -86,7 +69,7 @@ public final class RequestDuelStart extends L2GameClientPacket
 		}
 		
 		// Duel is a party duel
-		if (_partyDuel == 1)
+		if (partyDuel == 1)
 		{
 			// Player must be in a party & the party leader
 			if (!activeChar.isInParty() || !(activeChar.isInParty() && activeChar.getParty().isLeader(activeChar)))
@@ -137,7 +120,7 @@ public final class RequestDuelStart extends L2GameClientPacket
 				if (!partyLeader.isProcessingRequest())
 				{
 					activeChar.onTransactionRequest(partyLeader);
-					partyLeader.sendPacket(new ExDuelAskStart(activeChar.getName(), _partyDuel));
+					partyLeader.sendPacket(new ExDuelAskStart(activeChar.getName(), partyDuel));
 					
 					if (Config.DEBUG)
 					{
@@ -166,7 +149,7 @@ public final class RequestDuelStart extends L2GameClientPacket
 			if (!targetChar.isProcessingRequest())
 			{
 				activeChar.onTransactionRequest(targetChar);
-				targetChar.sendPacket(new ExDuelAskStart(activeChar.getName(), _partyDuel));
+				targetChar.sendPacket(new ExDuelAskStart(activeChar.getName(), partyDuel));
 				
 				if (Config.DEBUG)
 				{

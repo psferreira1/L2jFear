@@ -1,23 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.ai;
 
 import static com.l2jfrozen.gameserver.ai.CtrlIntention.AI_INTENTION_ATTACK;
@@ -36,7 +16,7 @@ import com.l2jfrozen.gameserver.model.L2Summon;
 public class L2SummonAI extends L2CharacterAI
 {
 	
-	private boolean _thinking; // to prevent recursive thinking
+	private boolean thinking; // to prevent recursive thinking
 	private L2Summon summon;
 	
 	public L2SummonAI(final AIAccessor accessor)
@@ -54,7 +34,7 @@ public class L2SummonAI extends L2CharacterAI
 	@Override
 	protected void onIntentionActive()
 	{
-		L2Summon summon = (L2Summon) _actor;
+		L2Summon summon = (L2Summon) actor;
 		
 		if (summon.getFollowStatus())
 		{
@@ -70,13 +50,15 @@ public class L2SummonAI extends L2CharacterAI
 	
 	private void thinkAttack()
 	{
-		summon = (L2Summon) _actor;
+		summon = (L2Summon) actor;
 		L2Object target = null;
 		target = summon.getTarget();
 		
 		// Like L2OFF if the target is dead the summon must go back to his owner
 		if (target != null && summon != null && ((L2Character) target).isDead())
+		{
 			summon.setFollowStatus(true);
+		}
 		
 		if (checkTargetLostOrDead(getAttackTarget()))
 		{
@@ -84,17 +66,19 @@ public class L2SummonAI extends L2CharacterAI
 			return;
 		}
 		
-		if (maybeMoveToPawn(getAttackTarget(), _actor.getPhysicalAttackRange()))
+		if (maybeMoveToPawn(getAttackTarget(), actor.getPhysicalAttackRange()))
+		{
 			return;
+		}
 		
 		clientStopMoving(null);
-		_accessor.doAttack(getAttackTarget());
+		accessor.doAttack(getAttackTarget());
 		return;
 	}
 	
 	private void thinkCast()
 	{
-		L2Summon summon = (L2Summon) _actor;
+		L2Summon summon = (L2Summon) actor;
 		
 		final L2Character target = getCastTarget();
 		if (checkTargetLost(target))
@@ -104,48 +88,62 @@ public class L2SummonAI extends L2CharacterAI
 		}
 		
 		final L2Skill skill = get_skill();
-		if (maybeMoveToPawn(target, _actor.getMagicalAttackRange(skill)))
+		if (maybeMoveToPawn(target, actor.getMagicalAttackRange(skill)))
+		{
 			return;
+		}
 		
 		clientStopMoving(null);
 		summon.setFollowStatus(false);
 		summon = null;
 		setIntention(AI_INTENTION_IDLE);
-		_accessor.doCast(skill);
+		accessor.doCast(skill);
 		return;
 	}
 	
 	private void thinkPickUp()
 	{
-		if (_actor.isAllSkillsDisabled())
+		if (actor.isAllSkillsDisabled())
+		{
 			return;
+		}
 		
 		final L2Object target = getTarget();
 		
 		if (checkTargetLost(target))
+		{
 			return;
+		}
 		
 		if (maybeMoveToPawn(target, 36))
+		{
 			return;
+		}
 		
 		setIntention(AI_INTENTION_IDLE);
-		((L2Summon.AIAccessor) _accessor).doPickupItem(target);
+		((L2Summon.AIAccessor) accessor).doPickupItem(target);
 		
 		return;
 	}
 	
 	private void thinkInteract()
 	{
-		if (_actor.isAllSkillsDisabled())
+		if (actor.isAllSkillsDisabled())
+		{
 			return;
+		}
 		
 		final L2Object target = getTarget();
 		
 		if (checkTargetLost(target))
+		{
 			return;
+		}
 		
 		if (maybeMoveToPawn(target, 36))
+		{
 			return;
+		}
 		
 		setIntention(AI_INTENTION_IDLE);
 		
@@ -155,10 +153,12 @@ public class L2SummonAI extends L2CharacterAI
 	@Override
 	protected void onEvtThink()
 	{
-		if (_thinking || _actor.isAllSkillsDisabled())
+		if (thinking || actor.isAllSkillsDisabled())
+		{
 			return;
+		}
 		
-		_thinking = true;
+		thinking = true;
 		
 		try
 		{
@@ -181,7 +181,7 @@ public class L2SummonAI extends L2CharacterAI
 		}
 		finally
 		{
-			_thinking = false;
+			thinking = false;
 		}
 	}
 	
@@ -190,17 +190,23 @@ public class L2SummonAI extends L2CharacterAI
 	{
 		super.onEvtFinishCasting();
 		
-		final L2Summon summon = (L2Summon) _actor;
+		final L2Summon summon = (L2Summon) actor;
 		L2Object target = null;
 		target = summon.getTarget();
 		
 		if (target == null)
+		{
 			return;
+		}
 		
 		if (summon.getAI().getIntention() != AI_INTENTION_ATTACK)
+		{
 			summon.setFollowStatus(true);
+		}
 		else if (((L2Character) target).isDead())
+		{
 			summon.setFollowStatus(true);
+		}
 		
 	}
 }

@@ -1,22 +1,3 @@
-/* L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.skills.l2skills;
 
 import com.l2jfrozen.gameserver.idfactory.IdFactory;
@@ -36,16 +17,16 @@ import com.l2jfrozen.util.random.Rnd;
  */
 public class L2SkillCreateItem extends L2Skill
 {
-	private final int[] _createItemId;
-	private final int _createItemCount;
-	private final int _randomCount;
+	private final int[] createItemId;
+	private final int createItemCount;
+	private final int randomCount;
 	
 	public L2SkillCreateItem(final StatsSet set)
 	{
 		super(set);
-		_createItemId = set.getIntegerArray("create_item_id");
-		_createItemCount = set.getInteger("create_item_count", 0);
-		_randomCount = set.getInteger("random_count", 1);
+		createItemId = set.getIntegerArray("create_item_id");
+		createItemCount = set.getInteger("create_item_count", 0);
+		randomCount = set.getInteger("random_count", 1);
 	}
 	
 	/**
@@ -55,8 +36,10 @@ public class L2SkillCreateItem extends L2Skill
 	public void useSkill(final L2Character activeChar, final L2Object[] targets)
 	{
 		if (activeChar.isAlikeDead())
+		{
 			return;
-		if (_createItemId == null || _createItemCount == 0)
+		}
+		if (createItemId == null || createItemCount == 0)
 		{
 			activeChar.sendPacket(new SystemMessage(SystemMessageId.SKILL_NOT_AVAILABLE));
 			return;
@@ -64,9 +47,9 @@ public class L2SkillCreateItem extends L2Skill
 		final L2PcInstance player = (L2PcInstance) activeChar;
 		if (activeChar instanceof L2PcInstance)
 		{
-			final int count = _createItemCount * (Rnd.nextInt(_randomCount) + 1);
-			final int rndid = Rnd.nextInt(_createItemId.length);
-			giveItems(player, _createItemId[rndid], count);
+			final int count = createItemCount * (Rnd.nextInt(randomCount) + 1);
+			final int rndid = Rnd.nextInt(createItemId.length);
+			giveItems(player, createItemId[rndid], count);
 		}
 	}
 	

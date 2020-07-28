@@ -1,22 +1,3 @@
-/* L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.network;
 
 import java.nio.ByteBuffer;
@@ -42,7 +23,8 @@ import com.l2jfrozen.util.Util;
 /**
  * Stateful Packet Handler<BR>
  * The Stateful approach prevents the server from handling inconsistent packets, examples:<BR>
- * <li>Clients sends a MoveToLocation packet without having a character attached. (Potential errors handling the packet).</li> <li>Clients sends a RequestAuthLogin being already authed. (Potential exploit).</li> <BR>
+ * <li>Clients sends a MoveToLocation packet without having a character attached. (Potential errors handling the packet).</li>
+ * <li>Clients sends a RequestAuthLogin being already authed. (Potential exploit).</li> <BR>
  * <BR>
  * Note: If for a given exception a packet needs to be handled on more then one state, then it should be added to all these states.
  * @author L2JFrozen
@@ -60,7 +42,9 @@ public final class L2GamePacketHandler implements IPacketHandler<L2GameClient>, 
 		if (client.dropPacket())
 		{
 			if (Config.DEBUG_PACKETS)
+			{
 				Log.add("Packet Dropped", "GamePacketsLog");
+			}
 			client.sendPacket(ActionFailed.STATIC_PACKET);
 			return null;
 		}
@@ -80,11 +64,13 @@ public final class L2GamePacketHandler implements IPacketHandler<L2GameClient>, 
 		
 		if (client.getActiveChar() != null)
 		{// already done EnterWorld
-		
+			
 			final String character = client.getActiveChar().getName();
 			String packet = "" + opcode;
 			if (opcode2 != -1)
+			{
 				packet = packet + "," + opcode2;
+			}
 			
 			// check if character has block on packet
 			if (PacketsLoggerManager.getInstance().isCharacterPacketBlocked(character, packet))
@@ -168,11 +154,13 @@ public final class L2GamePacketHandler implements IPacketHandler<L2GameClient>, 
 				if (!NetcoreConfig.getInstance().LIST_ALLOWED_OFFLINE_OPCODES.contains(opcode))
 				{
 					
-					if (client.getActiveChar() == null || client.getActiveChar().isOnline() == 0)
+					if (client.getActiveChar() == null || !client.getActiveChar().isOnline())
 					{
 						// if not in shutdown
 						if (!Shutdown.getInstance().isShutdownStarted())
+						{
 							LOGGER.warn("ATTENTION: Account " + client.accountName + " is trying to send packet with opcode " + opcode + " without enterning in the world (online status is FALSE)..");
+						}
 						break;
 					}
 					
@@ -387,7 +375,7 @@ public final class L2GamePacketHandler implements IPacketHandler<L2GameClient>, 
 						msg = new RequestGiveNickName();
 						break;
 					case 0x57:
-						msg = new RequestShowBoard();
+						msg = new RequestShowCommunityBoard();
 						break;
 					case 0x58:
 						msg = new RequestEnchantItem();
@@ -469,7 +457,7 @@ public final class L2GamePacketHandler implements IPacketHandler<L2GameClient>, 
 						msg = new SetPrivateStoreListSell();
 						break;
 					case 0x75:
-						// msg = new RequestPrivateStoreManageCancel(data, _client);
+						// msg = new RequestPrivateStoreManageCancel(data, client);
 						break;
 					case 0x76:
 						msg = new RequestPrivateStoreQuitSell();
@@ -736,11 +724,13 @@ public final class L2GamePacketHandler implements IPacketHandler<L2GameClient>, 
 						if (!NetcoreConfig.getInstance().LIST_ALLOWED_OFFLINE_OPCODES2.contains(opcode2))
 						{
 							
-							if (client.getActiveChar() == null || client.getActiveChar().isOnline() == 0)
+							if (client.getActiveChar() == null || !client.getActiveChar().isOnline())
 							{
 								// if not in shutdown
 								if (!Shutdown.getInstance().isShutdownStarted())
+								{
 									LOGGER.warn("ATTENTION: Account " + client.accountName + " is trying to send packet with opcode " + opcode + " (opcode2 = " + opcode2 + ") without enterning in the world (online status is FALSE)..");
+								}
 								break;
 							}
 							
@@ -917,7 +907,9 @@ public final class L2GamePacketHandler implements IPacketHandler<L2GameClient>, 
 		}
 		
 		if (!NetcoreConfig.getInstance().PACKET_HANDLER_DEBUG)
+		{
 			return;
+		}
 		
 		// int size = buf.remaining();
 		final int v = buf.remaining();
@@ -948,7 +940,9 @@ public final class L2GamePacketHandler implements IPacketHandler<L2GameClient>, 
 		}
 		
 		if (!NetcoreConfig.getInstance().PACKET_HANDLER_DEBUG)
+		{
 			return;
+		}
 		
 		// int size = buf.remaining();
 		final int v = buf.remaining();
@@ -984,8 +978,8 @@ public final class L2GamePacketHandler implements IPacketHandler<L2GameClient>, 
 	}
 	
 	/*
-	 * private void unknownPacketProtection(L2GameClient client) { if(client.getActiveChar() != null && client.checkUnknownPackets()) { UnknownPunish(client); return; } } private void UnknownPunish(L2GameClient client) { switch(Config.UNKNOWN_PACKETS_PUNiSHMENT) { case 1: if(client.getActiveChar()
-	 * != null) { GmListTable.broadcastMessageToGMs("Player " + client.getActiveChar().toString() + " flooding unknown packets."); } LOGGER.warn("Player " + client.getActiveChar().toString() + " flooding unknown packets."); break; case 2: LOGGER.warn("PacketProtection: " + client.toString() +
+	 * private void unknownPacketProtection(L2GameClient client) { if(client.getActiveChar() != null && client.checkUnknownPackets()) { UnknownPunish(client); return; } } private void UnknownPunish(L2GameClient client) { switch(Config.UNKNOWN_PACKETS_PUNiSHMENT) { case 1: if(client.getActiveChar() !=
+	 * null) { GmListTable.broadcastMessageToGMs("Player " + client.getActiveChar().toString() + " flooding unknown packets."); } LOGGER.warn("Player " + client.getActiveChar().toString() + " flooding unknown packets."); break; case 2: LOGGER.warn("PacketProtection: " + client.toString() +
 	 * " got kicked due flooding of unknown packets"); if(client.getActiveChar() != null) { GmListTable.broadcastMessageToGMs("Player " + client.getActiveChar().toString() + " flooding unknown packets and got kicked.");
 	 * client.getActiveChar().sendMessage("You are will be kicked for unknown packet flooding, GM informed"); client.getActiveChar().closeNetConnection(); } break; case 3: LOGGER.warn("PacketProtection: " + client.toString() + " got banned due flooding of unknown packets");
 	 * client.getActiveChar().setAccessLevel(-1); if(client.getActiveChar() != null) { GmListTable.broadcastMessageToGMs("Player " + client.getActiveChar().toString() + " flooding unknown packets and got banned.");

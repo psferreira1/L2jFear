@@ -1,24 +1,8 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any later
- * version.
- * 
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
- * 
- * You should have received a copy of the GNU General Public License along with
- * this program. If not, see <http://www.gnu.org/licenses/>.
- */
 package com.l2jfrozen.gameserver.ai.special;
 
+import java.util.ArrayList;
 import java.util.Collection;
-
-import javolution.util.FastList;
+import java.util.List;
 
 import com.l2jfrozen.gameserver.ai.CtrlIntention;
 import com.l2jfrozen.gameserver.datatables.SkillTable;
@@ -96,7 +80,9 @@ public class Monastery extends Quest implements Runnable
 				}
 			}
 			else if (((L2Attackable) npc).getMostHated() == null)
+			{
 				return null;
+			}
 		}
 		return super.onAggroRangeEnter(npc, player, isPet);
 	}
@@ -106,14 +92,16 @@ public class Monastery extends Quest implements Runnable
 	{
 		if (Util.contains(mobs1, npc.getNpcId()))
 		{
-			final FastList<L2PlayableInstance> result = new FastList<>();
+			final List<L2PlayableInstance> result = new ArrayList<>();
 			final Collection<L2Object> objs = npc.getKnownList().getKnownObjects().values();
 			for (final L2Object obj : objs)
 			{
 				if (obj instanceof L2PcInstance || obj instanceof L2PetInstance)
 				{
 					if (Util.checkIfInRange(npc.getAggroRange(), npc, obj, true) && !((L2Character) obj).isDead())
+					{
 						result.add((L2PlayableInstance) obj);
+					}
 				}
 			}
 			if (!result.isEmpty() && result.size() != 0)

@@ -1,23 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.model.entity.event;
 
 import java.io.BufferedInputStream;
@@ -28,8 +8,6 @@ import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
-
-import javolution.text.TextBuilder;
 
 import org.apache.log4j.Logger;
 
@@ -45,6 +23,8 @@ import com.l2jfrozen.gameserver.network.serverpackets.MagicSkillUser;
 import com.l2jfrozen.gameserver.network.serverpackets.NpcHtmlMessage;
 import com.l2jfrozen.gameserver.templates.L2NpcTemplate;
 import com.l2jfrozen.gameserver.util.EventData;
+
+import javolution.text.TextBuilder;
 
 /**
  * This class ...
@@ -74,7 +54,9 @@ public class L2Event
 			while (it.hasNext())
 			{
 				if (it.next().equals(name))
+				{
 					return i;
+				}
 			}
 			
 			temp = null;
@@ -122,7 +104,9 @@ public class L2Event
 					catch (final Exception e)
 					{
 						if (Config.ENABLE_ALL_EXCEPTIONS)
+						{
 							e.printStackTrace();
+						}
 					}
 				}
 				
@@ -155,7 +139,9 @@ public class L2Event
 				catch (final Exception e)
 				{
 					if (Config.ENABLE_ALL_EXCEPTIONS)
+					{
 						e.printStackTrace();
+					}
 				}
 			}
 			
@@ -209,7 +195,9 @@ public class L2Event
 		catch (final Exception e)
 		{
 			if (Config.ENABLE_ALL_EXCEPTIONS)
+			{
 				e.printStackTrace();
+			}
 			
 			LOGGER.error(e.getMessage());
 		}
@@ -217,6 +205,7 @@ public class L2Event
 		{
 			
 			if (inbr != null)
+			{
 				try
 				{
 					inbr.close();
@@ -225,8 +214,10 @@ public class L2Event
 				{
 					e1.printStackTrace();
 				}
+			}
 			
 			if (isr != null)
+			{
 				try
 				{
 					isr.close();
@@ -235,8 +226,10 @@ public class L2Event
 				{
 					e1.printStackTrace();
 				}
+			}
 			
 			if (in != null)
+			{
 				try
 				{
 					in.close();
@@ -245,8 +238,10 @@ public class L2Event
 				{
 					e1.printStackTrace();
 				}
+			}
 			
 			if (buff != null)
+			{
 				try
 				{
 					buff.close();
@@ -255,8 +250,10 @@ public class L2Event
 				{
 					e1.printStackTrace();
 				}
+			}
 			
 			if (fis != null)
+			{
 				try
 				{
 					fis.close();
@@ -265,6 +262,7 @@ public class L2Event
 				{
 					e1.printStackTrace();
 				}
+			}
 			
 		}
 	}
@@ -308,7 +306,9 @@ public class L2Event
 		catch (final Exception e)
 		{
 			if (Config.ENABLE_ALL_EXCEPTIONS)
+			{
 				e.printStackTrace();
+			}
 			
 			LOGGER.error(e.getMessage());
 		}
@@ -343,7 +343,9 @@ public class L2Event
 				temp = player.getName().equalsIgnoreCase(it.next());
 				
 				if (temp)
+				{
 					return true;
+				}
 			}
 			
 			it = null;
@@ -370,7 +372,9 @@ public class L2Event
 		catch (final Exception e)
 		{
 			if (Config.ENABLE_ALL_EXCEPTIONS)
+			{
 				e.printStackTrace();
+			}
 			
 			LOGGER.error("error when signing in the event:" + e.getMessage(), e);
 		}
@@ -394,7 +398,9 @@ public class L2Event
 		catch (final Exception e)
 		{
 			if (Config.ENABLE_ALL_EXCEPTIONS)
+			{
 				e.printStackTrace();
+			}
 		}
 	}
 	
@@ -415,7 +421,9 @@ public class L2Event
 		catch (final Exception e)
 		{
 			if (Config.ENABLE_ALL_EXCEPTIONS)
+			{
 				e.printStackTrace();
+			}
 		}
 	}
 }

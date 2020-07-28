@@ -1,23 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.crypt;
 
 import java.io.IOException;
@@ -31,18 +11,18 @@ import org.apache.log4j.Logger;
 public class NewCrypt
 {
 	protected static Logger LOGGER = Logger.getLogger(NewCrypt.class);
-	BlowfishEngine _crypt;
-	BlowfishEngine _decrypt;
+	BlowfishEngine crypt;
+	BlowfishEngine decrypt;
 	
 	/**
 	 * @param blowfishKey
 	 */
 	public NewCrypt(final byte[] blowfishKey)
 	{
-		_crypt = new BlowfishEngine();
-		_crypt.init(true, blowfishKey);
-		_decrypt = new BlowfishEngine();
-		_decrypt.init(false, blowfishKey);
+		crypt = new BlowfishEngine();
+		crypt.init(true, blowfishKey);
+		decrypt = new BlowfishEngine();
+		decrypt.init(false, blowfishKey);
 	}
 	
 	public NewCrypt(final String key)
@@ -59,7 +39,9 @@ public class NewCrypt
 	{
 		// check if size is multiple of 4 and if there is more then only the checksum
 		if ((size & 3) != 0 || size <= 4)
+		{
 			return false;
+		}
 		
 		long chksum = 0;
 		final int count = size - 4;
@@ -129,10 +111,10 @@ public class NewCrypt
 	
 	/**
 	 * Packet is first XOR encoded with <code>key</code> Then, the last 4 bytes are overwritten with the the XOR "key". Thus this assume that there is enough room for the key to fit without overwriting data.
-	 * @param raw The raw bytes to be encrypted
+	 * @param raw    The raw bytes to be encrypted
 	 * @param offset The begining of the data to be encrypted
-	 * @param size Length of the data to be encrypted
-	 * @param key The 4 bytes (int) XOR key
+	 * @param size   Length of the data to be encrypted
+	 * @param key    The 4 bytes (int) XOR key
 	 */
 	public static void encXORPass(final byte[] raw, final int offset, final int size, final int key)
 	{
@@ -171,7 +153,7 @@ public class NewCrypt
 		
 		for (int i = 0; i < count; i++)
 		{
-			_decrypt.processBlock(raw, i * 8, result, i * 8);
+			decrypt.processBlock(raw, i * 8, result, i * 8);
 		}
 		
 		return result;
@@ -184,7 +166,7 @@ public class NewCrypt
 		
 		for (int i = 0; i < count; i++)
 		{
-			_decrypt.processBlock(raw, offset + i * 8, result, i * 8);
+			decrypt.processBlock(raw, offset + i * 8, result, i * 8);
 		}
 		// TODO can the crypt and decrypt go direct to the array
 		System.arraycopy(result, 0, raw, offset, size);
@@ -197,7 +179,7 @@ public class NewCrypt
 		
 		for (int i = 0; i < count; i++)
 		{
-			_crypt.processBlock(raw, i * 8, result, i * 8);
+			crypt.processBlock(raw, i * 8, result, i * 8);
 		}
 		
 		return result;
@@ -210,7 +192,7 @@ public class NewCrypt
 		
 		for (int i = 0; i < count; i++)
 		{
-			_crypt.processBlock(raw, offset + i * 8, result, i * 8);
+			crypt.processBlock(raw, offset + i * 8, result, i * 8);
 		}
 		// TODO can the crypt and decrypt go direct to the array
 		System.arraycopy(result, 0, raw, offset, size);

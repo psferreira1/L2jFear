@@ -1,28 +1,9 @@
-/* L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 
 package com.l2jfrozen.gameserver.model.zone.type;
 
 import java.util.Iterator;
-
-import javolution.util.FastList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import com.l2jfrozen.gameserver.managers.CastleManager;
 import com.l2jfrozen.gameserver.model.L2Character;
@@ -34,14 +15,14 @@ import com.l2jfrozen.util.random.Rnd;
 public class L2CastleTeleportZone extends L2ZoneType
 {
 	
-	private final int _spawnLoc[];
-	private int _castleId;
-	private Castle _castle;
+	private final int spawnLoc[];
+	private int castleId;
+	private Castle castle;
 	
 	public L2CastleTeleportZone(final int id)
 	{
 		super(id);
-		_spawnLoc = new int[5];
+		spawnLoc = new int[5];
 	}
 	
 	@Override
@@ -50,24 +31,24 @@ public class L2CastleTeleportZone extends L2ZoneType
 		switch (name)
 		{
 			case "castleId":
-				_castleId = Integer.parseInt(value);
-				_castle = CastleManager.getInstance().getCastleById(_castleId);
-				_castle.setTeleZone(this);
+				castleId = Integer.parseInt(value);
+				castle = CastleManager.getInstance().getCastleById(castleId);
+				castle.setTeleZone(this);
 				break;
 			case "spawnMinX":
-				_spawnLoc[0] = Integer.parseInt(value);
+				spawnLoc[0] = Integer.parseInt(value);
 				break;
 			case "spawnMaxX":
-				_spawnLoc[1] = Integer.parseInt(value);
+				spawnLoc[1] = Integer.parseInt(value);
 				break;
 			case "spawnMinY":
-				_spawnLoc[2] = Integer.parseInt(value);
+				spawnLoc[2] = Integer.parseInt(value);
 				break;
 			case "spawnMaxY":
-				_spawnLoc[3] = Integer.parseInt(value);
+				spawnLoc[3] = Integer.parseInt(value);
 				break;
 			case "spawnZ":
-				_spawnLoc[4] = Integer.parseInt(value);
+				spawnLoc[4] = Integer.parseInt(value);
 				break;
 			default:
 				super.setParameter(name, value);
@@ -97,37 +78,24 @@ public class L2CastleTeleportZone extends L2ZoneType
 	{
 	}
 	
-	public FastList<L2Character> getAllPlayers()
+	public List<L2Character> getAllPlayers()
 	{
-		final FastList<L2Character> players = new FastList<>();
-		Iterator<L2Character> i$ = _characterList.values().iterator();
-		
-		while (i$.hasNext())
-		{
-			L2Character temp = i$.next();
-			
-			if (temp instanceof L2PcInstance)
-			{
-				players.add(temp);
-			}
-			
-			temp = null;
-		}
-		
-		i$ = null;
-		
-		return players;
+		return characterList.values().stream().filter(character -> character.isPlayer()).collect(Collectors.toList());
 	}
 	
 	public void oustAllPlayers()
 	{
-		if (_characterList == null)
+		if (characterList == null)
+		{
 			return;
+		}
 		
-		if (_characterList.isEmpty())
+		if (characterList.isEmpty())
+		{
 			return;
+		}
 		
-		Iterator<L2Character> i$ = _characterList.values().iterator();
+		Iterator<L2Character> i$ = characterList.values().iterator();
 		while (i$.hasNext())
 		{
 			L2Character character = i$.next();
@@ -136,9 +104,9 @@ public class L2CastleTeleportZone extends L2ZoneType
 			{
 				L2PcInstance player = (L2PcInstance) character;
 				
-				if (player.isOnline() == 1)
+				if (player.isOnline())
 				{
-					player.teleToLocation(Rnd.get(_spawnLoc[0], _spawnLoc[1]), Rnd.get(_spawnLoc[2], _spawnLoc[3]), _spawnLoc[4]);
+					player.teleToLocation(Rnd.get(spawnLoc[0], spawnLoc[1]), Rnd.get(spawnLoc[2], spawnLoc[3]), spawnLoc[4]);
 				}
 				
 				player = null;
@@ -152,6 +120,6 @@ public class L2CastleTeleportZone extends L2ZoneType
 	
 	public int[] getSpawn()
 	{
-		return _spawnLoc;
+		return spawnLoc;
 	}
 }

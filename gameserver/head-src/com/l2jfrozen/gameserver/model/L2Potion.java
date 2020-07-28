@@ -1,23 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.model;
 
 import java.util.concurrent.Future;
@@ -35,24 +15,24 @@ public class L2Potion extends L2Object
 {
 	protected static final Logger LOGGER = Logger.getLogger(L2Character.class);
 	
-	// private L2Character _target;
+	// private L2Character target;
 	
-	private Future<?> _potionhpRegTask;
-	private Future<?> _potionmpRegTask;
-	protected int _milliseconds;
-	protected double _effect;
-	protected int _duration;
-	private int _potion;
-	protected Object _mpLock = new Object();
-	protected Object _hpLock = new Object();
+	private Future<?> potionhpRegTask;
+	private Future<?> potionmpRegTask;
+	protected int milliseconds;
+	protected double effect;
+	protected int duration;
+	private int potion;
+	protected Object mpLock = new Object();
+	protected Object hpLock = new Object();
 	
 	class PotionHpHealing implements Runnable
 	{
-		L2Character _instance;
+		L2Character instance;
 		
 		public PotionHpHealing(final L2Character instance)
 		{
-			_instance = instance;
+			this.instance = instance;
 		}
 		
 		@Override
@@ -60,19 +40,19 @@ public class L2Potion extends L2Object
 		{
 			try
 			{
-				synchronized (_hpLock)
+				synchronized (hpLock)
 				{
-					double nowHp = _instance.getCurrentHp();
+					double nowHp = instance.getCurrentHp();
 					
-					if (_duration == 0)
+					if (duration == 0)
 					{
 						stopPotionHpRegeneration();
 					}
-					if (_duration != 0)
+					if (duration != 0)
 					{
-						nowHp += _effect;
-						_instance.setCurrentHp(nowHp);
-						_duration = _duration - _milliseconds / 1000;
+						nowHp += effect;
+						instance.setCurrentHp(nowHp);
+						duration = duration - milliseconds / 1000;
 						setCurrentHpPotion2();
 					}
 				}
@@ -91,12 +71,12 @@ public class L2Potion extends L2Object
 	
 	public void stopPotionHpRegeneration()
 	{
-		if (_potionhpRegTask != null)
+		if (potionhpRegTask != null)
 		{
-			_potionhpRegTask.cancel(false);
+			potionhpRegTask.cancel(false);
 		}
 		
-		_potionhpRegTask = null;
+		potionhpRegTask = null;
 		
 		if (Config.DEBUG)
 		{
@@ -106,7 +86,7 @@ public class L2Potion extends L2Object
 	
 	public void setCurrentHpPotion2()
 	{
-		if (_duration == 0)
+		if (duration == 0)
 		{
 			stopPotionHpRegeneration();
 		}
@@ -115,10 +95,10 @@ public class L2Potion extends L2Object
 	
 	public void setCurrentHpPotion1(final L2Character activeChar, final int item)
 	{
-		_potion = item;
-		// _target = activeChar;
+		potion = item;
+		// target = activeChar;
 		
-		switch (_potion)
+		switch (potion)
 		{
 			case 1540:
 				double nowHp = activeChar.getCurrentHp();
@@ -145,9 +125,9 @@ public class L2Potion extends L2Object
 				activeChar.setCurrentMp(nowMp);
 				break;
 			case 726:
-				_milliseconds = 500;
-				_duration = 15;
-				_effect = 1.5;
+				milliseconds = 500;
+				duration = 15;
+				effect = 1.5;
 				startPotionMpRegeneration(activeChar);
 				break;
 		}
@@ -155,11 +135,11 @@ public class L2Potion extends L2Object
 	
 	class PotionMpHealing implements Runnable
 	{
-		L2Character _instance;
+		L2Character instance;
 		
 		public PotionMpHealing(final L2Character instance)
 		{
-			_instance = instance;
+			this.instance = instance;
 		}
 		
 		@Override
@@ -167,20 +147,20 @@ public class L2Potion extends L2Object
 		{
 			try
 			{
-				synchronized (_mpLock)
+				synchronized (mpLock)
 				{
-					double nowMp = _instance.getCurrentMp();
+					double nowMp = instance.getCurrentMp();
 					
-					if (_duration == 0)
+					if (duration == 0)
 					{
 						stopPotionMpRegeneration();
 					}
 					
-					if (_duration != 0)
+					if (duration != 0)
 					{
-						nowMp += _effect;
-						_instance.setCurrentMp(nowMp);
-						_duration = _duration - _milliseconds / 1000;
+						nowMp += effect;
+						instance.setCurrentMp(nowMp);
+						duration = duration - milliseconds / 1000;
 						setCurrentMpPotion2();
 						
 					}
@@ -195,7 +175,7 @@ public class L2Potion extends L2Object
 	
 	private void startPotionMpRegeneration(final L2Character activeChar)
 	{
-		_potionmpRegTask = ThreadPoolManager.getInstance().scheduleEffectAtFixedRate(new PotionMpHealing(activeChar), 1000, _milliseconds);
+		potionmpRegTask = ThreadPoolManager.getInstance().scheduleEffectAtFixedRate(new PotionMpHealing(activeChar), 1000, milliseconds);
 		
 		if (Config.DEBUG)
 		{
@@ -205,12 +185,12 @@ public class L2Potion extends L2Object
 	
 	public void stopPotionMpRegeneration()
 	{
-		if (_potionmpRegTask != null)
+		if (potionmpRegTask != null)
 		{
-			_potionmpRegTask.cancel(false);
+			potionmpRegTask.cancel(false);
 		}
 		
-		_potionmpRegTask = null;
+		potionmpRegTask = null;
 		
 		if (Config.DEBUG)
 		{
@@ -220,7 +200,7 @@ public class L2Potion extends L2Object
 	
 	public void setCurrentMpPotion2()
 	{
-		if (_duration == 0)
+		if (duration == 0)
 		{
 			stopPotionMpRegeneration();
 		}
@@ -229,8 +209,8 @@ public class L2Potion extends L2Object
 	
 	public void setCurrentMpPotion1(final L2Character activeChar, final int item)
 	{
-		_potion = item;
-		// _target = activeChar;
+		potion = item;
+		// target = activeChar;
 		//
 		// switch(_potion)
 		// {

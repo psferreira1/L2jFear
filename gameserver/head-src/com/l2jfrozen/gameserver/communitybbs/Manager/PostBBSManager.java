@@ -1,33 +1,11 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.communitybbs.Manager;
 
 import java.text.DateFormat;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.StringTokenizer;
-
-import javolution.text.TextBuilder;
-import javolution.util.FastMap;
 
 import com.l2jfrozen.gameserver.communitybbs.BB.Forum;
 import com.l2jfrozen.gameserver.communitybbs.BB.Post;
@@ -36,34 +14,36 @@ import com.l2jfrozen.gameserver.communitybbs.BB.Topic;
 import com.l2jfrozen.gameserver.model.actor.instance.L2PcInstance;
 import com.l2jfrozen.gameserver.network.serverpackets.ShowBoard;
 
+import javolution.text.TextBuilder;
+
 public class PostBBSManager extends BaseBBSManager
 {
-	private final Map<Topic, Post> _postByTopic;
-	private static PostBBSManager _instance;
+	private final Map<Topic, Post> postByTopic;
+	private static PostBBSManager instance;
 	
 	public static PostBBSManager getInstance()
 	{
-		if (_instance == null)
+		if (instance == null)
 		{
-			_instance = new PostBBSManager();
+			instance = new PostBBSManager();
 		}
-		return _instance;
+		return instance;
 	}
 	
 	public PostBBSManager()
 	{
-		_postByTopic = new FastMap<>();
+		postByTopic = new HashMap<>();
 	}
 	
 	public Post getGPosttByTopic(final Topic t)
 	{
 		Post post = null;
-		post = _postByTopic.get(t);
+		post = postByTopic.get(t);
 		
 		if (post == null)
 		{
 			post = load(t);
-			_postByTopic.put(t, post);
+			postByTopic.put(t, post);
 		}
 		return post;
 	}
@@ -73,19 +53,19 @@ public class PostBBSManager extends BaseBBSManager
 	 */
 	public void delPostByTopic(final Topic t)
 	{
-		_postByTopic.remove(t);
+		postByTopic.remove(t);
 	}
 	
 	public void addPostByTopic(final Post p, final Topic t)
 	{
-		if (_postByTopic.get(t) == null)
+		if (postByTopic.get(t) == null)
 		{
-			_postByTopic.put(t, p);
+			postByTopic.put(t, p);
 		}
 	}
 	
 	/**
-	 * @param t
+	 * @param  t
 	 * @return
 	 */
 	private Post load(final Topic t)

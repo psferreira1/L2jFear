@@ -1,23 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.network.serverpackets;
 
 import java.util.List;
@@ -34,46 +14,45 @@ import com.l2jfrozen.gameserver.templates.L2Item;
  */
 public final class BuyList extends L2GameServerPacket
 {
-	private static final String _S__1D_BUYLIST = "[S] 11 BuyList";
-	private final int _listId;
-	private final L2ItemInstance[] _list;
-	private final int _money;
-	private double _taxRate = 0;
+	private final int listId;
+	private final L2ItemInstance[] buyList;
+	private final int money;
+	private double taxRate = 0;
 	
 	public BuyList(final L2TradeList list, final int currentMoney)
 	{
-		_listId = list.getListId();
+		listId = list.getListId();
 		final List<L2ItemInstance> lst = list.getItems();
-		_list = lst.toArray(new L2ItemInstance[lst.size()]);
-		_money = currentMoney;
+		buyList = lst.toArray(new L2ItemInstance[lst.size()]);
+		money = currentMoney;
 	}
 	
 	public BuyList(final L2TradeList list, final int currentMoney, final double taxRate)
 	{
-		_listId = list.getListId();
+		listId = list.getListId();
 		final List<L2ItemInstance> lst = list.getItems();
-		_list = lst.toArray(new L2ItemInstance[lst.size()]);
-		_money = currentMoney;
-		_taxRate = taxRate;
+		buyList = lst.toArray(new L2ItemInstance[lst.size()]);
+		money = currentMoney;
+		this.taxRate = taxRate;
 	}
 	
 	public BuyList(final List<L2ItemInstance> lst, final int listId, final int currentMoney)
 	{
-		_listId = listId;
-		_list = lst.toArray(new L2ItemInstance[lst.size()]);
-		_money = currentMoney;
+		this.listId = listId;
+		buyList = lst.toArray(new L2ItemInstance[lst.size()]);
+		money = currentMoney;
 	}
 	
 	@Override
 	protected final void writeImpl()
 	{
 		writeC(0x11);
-		writeD(_money); // current money
-		writeD(_listId);
+		writeD(money); // current money
+		writeD(listId);
 		
-		writeH(_list.length);
+		writeH(buyList.length);
 		
-		for (final L2ItemInstance item : _list)
+		for (final L2ItemInstance item : buyList)
 		{
 			if (item.getCount() > 0 || item.getCount() == -1)
 			{
@@ -108,23 +87,19 @@ public final class BuyList extends L2GameServerPacket
 				
 				if (item.getItemId() >= 3960 && item.getItemId() <= 4026)
 				{
-					writeD((int) (item.getPriceToSell() * Config.RATE_SIEGE_GUARDS_PRICE * (1 + _taxRate)));
+					writeD((int) (item.getPriceToSell() * Config.RATE_SIEGE_GUARDS_PRICE * (1 + taxRate)));
 				}
 				else
 				{
-					writeD((int) (item.getPriceToSell() * (1 + _taxRate)));
+					writeD((int) (item.getPriceToSell() * (1 + taxRate)));
 				}
 			}
 		}
 	}
 	
-	/*
-	 * (non-Javadoc)
-	 * @see com.l2jfrozen.gameserver.serverpackets.ServerBasePacket#getType()
-	 */
 	@Override
 	public String getType()
 	{
-		return _S__1D_BUYLIST;
+		return "[S] 11 BuyList";
 	}
 }

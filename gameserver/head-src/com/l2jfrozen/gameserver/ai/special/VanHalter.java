@@ -1,34 +1,13 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.ai.special;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ScheduledFuture;
-
-import javolution.util.FastList;
-import javolution.util.FastMap;
 
 import org.apache.log4j.Logger;
 
@@ -61,7 +40,7 @@ import com.l2jfrozen.util.random.Rnd;
 /**
  * This class ... control for sequence of fight against "High Priestess van Halter".
  * @version $Revision: $ $Date: $
- * @author L2J_JP SANDMAN
+ * @author  L2J_JP SANDMAN
  **/
 
 public class VanHalter extends Quest implements Runnable
@@ -69,52 +48,52 @@ public class VanHalter extends Quest implements Runnable
 	private static final Logger LOGGER = Logger.getLogger(VanHalter.class);
 	
 	// List of intruders.
-	protected Map<Integer, List<L2PcInstance>> _bleedingPlayers = new FastMap<>();
+	protected Map<Integer, List<L2PcInstance>> bleedingPlayers = new HashMap<>();
 	
 	// Spawn data of monsters.
-	protected Map<Integer, L2Spawn> _monsterSpawn = new FastMap<>();
-	protected List<L2Spawn> _royalGuardSpawn = new FastList<>();
-	protected List<L2Spawn> _royalGuardCaptainSpawn = new FastList<>();
-	protected List<L2Spawn> _royalGuardHelperSpawn = new FastList<>();
-	protected List<L2Spawn> _triolRevelationSpawn = new FastList<>();
-	protected List<L2Spawn> _triolRevelationAlive = new FastList<>();
-	protected List<L2Spawn> _guardOfAltarSpawn = new FastList<>();
-	protected Map<Integer, L2Spawn> _cameraMarkerSpawn = new FastMap<>();
-	protected L2Spawn _ritualOfferingSpawn = null;
-	protected L2Spawn _ritualSacrificeSpawn = null;
-	protected L2Spawn _vanHalterSpawn = null;
+	protected Map<Integer, L2Spawn> monsterSpawn = new HashMap<>();
+	protected List<L2Spawn> royalGuardSpawn = new ArrayList<>();
+	protected List<L2Spawn> royalGuardCaptainSpawn = new ArrayList<>();
+	protected List<L2Spawn> royalGuardHelperSpawn = new ArrayList<>();
+	protected List<L2Spawn> triolRevelationSpawn = new ArrayList<>();
+	protected List<L2Spawn> triolRevelationAlive = new ArrayList<>();
+	protected List<L2Spawn> guardOfAltarSpawn = new ArrayList<>();
+	protected Map<Integer, L2Spawn> cameraMarkerSpawn = new HashMap<>();
+	protected L2Spawn ritualOfferingSpawn = null;
+	protected L2Spawn ritualSacrificeSpawn = null;
+	protected L2Spawn vanHalterSpawn = null;
 	
 	// Instance of monsters.
-	protected List<L2NpcInstance> _monsters = new FastList<>();
-	protected List<L2NpcInstance> _royalGuard = new FastList<>();
-	protected List<L2NpcInstance> _royalGuardCaptain = new FastList<>();
-	protected List<L2NpcInstance> _royalGuardHepler = new FastList<>();
-	protected List<L2NpcInstance> _triolRevelation = new FastList<>();
-	protected List<L2NpcInstance> _guardOfAltar = new FastList<>();
-	protected Map<Integer, L2NpcInstance> _cameraMarker = new FastMap<>();
-	protected List<L2DoorInstance> _doorOfAltar = new FastList<>();
-	protected List<L2DoorInstance> _doorOfSacrifice = new FastList<>();
-	protected L2NpcInstance _ritualOffering = null;
-	protected L2NpcInstance _ritualSacrifice = null;
-	protected L2RaidBossInstance _vanHalter = null;
+	protected List<L2NpcInstance> monsters = new ArrayList<>();
+	protected List<L2NpcInstance> royalGuard = new ArrayList<>();
+	protected List<L2NpcInstance> royalGuardCaptain = new ArrayList<>();
+	protected List<L2NpcInstance> royalGuardHepler = new ArrayList<>();
+	protected List<L2NpcInstance> triolRevelation = new ArrayList<>();
+	protected List<L2NpcInstance> guardOfAltar = new ArrayList<>();
+	protected Map<Integer, L2NpcInstance> cameraMarker = new HashMap<>();
+	protected List<L2DoorInstance> doorOfAltar = new ArrayList<>();
+	protected List<L2DoorInstance> doorOfSacrifice = new ArrayList<>();
+	protected L2NpcInstance ritualOffering = null;
+	protected L2NpcInstance ritualSacrifice = null;
+	protected L2RaidBossInstance vanHalter = null;
 	
 	// Task
-	protected ScheduledFuture<?> _movieTask = null;
-	protected ScheduledFuture<?> _closeDoorOfAltarTask = null;
-	protected ScheduledFuture<?> _openDoorOfAltarTask = null;
-	protected ScheduledFuture<?> _lockUpDoorOfAltarTask = null;
-	protected ScheduledFuture<?> _callRoyalGuardHelperTask = null;
-	protected ScheduledFuture<?> _timeUpTask = null;
-	protected ScheduledFuture<?> _intervalTask = null;
-	protected ScheduledFuture<?> _halterEscapeTask = null;
-	protected ScheduledFuture<?> _setBleedTask = null;
+	protected ScheduledFuture<?> movieTask = null;
+	protected ScheduledFuture<?> closeDoorOfAltarTask = null;
+	protected ScheduledFuture<?> openDoorOfAltarTask = null;
+	protected ScheduledFuture<?> lockUpDoorOfAltarTask = null;
+	protected ScheduledFuture<?> callRoyalGuardHelperTask = null;
+	protected ScheduledFuture<?> timeUpTask = null;
+	protected ScheduledFuture<?> intervalTask = null;
+	protected ScheduledFuture<?> halterEscapeTask = null;
+	protected ScheduledFuture<?> setBleedTask = null;
 	
 	// State of High Priestess van Halter
-	boolean _isLocked = false;
-	boolean _isHalterSpawned = false;
-	boolean _isSacrificeSpawned = false;
-	boolean _isCaptainSpawned = false;
-	boolean _isHelperCalled = false;
+	boolean isLocked = false;
+	boolean isHalterSpawned = false;
+	boolean isSacrificeSpawned = false;
+	boolean isCaptainSpawned = false;
+	boolean isHelperCalled = false;
 	
 	// VanHalter Status Tracking :
 	private static final byte INTERVAL = 0;
@@ -149,17 +128,17 @@ public class VanHalter extends Quest implements Runnable
 		
 		// GrandBossManager.getInstance().addBoss(29062);
 		// Clear flag.
-		_isLocked = false;
-		_isCaptainSpawned = false;
-		_isHelperCalled = false;
-		_isHalterSpawned = false;
+		isLocked = false;
+		isCaptainSpawned = false;
+		isHelperCalled = false;
+		isHalterSpawned = false;
 		
 		// Setting door state.
-		_doorOfAltar.add(DoorTable.getInstance().getDoor(19160014));
-		_doorOfAltar.add(DoorTable.getInstance().getDoor(19160015));
+		doorOfAltar.add(DoorTable.getInstance().getDoor(19160014));
+		doorOfAltar.add(DoorTable.getInstance().getDoor(19160015));
 		openDoorOfAltar(true);
-		_doorOfSacrifice.add(DoorTable.getInstance().getDoor(19160016));
-		_doorOfSacrifice.add(DoorTable.getInstance().getDoor(19160017));
+		doorOfSacrifice.add(DoorTable.getInstance().getDoor(19160016));
+		doorOfSacrifice.add(DoorTable.getInstance().getDoor(19160017));
 		closeDoorOfSacrifice();
 		
 		// Load spawn data of monsters.
@@ -179,7 +158,7 @@ public class VanHalter extends Quest implements Runnable
 		spawnRitualOffering();
 		
 		// Setting spawn data of Dummy camera marker.
-		_cameraMarkerSpawn.clear();
+		cameraMarkerSpawn.clear();
 		try
 		{
 			final L2NpcTemplate template1 = NpcTable.getInstance().getTemplate(13014); // Dummy npc
@@ -194,7 +173,7 @@ public class VanHalter extends Quest implements Runnable
 			tempSpawn.setAmount(1);
 			tempSpawn.setRespawnDelay(60000);
 			SpawnTable.getInstance().addNewSpawn(tempSpawn, false);
-			_cameraMarkerSpawn.put(1, tempSpawn);
+			cameraMarkerSpawn.put(1, tempSpawn);
 			
 			tempSpawn = new L2Spawn(template1);
 			tempSpawn.setLocx(-16397);
@@ -204,7 +183,7 @@ public class VanHalter extends Quest implements Runnable
 			tempSpawn.setAmount(1);
 			tempSpawn.setRespawnDelay(60000);
 			SpawnTable.getInstance().addNewSpawn(tempSpawn, false);
-			_cameraMarkerSpawn.put(2, tempSpawn);
+			cameraMarkerSpawn.put(2, tempSpawn);
 			
 			tempSpawn = new L2Spawn(template1);
 			tempSpawn.setLocx(-16397);
@@ -214,7 +193,7 @@ public class VanHalter extends Quest implements Runnable
 			tempSpawn.setAmount(1);
 			tempSpawn.setRespawnDelay(60000);
 			SpawnTable.getInstance().addNewSpawn(tempSpawn, false);
-			_cameraMarkerSpawn.put(3, tempSpawn);
+			cameraMarkerSpawn.put(3, tempSpawn);
 			
 			tempSpawn = new L2Spawn(template1);
 			tempSpawn.setLocx(-16397);
@@ -224,7 +203,7 @@ public class VanHalter extends Quest implements Runnable
 			tempSpawn.setAmount(1);
 			tempSpawn.setRespawnDelay(60000);
 			SpawnTable.getInstance().addNewSpawn(tempSpawn, false);
-			_cameraMarkerSpawn.put(4, tempSpawn);
+			cameraMarkerSpawn.put(4, tempSpawn);
 			
 			tempSpawn = new L2Spawn(template1);
 			tempSpawn.setLocx(-16397);
@@ -234,29 +213,31 @@ public class VanHalter extends Quest implements Runnable
 			tempSpawn.setAmount(1);
 			tempSpawn.setRespawnDelay(60000);
 			SpawnTable.getInstance().addNewSpawn(tempSpawn, false);
-			_cameraMarkerSpawn.put(5, tempSpawn);
+			cameraMarkerSpawn.put(5, tempSpawn);
 		}
 		catch (final Exception e)
 		{
 			if (Config.ENABLE_ALL_EXCEPTIONS)
+			{
 				e.printStackTrace();
+			}
 			
 			LOGGER.warn("VanHalterManager : " + e.getMessage() + " :" + e);
 		}
 		
 		// Set time up.
-		if (_timeUpTask != null)
+		if (timeUpTask != null)
 		{
-			_timeUpTask.cancel(false);
+			timeUpTask.cancel(false);
 		}
-		_timeUpTask = ThreadPoolManager.getInstance().scheduleGeneral(new TimeUp(), Config.HPH_ACTIVITYTIMEOFHALTER);
+		timeUpTask = ThreadPoolManager.getInstance().scheduleGeneral(new TimeUp(), Config.HPH_ACTIVITYTIMEOFHALTER);
 		
 		// Set bleeding to palyers.
-		if (_setBleedTask != null)
+		if (setBleedTask != null)
 		{
-			_setBleedTask.cancel(false);
+			setBleedTask.cancel(false);
 		}
-		_setBleedTask = ThreadPoolManager.getInstance().scheduleGeneral(new Bleeding(), 2000);
+		setBleedTask = ThreadPoolManager.getInstance().scheduleGeneral(new Bleeding(), 2000);
 		
 		final Integer status = GrandBossManager.getInstance().getBossStatus(29062);
 		if (status == INTERVAL)
@@ -305,13 +286,13 @@ public class VanHalter extends Quest implements Runnable
 	// Load Royal Guard.
 	protected void loadRoyalGuard()
 	{
-		_royalGuardSpawn.clear();
+		royalGuardSpawn.clear();
 		
 		Connection con = null;
 		
 		try
 		{
-			con = L2DatabaseFactory.getInstance().getConnection(false);
+			con = L2DatabaseFactory.getInstance().getConnection();
 			final PreparedStatement statement = con.prepareStatement("SELECT id, count, npc_templateid, locx, locy, locz, heading, respawn_delay FROM vanhalter_spawnlist Where npc_templateid between ? and ? ORDER BY id");
 			statement.setInt(1, 22175);
 			statement.setInt(2, 22176);
@@ -333,7 +314,7 @@ public class VanHalter extends Quest implements Runnable
 					spawnDat.setHeading(rset.getInt("heading"));
 					spawnDat.setRespawnDelay(rset.getInt("respawn_delay"));
 					SpawnTable.getInstance().addNewSpawn(spawnDat, false);
-					_royalGuardSpawn.add(spawnDat);
+					royalGuardSpawn.add(spawnDat);
 				}
 				else
 				{
@@ -345,13 +326,15 @@ public class VanHalter extends Quest implements Runnable
 			DatabaseUtils.close(statement);
 			if (Config.DEBUG)
 			{
-				LOGGER.info("VanHalterManager.loadRoyalGuard: Loaded " + _royalGuardSpawn.size() + " Royal Guard spawn locations.");
+				LOGGER.info("VanHalterManager.loadRoyalGuard: Loaded " + royalGuardSpawn.size() + " Royal Guard spawn locations.");
 			}
 		}
 		catch (final Exception e)
 		{
 			if (Config.ENABLE_ALL_EXCEPTIONS)
+			{
 				e.printStackTrace();
+			}
 			
 			// Problem with initializing spawn, go to next one
 			LOGGER.warn("VanHalterManager.loadRoyalGuard: Spawn could not be initialized: " + e);
@@ -364,39 +347,39 @@ public class VanHalter extends Quest implements Runnable
 	
 	protected void spawnRoyalGuard()
 	{
-		if (!_royalGuard.isEmpty())
+		if (!royalGuard.isEmpty())
 		{
 			deleteRoyalGuard();
 		}
 		
-		for (final L2Spawn rgs : _royalGuardSpawn)
+		for (final L2Spawn rgs : royalGuardSpawn)
 		{
 			rgs.startRespawn();
-			_royalGuard.add(rgs.doSpawn());
+			royalGuard.add(rgs.doSpawn());
 		}
 	}
 	
 	protected void deleteRoyalGuard()
 	{
-		for (final L2NpcInstance rg : _royalGuard)
+		for (final L2NpcInstance rg : royalGuard)
 		{
 			rg.getSpawn().stopRespawn();
 			rg.deleteMe();
 		}
 		
-		_royalGuard.clear();
+		royalGuard.clear();
 	}
 	
 	// Load Triol's Revelation.
 	protected void loadTriolRevelation()
 	{
-		_triolRevelationSpawn.clear();
+		triolRevelationSpawn.clear();
 		
 		Connection con = null;
 		
 		try
 		{
-			con = L2DatabaseFactory.getInstance().getConnection(false);
+			con = L2DatabaseFactory.getInstance().getConnection();
 			final PreparedStatement statement = con.prepareStatement("SELECT id, count, npc_templateid, locx, locy, locz, heading, respawn_delay FROM vanhalter_spawnlist Where npc_templateid between ? and ? ORDER BY id");
 			statement.setInt(1, 32058);
 			statement.setInt(2, 32068);
@@ -418,7 +401,7 @@ public class VanHalter extends Quest implements Runnable
 					spawnDat.setHeading(rset.getInt("heading"));
 					spawnDat.setRespawnDelay(rset.getInt("respawn_delay"));
 					SpawnTable.getInstance().addNewSpawn(spawnDat, false);
-					_triolRevelationSpawn.add(spawnDat);
+					triolRevelationSpawn.add(spawnDat);
 				}
 				else
 				{
@@ -430,14 +413,16 @@ public class VanHalter extends Quest implements Runnable
 			DatabaseUtils.close(statement);
 			if (Config.DEBUG)
 			{
-				LOGGER.info("VanHalterManager.loadTriolRevelation: Loaded " + _triolRevelationSpawn.size() + " Triol's Revelation spawn locations.");
+				LOGGER.info("VanHalterManager.loadTriolRevelation: Loaded " + triolRevelationSpawn.size() + " Triol's Revelation spawn locations.");
 			}
 		}
 		catch (final Exception e)
 		{
 			// Problem with initializing spawn, go to next one
 			if (Config.ENABLE_ALL_EXCEPTIONS)
+			{
 				e.printStackTrace();
+			}
 			
 			LOGGER.warn("VanHalterManager.loadTriolRevelation: Spawn could not be initialized: " + e);
 		}
@@ -449,43 +434,43 @@ public class VanHalter extends Quest implements Runnable
 	
 	protected void spawnTriolRevelation()
 	{
-		if (!_triolRevelation.isEmpty())
+		if (!triolRevelation.isEmpty())
 		{
 			deleteTriolRevelation();
 		}
 		
-		for (final L2Spawn trs : _triolRevelationSpawn)
+		for (final L2Spawn trs : triolRevelationSpawn)
 		{
 			trs.startRespawn();
-			_triolRevelation.add(trs.doSpawn());
+			triolRevelation.add(trs.doSpawn());
 			if (trs.getNpcid() != 32067 && trs.getNpcid() != 32068)
 			{
-				_triolRevelationAlive.add(trs);
+				triolRevelationAlive.add(trs);
 			}
 		}
 	}
 	
 	protected void deleteTriolRevelation()
 	{
-		for (final L2NpcInstance tr : _triolRevelation)
+		for (final L2NpcInstance tr : triolRevelation)
 		{
 			tr.getSpawn().stopRespawn();
 			tr.deleteMe();
 		}
-		_triolRevelation.clear();
-		_bleedingPlayers.clear();
+		triolRevelation.clear();
+		bleedingPlayers.clear();
 	}
 	
 	// Load Royal Guard Captain.
 	protected void loadRoyalGuardCaptain()
 	{
-		_royalGuardCaptainSpawn.clear();
+		royalGuardCaptainSpawn.clear();
 		
 		Connection con = null;
 		
 		try
 		{
-			con = L2DatabaseFactory.getInstance().getConnection(false);
+			con = L2DatabaseFactory.getInstance().getConnection();
 			final PreparedStatement statement = con.prepareStatement("SELECT id, count, npc_templateid, locx, locy, locz, heading, respawn_delay FROM vanhalter_spawnlist Where npc_templateid = ? ORDER BY id");
 			statement.setInt(1, 22188);
 			final ResultSet rset = statement.executeQuery();
@@ -506,7 +491,7 @@ public class VanHalter extends Quest implements Runnable
 					spawnDat.setHeading(rset.getInt("heading"));
 					spawnDat.setRespawnDelay(rset.getInt("respawn_delay"));
 					SpawnTable.getInstance().addNewSpawn(spawnDat, false);
-					_royalGuardCaptainSpawn.add(spawnDat);
+					royalGuardCaptainSpawn.add(spawnDat);
 				}
 				else
 				{
@@ -518,14 +503,16 @@ public class VanHalter extends Quest implements Runnable
 			DatabaseUtils.close(statement);
 			if (Config.DEBUG)
 			{
-				LOGGER.info("VanHalterManager.loadRoyalGuardCaptain: Loaded " + _royalGuardCaptainSpawn.size() + " Royal Guard Captain spawn locations.");
+				LOGGER.info("VanHalterManager.loadRoyalGuardCaptain: Loaded " + royalGuardCaptainSpawn.size() + " Royal Guard Captain spawn locations.");
 			}
 		}
 		catch (final Exception e)
 		{
 			// Problem with initializing spawn, go to next one
 			if (Config.ENABLE_ALL_EXCEPTIONS)
+			{
 				e.printStackTrace();
+			}
 			
 			LOGGER.warn("VanHalterManager.loadRoyalGuardCaptain: Spawn could not be initialized: " + e);
 		}
@@ -537,40 +524,40 @@ public class VanHalter extends Quest implements Runnable
 	
 	protected void spawnRoyalGuardCaptain()
 	{
-		if (!_royalGuardCaptain.isEmpty())
+		if (!royalGuardCaptain.isEmpty())
 		{
 			deleteRoyalGuardCaptain();
 		}
 		
-		for (final L2Spawn trs : _royalGuardCaptainSpawn)
+		for (final L2Spawn trs : royalGuardCaptainSpawn)
 		{
 			trs.startRespawn();
-			_royalGuardCaptain.add(trs.doSpawn());
+			royalGuardCaptain.add(trs.doSpawn());
 		}
-		_isCaptainSpawned = true;
+		isCaptainSpawned = true;
 	}
 	
 	protected void deleteRoyalGuardCaptain()
 	{
-		for (final L2NpcInstance tr : _royalGuardCaptain)
+		for (final L2NpcInstance tr : royalGuardCaptain)
 		{
 			tr.getSpawn().stopRespawn();
 			tr.deleteMe();
 		}
 		
-		_royalGuardCaptain.clear();
+		royalGuardCaptain.clear();
 	}
 	
 	// Load Royal Guard Helper.
 	protected void loadRoyalGuardHelper()
 	{
-		_royalGuardHelperSpawn.clear();
+		royalGuardHelperSpawn.clear();
 		
 		Connection con = null;
 		
 		try
 		{
-			con = L2DatabaseFactory.getInstance().getConnection(false);
+			con = L2DatabaseFactory.getInstance().getConnection();
 			final PreparedStatement statement = con.prepareStatement("SELECT id, count, npc_templateid, locx, locy, locz, heading, respawn_delay FROM vanhalter_spawnlist Where npc_templateid = ? ORDER BY id");
 			statement.setInt(1, 22191);
 			final ResultSet rset = statement.executeQuery();
@@ -591,7 +578,7 @@ public class VanHalter extends Quest implements Runnable
 					spawnDat.setHeading(rset.getInt("heading"));
 					spawnDat.setRespawnDelay(rset.getInt("respawn_delay"));
 					SpawnTable.getInstance().addNewSpawn(spawnDat, false);
-					_royalGuardHelperSpawn.add(spawnDat);
+					royalGuardHelperSpawn.add(spawnDat);
 				}
 				else
 				{
@@ -603,14 +590,16 @@ public class VanHalter extends Quest implements Runnable
 			DatabaseUtils.close(statement);
 			if (Config.DEBUG)
 			{
-				LOGGER.info("VanHalterManager.loadRoyalGuardHelper: Loaded " + _royalGuardHelperSpawn.size() + " Royal Guard Helper spawn locations.");
+				LOGGER.info("VanHalterManager.loadRoyalGuardHelper: Loaded " + royalGuardHelperSpawn.size() + " Royal Guard Helper spawn locations.");
 			}
 		}
 		catch (final Exception e)
 		{
 			// Problem with initializing spawn, go to next one
 			if (Config.ENABLE_ALL_EXCEPTIONS)
+			{
 				e.printStackTrace();
+			}
 			
 			LOGGER.warn("VanHalterManager.loadRoyalGuardHelper: Spawn could not be initialized: " + e);
 		}
@@ -622,33 +611,33 @@ public class VanHalter extends Quest implements Runnable
 	
 	protected void spawnRoyalGuardHepler()
 	{
-		for (final L2Spawn trs : _royalGuardHelperSpawn)
+		for (final L2Spawn trs : royalGuardHelperSpawn)
 		{
 			trs.startRespawn();
-			_royalGuardHepler.add(trs.doSpawn());
+			royalGuardHepler.add(trs.doSpawn());
 		}
 	}
 	
 	protected void deleteRoyalGuardHepler()
 	{
-		for (final L2NpcInstance tr : _royalGuardHepler)
+		for (final L2NpcInstance tr : royalGuardHepler)
 		{
 			tr.getSpawn().stopRespawn();
 			tr.deleteMe();
 		}
-		_royalGuardHepler.clear();
+		royalGuardHepler.clear();
 	}
 	
 	// Load Guard Of Altar
 	protected void loadGuardOfAltar()
 	{
-		_guardOfAltarSpawn.clear();
+		guardOfAltarSpawn.clear();
 		
 		Connection con = null;
 		
 		try
 		{
-			con = L2DatabaseFactory.getInstance().getConnection(false);
+			con = L2DatabaseFactory.getInstance().getConnection();
 			final PreparedStatement statement = con.prepareStatement("SELECT id, count, npc_templateid, locx, locy, locz, heading, respawn_delay FROM vanhalter_spawnlist Where npc_templateid = ? ORDER BY id");
 			statement.setInt(1, 32051);
 			final ResultSet rset = statement.executeQuery();
@@ -669,7 +658,7 @@ public class VanHalter extends Quest implements Runnable
 					spawnDat.setHeading(rset.getInt("heading"));
 					spawnDat.setRespawnDelay(rset.getInt("respawn_delay"));
 					SpawnTable.getInstance().addNewSpawn(spawnDat, false);
-					_guardOfAltarSpawn.add(spawnDat);
+					guardOfAltarSpawn.add(spawnDat);
 				}
 				else
 				{
@@ -681,14 +670,16 @@ public class VanHalter extends Quest implements Runnable
 			DatabaseUtils.close(statement);
 			if (Config.DEBUG)
 			{
-				LOGGER.info("VanHalterManager.loadGuardOfAltar: Loaded " + _guardOfAltarSpawn.size() + " Guard Of Altar spawn locations.");
+				LOGGER.info("VanHalterManager.loadGuardOfAltar: Loaded " + guardOfAltarSpawn.size() + " Guard Of Altar spawn locations.");
 			}
 		}
 		catch (final Exception e)
 		{
 			// Problem with initializing spawn, go to next one
 			if (Config.ENABLE_ALL_EXCEPTIONS)
+			{
 				e.printStackTrace();
+			}
 			
 			LOGGER.warn("VanHalterManager.loadGuardOfAltar: Spawn could not be initialized: " + e);
 		}
@@ -700,39 +691,39 @@ public class VanHalter extends Quest implements Runnable
 	
 	protected void spawnGuardOfAltar()
 	{
-		if (!_guardOfAltar.isEmpty())
+		if (!guardOfAltar.isEmpty())
 		{
 			deleteGuardOfAltar();
 		}
 		
-		for (final L2Spawn trs : _guardOfAltarSpawn)
+		for (final L2Spawn trs : guardOfAltarSpawn)
 		{
 			trs.startRespawn();
-			_guardOfAltar.add(trs.doSpawn());
+			guardOfAltar.add(trs.doSpawn());
 		}
 	}
 	
 	protected void deleteGuardOfAltar()
 	{
-		for (final L2NpcInstance tr : _guardOfAltar)
+		for (final L2NpcInstance tr : guardOfAltar)
 		{
 			tr.getSpawn().stopRespawn();
 			tr.deleteMe();
 		}
 		
-		_guardOfAltar.clear();
+		guardOfAltar.clear();
 	}
 	
 	// Load High Priestess van Halter.
 	protected void loadVanHalter()
 	{
-		_vanHalterSpawn = null;
+		vanHalterSpawn = null;
 		
 		Connection con = null;
 		
 		try
 		{
-			con = L2DatabaseFactory.getInstance().getConnection(false);
+			con = L2DatabaseFactory.getInstance().getConnection();
 			final PreparedStatement statement = con.prepareStatement("SELECT id, count, npc_templateid, locx, locy, locz, heading, respawn_delay FROM vanhalter_spawnlist Where npc_templateid = ? ORDER BY id");
 			statement.setInt(1, 29062);
 			final ResultSet rset = statement.executeQuery();
@@ -753,7 +744,7 @@ public class VanHalter extends Quest implements Runnable
 					spawnDat.setHeading(rset.getInt("heading"));
 					spawnDat.setRespawnDelay(rset.getInt("respawn_delay"));
 					SpawnTable.getInstance().addNewSpawn(spawnDat, false);
-					_vanHalterSpawn = spawnDat;
+					vanHalterSpawn = spawnDat;
 				}
 				else
 				{
@@ -772,7 +763,9 @@ public class VanHalter extends Quest implements Runnable
 		{
 			// Problem with initializing spawn, go to next one
 			if (Config.ENABLE_ALL_EXCEPTIONS)
+			{
 				e.printStackTrace();
+			}
 			
 			LOGGER.warn("VanHalterManager.loadVanHalter: Spawn could not be initialized: " + e);
 		}
@@ -784,30 +777,30 @@ public class VanHalter extends Quest implements Runnable
 	
 	protected void spawnVanHalter()
 	{
-		_vanHalter = (L2RaidBossInstance) _vanHalterSpawn.doSpawn();
-		// _vanHalter.setIsImmobilized(true);
-		_vanHalter.setIsInvul(true);
-		_isHalterSpawned = true;
+		vanHalter = (L2RaidBossInstance) vanHalterSpawn.doSpawn();
+		// vanHalter.setIsImmobilized(true);
+		vanHalter.setIsInvul(true);
+		isHalterSpawned = true;
 	}
 	
 	protected void deleteVanHalter()
 	{
-		// _vanHalter.setIsImmobilized(false);
-		_vanHalter.setIsInvul(false);
-		_vanHalter.getSpawn().stopRespawn();
-		_vanHalter.deleteMe();
+		// vanHalter.setIsImmobilized(false);
+		vanHalter.setIsInvul(false);
+		vanHalter.getSpawn().stopRespawn();
+		vanHalter.deleteMe();
 	}
 	
 	// Load Ritual Offering.
 	protected void loadRitualOffering()
 	{
-		_ritualOfferingSpawn = null;
+		ritualOfferingSpawn = null;
 		
 		Connection con = null;
 		
 		try
 		{
-			con = L2DatabaseFactory.getInstance().getConnection(false);
+			con = L2DatabaseFactory.getInstance().getConnection();
 			final PreparedStatement statement = con.prepareStatement("SELECT id, count, npc_templateid, locx, locy, locz, heading, respawn_delay FROM vanhalter_spawnlist Where npc_templateid = ? ORDER BY id");
 			statement.setInt(1, 32038);
 			final ResultSet rset = statement.executeQuery();
@@ -828,7 +821,7 @@ public class VanHalter extends Quest implements Runnable
 					spawnDat.setHeading(rset.getInt("heading"));
 					spawnDat.setRespawnDelay(rset.getInt("respawn_delay"));
 					SpawnTable.getInstance().addNewSpawn(spawnDat, false);
-					_ritualOfferingSpawn = spawnDat;
+					ritualOfferingSpawn = spawnDat;
 				}
 				else
 				{
@@ -847,7 +840,9 @@ public class VanHalter extends Quest implements Runnable
 		{
 			// Problem with initializing spawn, go to next one
 			if (Config.ENABLE_ALL_EXCEPTIONS)
+			{
 				e.printStackTrace();
+			}
 			
 			LOGGER.warn("VanHalterManager.loadRitualOffering: Spawn could not be initialized: " + e);
 		}
@@ -859,31 +854,31 @@ public class VanHalter extends Quest implements Runnable
 	
 	protected void spawnRitualOffering()
 	{
-		_ritualOffering = _ritualOfferingSpawn.doSpawn();
-		// _ritualOffering.setIsImmobilized(true);
-		_ritualOffering.setIsInvul(true);
-		_ritualOffering.setIsParalyzed(true);
+		ritualOffering = ritualOfferingSpawn.doSpawn();
+		// ritualOffering.setIsImmobilized(true);
+		ritualOffering.setIsInvul(true);
+		ritualOffering.setIsParalyzed(true);
 	}
 	
 	protected void deleteRitualOffering()
 	{
-		// _ritualOffering.setIsImmobilized(false);
-		_ritualOffering.setIsInvul(false);
-		_ritualOffering.setIsParalyzed(false);
-		_ritualOffering.getSpawn().stopRespawn();
-		_ritualOffering.deleteMe();
+		// ritualOffering.setIsImmobilized(false);
+		ritualOffering.setIsInvul(false);
+		ritualOffering.setIsParalyzed(false);
+		ritualOffering.getSpawn().stopRespawn();
+		ritualOffering.deleteMe();
 	}
 	
 	// Load Ritual Sacrifice.
 	protected void loadRitualSacrifice()
 	{
-		_ritualSacrificeSpawn = null;
+		ritualSacrificeSpawn = null;
 		
 		Connection con = null;
 		
 		try
 		{
-			con = L2DatabaseFactory.getInstance().getConnection(false);
+			con = L2DatabaseFactory.getInstance().getConnection();
 			final PreparedStatement statement = con.prepareStatement("SELECT id, count, npc_templateid, locx, locy, locz, heading, respawn_delay FROM vanhalter_spawnlist Where npc_templateid = ? ORDER BY id");
 			statement.setInt(1, 22195);
 			final ResultSet rset = statement.executeQuery();
@@ -904,7 +899,7 @@ public class VanHalter extends Quest implements Runnable
 					spawnDat.setHeading(rset.getInt("heading"));
 					spawnDat.setRespawnDelay(rset.getInt("respawn_delay"));
 					SpawnTable.getInstance().addNewSpawn(spawnDat, false);
-					_ritualSacrificeSpawn = spawnDat;
+					ritualSacrificeSpawn = spawnDat;
 				}
 				else
 				{
@@ -923,7 +918,9 @@ public class VanHalter extends Quest implements Runnable
 		{
 			// Problem with initializing spawn, go to next one
 			if (Config.ENABLE_ALL_EXCEPTIONS)
+			{
 				e.printStackTrace();
+			}
 			
 			LOGGER.warn("VanHalterManager.loadRitualSacrifice: Spawn could not be initialized: " + e);
 		}
@@ -935,43 +932,47 @@ public class VanHalter extends Quest implements Runnable
 	
 	protected void spawnRitualSacrifice()
 	{
-		_ritualSacrifice = _ritualSacrificeSpawn.doSpawn();
-		// _ritualSacrifice.setIsImmobilized(true);
-		_ritualSacrifice.setIsInvul(true);
-		_isSacrificeSpawned = true;
+		ritualSacrifice = ritualSacrificeSpawn.doSpawn();
+		// ritualSacrifice.setIsImmobilized(true);
+		ritualSacrifice.setIsInvul(true);
+		isSacrificeSpawned = true;
 	}
 	
 	protected void deleteRitualSacrifice()
 	{
-		if (!_isSacrificeSpawned)
+		if (!isSacrificeSpawned)
+		{
 			return;
+		}
 		
-		_ritualSacrifice.getSpawn().stopRespawn();
-		_ritualSacrifice.deleteMe();
-		_isSacrificeSpawned = false;
+		ritualSacrifice.getSpawn().stopRespawn();
+		ritualSacrifice.deleteMe();
+		isSacrificeSpawned = false;
 	}
 	
 	protected void spawnCameraMarker()
 	{
-		_cameraMarker.clear();
-		for (int i = 1; i <= _cameraMarkerSpawn.size(); i++)
+		cameraMarker.clear();
+		for (int i = 1; i <= cameraMarkerSpawn.size(); i++)
 		{
-			_cameraMarker.put(i, _cameraMarkerSpawn.get(i).doSpawn());
-			_cameraMarker.get(i).getSpawn().stopRespawn();
-			_cameraMarker.get(i).setIsImobilised(true);
+			cameraMarker.put(i, cameraMarkerSpawn.get(i).doSpawn());
+			cameraMarker.get(i).getSpawn().stopRespawn();
+			cameraMarker.get(i).setIsImobilised(true);
 		}
 	}
 	
 	protected void deleteCameraMarker()
 	{
-		if (_cameraMarker.isEmpty())
-			return;
-		
-		for (int i = 1; i <= _cameraMarker.size(); i++)
+		if (cameraMarker.isEmpty())
 		{
-			_cameraMarker.get(i).deleteMe();
+			return;
 		}
-		_cameraMarker.clear();
+		
+		for (int i = 1; i <= cameraMarker.size(); i++)
+		{
+			cameraMarker.get(i).deleteMe();
+		}
+		cameraMarker.clear();
 	}
 	
 	// Door control.
@@ -980,9 +981,9 @@ public class VanHalter extends Quest implements Runnable
 	 */
 	public void intruderDetection(final L2PcInstance intruder)
 	{
-		if (_lockUpDoorOfAltarTask == null && !_isLocked && _isCaptainSpawned)
+		if (lockUpDoorOfAltarTask == null && !isLocked && isCaptainSpawned)
 		{
-			_lockUpDoorOfAltarTask = ThreadPoolManager.getInstance().scheduleGeneral(new LockUpDoorOfAltar(), Config.HPH_TIMEOFLOCKUPDOOROFALTAR);
+			lockUpDoorOfAltarTask = ThreadPoolManager.getInstance().scheduleGeneral(new LockUpDoorOfAltar(), Config.HPH_TIMEOFLOCKUPDOOROFALTAR);
 		}
 	}
 	
@@ -992,14 +993,14 @@ public class VanHalter extends Quest implements Runnable
 		public void run()
 		{
 			closeDoorOfAltar(false);
-			_isLocked = true;
-			_lockUpDoorOfAltarTask = null;
+			isLocked = true;
+			lockUpDoorOfAltarTask = null;
 		}
 	}
 	
 	protected void openDoorOfAltar(final boolean loop)
 	{
-		for (final L2DoorInstance door : _doorOfAltar)
+		for (final L2DoorInstance door : doorOfAltar)
 		{
 			try
 			{
@@ -1008,7 +1009,9 @@ public class VanHalter extends Quest implements Runnable
 			catch (final Exception e)
 			{
 				if (Config.ENABLE_ALL_EXCEPTIONS)
+				{
 					e.printStackTrace();
+				}
 				
 				LOGGER.warn(e.getMessage() + " :" + e);
 			}
@@ -1016,22 +1019,22 @@ public class VanHalter extends Quest implements Runnable
 		
 		if (loop)
 		{
-			_isLocked = false;
+			isLocked = false;
 			
-			if (_closeDoorOfAltarTask != null)
+			if (closeDoorOfAltarTask != null)
 			{
-				_closeDoorOfAltarTask.cancel(false);
+				closeDoorOfAltarTask.cancel(false);
 			}
-			_closeDoorOfAltarTask = null;
-			_closeDoorOfAltarTask = ThreadPoolManager.getInstance().scheduleGeneral(new CloseDoorOfAltar(), Config.HPH_INTERVALOFDOOROFALTER);
+			closeDoorOfAltarTask = null;
+			closeDoorOfAltarTask = ThreadPoolManager.getInstance().scheduleGeneral(new CloseDoorOfAltar(), Config.HPH_INTERVALOFDOOROFALTER);
 		}
 		else
 		{
-			if (_closeDoorOfAltarTask != null)
+			if (closeDoorOfAltarTask != null)
 			{
-				_closeDoorOfAltarTask.cancel(false);
+				closeDoorOfAltarTask.cancel(false);
 			}
-			_closeDoorOfAltarTask = null;
+			closeDoorOfAltarTask = null;
 		}
 	}
 	
@@ -1046,27 +1049,27 @@ public class VanHalter extends Quest implements Runnable
 	
 	protected void closeDoorOfAltar(final boolean loop)
 	{
-		for (final L2DoorInstance door : _doorOfAltar)
+		for (final L2DoorInstance door : doorOfAltar)
 		{
 			door.closeMe();
 		}
 		
 		if (loop)
 		{
-			if (_openDoorOfAltarTask != null)
+			if (openDoorOfAltarTask != null)
 			{
-				_openDoorOfAltarTask.cancel(false);
+				openDoorOfAltarTask.cancel(false);
 			}
-			_openDoorOfAltarTask = null;
-			_openDoorOfAltarTask = ThreadPoolManager.getInstance().scheduleGeneral(new OpenDoorOfAltar(), Config.HPH_INTERVALOFDOOROFALTER);
+			openDoorOfAltarTask = null;
+			openDoorOfAltarTask = ThreadPoolManager.getInstance().scheduleGeneral(new OpenDoorOfAltar(), Config.HPH_INTERVALOFDOOROFALTER);
 		}
 		else
 		{
-			if (_openDoorOfAltarTask != null)
+			if (openDoorOfAltarTask != null)
 			{
-				_openDoorOfAltarTask.cancel(false);
+				openDoorOfAltarTask.cancel(false);
 			}
-			_openDoorOfAltarTask = null;
+			openDoorOfAltarTask = null;
 		}
 	}
 	
@@ -1081,7 +1084,7 @@ public class VanHalter extends Quest implements Runnable
 	
 	protected void openDoorOfSacrifice()
 	{
-		for (final L2DoorInstance door : _doorOfSacrifice)
+		for (final L2DoorInstance door : doorOfSacrifice)
 		{
 			try
 			{
@@ -1090,7 +1093,9 @@ public class VanHalter extends Quest implements Runnable
 			catch (final Exception e)
 			{
 				if (Config.ENABLE_ALL_EXCEPTIONS)
+				{
 					e.printStackTrace();
+				}
 				
 				LOGGER.warn(e.getMessage() + " :" + e);
 			}
@@ -1099,7 +1104,7 @@ public class VanHalter extends Quest implements Runnable
 	
 	protected void closeDoorOfSacrifice()
 	{
-		for (final L2DoorInstance door : _doorOfSacrifice)
+		for (final L2DoorInstance door : doorOfSacrifice)
 		{
 			try
 			{
@@ -1108,7 +1113,9 @@ public class VanHalter extends Quest implements Runnable
 			catch (final Exception e)
 			{
 				if (Config.ENABLE_ALL_EXCEPTIONS)
+				{
 					e.printStackTrace();
+				}
 				
 				LOGGER.warn(e.getMessage() + " :" + e);
 			}
@@ -1118,11 +1125,13 @@ public class VanHalter extends Quest implements Runnable
 	// event
 	public void checkTriolRevelationDestroy()
 	{
-		if (_isCaptainSpawned)
+		if (isCaptainSpawned)
+		{
 			return;
+		}
 		
 		boolean isTriolRevelationDestroyed = true;
-		for (final L2Spawn tra : _triolRevelationAlive)
+		for (final L2Spawn tra : triolRevelationAlive)
 		{
 			if (!tra.getLastSpawn().isDead())
 			{
@@ -1138,56 +1147,58 @@ public class VanHalter extends Quest implements Runnable
 	
 	public void checkRoyalGuardCaptainDestroy()
 	{
-		if (!_isHalterSpawned)
+		if (!isHalterSpawned)
+		{
 			return;
+		}
 		
 		deleteRoyalGuard();
 		deleteRoyalGuardCaptain();
 		spawnGuardOfAltar();
 		openDoorOfSacrifice();
 		
-		// _vanHalter.setIsImmobilized(true);
-		_vanHalter.setIsInvul(true);
+		// vanHalter.setIsImmobilized(true);
+		vanHalter.setIsInvul(true);
 		spawnCameraMarker();
 		
-		if (_timeUpTask != null)
+		if (timeUpTask != null)
 		{
-			_timeUpTask.cancel(false);
+			timeUpTask.cancel(false);
 		}
-		_timeUpTask = null;
+		timeUpTask = null;
 		
-		_movieTask = ThreadPoolManager.getInstance().scheduleGeneral(new Movie(1), Config.HPH_APPTIMEOFHALTER);
+		movieTask = ThreadPoolManager.getInstance().scheduleGeneral(new Movie(1), Config.HPH_APPTIMEOFHALTER);
 	}
 	
 	// Start fight against High Priestess van Halter.
 	protected void combatBeginning()
 	{
-		if (_timeUpTask != null)
+		if (timeUpTask != null)
 		{
-			_timeUpTask.cancel(false);
+			timeUpTask.cancel(false);
 		}
-		_timeUpTask = ThreadPoolManager.getInstance().scheduleGeneral(new TimeUp(), Config.HPH_FIGHTTIMEOFHALTER);
+		timeUpTask = ThreadPoolManager.getInstance().scheduleGeneral(new TimeUp(), Config.HPH_FIGHTTIMEOFHALTER);
 		
-		final Map<Integer, L2PcInstance> _targets = new FastMap<>();
+		final Map<Integer, L2PcInstance> targets = new HashMap<>();
 		int i = 0;
 		
-		for (final L2PcInstance pc : _vanHalter.getKnownList().getKnownPlayers().values())
+		for (final L2PcInstance pc : vanHalter.getKnownList().getKnownPlayers().values())
 		{
 			i++;
-			_targets.put(i, pc);
+			targets.put(i, pc);
 		}
 		
-		_vanHalter.reduceCurrentHp(1, _targets.get(Rnd.get(1, i)));
+		vanHalter.reduceCurrentHp(1, targets.get(Rnd.get(1, i)));
 	}
 	
 	// Call Royal Guard Helper and escape from player.
 	public void callRoyalGuardHelper()
 	{
-		if (!_isHelperCalled)
+		if (!isHelperCalled)
 		{
-			_isHelperCalled = true;
-			_halterEscapeTask = ThreadPoolManager.getInstance().scheduleGeneral(new HalterEscape(), 500);
-			_callRoyalGuardHelperTask = ThreadPoolManager.getInstance().scheduleGeneral(new CallRoyalGuardHelper(), 1000);
+			isHelperCalled = true;
+			halterEscapeTask = ThreadPoolManager.getInstance().scheduleGeneral(new HalterEscape(), 500);
+			callRoyalGuardHelperTask = ThreadPoolManager.getInstance().scheduleGeneral(new CallRoyalGuardHelper(), 1000);
 		}
 	}
 	
@@ -1198,21 +1209,21 @@ public class VanHalter extends Quest implements Runnable
 		{
 			spawnRoyalGuardHepler();
 			
-			if (_royalGuardHepler.size() <= Config.HPH_CALLROYALGUARDHELPERCOUNT && !_vanHalter.isDead())
+			if (royalGuardHepler.size() <= Config.HPH_CALLROYALGUARDHELPERCOUNT && !vanHalter.isDead())
 			{
-				if (_callRoyalGuardHelperTask != null)
+				if (callRoyalGuardHelperTask != null)
 				{
-					_callRoyalGuardHelperTask.cancel(false);
+					callRoyalGuardHelperTask.cancel(false);
 				}
-				_callRoyalGuardHelperTask = ThreadPoolManager.getInstance().scheduleGeneral(new CallRoyalGuardHelper(), Config.HPH_CALLROYALGUARDHELPERINTERVAL);
+				callRoyalGuardHelperTask = ThreadPoolManager.getInstance().scheduleGeneral(new CallRoyalGuardHelper(), Config.HPH_CALLROYALGUARDHELPERINTERVAL);
 			}
 			else
 			{
-				if (_callRoyalGuardHelperTask != null)
+				if (callRoyalGuardHelperTask != null)
 				{
-					_callRoyalGuardHelperTask.cancel(false);
+					callRoyalGuardHelperTask.cancel(false);
 				}
-				_callRoyalGuardHelperTask = null;
+				callRoyalGuardHelperTask = null;
 			}
 		}
 	}
@@ -1222,58 +1233,58 @@ public class VanHalter extends Quest implements Runnable
 		@Override
 		public void run()
 		{
-			if (_royalGuardHepler.size() <= Config.HPH_CALLROYALGUARDHELPERCOUNT && !_vanHalter.isDead())
+			if (royalGuardHepler.size() <= Config.HPH_CALLROYALGUARDHELPERCOUNT && !vanHalter.isDead())
 			{
-				if (_vanHalter.isAfraid())
+				if (vanHalter.isAfraid())
 				{
-					_vanHalter.stopEffects(L2Effect.EffectType.FEAR);
-					_vanHalter.setIsAfraid(false);
-					_vanHalter.updateAbnormalEffect();
+					vanHalter.stopEffects(L2Effect.EffectType.FEAR);
+					vanHalter.setIsAfraid(false);
+					vanHalter.updateAbnormalEffect();
 				}
 				else
 				{
-					_vanHalter.startFear();
-					if (_vanHalter.getZ() >= -10476)
+					vanHalter.startFear();
+					if (vanHalter.getZ() >= -10476)
 					{
 						final L2CharPosition pos = new L2CharPosition(-16397, -53308, -10448, 0);
-						if (_vanHalter.getX() == pos.x && _vanHalter.getY() == pos.y)
+						if (vanHalter.getX() == pos.x && vanHalter.getY() == pos.y)
 						{
-							_vanHalter.stopEffects(L2Effect.EffectType.FEAR);
-							_vanHalter.setIsAfraid(false);
-							_vanHalter.updateAbnormalEffect();
+							vanHalter.stopEffects(L2Effect.EffectType.FEAR);
+							vanHalter.setIsAfraid(false);
+							vanHalter.updateAbnormalEffect();
 						}
 						else
 						{
-							_vanHalter.getAI().setIntention(CtrlIntention.AI_INTENTION_MOVE_TO, pos);
+							vanHalter.getAI().setIntention(CtrlIntention.AI_INTENTION_MOVE_TO, pos);
 						}
 					}
-					else if (_vanHalter.getX() >= -16397)
+					else if (vanHalter.getX() >= -16397)
 					{
 						final L2CharPosition pos = new L2CharPosition(-15548, -54830, -10475, 0);
-						_vanHalter.getAI().setIntention(CtrlIntention.AI_INTENTION_MOVE_TO, pos);
+						vanHalter.getAI().setIntention(CtrlIntention.AI_INTENTION_MOVE_TO, pos);
 					}
 					else
 					{
 						final L2CharPosition pos = new L2CharPosition(-17248, -54830, -10475, 0);
-						_vanHalter.getAI().setIntention(CtrlIntention.AI_INTENTION_MOVE_TO, pos);
+						vanHalter.getAI().setIntention(CtrlIntention.AI_INTENTION_MOVE_TO, pos);
 					}
 				}
-				if (_halterEscapeTask != null)
+				if (halterEscapeTask != null)
 				{
-					_halterEscapeTask.cancel(false);
+					halterEscapeTask.cancel(false);
 				}
-				_halterEscapeTask = ThreadPoolManager.getInstance().scheduleGeneral(new HalterEscape(), 5000);
+				halterEscapeTask = ThreadPoolManager.getInstance().scheduleGeneral(new HalterEscape(), 5000);
 			}
 			else
 			{
-				_vanHalter.stopEffects(L2Effect.EffectType.FEAR);
-				_vanHalter.setIsAfraid(false);
-				_vanHalter.updateAbnormalEffect();
-				if (_halterEscapeTask != null)
+				vanHalter.stopEffects(L2Effect.EffectType.FEAR);
+				vanHalter.setIsAfraid(false);
+				vanHalter.updateAbnormalEffect();
+				if (halterEscapeTask != null)
 				{
-					_halterEscapeTask.cancel(false);
+					halterEscapeTask.cancel(false);
 				}
-				_halterEscapeTask = null;
+				halterEscapeTask = null;
 			}
 		}
 	}
@@ -1283,14 +1294,14 @@ public class VanHalter extends Quest implements Runnable
 	{
 		final L2Skill bleed = SkillTable.getInstance().getInfo(4615, 12);
 		
-		for (final L2NpcInstance tr : _triolRevelation)
+		for (final L2NpcInstance tr : triolRevelation)
 		{
 			if (!tr.getKnownList().getKnownPlayersInRadius(tr.getAggroRange()).iterator().hasNext() || tr.isDead())
 			{
 				continue;
 			}
 			
-			final List<L2PcInstance> bpc = new FastList<>();
+			final List<L2PcInstance> bpc = new ArrayList<>();
 			
 			for (final L2PcInstance pc : tr.getKnownList().getKnownPlayersInRadius(tr.getAggroRange()))
 			{
@@ -1302,23 +1313,27 @@ public class VanHalter extends Quest implements Runnable
 				
 				bpc.add(pc);
 			}
-			_bleedingPlayers.remove(tr.getNpcId());
-			_bleedingPlayers.put(tr.getNpcId(), bpc);
+			bleedingPlayers.remove(tr.getNpcId());
+			bleedingPlayers.put(tr.getNpcId(), bpc);
 		}
 	}
 	
 	public void removeBleeding(final int npcId)
 	{
-		if (_bleedingPlayers.get(npcId) == null)
+		if (bleedingPlayers.get(npcId) == null)
+		{
 			return;
-		for (final L2PcInstance pc : (FastList<L2PcInstance>) _bleedingPlayers.get(npcId))
+		}
+		
+		for (L2PcInstance pc : bleedingPlayers.get(npcId))
 		{
 			if (pc.getFirstEffect(L2Effect.EffectType.DMG_OVER_TIME) != null)
 			{
 				pc.stopEffects(L2Effect.EffectType.DMG_OVER_TIME);
 			}
 		}
-		_bleedingPlayers.remove(npcId);
+		
+		bleedingPlayers.remove(npcId);
 	}
 	
 	protected class Bleeding implements Runnable
@@ -1328,11 +1343,11 @@ public class VanHalter extends Quest implements Runnable
 		{
 			addBleeding();
 			
-			if (_setBleedTask != null)
+			if (setBleedTask != null)
 			{
-				_setBleedTask.cancel(false);
+				setBleedTask.cancel(false);
 			}
-			_setBleedTask = ThreadPoolManager.getInstance().scheduleGeneral(new Bleeding(), 2000);
+			setBleedTask = ThreadPoolManager.getInstance().scheduleGeneral(new Bleeding(), 2000);
 		}
 	}
 	
@@ -1340,58 +1355,58 @@ public class VanHalter extends Quest implements Runnable
 	public void enterInterval()
 	{
 		// Cancel all task
-		if (_callRoyalGuardHelperTask != null)
+		if (callRoyalGuardHelperTask != null)
 		{
-			_callRoyalGuardHelperTask.cancel(false);
+			callRoyalGuardHelperTask.cancel(false);
 		}
-		_callRoyalGuardHelperTask = null;
+		callRoyalGuardHelperTask = null;
 		
-		if (_closeDoorOfAltarTask != null)
+		if (closeDoorOfAltarTask != null)
 		{
-			_closeDoorOfAltarTask.cancel(false);
+			closeDoorOfAltarTask.cancel(false);
 		}
-		_closeDoorOfAltarTask = null;
+		closeDoorOfAltarTask = null;
 		
-		if (_halterEscapeTask != null)
+		if (halterEscapeTask != null)
 		{
-			_halterEscapeTask.cancel(false);
+			halterEscapeTask.cancel(false);
 		}
-		_halterEscapeTask = null;
+		halterEscapeTask = null;
 		
-		if (_intervalTask != null)
+		if (intervalTask != null)
 		{
-			_intervalTask.cancel(false);
+			intervalTask.cancel(false);
 		}
-		_intervalTask = null;
+		intervalTask = null;
 		
-		if (_lockUpDoorOfAltarTask != null)
+		if (lockUpDoorOfAltarTask != null)
 		{
-			_lockUpDoorOfAltarTask.cancel(false);
+			lockUpDoorOfAltarTask.cancel(false);
 		}
-		_lockUpDoorOfAltarTask = null;
+		lockUpDoorOfAltarTask = null;
 		
-		if (_movieTask != null)
+		if (movieTask != null)
 		{
-			_movieTask.cancel(false);
+			movieTask.cancel(false);
 		}
-		_movieTask = null;
+		movieTask = null;
 		
-		if (_openDoorOfAltarTask != null)
+		if (openDoorOfAltarTask != null)
 		{
-			_openDoorOfAltarTask.cancel(false);
+			openDoorOfAltarTask.cancel(false);
 		}
-		_openDoorOfAltarTask = null;
+		openDoorOfAltarTask = null;
 		
-		if (_timeUpTask != null)
+		if (timeUpTask != null)
 		{
-			_timeUpTask.cancel(false);
+			timeUpTask.cancel(false);
 		}
-		_timeUpTask = null;
+		timeUpTask = null;
 		
 		// Delete monsters
-		if (_vanHalter.isDead())
+		if (vanHalter.isDead())
 		{
-			_vanHalter.getSpawn().stopRespawn();
+			vanHalter.getSpawn().stopRespawn();
 		}
 		else
 		{
@@ -1405,9 +1420,9 @@ public class VanHalter extends Quest implements Runnable
 		deleteGuardOfAltar();
 		
 		// Set interval end.
-		if (_intervalTask != null)
+		if (intervalTask != null)
 		{
-			_intervalTask.cancel(false);
+			intervalTask.cancel(false);
 		}
 		
 		final Integer status = GrandBossManager.getInstance().getBossStatus(29062);
@@ -1423,7 +1438,7 @@ public class VanHalter extends Quest implements Runnable
 		
 		final StatsSet info = GrandBossManager.getInstance().getStatsSet(29062);
 		final long temp = info.getLong("respawn_time") - System.currentTimeMillis();
-		_intervalTask = ThreadPoolManager.getInstance().scheduleGeneral(new Interval(), temp);
+		intervalTask = ThreadPoolManager.getInstance().scheduleGeneral(new Interval(), temp);
 	}
 	
 	// Interval.
@@ -1440,53 +1455,53 @@ public class VanHalter extends Quest implements Runnable
 	public void setupAltar()
 	{
 		// Cancel all task
-		if (_callRoyalGuardHelperTask != null)
+		if (callRoyalGuardHelperTask != null)
 		{
-			_callRoyalGuardHelperTask.cancel(false);
+			callRoyalGuardHelperTask.cancel(false);
 		}
-		_callRoyalGuardHelperTask = null;
+		callRoyalGuardHelperTask = null;
 		
-		if (_closeDoorOfAltarTask != null)
+		if (closeDoorOfAltarTask != null)
 		{
-			_closeDoorOfAltarTask.cancel(false);
+			closeDoorOfAltarTask.cancel(false);
 		}
-		_closeDoorOfAltarTask = null;
+		closeDoorOfAltarTask = null;
 		
-		if (_halterEscapeTask != null)
+		if (halterEscapeTask != null)
 		{
-			_halterEscapeTask.cancel(false);
+			halterEscapeTask.cancel(false);
 		}
-		_halterEscapeTask = null;
+		halterEscapeTask = null;
 		
-		if (_intervalTask != null)
+		if (intervalTask != null)
 		{
-			_intervalTask.cancel(false);
+			intervalTask.cancel(false);
 		}
-		_intervalTask = null;
+		intervalTask = null;
 		
-		if (_lockUpDoorOfAltarTask != null)
+		if (lockUpDoorOfAltarTask != null)
 		{
-			_lockUpDoorOfAltarTask.cancel(false);
+			lockUpDoorOfAltarTask.cancel(false);
 		}
-		_lockUpDoorOfAltarTask = null;
+		lockUpDoorOfAltarTask = null;
 		
-		if (_movieTask != null)
+		if (movieTask != null)
 		{
-			_movieTask.cancel(false);
+			movieTask.cancel(false);
 		}
-		_movieTask = null;
+		movieTask = null;
 		
-		if (_openDoorOfAltarTask != null)
+		if (openDoorOfAltarTask != null)
 		{
-			_openDoorOfAltarTask.cancel(false);
+			openDoorOfAltarTask.cancel(false);
 		}
-		_openDoorOfAltarTask = null;
+		openDoorOfAltarTask = null;
 		
-		if (_timeUpTask != null)
+		if (timeUpTask != null)
 		{
-			_timeUpTask.cancel(false);
+			timeUpTask.cancel(false);
 		}
-		_timeUpTask = null;
+		timeUpTask = null;
 		
 		// Delete all monsters
 		deleteVanHalter();
@@ -1500,10 +1515,10 @@ public class VanHalter extends Quest implements Runnable
 		deleteCameraMarker();
 		
 		// Clear flag.
-		_isLocked = false;
-		_isCaptainSpawned = false;
-		_isHelperCalled = false;
-		_isHalterSpawned = false;
+		isLocked = false;
+		isCaptainSpawned = false;
+		isHelperCalled = false;
+		isHalterSpawned = false;
 		
 		// Set door state
 		closeDoorOfSacrifice();
@@ -1518,11 +1533,11 @@ public class VanHalter extends Quest implements Runnable
 		GrandBossManager.getInstance().setBossStatus(29062, NOTSPAWN);
 		
 		// Set time up.
-		if (_timeUpTask != null)
+		if (timeUpTask != null)
 		{
-			_timeUpTask.cancel(false);
+			timeUpTask.cancel(false);
 		}
-		_timeUpTask = ThreadPoolManager.getInstance().scheduleGeneral(new TimeUp(), Config.HPH_ACTIVITYTIMEOFHALTER);
+		timeUpTask = ThreadPoolManager.getInstance().scheduleGeneral(new TimeUp(), Config.HPH_ACTIVITYTIMEOFHALTER);
 	}
 	
 	// Time up.
@@ -1538,294 +1553,294 @@ public class VanHalter extends Quest implements Runnable
 	// Appearance movie.
 	private class Movie implements Runnable
 	{
-		private final int _distance = 6502500;
-		private final int _taskId;
+		private final int distance = 6502500;
+		private final int taskId;
 		
 		public Movie(final int taskId)
 		{
-			_taskId = taskId;
+			this.taskId = taskId;
 		}
 		
 		@Override
 		public void run()
 		{
-			_vanHalter.setHeading(16384);
-			_vanHalter.setTarget(_ritualOffering);
+			vanHalter.setHeading(16384);
+			vanHalter.setTarget(ritualOffering);
 			
-			switch (_taskId)
+			switch (taskId)
 			{
 				case 1:
 					GrandBossManager.getInstance().setBossStatus(29062, ALIVE);
 					
 					// Set camera.
-					for (final L2PcInstance pc : _vanHalter.getKnownList().getKnownPlayers().values())
+					for (final L2PcInstance pc : vanHalter.getKnownList().getKnownPlayers().values())
 					{
-						if (pc.getPlanDistanceSq(_vanHalter) <= _distance)
+						if (pc.getPlanDistanceSq(vanHalter) <= distance)
 						{
-							_vanHalter.broadcastPacket(new SpecialCamera(_vanHalter.getObjectId(), 50, 90, 0, 0, 15000));
+							vanHalter.broadcastPacket(new SpecialCamera(vanHalter.getObjectId(), 50, 90, 0, 0, 15000));
 						}
 					}
 					
 					// Set next task.
-					if (_movieTask != null)
+					if (movieTask != null)
 					{
-						_movieTask.cancel(false);
+						movieTask.cancel(false);
 					}
-					_movieTask = null;
-					_movieTask = ThreadPoolManager.getInstance().scheduleGeneral(new Movie(2), 16);
+					movieTask = null;
+					movieTask = ThreadPoolManager.getInstance().scheduleGeneral(new Movie(2), 16);
 					
 					break;
 				
 				case 2:
 					// Set camera.
-					for (final L2PcInstance pc : _vanHalter.getKnownList().getKnownPlayers().values())
+					for (final L2PcInstance pc : vanHalter.getKnownList().getKnownPlayers().values())
 					{
-						if (pc.getPlanDistanceSq(_cameraMarker.get(5)) <= _distance)
+						if (pc.getPlanDistanceSq(cameraMarker.get(5)) <= distance)
 						{
-							_cameraMarker.get(5).broadcastPacket(new SpecialCamera(_cameraMarker.get(5).getObjectId(), 1842, 100, -3, 0, 15000));
+							cameraMarker.get(5).broadcastPacket(new SpecialCamera(cameraMarker.get(5).getObjectId(), 1842, 100, -3, 0, 15000));
 						}
 					}
 					
 					// Set next task.
-					if (_movieTask != null)
+					if (movieTask != null)
 					{
-						_movieTask.cancel(false);
+						movieTask.cancel(false);
 					}
-					_movieTask = null;
-					_movieTask = ThreadPoolManager.getInstance().scheduleGeneral(new Movie(3), 1);
+					movieTask = null;
+					movieTask = ThreadPoolManager.getInstance().scheduleGeneral(new Movie(3), 1);
 					
 					break;
 				
 				case 3:
 					// Set camera.
-					for (final L2PcInstance pc : _vanHalter.getKnownList().getKnownPlayers().values())
+					for (final L2PcInstance pc : vanHalter.getKnownList().getKnownPlayers().values())
 					{
-						if (pc.getPlanDistanceSq(_cameraMarker.get(5)) <= _distance)
+						if (pc.getPlanDistanceSq(cameraMarker.get(5)) <= distance)
 						{
-							_cameraMarker.get(5).broadcastPacket(new SpecialCamera(_cameraMarker.get(5).getObjectId(), 1861, 97, -10, 1500, 15000));
+							cameraMarker.get(5).broadcastPacket(new SpecialCamera(cameraMarker.get(5).getObjectId(), 1861, 97, -10, 1500, 15000));
 						}
 					}
 					
 					// Set next task.
-					if (_movieTask != null)
+					if (movieTask != null)
 					{
-						_movieTask.cancel(false);
+						movieTask.cancel(false);
 					}
-					_movieTask = null;
-					_movieTask = ThreadPoolManager.getInstance().scheduleGeneral(new Movie(4), 1500);
+					movieTask = null;
+					movieTask = ThreadPoolManager.getInstance().scheduleGeneral(new Movie(4), 1500);
 					
 					break;
 				
 				case 4:
 					// Set camera.
-					for (final L2PcInstance pc : _vanHalter.getKnownList().getKnownPlayers().values())
+					for (final L2PcInstance pc : vanHalter.getKnownList().getKnownPlayers().values())
 					{
-						if (pc.getPlanDistanceSq(_cameraMarker.get(4)) <= _distance)
+						if (pc.getPlanDistanceSq(cameraMarker.get(4)) <= distance)
 						{
-							_cameraMarker.get(4).broadcastPacket(new SpecialCamera(_cameraMarker.get(4).getObjectId(), 1876, 97, 12, 0, 15000));
+							cameraMarker.get(4).broadcastPacket(new SpecialCamera(cameraMarker.get(4).getObjectId(), 1876, 97, 12, 0, 15000));
 						}
 					}
 					
 					// Set next task.
-					if (_movieTask != null)
+					if (movieTask != null)
 					{
-						_movieTask.cancel(false);
+						movieTask.cancel(false);
 					}
-					_movieTask = null;
-					_movieTask = ThreadPoolManager.getInstance().scheduleGeneral(new Movie(5), 1);
+					movieTask = null;
+					movieTask = ThreadPoolManager.getInstance().scheduleGeneral(new Movie(5), 1);
 					
 					break;
 				
 				case 5:
 					// Set camera.
-					for (final L2PcInstance pc : _vanHalter.getKnownList().getKnownPlayers().values())
+					for (final L2PcInstance pc : vanHalter.getKnownList().getKnownPlayers().values())
 					{
-						if (pc.getPlanDistanceSq(_cameraMarker.get(4)) <= _distance)
+						if (pc.getPlanDistanceSq(cameraMarker.get(4)) <= distance)
 						{
-							_cameraMarker.get(4).broadcastPacket(new SpecialCamera(_cameraMarker.get(4).getObjectId(), 1839, 94, 0, 1500, 15000));
+							cameraMarker.get(4).broadcastPacket(new SpecialCamera(cameraMarker.get(4).getObjectId(), 1839, 94, 0, 1500, 15000));
 						}
 					}
 					
 					// Set next task.
-					if (_movieTask != null)
+					if (movieTask != null)
 					{
-						_movieTask.cancel(false);
+						movieTask.cancel(false);
 					}
-					_movieTask = null;
-					_movieTask = ThreadPoolManager.getInstance().scheduleGeneral(new Movie(6), 1500);
+					movieTask = null;
+					movieTask = ThreadPoolManager.getInstance().scheduleGeneral(new Movie(6), 1500);
 					
 					break;
 				
 				case 6:
 					// Set camera.
-					for (final L2PcInstance pc : _vanHalter.getKnownList().getKnownPlayers().values())
+					for (final L2PcInstance pc : vanHalter.getKnownList().getKnownPlayers().values())
 					{
-						if (pc.getPlanDistanceSq(_cameraMarker.get(3)) <= _distance)
+						if (pc.getPlanDistanceSq(cameraMarker.get(3)) <= distance)
 						{
-							_cameraMarker.get(3).broadcastPacket(new SpecialCamera(_cameraMarker.get(3).getObjectId(), 1872, 94, 15, 0, 15000));
+							cameraMarker.get(3).broadcastPacket(new SpecialCamera(cameraMarker.get(3).getObjectId(), 1872, 94, 15, 0, 15000));
 						}
 					}
 					
 					// Set next task.
-					if (_movieTask != null)
+					if (movieTask != null)
 					{
-						_movieTask.cancel(false);
+						movieTask.cancel(false);
 					}
-					_movieTask = null;
-					_movieTask = ThreadPoolManager.getInstance().scheduleGeneral(new Movie(7), 1);
+					movieTask = null;
+					movieTask = ThreadPoolManager.getInstance().scheduleGeneral(new Movie(7), 1);
 					
 					break;
 				
 				case 7:
 					// Set camera.
-					for (final L2PcInstance pc : _vanHalter.getKnownList().getKnownPlayers().values())
+					for (final L2PcInstance pc : vanHalter.getKnownList().getKnownPlayers().values())
 					{
-						if (pc.getPlanDistanceSq(_cameraMarker.get(3)) <= _distance)
+						if (pc.getPlanDistanceSq(cameraMarker.get(3)) <= distance)
 						{
-							_cameraMarker.get(3).broadcastPacket(new SpecialCamera(_cameraMarker.get(3).getObjectId(), 1839, 92, 0, 1500, 15000));
+							cameraMarker.get(3).broadcastPacket(new SpecialCamera(cameraMarker.get(3).getObjectId(), 1839, 92, 0, 1500, 15000));
 						}
 					}
 					
 					// Set next task.
-					if (_movieTask != null)
+					if (movieTask != null)
 					{
-						_movieTask.cancel(false);
+						movieTask.cancel(false);
 					}
-					_movieTask = null;
-					_movieTask = ThreadPoolManager.getInstance().scheduleGeneral(new Movie(8), 1500);
+					movieTask = null;
+					movieTask = ThreadPoolManager.getInstance().scheduleGeneral(new Movie(8), 1500);
 					
 					break;
 				
 				case 8:
 					// Set camera.
-					for (final L2PcInstance pc : _vanHalter.getKnownList().getKnownPlayers().values())
+					for (final L2PcInstance pc : vanHalter.getKnownList().getKnownPlayers().values())
 					{
-						if (pc.getPlanDistanceSq(_cameraMarker.get(2)) <= _distance)
+						if (pc.getPlanDistanceSq(cameraMarker.get(2)) <= distance)
 						{
-							_cameraMarker.get(2).broadcastPacket(new SpecialCamera(_cameraMarker.get(2).getObjectId(), 1872, 92, 15, 0, 15000));
+							cameraMarker.get(2).broadcastPacket(new SpecialCamera(cameraMarker.get(2).getObjectId(), 1872, 92, 15, 0, 15000));
 						}
 					}
 					
 					// Set next task.
-					if (_movieTask != null)
+					if (movieTask != null)
 					{
-						_movieTask.cancel(false);
+						movieTask.cancel(false);
 					}
-					_movieTask = null;
-					_movieTask = ThreadPoolManager.getInstance().scheduleGeneral(new Movie(9), 1);
+					movieTask = null;
+					movieTask = ThreadPoolManager.getInstance().scheduleGeneral(new Movie(9), 1);
 					
 					break;
 				
 				case 9:
 					// Set camera.
-					for (final L2PcInstance pc : _vanHalter.getKnownList().getKnownPlayers().values())
+					for (final L2PcInstance pc : vanHalter.getKnownList().getKnownPlayers().values())
 					{
-						if (pc.getPlanDistanceSq(_cameraMarker.get(2)) <= _distance)
+						if (pc.getPlanDistanceSq(cameraMarker.get(2)) <= distance)
 						{
-							_cameraMarker.get(2).broadcastPacket(new SpecialCamera(_cameraMarker.get(2).getObjectId(), 1839, 90, 5, 1500, 15000));
+							cameraMarker.get(2).broadcastPacket(new SpecialCamera(cameraMarker.get(2).getObjectId(), 1839, 90, 5, 1500, 15000));
 						}
 					}
 					
 					// Set next task.
-					if (_movieTask != null)
+					if (movieTask != null)
 					{
-						_movieTask.cancel(false);
+						movieTask.cancel(false);
 					}
-					_movieTask = null;
-					_movieTask = ThreadPoolManager.getInstance().scheduleGeneral(new Movie(10), 1500);
+					movieTask = null;
+					movieTask = ThreadPoolManager.getInstance().scheduleGeneral(new Movie(10), 1500);
 					
 					break;
 				
 				case 10:
 					// Set camera.
-					for (final L2PcInstance pc : _vanHalter.getKnownList().getKnownPlayers().values())
+					for (final L2PcInstance pc : vanHalter.getKnownList().getKnownPlayers().values())
 					{
-						if (pc.getPlanDistanceSq(_cameraMarker.get(1)) <= _distance)
+						if (pc.getPlanDistanceSq(cameraMarker.get(1)) <= distance)
 						{
-							_cameraMarker.get(1).broadcastPacket(new SpecialCamera(_cameraMarker.get(1).getObjectId(), 1872, 90, 5, 0, 15000));
+							cameraMarker.get(1).broadcastPacket(new SpecialCamera(cameraMarker.get(1).getObjectId(), 1872, 90, 5, 0, 15000));
 						}
 					}
 					
 					// Set next task.
-					if (_movieTask != null)
+					if (movieTask != null)
 					{
-						_movieTask.cancel(false);
+						movieTask.cancel(false);
 					}
-					_movieTask = null;
-					_movieTask = ThreadPoolManager.getInstance().scheduleGeneral(new Movie(11), 1);
+					movieTask = null;
+					movieTask = ThreadPoolManager.getInstance().scheduleGeneral(new Movie(11), 1);
 					
 					break;
 				
 				case 11:
 					// Set camera.
-					for (final L2PcInstance pc : _vanHalter.getKnownList().getKnownPlayers().values())
+					for (final L2PcInstance pc : vanHalter.getKnownList().getKnownPlayers().values())
 					{
-						if (pc.getPlanDistanceSq(_cameraMarker.get(1)) <= _distance)
+						if (pc.getPlanDistanceSq(cameraMarker.get(1)) <= distance)
 						{
-							_cameraMarker.get(1).broadcastPacket(new SpecialCamera(_cameraMarker.get(1).getObjectId(), 2002, 90, 2, 1500, 15000));
+							cameraMarker.get(1).broadcastPacket(new SpecialCamera(cameraMarker.get(1).getObjectId(), 2002, 90, 2, 1500, 15000));
 						}
 					}
 					
 					// Set next task.
-					if (_movieTask != null)
+					if (movieTask != null)
 					{
-						_movieTask.cancel(false);
+						movieTask.cancel(false);
 					}
-					_movieTask = null;
-					_movieTask = ThreadPoolManager.getInstance().scheduleGeneral(new Movie(12), 2000);
+					movieTask = null;
+					movieTask = ThreadPoolManager.getInstance().scheduleGeneral(new Movie(12), 2000);
 					
 					break;
 				
 				case 12:
 					// Set camera.
-					for (final L2PcInstance pc : _vanHalter.getKnownList().getKnownPlayers().values())
+					for (final L2PcInstance pc : vanHalter.getKnownList().getKnownPlayers().values())
 					{
-						if (pc.getPlanDistanceSq(_vanHalter) <= _distance)
+						if (pc.getPlanDistanceSq(vanHalter) <= distance)
 						{
-							_vanHalter.broadcastPacket(new SpecialCamera(_vanHalter.getObjectId(), 50, 90, 10, 0, 15000));
+							vanHalter.broadcastPacket(new SpecialCamera(vanHalter.getObjectId(), 50, 90, 10, 0, 15000));
 						}
 					}
 					
 					// Set next task.
-					if (_movieTask != null)
+					if (movieTask != null)
 					{
-						_movieTask.cancel(false);
+						movieTask.cancel(false);
 					}
-					_movieTask = null;
-					_movieTask = ThreadPoolManager.getInstance().scheduleGeneral(new Movie(13), 1000);
+					movieTask = null;
+					movieTask = ThreadPoolManager.getInstance().scheduleGeneral(new Movie(13), 1000);
 					
 					break;
 				
 				case 13:
 					// High Priestess van Halter uses the skill to kill Ritual Offering.
 					final L2Skill skill = SkillTable.getInstance().getInfo(1168, 7);
-					_ritualOffering.setIsInvul(false);
-					_vanHalter.setTarget(_ritualOffering);
-					// _vanHalter.setIsImmobilized(false);
-					_vanHalter.doCast(skill);
-					// _vanHalter.setIsImmobilized(true);
+					ritualOffering.setIsInvul(false);
+					vanHalter.setTarget(ritualOffering);
+					// vanHalter.setIsImmobilized(false);
+					vanHalter.doCast(skill);
+					// vanHalter.setIsImmobilized(true);
 					
 					// Set next task.
-					if (_movieTask != null)
+					if (movieTask != null)
 					{
-						_movieTask.cancel(false);
+						movieTask.cancel(false);
 					}
-					_movieTask = null;
-					_movieTask = ThreadPoolManager.getInstance().scheduleGeneral(new Movie(14), 4700);
+					movieTask = null;
+					movieTask = ThreadPoolManager.getInstance().scheduleGeneral(new Movie(14), 4700);
 					
 					break;
 				
 				case 14:
-					_ritualOffering.setIsInvul(false);
-					_ritualOffering.reduceCurrentHp(_ritualOffering.getMaxHp() + 1, _vanHalter);
+					ritualOffering.setIsInvul(false);
+					ritualOffering.reduceCurrentHp(ritualOffering.getMaxHp() + 1, vanHalter);
 					
 					// Set next task.
-					if (_movieTask != null)
+					if (movieTask != null)
 					{
-						_movieTask.cancel(false);
+						movieTask.cancel(false);
 					}
-					_movieTask = null;
-					_movieTask = ThreadPoolManager.getInstance().scheduleGeneral(new Movie(15), 4300);
+					movieTask = null;
+					movieTask = ThreadPoolManager.getInstance().scheduleGeneral(new Movie(15), 4300);
 					
 					break;
 				
@@ -1834,66 +1849,66 @@ public class VanHalter extends Quest implements Runnable
 					deleteRitualOffering();
 					
 					// Set camera.
-					for (final L2PcInstance pc : _vanHalter.getKnownList().getKnownPlayers().values())
+					for (final L2PcInstance pc : vanHalter.getKnownList().getKnownPlayers().values())
 					{
-						if (pc.getPlanDistanceSq(_vanHalter) <= _distance)
+						if (pc.getPlanDistanceSq(vanHalter) <= distance)
 						{
-							_vanHalter.broadcastPacket(new SpecialCamera(_vanHalter.getObjectId(), 100, 90, 15, 1500, 15000));
+							vanHalter.broadcastPacket(new SpecialCamera(vanHalter.getObjectId(), 100, 90, 15, 1500, 15000));
 						}
 					}
 					
 					// Set next task.
-					if (_movieTask != null)
+					if (movieTask != null)
 					{
-						_movieTask.cancel(false);
+						movieTask.cancel(false);
 					}
-					_movieTask = null;
-					_movieTask = ThreadPoolManager.getInstance().scheduleGeneral(new Movie(16), 2000);
+					movieTask = null;
+					movieTask = ThreadPoolManager.getInstance().scheduleGeneral(new Movie(16), 2000);
 					
 					break;
 				
 				case 16:
 					// Set camera.
-					for (final L2PcInstance pc : _vanHalter.getKnownList().getKnownPlayers().values())
+					for (final L2PcInstance pc : vanHalter.getKnownList().getKnownPlayers().values())
 					{
-						if (pc.getPlanDistanceSq(_vanHalter) <= _distance)
+						if (pc.getPlanDistanceSq(vanHalter) <= distance)
 						{
-							_vanHalter.broadcastPacket(new SpecialCamera(_vanHalter.getObjectId(), 5200, 90, -10, 9500, 6000));
+							vanHalter.broadcastPacket(new SpecialCamera(vanHalter.getObjectId(), 5200, 90, -10, 9500, 6000));
 						}
 					}
 					
 					// Set next task.
-					if (_movieTask != null)
+					if (movieTask != null)
 					{
-						_movieTask.cancel(false);
+						movieTask.cancel(false);
 					}
-					_movieTask = null;
-					_movieTask = ThreadPoolManager.getInstance().scheduleGeneral(new Movie(17), 6000);
+					movieTask = null;
+					movieTask = ThreadPoolManager.getInstance().scheduleGeneral(new Movie(17), 6000);
 					
 					break;
 				
 				case 17:
 					deleteRitualSacrifice();
 					deleteCameraMarker();
-					// _vanHalter.setIsImmobilized(false);
-					_vanHalter.setIsInvul(false);
+					// vanHalter.setIsImmobilized(false);
+					vanHalter.setIsInvul(false);
 					
-					if (_movieTask != null)
+					if (movieTask != null)
 					{
-						_movieTask.cancel(false);
+						movieTask.cancel(false);
 					}
-					_movieTask = null;
-					_movieTask = ThreadPoolManager.getInstance().scheduleGeneral(new Movie(18), 1000);
+					movieTask = null;
+					movieTask = ThreadPoolManager.getInstance().scheduleGeneral(new Movie(18), 1000);
 					
 					break;
 				
 				case 18:
 					combatBeginning();
-					if (_movieTask != null)
+					if (movieTask != null)
 					{
-						_movieTask.cancel(false);
+						movieTask.cancel(false);
 					}
-					_movieTask = null;
+					movieTask = null;
 			}
 		}
 	}

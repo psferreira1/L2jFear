@@ -1,22 +1,3 @@
-/* L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.taskmanager;
 
 import java.util.concurrent.Future;
@@ -29,15 +10,15 @@ import com.l2jfrozen.gameserver.thread.ThreadPoolManager;
  */
 public abstract class ExclusiveTask
 {
-	private final boolean _returnIfAlreadyRunning;
+	private final boolean returnIfAlreadyRunning;
 	
-	private Future<?> _future;
-	private boolean _isRunning;
-	private Thread _currentThread;
+	private Future<?> future;
+	private boolean isRunning;
+	private Thread currentThread;
 	
 	protected ExclusiveTask(final boolean returnIfAlreadyRunning)
 	{
-		_returnIfAlreadyRunning = returnIfAlreadyRunning;
+		this.returnIfAlreadyRunning = returnIfAlreadyRunning;
 	}
 	
 	protected ExclusiveTask()
@@ -47,15 +28,15 @@ public abstract class ExclusiveTask
 	
 	public synchronized boolean isScheduled()
 	{
-		return _future != null;
+		return future != null;
 	}
 	
 	public synchronized final void cancel()
 	{
-		if (_future != null)
+		if (future != null)
 		{
-			_future.cancel(false);
-			_future = null;
+			future.cancel(false);
+			future = null;
 		}
 	}
 	
@@ -63,36 +44,32 @@ public abstract class ExclusiveTask
 	{
 		cancel();
 		
-		_future = ThreadPoolManager.getInstance().scheduleEffect(_runnable, delay);
+		future = ThreadPoolManager.getInstance().scheduleEffect(runnable, delay);
 	}
 	
 	public synchronized final void execute()
 	{
-		ThreadPoolManager.getInstance().executeTask(_runnable);
+		ThreadPoolManager.getInstance().executeTask(runnable);
 	}
 	
 	public synchronized final void scheduleAtFixedRate(final long delay, final long period)
 	{
 		cancel();
 		
-		_future = ThreadPoolManager.getInstance().scheduleAiAtFixedRate(_runnable, delay, period);
+		future = ThreadPoolManager.getInstance().scheduleAiAtFixedRate(runnable, delay, period);
 	}
 	
-	private final Runnable _runnable = new Runnable()
+	private final Runnable runnable = () ->
 	{
-		@Override
-		public void run()
+		if (tryLock())
 		{
-			if (tryLock())
+			try
 			{
-				try
-				{
-					onElapsed();
-				}
-				finally
-				{
-					unlock();
-				}
+				onElapsed();
+			}
+			finally
+			{
+				unlock();
 			}
 		}
 	};
@@ -101,10 +78,12 @@ public abstract class ExclusiveTask
 	
 	protected synchronized boolean tryLock()
 	{
-		if (_returnIfAlreadyRunning)
-			return !_isRunning;
+		if (returnIfAlreadyRunning)
+		{
+			return !isRunning;
+		}
 		
-		_currentThread = Thread.currentThread();
+		currentThread = Thread.currentThread();
 		
 		for (;;)
 		{
@@ -112,24 +91,30 @@ public abstract class ExclusiveTask
 			{
 				notifyAll();
 				
-				if (_currentThread != Thread.currentThread())
+				if (currentThread != Thread.currentThread())
+				{
 					return false;
+				}
 				
-				if (!_isRunning)
+				if (!isRunning)
+				{
 					return true;
+				}
 				
 				wait();
 			}
 			catch (final InterruptedException e)
 			{
 				if (Config.ENABLE_ALL_EXCEPTIONS)
+				{
 					e.printStackTrace();
+				}
 			}
 		}
 	}
 	
 	protected synchronized void unlock()
 	{
-		_isRunning = false;
+		isRunning = false;
 	}
 }

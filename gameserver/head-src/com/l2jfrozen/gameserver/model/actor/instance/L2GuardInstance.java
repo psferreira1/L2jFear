@@ -1,23 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.model.actor.instance;
 
 import org.apache.log4j.Logger;
@@ -46,18 +26,11 @@ import com.l2jfrozen.util.random.Rnd;
  */
 public final class L2GuardInstance extends L2Attackable
 {
-	
-	/** The LOGGER. */
 	private static Logger LOGGER = Logger.getLogger(L2GuardInstance.class);
 	
-	/** The _home x. */
-	private int _homeX;
-	
-	/** The _home y. */
-	private int _homeY;
-	
-	/** The _home z. */
-	private int _homeZ;
+	private int homeX;
+	private int homeY;
+	private int homeZ;
 	
 	/** The Constant RETURN_INTERVAL. */
 	private static final int RETURN_INTERVAL = 60000;
@@ -67,11 +40,6 @@ public final class L2GuardInstance extends L2Attackable
 	 */
 	public class ReturnTask implements Runnable
 	{
-		
-		/*
-		 * (non-Javadoc)
-		 * @see java.lang.Runnable#run()
-		 */
 		@Override
 		public void run()
 		{
@@ -87,8 +55,9 @@ public final class L2GuardInstance extends L2Attackable
 	 * <BR>
 	 * <B><U> Actions</U> :</B><BR>
 	 * <BR>
-	 * <li>Call the L2Character constructor to set the _template of the L2GuardInstance (copy skills from template to object and link _calculators to NPC_STD_CALCULATOR)</li> <li>Set the name of the L2GuardInstance</li> <li>Create a RandomAnimation Task that will be launched after the calculated
-	 * delay if the server allow it</li><BR>
+	 * <li>Call the L2Character constructor to set the template of the L2GuardInstance (copy skills from template to object and link calculators to NPC_STD_CALCULATOR)</li>
+	 * <li>Set the name of the L2GuardInstance</li>
+	 * <li>Create a RandomAnimation Task that will be launched after the calculated delay if the server allow it</li><BR>
 	 * <BR>
 	 * @param objectId Identifier of the object to initialized
 	 * @param template the template
@@ -101,10 +70,6 @@ public final class L2GuardInstance extends L2Attackable
 		ThreadPoolManager.getInstance().scheduleAiAtFixedRate(new ReturnTask(), RETURN_INTERVAL, RETURN_INTERVAL + Rnd.nextInt(60000));
 	}
 	
-	/*
-	 * (non-Javadoc)
-	 * @see com.l2jfrozen.gameserver.model.L2Attackable#getKnownList()
-	 */
 	@Override
 	public final GuardKnownList getKnownList()
 	{
@@ -118,8 +83,8 @@ public final class L2GuardInstance extends L2Attackable
 	/**
 	 * Return True if the attacker is a L2MonsterInstance.<BR>
 	 * <BR>
-	 * @param attacker the attacker
-	 * @return true, if is auto attackable
+	 * @param  attacker the attacker
+	 * @return          true, if is auto attackable
 	 */
 	@Override
 	public boolean isAutoAttackable(final L2Character attacker)
@@ -136,13 +101,13 @@ public final class L2GuardInstance extends L2Attackable
 	 */
 	public void getHomeLocation()
 	{
-		_homeX = getX();
-		_homeY = getY();
-		_homeZ = getZ();
+		homeX = getX();
+		homeY = getY();
+		homeZ = getZ();
 		
 		if (Config.DEBUG)
 		{
-			LOGGER.debug(getObjectId() + ": Home location set to" + " X:" + _homeX + " Y:" + _homeY + " Z:" + _homeZ);
+			LOGGER.debug(getObjectId() + ": Home location set to" + " X:" + homeX + " Y:" + homeY + " Z:" + homeZ);
 		}
 	}
 	
@@ -152,25 +117,25 @@ public final class L2GuardInstance extends L2Attackable
 	 */
 	public int getHomeX()
 	{
-		return _homeX;
+		return homeX;
 	}
 	
 	/**
-	 * Notify the L2GuardInstance to return to its home location (AI_INTENTION_MOVE_TO) and clear its _aggroList.<BR>
+	 * Notify the L2GuardInstance to return to its home location (AI_INTENTION_MOVE_TO) and clear its aggroList.<BR>
 	 * <BR>
 	 */
 	public void returnHome()
 	{
-		if (!isInsideRadius(_homeX, _homeY, 150, false))
+		if (!isInsideRadius(homeX, homeY, 150, false))
 		{
 			if (Config.DEBUG)
 			{
-				LOGGER.debug(getObjectId() + ": moving hometo" + " X:" + _homeX + " Y:" + _homeY + " Z:" + _homeZ);
+				LOGGER.debug(getObjectId() + ": moving hometo" + " X:" + homeX + " Y:" + homeY + " Z:" + homeZ);
 			}
 			
 			clearAggroList();
 			
-			getAI().setIntention(CtrlIntention.AI_INTENTION_MOVE_TO, new L2CharPosition(_homeX, _homeY, _homeZ, 0));
+			getAI().setIntention(CtrlIntention.AI_INTENTION_MOVE_TO, new L2CharPosition(homeX, homeY, homeZ, 0));
 		}
 	}
 	
@@ -182,13 +147,13 @@ public final class L2GuardInstance extends L2Attackable
 	public void onSpawn()
 	{
 		super.onSpawn();
-		_homeX = getX();
-		_homeY = getY();
-		_homeZ = getZ();
+		homeX = getX();
+		homeY = getY();
+		homeZ = getZ();
 		
 		if (Config.DEBUG)
 		{
-			LOGGER.debug(getObjectId() + ": Home location set to" + " X:" + _homeX + " Y:" + _homeY + " Z:" + _homeZ);
+			LOGGER.debug(getObjectId() + ": Home location set to" + " X:" + homeX + " Y:" + homeY + " Z:" + homeZ);
 		}
 		
 		// check the region where this mob is, do not activate the AI if region is inactive.
@@ -205,11 +170,12 @@ public final class L2GuardInstance extends L2Attackable
 	 * <BR>
 	 * <B><U> Format of the pathfile </U> :</B><BR>
 	 * <BR>
-	 * <li>if page number = 0 : <B>data/html/guard/12006.htm</B> (npcId-page number)</li> <li>if page number > 0 : <B>data/html/guard/12006-1.htm</B> (npcId-page number)</li><BR>
+	 * <li>if page number = 0 : <B>data/html/guard/12006.htm</B> (npcId-page number)</li>
+	 * <li>if page number > 0 : <B>data/html/guard/12006-1.htm</B> (npcId-page number)</li><BR>
 	 * <BR>
-	 * @param npcId The Identifier of the L2NpcInstance whose text must be display
-	 * @param val The number of the page to display
-	 * @return the html path
+	 * @param  npcId The Identifier of the L2NpcInstance whose text must be display
+	 * @param  val   The number of the page to display
+	 * @return       the html path
 	 */
 	@Override
 	public String getHtmlPath(final int npcId, final int val)
@@ -231,13 +197,15 @@ public final class L2GuardInstance extends L2Attackable
 	 * <BR>
 	 * <B><U> Actions on first click on the L2GuardInstance (Select it)</U> :</B><BR>
 	 * <BR>
-	 * <li>Set the L2GuardInstance as target of the L2PcInstance player (if necessary)</li> <li>Send a Server->Client packet MyTargetSelected to the L2PcInstance player (display the select window)</li> <li>Set the L2PcInstance Intention to AI_INTENTION_IDLE</li> <li>Send a Server->Client packet
-	 * ValidateLocation to correct the L2GuardInstance position and heading on the client</li><BR>
+	 * <li>Set the L2GuardInstance as target of the L2PcInstance player (if necessary)</li>
+	 * <li>Send a Server->Client packet MyTargetSelected to the L2PcInstance player (display the select window)</li>
+	 * <li>Set the L2PcInstance Intention to AI_INTENTION_IDLE</li>
+	 * <li>Send a Server->Client packet ValidateLocation to correct the L2GuardInstance position and heading on the client</li><BR>
 	 * <BR>
 	 * <B><U> Actions on second click on the L2GuardInstance (Attack it/Interact with it)</U> :</B><BR>
 	 * <BR>
-	 * <li>If L2PcInstance is in the _aggroList of the L2GuardInstance, set the L2PcInstance Intention to AI_INTENTION_ATTACK</li> <li>If L2PcInstance is NOT in the _aggroList of the L2GuardInstance, set the L2PcInstance Intention to AI_INTENTION_INTERACT (after a distance verification) and show
-	 * message</li><BR>
+	 * <li>If L2PcInstance is in the aggroList of the L2GuardInstance, set the L2PcInstance Intention to AI_INTENTION_ATTACK</li>
+	 * <li>If L2PcInstance is NOT in the aggroList of the L2GuardInstance, set the L2PcInstance Intention to AI_INTENTION_INTERACT (after a distance verification) and show message</li><BR>
 	 * <BR>
 	 * <B><U> Example of use </U> :</B><BR>
 	 * <BR>
@@ -249,7 +217,9 @@ public final class L2GuardInstance extends L2Attackable
 	public void onAction(final L2PcInstance player)
 	{
 		if (!canTarget(player))
+		{
 			return;
+		}
 		
 		// Check if the L2PcInstance already target the L2GuardInstance
 		if (getObjectId() != player.getTargetId())
@@ -273,7 +243,7 @@ public final class L2GuardInstance extends L2Attackable
 		}
 		else
 		{
-			// Check if the L2PcInstance is in the _aggroList of the L2GuardInstance
+			// Check if the L2PcInstance is in the aggroList of the L2GuardInstance
 			if (containsTarget(player))
 			{
 				if (Config.DEBUG)
@@ -294,7 +264,7 @@ public final class L2GuardInstance extends L2Attackable
 				}
 				else
 				{
-					// Send a Server->Client packet SocialAction to the all L2PcInstance on the _knownPlayer of the L2NpcInstance
+					// Send a Server->Client packet SocialAction to the all L2PcInstance on the knownPlayer of the L2NpcInstance
 					// to display a social action of the L2GuardInstance on their client
 					SocialAction sa = new SocialAction(getObjectId(), Rnd.nextInt(8));
 					broadcastPacket(sa);

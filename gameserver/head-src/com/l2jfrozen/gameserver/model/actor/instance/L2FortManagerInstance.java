@@ -1,19 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any later
- * version.
- * 
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
- * 
- * You should have received a copy of the GNU General Public License along with
- * this program. If not, see <http://www.gnu.org/licenses/>.
- */
 package com.l2jfrozen.gameserver.model.actor.instance;
 
 import java.util.StringTokenizer;
@@ -57,7 +41,9 @@ public class L2FortManagerInstance extends L2MerchantInstance
 	public void onAction(final L2PcInstance player)
 	{
 		if (!canTarget(player))
+		{
 			return;
+		}
 		
 		player.setLastFolkNPC(this);
 		
@@ -94,11 +80,14 @@ public class L2FortManagerInstance extends L2MerchantInstance
 		
 		// BypassValidation Exploit plug.
 		if (player.getLastFolkNPC().getObjectId() != getObjectId())
+		{
 			return;
+		}
 		
 		if (condition <= COND_ALL_FALSE || condition == COND_BUSY_BECAUSE_OF_SIEGE)
+		{
 			return;
-		
+		}
 		else if (condition == COND_OWNER)
 		{
 			StringTokenizer st = new StringTokenizer(command, " ");
@@ -272,9 +261,13 @@ public class L2FortManagerInstance extends L2MerchantInstance
 			if (player.getClan() != null)
 			{
 				if (getFort().getSiege().getIsInProgress())
+				{
 					return COND_BUSY_BECAUSE_OF_SIEGE; // Busy because of siege
-				else if (getFort().getOwnerId() == player.getClanId()) // Clan owns fortress
+				}
+				else if (getFort().getOwnerId() == player.getClanId())
+				{
 					return COND_OWNER; // Owner
+				}
 			}
 		}
 		return COND_ALL_FALSE;

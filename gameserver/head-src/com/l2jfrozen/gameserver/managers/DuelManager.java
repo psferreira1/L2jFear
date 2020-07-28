@@ -1,27 +1,7 @@
-/* L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.managers;
 
-import javolution.util.FastList;
-
-import org.apache.log4j.Logger;
+import java.util.ArrayList;
+import java.util.List;
 
 import com.l2jfrozen.gameserver.model.L2Effect;
 import com.l2jfrozen.gameserver.model.actor.instance.L2PcInstance;
@@ -30,65 +10,55 @@ import com.l2jfrozen.gameserver.network.serverpackets.L2GameServerPacket;
 
 public class DuelManager
 {
-	private static final Logger LOGGER = Logger.getLogger(DuelManager.class);
+	private static DuelManager instance;
+	private final List<Duel> duels;
+	private int currentDuelId = 0x90;
 	
-	// =========================================================
-	private static DuelManager _instance;
+	private DuelManager()
+	{
+		duels = new ArrayList<>();
+	}
 	
 	public static final DuelManager getInstance()
 	{
-		if (_instance == null)
+		if (instance == null)
 		{
-			_instance = new DuelManager();
+			instance = new DuelManager();
 		}
-		return _instance;
+		return instance;
 	}
-	
-	// =========================================================
-	// Data Field
-	private final FastList<Duel> _duels;
-	private int _currentDuelId = 0x90;
-	
-	// =========================================================
-	// Constructor
-	private DuelManager()
-	{
-		LOGGER.info("Initializing DuelManager");
-		_duels = new FastList<>();
-	}
-	
-	// =========================================================
-	// Method - Private
 	
 	private int getNextDuelId()
 	{
-		_currentDuelId++;
+		currentDuelId++;
 		// In case someone wants to run the server forever :)
-		if (_currentDuelId >= 2147483640)
+		if (currentDuelId >= 2147483640)
 		{
-			_currentDuelId = 1;
+			currentDuelId = 1;
 		}
 		
-		return _currentDuelId;
+		return currentDuelId;
 	}
 	
 	public Duel getDuel(final int duelId)
 	{
-		for (FastList.Node<Duel> e = _duels.head(), end = _duels.tail(); (e = e.getNext()) != end;)
+		for (Duel duel : duels)
 		{
-			if (e.getValue().getId() == duelId)
-				return e.getValue();
+			if (duel.getId() == duelId)
+			{
+				return duel;
+			}
 		}
+		
 		return null;
 	}
-	
-	// =========================================================
-	// Method - Public
 	
 	public void addDuel(final L2PcInstance playerA, final L2PcInstance playerB, final int partyDuel)
 	{
 		if (playerA == null || playerB == null)
+		{
 			return;
+		}
 		
 		// return if a player has PvPFlag
 		String engagedInPvP = "The duel was canceled because a duelist engaged in PvP combat.";
@@ -141,20 +111,22 @@ public class DuelManager
 		engagedInPvP = null;
 		
 		Duel duel = new Duel(playerA, playerB, partyDuel, getNextDuelId());
-		_duels.add(duel);
+		duels.add(duel);
 		
 		duel = null;
 	}
 	
 	public void removeDuel(final Duel duel)
 	{
-		_duels.remove(duel);
+		duels.remove(duel);
 	}
 	
 	public void doSurrender(final L2PcInstance player)
 	{
 		if (player == null || !player.isInDuel())
+		{
 			return;
+		}
 		Duel duel = getDuel(player.getDuelId());
 		duel.doSurrender(player);
 		duel = null;
@@ -167,7 +139,9 @@ public class DuelManager
 	public void onPlayerDefeat(final L2PcInstance player)
 	{
 		if (player == null || !player.isInDuel())
+		{
 			return;
+		}
 		Duel duel = getDuel(player.getDuelId());
 		if (duel != null)
 		{
@@ -184,7 +158,9 @@ public class DuelManager
 	public void onBuff(final L2PcInstance player, final L2Effect buff)
 	{
 		if (player == null || !player.isInDuel() || buff == null)
+		{
 			return;
+		}
 		Duel duel = getDuel(player.getDuelId());
 		if (duel != null)
 		{
@@ -200,7 +176,9 @@ public class DuelManager
 	public void onRemoveFromParty(final L2PcInstance player)
 	{
 		if (player == null || !player.isInDuel())
+		{
 			return;
+		}
 		Duel duel = getDuel(player.getDuelId());
 		if (duel != null)
 		{
@@ -217,13 +195,19 @@ public class DuelManager
 	public void broadcastToOppositTeam(final L2PcInstance player, final L2GameServerPacket packet)
 	{
 		if (player == null || !player.isInDuel())
+		{
 			return;
+		}
 		Duel duel = getDuel(player.getDuelId());
 		
 		if (duel == null)
+		{
 			return;
+		}
 		if (duel.getPlayerA() == null || duel.getPlayerB() == null)
+		{
 			return;
+		}
 		
 		if (duel.getPlayerA() == player)
 		{

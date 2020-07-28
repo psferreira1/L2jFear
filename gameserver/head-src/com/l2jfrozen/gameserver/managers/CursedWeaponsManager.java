@@ -1,22 +1,3 @@
-/* L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.managers;
 
 import java.io.File;
@@ -25,12 +6,11 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
 import javax.xml.parsers.DocumentBuilderFactory;
-
-import javolution.util.FastMap;
 
 import org.apache.log4j.Logger;
 import org.w3c.dom.Document;
@@ -62,28 +42,30 @@ import com.l2jfrozen.util.database.L2DatabaseFactory;
 public class CursedWeaponsManager
 {
 	private static final Logger LOGGER = Logger.getLogger(CursedWeaponsManager.class);
+	private static final String SELECT_CURSED_WEAPONS = "SELECT itemId, playerId, playerKarma, playerPkKills, nbKills, endTime FROM cursed_weapons";
+	private static final String DELETE_CURSED_WEAPON_BY_ITEM_ID = "DELETE FROM cursed_weapons WHERE itemId = ?";
 	
-	private static final Map<Integer, CursedWeapon> _cursedWeapons = new FastMap<>();
+	private static final Map<Integer, CursedWeapon> cursedWeapons = new HashMap<>();
 	
 	public static final CursedWeaponsManager getInstance()
 	{
-		return SingletonHolder._instance;
+		return SingletonHolder.instance;
 	}
 	
 	public CursedWeaponsManager()
 	{
 		if (!Config.ALLOW_CURSED_WEAPONS)
+		{
 			return;
+		}
 		
 		load();
 		restore();
 		controlPlayers();
 		
-		LOGGER.info("Loaded: " + _cursedWeapons.size() + " cursed weapon(s).");
+		LOGGER.info("Loaded: " + cursedWeapons.size() + " cursed weapon(s).");
 	}
 	
-	// =========================================================
-	// Method - Private
 	public final void reload()
 	{
 		if (!Config.ALLOW_CURSED_WEAPONS)
@@ -91,13 +73,13 @@ public class CursedWeaponsManager
 			return;
 		}
 		
-		_cursedWeapons.clear();
+		cursedWeapons.clear();
 		
 		load();
 		restore();
 		controlPlayers();
 		
-		LOGGER.info("Reloaded: " + _cursedWeapons.size() + " cursed weapon(s).");
+		LOGGER.info("Reloaded: " + cursedWeapons.size() + " cursed weapon(s).");
 	}
 	
 	private final void load()
@@ -113,7 +95,7 @@ public class CursedWeaponsManager
 			factory.setValidating(false);
 			factory.setIgnoringComments(true);
 			
-			final File file = new File(Config.DATAPACK_ROOT + "/data/cursedWeapons.xml");
+			final File file = new File(Config.DATAPACK_ROOT + "/data/xml/cursedWeapons.xml");
 			if (!file.exists())
 			{
 				if (Config.DEBUG)
@@ -177,7 +159,7 @@ public class CursedWeaponsManager
 							}
 							
 							// Store cursed weapon
-							_cursedWeapons.put(id, cw);
+							cursedWeapons.put(id, cw);
 							
 							attrs = null;
 							cw = null;
@@ -191,32 +173,29 @@ public class CursedWeaponsManager
 			LOGGER.error("Error parsing cursed weapons file.", e);
 			
 			if (Config.ENABLE_ALL_EXCEPTIONS)
+			{
 				e.printStackTrace();
+			}
 		}
 		
 	}
 	
 	private final void restore()
 	{
-		Connection con = null;
-		try
+		try (Connection con = L2DatabaseFactory.getInstance().getConnection();
+			PreparedStatement statement = con.prepareStatement(SELECT_CURSED_WEAPONS);
+			ResultSet rset = statement.executeQuery())
 		{
-			// Retrieve the L2PcInstance from the characters table of the database
-			con = L2DatabaseFactory.getInstance().getConnection(false);
-			
-			PreparedStatement statement = con.prepareStatement("SELECT itemId, playerId, playerKarma, playerPkKills, nbKills, endTime FROM cursed_weapons");
-			ResultSet rset = statement.executeQuery();
-			
 			if (rset.next())
 			{
-				final int itemId = rset.getInt("itemId");
-				final int playerId = rset.getInt("playerId");
-				final int playerKarma = rset.getInt("playerKarma");
-				final int playerPkKills = rset.getInt("playerPkKills");
-				final int nbKills = rset.getInt("nbKills");
-				final long endTime = rset.getLong("endTime");
+				int itemId = rset.getInt("itemId");
+				int playerId = rset.getInt("playerId");
+				int playerKarma = rset.getInt("playerKarma");
+				int playerPkKills = rset.getInt("playerPkKills");
+				int nbKills = rset.getInt("nbKills");
+				long endTime = rset.getLong("endTime");
 				
-				CursedWeapon cw = _cursedWeapons.get(itemId);
+				CursedWeapon cw = cursedWeapons.get(itemId);
 				cw.setPlayerId(playerId);
 				cw.setPlayerKarma(playerKarma);
 				cw.setPlayerPkKills(playerPkKills);
@@ -230,23 +209,10 @@ public class CursedWeaponsManager
 				removeFromDb(itemId);
 			}
 			
-			DatabaseUtils.close(rset);
-			DatabaseUtils.close(statement);
-			rset = null;
-			statement = null;
-			
 		}
-		catch (final Exception e)
+		catch (Exception e)
 		{
-			LOGGER.warn("Could not restore CursedWeapons data: " + e);
-			
-			if (Config.ENABLE_ALL_EXCEPTIONS)
-				e.printStackTrace();
-		}
-		finally
-		{
-			CloseUtil.close(con);
-			con = null;
+			LOGGER.error("CursedWeaponsManager.restore : Could not select from cursed_weapons table", e);
 		}
 		
 	}
@@ -258,7 +224,7 @@ public class CursedWeaponsManager
 		try
 		{
 			// Retrieve the L2PcInstance from the characters table of the database
-			con = L2DatabaseFactory.getInstance().getConnection(false);
+			con = L2DatabaseFactory.getInstance().getConnection();
 			PreparedStatement statement = null;
 			ResultSet rset = null;
 			
@@ -268,10 +234,12 @@ public class CursedWeaponsManager
 			// then we'd better make sure that it FULLY cleans up inactive cursed weapons!
 			// Undesired effects result otherwise, such as player with no zariche but with karma
 			// or a lost-child entry in the cursed weapons table, without a corresponding one in items...
-			for (final CursedWeapon cw : _cursedWeapons.values())
+			for (final CursedWeapon cw : cursedWeapons.values())
 			{
 				if (cw.isActivated())
+				{
 					continue;
+				}
 				
 				// Do an item check to be sure that the cursed weapon isn't hold by someone
 				final int itemId = cw.getItemId();
@@ -317,7 +285,9 @@ public class CursedWeaponsManager
 				catch (final SQLException sqlE)
 				{
 					if (Config.ENABLE_ALL_EXCEPTIONS)
+					{
 						sqlE.printStackTrace();
+					}
 				}
 			}
 		}
@@ -339,12 +309,16 @@ public class CursedWeaponsManager
 	public synchronized void checkDrop(final L2Attackable attackable, final L2PcInstance player)
 	{
 		if (attackable instanceof L2SiegeGuardInstance || attackable instanceof L2RiftInvaderInstance || attackable instanceof L2FestivalMonsterInstance || attackable instanceof L2GrandBossInstance || attackable instanceof L2FortSiegeGuardInstance || attackable instanceof L2CommanderInstance)
+		{
 			return;
+		}
 		
 		if (player.isCursedWeaponEquiped())
+		{
 			return;
+		}
 		
-		for (final CursedWeapon cw : _cursedWeapons.values())
+		for (final CursedWeapon cw : cursedWeapons.values())
 		{
 			if (cw.isActive())
 			{
@@ -360,13 +334,13 @@ public class CursedWeaponsManager
 	
 	public void activate(final L2PcInstance player, final L2ItemInstance item)
 	{
-		CursedWeapon cw = _cursedWeapons.get(item.getItemId());
+		CursedWeapon cw = cursedWeapons.get(item.getItemId());
 		if (player.isCursedWeaponEquiped()) // cannot own 2 cursed swords
 		{
-			final CursedWeapon cw2 = _cursedWeapons.get(player.getCursedWeaponEquipedId());
+			final CursedWeapon cw2 = cursedWeapons.get(player.getCursedWeaponEquipedId());
 			/*
-			 * TODO: give the bonus level in a more appropriate manner. The following code adds "_stageKills" levels. This will also show in the char status. I do not have enough info to know if the bonus should be shown in the pk count, or if it should be a full "_stageKills" bonus or just the
-			 * remaining from the current count till the of the current stage... This code is a TEMP fix, so that the cursed weapon's bonus level can be observed with as little change in the code as possible, until proper info arises.
+			 * TODO: give the bonus level in a more appropriate manner. The following code adds "_stageKills" levels. This will also show in the char status. I do not have enough info to know if the bonus should be shown in the pk count, or if it should be a full "_stageKills" bonus or just the remaining from
+			 * the current count till the of the current stage... This code is a TEMP fix, so that the cursed weapon's bonus level can be observed with as little change in the code as possible, until proper info arises.
 			 */
 			cw2.setNbKills(cw2.getStageKills() - 1);
 			cw2.increaseKills();
@@ -386,7 +360,7 @@ public class CursedWeaponsManager
 	
 	public void drop(final int itemId, final L2Character killer)
 	{
-		CursedWeapon cw = _cursedWeapons.get(itemId);
+		CursedWeapon cw = cursedWeapons.get(itemId);
 		
 		cw.dropIt(killer);
 		cw = null;
@@ -394,7 +368,7 @@ public class CursedWeaponsManager
 	
 	public void increaseKills(final int itemId)
 	{
-		CursedWeapon cw = _cursedWeapons.get(itemId);
+		CursedWeapon cw = cursedWeapons.get(itemId);
 		
 		cw.increaseKills();
 		cw = null;
@@ -402,7 +376,7 @@ public class CursedWeaponsManager
 	
 	public int getLevel(final int itemId)
 	{
-		final CursedWeapon cw = _cursedWeapons.get(itemId);
+		final CursedWeapon cw = cursedWeapons.get(itemId);
 		
 		return cw.getLevel();
 	}
@@ -424,9 +398,11 @@ public class CursedWeaponsManager
 	public void checkPlayer(final L2PcInstance player)
 	{
 		if (player == null)
+		{
 			return;
+		}
 		
-		for (final CursedWeapon cw : _cursedWeapons.values())
+		for (final CursedWeapon cw : cursedWeapons.values())
 		{
 			if (cw.isActive() && player.getObjectId() == cw.getPlayerId())
 			{
@@ -451,35 +427,23 @@ public class CursedWeaponsManager
 		}
 	}
 	
-	public static void removeFromDb(final int itemId)
+	public static void removeFromDb(int itemId)
 	{
-		Connection con = null;
-		try
+		try (Connection con = L2DatabaseFactory.getInstance().getConnection();
+			PreparedStatement statement = con.prepareStatement(DELETE_CURSED_WEAPON_BY_ITEM_ID))
 		{
-			con = L2DatabaseFactory.getInstance().getConnection(false);
-			
-			// Delete datas
-			PreparedStatement statement = con.prepareStatement("DELETE FROM cursed_weapons WHERE itemId = ?");
 			statement.setInt(1, itemId);
 			statement.executeUpdate();
-			
-			DatabaseUtils.close(statement);
-			statement = null;
 		}
-		catch (final SQLException e)
+		catch (SQLException e)
 		{
-			LOGGER.error("CursedWeaponsManager: Failed to remove data", e);
-		}
-		finally
-		{
-			CloseUtil.close(con);
-			con = null;
+			LOGGER.error("CursedWeaponsManager.removeFromDb : Failed to remove data", e);
 		}
 	}
 	
 	public void saveData()
 	{
-		for (final CursedWeapon cw : _cursedWeapons.values())
+		for (CursedWeapon cw : cursedWeapons.values())
 		{
 			cw.saveData();
 		}
@@ -487,39 +451,41 @@ public class CursedWeaponsManager
 	
 	public boolean isCursed(final int itemId)
 	{
-		return _cursedWeapons.containsKey(itemId);
+		return cursedWeapons.containsKey(itemId);
 	}
 	
 	public Collection<CursedWeapon> getCursedWeapons()
 	{
-		return _cursedWeapons.values();
+		return cursedWeapons.values();
 	}
 	
 	public Set<Integer> getCursedWeaponsIds()
 	{
-		return _cursedWeapons.keySet();
+		return cursedWeapons.keySet();
 	}
 	
 	public CursedWeapon getCursedWeapon(final int itemId)
 	{
-		return _cursedWeapons.get(itemId);
+		return cursedWeapons.get(itemId);
 	}
 	
 	public void givePassive(final int itemId)
 	{
 		try
 		{
-			_cursedWeapons.get(itemId).giveSkill();
+			cursedWeapons.get(itemId).giveSkill();
 		}
 		catch (final Exception e)
 		{
 			if (Config.ENABLE_ALL_EXCEPTIONS)
+			{
 				e.printStackTrace();
+			}
 		}
 	}
 	
 	private static class SingletonHolder
 	{
-		protected static final CursedWeaponsManager _instance = new CursedWeaponsManager();
+		protected static final CursedWeaponsManager instance = new CursedWeaponsManager();
 	}
 }

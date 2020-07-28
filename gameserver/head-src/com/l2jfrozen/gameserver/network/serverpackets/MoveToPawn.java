@@ -1,23 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.network.serverpackets;
 
 import com.l2jfrozen.gameserver.model.L2Character;
@@ -34,20 +14,19 @@ import com.l2jfrozen.gameserver.model.L2Character;
  */
 public class MoveToPawn extends L2GameServerPacket
 {
-	private static final String _S__75_MOVETOPAWN = "[S] 60 MoveToPawn";
-	private final int _charObjId;
-	private final int _targetId;
-	private final int _distance;
-	private final int _x, _y, _z;
+	private final int charObjId;
+	private final int targetId;
+	private final int distance;
+	private final int x, y, z;
 	
 	public MoveToPawn(final L2Character cha, final L2Character target, final int distance)
 	{
-		_charObjId = cha.getObjectId();
-		_targetId = target.getObjectId();
-		_distance = distance;
-		_x = cha.getX();
-		_y = cha.getY();
-		_z = cha.getZ();
+		charObjId = cha.getObjectId();
+		targetId = target.getObjectId();
+		this.distance = distance;
+		x = cha.getX();
+		y = cha.getY();
+		z = cha.getZ();
 	}
 	
 	@Override
@@ -55,22 +34,18 @@ public class MoveToPawn extends L2GameServerPacket
 	{
 		writeC(0x60);
 		
-		writeD(_charObjId);
-		writeD(_targetId);
-		writeD(_distance);
+		writeD(charObjId);
+		writeD(targetId);
+		writeD(distance);
 		
-		writeD(_x);
-		writeD(_y);
-		writeD(_z);
+		writeD(x);
+		writeD(y);
+		writeD(z);
 	}
 	
-	/*
-	 * (non-Javadoc)
-	 * @see com.l2jfrozen.gameserver.serverpackets.ServerBasePacket#getType()
-	 */
 	@Override
 	public String getType()
 	{
-		return _S__75_MOVETOPAWN;
+		return "[S] 60 MoveToPawn";
 	}
 }

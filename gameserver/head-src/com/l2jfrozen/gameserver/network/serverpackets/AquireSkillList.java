@@ -1,28 +1,7 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.network.serverpackets;
 
+import java.util.ArrayList;
 import java.util.List;
-
-import javolution.util.FastList;
 
 /**
  * sample a3 05000000 03000000 03000000 06000000 3c000000 00000000 power strike 10000000 02000000 06000000 3c000000 00000000 mortal blow 38000000 04000000 06000000 36010000 00000000 power shot 4d000000 01000000 01000000 98030000 01000000 ATTACK aura 920sp 8e000000 03000000 03000000 cc010000 00000000
@@ -32,7 +11,6 @@ import javolution.util.FastList;
  */
 public class AquireSkillList extends L2GameServerPacket
 {
-	// private static Logger LOGGER = Logger.getLogger(AquireSkillList.class);
 	public enum skillType
 	{
 		Usual,
@@ -40,10 +18,8 @@ public class AquireSkillList extends L2GameServerPacket
 		Clan
 	}
 	
-	private static final String _S__A3_AQUIRESKILLLIST = "[S] 8a AquireSkillList";
-	
-	private final List<Skill> _skills;
-	private final skillType _fishingSkills;
+	private final List<Skill> skills;
+	private final skillType fishingSkills;
 	
 	private class Skill
 	{
@@ -65,23 +41,23 @@ public class AquireSkillList extends L2GameServerPacket
 	
 	public AquireSkillList(final skillType type)
 	{
-		_skills = new FastList<>();
-		_fishingSkills = type;
+		skills = new ArrayList<>();
+		fishingSkills = type;
 	}
 	
 	public void addSkill(final int id, final int nextLevel, final int maxLevel, final int spCost, final int requirements)
 	{
-		_skills.add(new Skill(id, nextLevel, maxLevel, spCost, requirements));
+		skills.add(new Skill(id, nextLevel, maxLevel, spCost, requirements));
 	}
 	
 	@Override
 	protected final void writeImpl()
 	{
 		writeC(0x8a);
-		writeD(_fishingSkills.ordinal()); // c4 : C5 : 0: usuall 1: fishing 2: clans
-		writeD(_skills.size());
+		writeD(fishingSkills.ordinal()); // c4 : C5 : 0: usuall 1: fishing 2: clans
+		writeD(skills.size());
 		
-		for (final Skill temp : _skills)
+		for (final Skill temp : skills)
 		{
 			writeD(temp.id);
 			writeD(temp.nextLevel);
@@ -91,13 +67,9 @@ public class AquireSkillList extends L2GameServerPacket
 		}
 	}
 	
-	/*
-	 * (non-Javadoc)
-	 * @see com.l2jfrozen.gameserver.serverpackets.ServerBasePacket#getType()
-	 */
 	@Override
 	public String getType()
 	{
-		return _S__A3_AQUIRESKILLLIST;
+		return "[S] 8a AquireSkillList";
 	}
 }

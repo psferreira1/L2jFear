@@ -1,23 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.handler.itemhandlers;
 
 import com.l2jfrozen.gameserver.datatables.SkillTable;
@@ -49,15 +29,13 @@ public class ScrollOfResurrection implements IItemHandler
 		6387
 	};
 	
-	/*
-	 * (non-Javadoc)
-	 * @see com.l2jfrozen.gameserver.handler.IItemHandler#useItem(com.l2jfrozen.gameserver.model.L2PcInstance, com.l2jfrozen.gameserver.model.L2ItemInstance)
-	 */
 	@Override
 	public void useItem(final L2PlayableInstance playable, final L2ItemInstance item)
 	{
 		if (!(playable instanceof L2PcInstance))
+		{
 			return;
+		}
 		
 		L2PcInstance activeChar = (L2PcInstance) playable;
 		
@@ -73,7 +51,9 @@ public class ScrollOfResurrection implements IItemHandler
 		}
 		
 		if (activeChar.isMovementDisabled())
+		{
 			return;
+		}
 		
 		final int itemId = item.getItemId();
 		// boolean blessedScroll = (itemId != 737);
@@ -200,7 +180,9 @@ public class ScrollOfResurrection implements IItemHandler
 						
 						// Consume the scroll
 						if (!activeChar.destroyItem("Consume", item.getObjectId(), 1, null, false))
+						{
 							return;
+						}
 						
 						final SystemMessage sm = new SystemMessage(SystemMessageId.S1_DISAPPEARED);
 						sm.addItemName(itemId);

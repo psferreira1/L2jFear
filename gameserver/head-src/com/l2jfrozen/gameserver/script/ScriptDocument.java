@@ -1,23 +1,3 @@
-/*
- * L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.script;
 
 import java.io.IOException;
@@ -35,18 +15,18 @@ import org.xml.sax.SAXException;
  */
 public class ScriptDocument
 {
-	private Document _document;
-	private final String _name;
+	private Document document;
+	private final String name;
 	
 	public ScriptDocument(final String name, final InputStream input)
 	{
-		_name = name;
+		this.name = name;
 		
 		final DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 		try
 		{
 			final DocumentBuilder builder = factory.newDocumentBuilder();
-			_document = builder.parse(input);
+			document = builder.parse(input);
 			
 		}
 		catch (final SAXException sxe)
@@ -69,6 +49,7 @@ public class ScriptDocument
 		{
 			
 			if (input != null)
+			{
 				try
 				{
 					input.close();
@@ -77,26 +58,24 @@ public class ScriptDocument
 				{
 					e.printStackTrace();
 				}
+			}
 		}
 	}
 	
 	public Document getDocument()
 	{
-		return _document;
+		return document;
 	}
 	
-	/**
-	 * @return Returns the _name.
-	 */
 	public String getName()
 	{
-		return _name;
+		return name;
 	}
 	
 	@Override
 	public String toString()
 	{
-		return _name;
+		return name;
 	}
 	
 }

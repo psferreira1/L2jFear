@@ -1,22 +1,3 @@
-/* L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.updaters;
 
 import org.apache.log4j.Logger;
@@ -35,13 +16,13 @@ import com.l2jfrozen.logs.Log;
 public class CastleUpdater implements Runnable
 {
 	protected static Logger LOGGER = Logger.getLogger(CastleUpdater.class);
-	private final L2Clan _clan;
-	private int _runCount = 0;
+	private final L2Clan clan;
+	private int runCount = 0;
 	
 	public CastleUpdater(final L2Clan clan, final int runCount)
 	{
-		_clan = clan;
-		_runCount = runCount;
+		this.clan = clan;
+		this.runCount = runCount;
 	}
 	
 	@Override
@@ -50,13 +31,13 @@ public class CastleUpdater implements Runnable
 		try
 		{
 			// Move current castle treasury to clan warehouse every 2 hour
-			ItemContainer warehouse = _clan.getWarehouse();
-			if (warehouse != null && _clan.getHasCastle() > 0)
+			ItemContainer warehouse = clan.getWarehouse();
+			if (warehouse != null && clan.getCastleId() > 0)
 			{
-				final Castle castle = CastleManager.getInstance().getCastleById(_clan.getHasCastle());
+				final Castle castle = CastleManager.getInstance().getCastleById(clan.getCastleId());
 				if (!Config.ALT_MANOR_SAVE_ALL_ACTIONS)
 				{
-					if (_runCount % Config.ALT_MANOR_SAVE_PERIOD_RATE == 0)
+					if (runCount % Config.ALT_MANOR_SAVE_PERIOD_RATE == 0)
 					{
 						castle.saveSeedData();
 						castle.saveCropData();
@@ -65,8 +46,8 @@ public class CastleUpdater implements Runnable
 					}
 				}
 				
-				_runCount++;
-				final CastleUpdater cu = new CastleUpdater(_clan, _runCount);
+				runCount++;
+				final CastleUpdater cu = new CastleUpdater(clan, runCount);
 				ThreadPoolManager.getInstance().scheduleGeneral(cu, 3600000);
 				warehouse = null;
 			}

@@ -1,22 +1,3 @@
-/* L2jFrozen Project - www.l2jfrozen.com 
- * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
- * 02111-1307, USA.
- *
- * http://www.gnu.org/copyleft/gpl.html
- */
 package com.l2jfrozen.gameserver.handler.skillhandlers;
 
 import com.l2jfrozen.gameserver.handler.ISkillHandler;
@@ -49,11 +30,13 @@ public class Manadam implements ISkillHandler
 		L2Character target = null;
 		
 		if (activeChar.isAlikeDead())
+		{
 			return;
+		}
 		
 		/*
-		 * boolean ss = false; boolean bss = false; L2ItemInstance weaponInst = activeChar.getActiveWeaponInstance(); if(weaponInst != null) { if(weaponInst.getChargedSpiritshot() == L2ItemInstance.CHARGED_BLESSED_SPIRITSHOT) { bss = true;
-		 * weaponInst.setChargedSpiritshot(L2ItemInstance.CHARGED_NONE); } else if(weaponInst.getChargedSpiritshot() == L2ItemInstance.CHARGED_SPIRITSHOT) { ss = true; weaponInst.setChargedSpiritshot(L2ItemInstance.CHARGED_NONE); } } weaponInst = null;
+		 * boolean ss = false; boolean bss = false; L2ItemInstance weaponInst = activeChar.getActiveWeaponInstance(); if(weaponInst != null) { if(weaponInst.getChargedSpiritshot() == L2ItemInstance.CHARGED_BLESSED_SPIRITSHOT) { bss = true; weaponInst.setChargedSpiritshot(L2ItemInstance.CHARGED_NONE); } else
+		 * if(weaponInst.getChargedSpiritshot() == L2ItemInstance.CHARGED_SPIRITSHOT) { ss = true; weaponInst.setChargedSpiritshot(L2ItemInstance.CHARGED_NONE); } } weaponInst = null;
 		 */
 		final boolean sps = activeChar.checkSps();
 		final boolean bss = activeChar.checkBss();
@@ -63,10 +46,14 @@ public class Manadam implements ISkillHandler
 			target = (L2Character) target2;
 			
 			if (target.reflectSkill(skill))
+			{
 				target = activeChar;
+			}
 			
 			if (target == null)
+			{
 				continue;
+			}
 			
 			final boolean acted = Formulas.getInstance().calcMagicAffected(activeChar, target, skill);
 			if (target.isInvul() || !acted)
@@ -81,8 +68,12 @@ public class Manadam implements ISkillHandler
 				target.reduceCurrentMp(mp);
 				
 				if (damage > 0)
+				{
 					if (target.isSleeping())
+					{
 						target.stopSleeping(null);
+					}
+				}
 				
 				StatusUpdate sump = new StatusUpdate(target.getObjectId());
 				sump.addAttribute(StatusUpdate.CUR_MP, (int) target.getCurrentMp());
