@@ -1,0 +1,83 @@
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/svn/L2jFrozenInterlude/!svn/ver/1071/branches/Beta/gameserver/dist
+END
+startLoginServer.bat
+K 25
+svn:wc:ra_dav:version-url
+V 88
+/svn/L2jFrozenInterlude/!svn/ver/1008/branches/Beta/gameserver/dist/startLoginServer.bat
+END
+anti_ddos.sh
+K 25
+svn:wc:ra_dav:version-url
+V 80
+/svn/L2jFrozenInterlude/!svn/ver/1008/branches/Beta/gameserver/dist/anti_ddos.sh
+END
+GameServer_loop.sh
+K 25
+svn:wc:ra_dav:version-url
+V 86
+/svn/L2jFrozenInterlude/!svn/ver/1071/branches/Beta/gameserver/dist/GameServer_loop.sh
+END
+Start_LoginServer_noScreen.sh
+K 25
+svn:wc:ra_dav:version-url
+V 97
+/svn/L2jFrozenInterlude/!svn/ver/1008/branches/Beta/gameserver/dist/Start_LoginServer_noScreen.sh
+END
+Start_GameServer_noScreen.sh
+K 25
+svn:wc:ra_dav:version-url
+V 96
+/svn/L2jFrozenInterlude/!svn/ver/1008/branches/Beta/gameserver/dist/Start_GameServer_noScreen.sh
+END
+startBackup.bat
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/svn/L2jFrozenInterlude/!svn/ver/1008/branches/Beta/gameserver/dist/startBackup.bat
+END
+restartGameServer.bat
+K 25
+svn:wc:ra_dav:version-url
+V 89
+/svn/L2jFrozenInterlude/!svn/ver/1012/branches/Beta/gameserver/dist/restartGameServer.bat
+END
+RegisterGameServer.sh
+K 25
+svn:wc:ra_dav:version-url
+V 89
+/svn/L2jFrozenInterlude/!svn/ver/1008/branches/Beta/gameserver/dist/RegisterGameServer.sh
+END
+LoginServer_loop.sh
+K 25
+svn:wc:ra_dav:version-url
+V 87
+/svn/L2jFrozenInterlude/!svn/ver/1008/branches/Beta/gameserver/dist/LoginServer_loop.sh
+END
+startGameServer.bat
+K 25
+svn:wc:ra_dav:version-url
+V 87
+/svn/L2jFrozenInterlude/!svn/ver/1071/branches/Beta/gameserver/dist/startGameServer.bat
+END
+RegisterGameServer.bat
+K 25
+svn:wc:ra_dav:version-url
+V 90
+/svn/L2jFrozenInterlude/!svn/ver/1008/branches/Beta/gameserver/dist/RegisterGameServer.bat
+END
+startBackup.sh
+K 25
+svn:wc:ra_dav:version-url
+V 82
+/svn/L2jFrozenInterlude/!svn/ver/1008/branches/Beta/gameserver/dist/startBackup.sh
+END
+restartGameServer.sh
+K 25
+svn:wc:ra_dav:version-url
+V 88
+/svn/L2jFrozenInterlude/!svn/ver/1012/branches/Beta/gameserver/dist/restartGameServer.sh
+END

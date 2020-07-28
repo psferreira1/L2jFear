@@ -1,0 +1,77 @@
+K 25
+svn:wc:ra_dav:version-url
+V 90
+/svn/L2jFrozenInterlude/!svn/ver/1111/branches/Beta/gameserver/head-src/com/l2jfrozen/util
+END
+L2FastList.java
+K 25
+svn:wc:ra_dav:version-url
+V 106
+/svn/L2jFrozenInterlude/!svn/ver/1111/branches/Beta/gameserver/head-src/com/l2jfrozen/util/L2FastList.java
+END
+PacketsFloodProtector.java
+K 25
+svn:wc:ra_dav:version-url
+V 117
+/svn/L2jFrozenInterlude/!svn/ver/1111/branches/Beta/gameserver/head-src/com/l2jfrozen/util/PacketsFloodProtector.java
+END
+IPv4Filter.java
+K 25
+svn:wc:ra_dav:version-url
+V 106
+/svn/L2jFrozenInterlude/!svn/ver/1111/branches/Beta/gameserver/head-src/com/l2jfrozen/util/IPv4Filter.java
+END
+OlympiadLogger.java
+K 25
+svn:wc:ra_dav:version-url
+V 110
+/svn/L2jFrozenInterlude/!svn/ver/1111/branches/Beta/gameserver/head-src/com/l2jfrozen/util/OlympiadLogger.java
+END
+CloseUtil.java
+K 25
+svn:wc:ra_dav:version-url
+V 105
+/svn/L2jFrozenInterlude/!svn/ver/1111/branches/Beta/gameserver/head-src/com/l2jfrozen/util/CloseUtil.java
+END
+L2FastMap.java
+K 25
+svn:wc:ra_dav:version-url
+V 105
+/svn/L2jFrozenInterlude/!svn/ver/1111/branches/Beta/gameserver/head-src/com/l2jfrozen/util/L2FastMap.java
+END
+XmlEngine.java
+K 25
+svn:wc:ra_dav:version-url
+V 105
+/svn/L2jFrozenInterlude/!svn/ver/1111/branches/Beta/gameserver/head-src/com/l2jfrozen/util/XmlEngine.java
+END
+PrimeFinder.java
+K 25
+svn:wc:ra_dav:version-url
+V 107
+/svn/L2jFrozenInterlude/!svn/ver/1051/branches/Beta/gameserver/head-src/com/l2jfrozen/util/PrimeFinder.java
+END
+StringUtil.java
+K 25
+svn:wc:ra_dav:version-url
+V 106
+/svn/L2jFrozenInterlude/!svn/ver/1111/branches/Beta/gameserver/head-src/com/l2jfrozen/util/StringUtil.java
+END
+Util.java
+K 25
+svn:wc:ra_dav:version-url
+V 100
+/svn/L2jFrozenInterlude/!svn/ver/1111/branches/Beta/gameserver/head-src/com/l2jfrozen/util/Util.java
+END
+Point3D.java
+K 25
+svn:wc:ra_dav:version-url
+V 103
+/svn/L2jFrozenInterlude/!svn/ver/1111/branches/Beta/gameserver/head-src/com/l2jfrozen/util/Point3D.java
+END
+Memory.java
+K 25
+svn:wc:ra_dav:version-url
+V 102
+/svn/L2jFrozenInterlude/!svn/ver/1096/branches/Beta/gameserver/head-src/com/l2jfrozen/util/Memory.java
+END

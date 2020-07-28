@@ -31,14 +31,10 @@
 
 	<target name="prepare-final" description="Prepare the final folders properties">
 
-		<property name="build.classes" location="${build}/classes" />
-		<property name="build.dist" location="${build}/dist" />
-		<property name="build.dist.login" location="${build.dist}/loginserver" />
-		<property name="build.dist.login.lib" location="${build.dist.login}/lib" />
-		<property name="build.dist.game" location="${build.dist}/gameserver" />
-		<property name="build.dist.game.lib" location="${build.dist.game}/lib" />
-		<property name="properties-file" location="${build.dist.game}/config/version/l2jfrozen-server.properties" />
 
+
+
+		<property name="build.dist.game.lib" location="${build.dist.game}/lib" />
 	</target>
 
 	<path id="classpath">
@@ -75,70 +71,12 @@
 			<fileset dir="${build.classes}" />
 		</jar>
 
-		<copy todir="${build.dist.login.lib}">
-			<fileset dir="${build}">
-				<include name="l2jfrozen-core.jar" />
-			</fileset>
-		</copy>
-		<copy todir="${build.dist.game.lib}">
-			<fileset dir="${build}">
-				<include name="l2jfrozen-core.jar" />
-			</fileset>
-		</copy>
 
 	</target>
 
 	<target name="export" depends="jar">
 
-		<!-- copy todir="${build.dist.login}">
-			<fileset dir="config/others">
-				<include name="log.cfg" />
-				<include name="servername.xml" />
-			</fileset>
-		</copy>
-
-		<copy todir="${build.dist.game}">
-			<fileset dir="config/others">
-				<include name="log.cfg" />
-			</fileset>
-		</copy -->
-
-		<copy todir="${build.dist.game.lib}">
-			<fileset dir="${src-lib}">
-				<include name="**/*.jar" />
-				<include name="*.txt" />
-			</fileset>
-		</copy>
-
-		<copy todir="${build.dist.login.lib}">
-			<fileset dir="${src-lib}">
-				<include name="*.jar" />
-				<include name="*.txt" />
-			</fileset>
-		</copy>
-
-		<copy todir="${build.dist.login}">
-			<fileset dir="dist">
-				<include name="LoginServer_loop.sh" />
-				<include name="startLoginServer.*" />
-				<include name="anti_ddos.*" />
-				<include name="RegisterGameServer.*" />
-			</fileset>
-		</copy>
-		<copy todir="${build.dist.game}">
-			<fileset dir="dist">
-				<include name="GameServer_loop.sh" />
-				<include name="startGameServer.*" />
-				<include name="startBackup.*" />
-				<include name="restartGameServer.*" />
-			</fileset>
-		</copy>
-		<copy todir="${build.dist}">
-			<fileset dir="dist">
-				<include name="Start_GameServer_noScreen.sh" />
-				<include name="Start_LoginServer_noScreen.sh" />
-			</fileset>
-		</copy>
+	
 
 		<fixcrlf srcdir="${build.dist.game}" eol="lf" eof="remove" includes="**/*.sh">
 		</fixcrlf>
@@ -150,123 +88,6 @@
 		<fixcrlf srcdir="${build.dist.login}" eol="crlf" eof="remove" includes="**/*.bat">
 		</fixcrlf>
 
-		<mkdir dir="${build.dist.game}/log" />
-		<mkdir dir="${build.dist.login}/log" />
-		
-		<mkdir dir="${build.dist.login}/config" />
-		<mkdir dir="${build.dist.login}/config/network" />
-		<mkdir dir="${build.dist.login}/config/protected" />
-		
-		<mkdir dir="${build.dist.game}/config/protected" />
-		<mkdir dir="${build.dist.game}/config/head" />
-		<mkdir dir="${build.dist.game}/config/functions" />
-		<mkdir dir="${build.dist.game}/config/powerpak" />
-		<mkdir dir="${build.dist.game}/config/powerpak/webservices" />
-		<mkdir dir="${build.dist.game}/config/network" />
-		<mkdir dir="${build.dist.game}/config/fun" />
-
-		<mkdir dir="${build.dist.game}/config/others" />
-
-		<!-- game server -->
-		<copy todir="${build.dist.game}/config">
-			<fileset dir="config">
-				<include name="*.properties" />
-				<include name="*.info" />
-				<include name="chatfilter.txt" />
-				<include name="questionwords.txt" />
-				<include name="key.cfg" />
-				<!-- include name="banned_ip.cfg" / -->
-			</fileset>
-		</copy>
-
-		<copy todir="${build.dist.game}/config/protected">
-			<fileset dir="config/protected">
-				<include name="*.properties" />
-			</fileset>
-		</copy>
-
-		<copy todir="${build.dist.game}/config/functions">
-			<fileset dir="config/functions">
-				<include name="*.properties" />
-			</fileset>
-		</copy>
-
-		<copy todir="${build.dist.game}/config/head">
-			<fileset dir="config/head">
-				<include name="*.properties" />
-			</fileset>
-		</copy>
-
-		<copy todir="${build.dist.game}/config/powerpak">
-			<fileset dir="config/powerpak">
-				<include name="*.*" />
-			</fileset>
-		</copy>
-
-		<copy todir="${build.dist.game}/config/frozen">
-			<fileset dir="config/frozen">
-				<include name="*.properties" />
-			</fileset>
-		</copy>
-
-		<copy todir="${build.dist.game}/config/fun">
-			<fileset dir="config/fun">
-				<include name="*.properties" />
-			</fileset>
-		</copy>
-		<!-- network gameserver -->
-		<copy todir="${build.dist.game}/config/network">
-			<fileset dir="config/network">
-				<include name="gameserver.properties" />
-			</fileset>
-		</copy>
-
-		<copy todir="${build.dist.game}/config/others">
-					<fileset dir="config/others">
-						<include name="*.*" />
-					</fileset>
-		</copy>
-		
-		<!-- copy todir="${build.dist.game}/">
-			<fileset dir="config/others">
-				<include name="*.*" />
-			</fileset>
-		</copy -->
-
-
-		<!-- login server -->
-		<copy todir="${build.dist.login}/config">
-			<fileset dir="config">
-				<include name="telnet.properties" />
-			</fileset>
-			<!-- fileset dir="config/others">
-				<include name="banned_ip.cfg" />
-			</fileset -->
-		</copy>
-
-		<copy todir="${build.dist.login}/config/protected">
-			<fileset dir="config/protected">
-				<include name="mmocore.properties" />
-			</fileset>
-		</copy>
-
-
-		<!-- network ls -->
-		<copy todir="${build.dist.login}/config/network">
-			<fileset dir="config/network">
-				<include name="loginserver.properties" />
-			</fileset>
-		</copy>
-		
-		<copy todir="${build.dist.login}/config/others">
-							<fileset dir="config/others">
-								<include name="*.*" />
-							</fileset>
-				</copy>
-
-
-		<delete dir="${build.classes}" />
-		<delete file="${build}/l2jfrozen-core.jar" />
 
 	</target>
 
@@ -290,8 +111,7 @@
 	</target>
 
 	<target name="dist-local" depends="prepare-local,prepare-final,export" description="Create distribution files and Zip one into 'build' folder">
-		<zip destfile="${build}/L2JFrozen_GameServer.zip" basedir="${build.dist}" update="true" />
-	</target>
+		</target>
 
 	<target name="dist-test" depends="prepare-test,prepare-final,export" description="Create distribution files into 'local_test_folder' folder: change it into build.properties">
 	</target>

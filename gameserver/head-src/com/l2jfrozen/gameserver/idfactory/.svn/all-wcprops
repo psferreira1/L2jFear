@@ -1,0 +1,29 @@
+K 25
+svn:wc:ra_dav:version-url
+V 106
+/svn/L2jFrozenInterlude/!svn/ver/1111/branches/Beta/gameserver/head-src/com/l2jfrozen/gameserver/idfactory
+END
+IdFactory.java
+K 25
+svn:wc:ra_dav:version-url
+V 121
+/svn/L2jFrozenInterlude/!svn/ver/1111/branches/Beta/gameserver/head-src/com/l2jfrozen/gameserver/idfactory/IdFactory.java
+END
+BitSetIDFactory.java
+K 25
+svn:wc:ra_dav:version-url
+V 127
+/svn/L2jFrozenInterlude/!svn/ver/1111/branches/Beta/gameserver/head-src/com/l2jfrozen/gameserver/idfactory/BitSetIDFactory.java
+END
+CompactionIDFactory.java
+K 25
+svn:wc:ra_dav:version-url
+V 131
+/svn/L2jFrozenInterlude/!svn/ver/1111/branches/Beta/gameserver/head-src/com/l2jfrozen/gameserver/idfactory/CompactionIDFactory.java
+END
+StackIDFactory.java
+K 25
+svn:wc:ra_dav:version-url
+V 126
+/svn/L2jFrozenInterlude/!svn/ver/1111/branches/Beta/gameserver/head-src/com/l2jfrozen/gameserver/idfactory/StackIDFactory.java
+END

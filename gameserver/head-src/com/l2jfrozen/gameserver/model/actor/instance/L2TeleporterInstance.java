@@ -1,3 +1,23 @@
+/*
+ * L2jFrozen Project - www.l2jfrozen.com 
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2, or (at your option)
+ * any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
+ * 02111-1307, USA.
+ *
+ * http://www.gnu.org/copyleft/gpl.html
+ */
 package com.l2jfrozen.gameserver.model.actor.instance;
 
 import java.util.StringTokenizer;
@@ -8,7 +28,9 @@ import com.l2jfrozen.gameserver.managers.CastleManager;
 import com.l2jfrozen.gameserver.managers.GrandBossManager;
 import com.l2jfrozen.gameserver.managers.SiegeManager;
 import com.l2jfrozen.gameserver.managers.TownManager;
+import com.l2jfrozen.gameserver.model.L2Party;
 import com.l2jfrozen.gameserver.model.L2TeleportLocation;
+import com.l2jfrozen.gameserver.model.entity.olympiad.Olympiad;
 import com.l2jfrozen.gameserver.model.zone.type.L2BossZone;
 import com.l2jfrozen.gameserver.network.SystemMessageId;
 import com.l2jfrozen.gameserver.network.serverpackets.ActionFailed;
@@ -17,10 +39,14 @@ import com.l2jfrozen.gameserver.network.serverpackets.SystemMessage;
 import com.l2jfrozen.gameserver.templates.L2NpcTemplate;
 
 /**
+ * The Class L2TeleporterInstance.
  * @author NightMarez
+ * @version $Revision: 1.3.2.2.2.5 $ $Date: 2005/03/27 15:29:32 $
  */
-public class L2TeleporterInstance extends L2FolkInstance
+public final class L2TeleporterInstance extends L2FolkInstance
 {
+	// private static Logger LOGGER = Logger.getLogger(L2TeleporterInstance.class);
+	
 	/** The Constant COND_ALL_FALSE. */
 	private static final int COND_ALL_FALSE = 0;
 	
@@ -43,15 +69,16 @@ public class L2TeleporterInstance extends L2FolkInstance
 		super(objectId, template);
 	}
 	
+	/*
+	 * (non-Javadoc)
+	 * @see com.l2jfrozen.gameserver.model.actor.instance.L2FolkInstance#onBypassFeedback(com.l2jfrozen.gameserver.model.actor.instance.L2PcInstance, java.lang.String)
+	 */
 	@Override
 	public void onBypassFeedback(final L2PcInstance player, final String command)
 	{
-		if (player == null)
-		{
-			return;
-		}
+		player.sendPacket(ActionFailed.STATIC_PACKET);
 		
-		if (player.isInOlympiadMode())
+		if (Olympiad.getInstance().isRegisteredInComp(player))
 		{
 			player.sendMessage("You are not allowed to use a teleport while registered in olympiad game.");
 			return;
@@ -62,7 +89,11 @@ public class L2TeleporterInstance extends L2FolkInstance
 			player.sendMessage("Aio Buffers Can't Use Teleports");
 			return;
 		}
-		
+		if(player._inEventCTF || player._inEventDM || player._inEventTvT)
+		{
+    		player.sendMessage("Event Can't Use Teleports");
+    		return;
+		}
 		final int condition = validateCondition(player);
 		
 		StringTokenizer st = new StringTokenizer(command, " ");
@@ -82,7 +113,7 @@ public class L2TeleporterInstance extends L2FolkInstance
 				case 31100: //
 				case 31101: //
 				case 31102: //
-				
+					
 				case 31114: //
 				case 31115: //
 				case 31116: // Enter Catacombs
@@ -99,7 +130,7 @@ public class L2TeleporterInstance extends L2FolkInstance
 				case 31108: //
 				case 31109: //
 				case 31110: //
-				
+					
 				case 31120: //
 				case 31121: //
 				case 31122: // Exit Catacombs
@@ -111,9 +142,7 @@ public class L2TeleporterInstance extends L2FolkInstance
 			}
 			
 			if (st.countTokens() <= 0)
-			{
 				return;
-			}
 			
 			final int whereTo = Integer.parseInt(st.nextToken());
 			if (condition == COND_REGULAR)
@@ -141,12 +170,54 @@ public class L2TeleporterInstance extends L2FolkInstance
 				return;
 			}
 		}
-		else
-		{
-			super.onBypassFeedback(player, command);
-		}
+		
+		              if (actualCommand.equalsIgnoreCase("party"))
+			              {
+			                        if (player.getParty() == null)
+			                        	
+			                        	
+			                                   {
+			                                      player.sendMessage("You are not in Party!");
+			                                      return;
+			                                   }
+			                                  
+			                                   if (player.getObjectId() != player.getParty().getPartyLeaderOID())
+			                                   {
+			                                      player.sendMessage("You must be party leader to use the teleport!");
+			                                      return;
+			                                   }
+			                                  
+			                                   int NumberPartyMembers = 0;      
+			                                   for (final L2PcInstance temp : player.getParty().getPartyMembers())
+			                                   {
+			                                      NumberPartyMembers++;  
+			                                   }
+			                                  
+			                                   if(player.getParty().getMemberCount() < 5)
+			                                   {
+			                                      player.sendMessage("You must be in party of 5-9 members to use the teleport!");
+			                                      return;
+			                                   }
+			                                  
+			                                     else if(actualCommand.equalsIgnoreCase("party"))
+			                                     {
+			                                        for (final L2PcInstance temp : player.getParty().getPartyMembers())
+			                                        {
+			                                           temp.teleToLocation(84209, 256956, -11697, true);  
+			                                        }
+			                                     }
+			                                  
+			               }
+		
+		st = null;
+		actualCommand = null;
+		super.onBypassFeedback(player, command);
 	}
 	
+	/*
+	 * (non-Javadoc)
+	 * @see com.l2jfrozen.gameserver.model.actor.instance.L2NpcInstance#getHtmlPath(int, int)
+	 */
 	@Override
 	public String getHtmlPath(final int npcId, final int val)
 	{
@@ -163,6 +234,10 @@ public class L2TeleporterInstance extends L2FolkInstance
 		return "data/html/teleporter/" + pom + ".htm";
 	}
 	
+	/*
+	 * (non-Javadoc)
+	 * @see com.l2jfrozen.gameserver.model.actor.instance.L2NpcInstance#showChatWindow(com.l2jfrozen.gameserver.model.actor.instance.L2PcInstance)
+	 */
 	@Override
 	public void showChatWindow(final L2PcInstance player)
 	{
@@ -199,7 +274,7 @@ public class L2TeleporterInstance extends L2FolkInstance
 	/**
 	 * Do teleport.
 	 * @param player the player
-	 * @param val    the val
+	 * @param val the val
 	 */
 	private void doTeleport(final L2PcInstance player, final int val)
 	{
@@ -278,8 +353,8 @@ public class L2TeleporterInstance extends L2FolkInstance
 				{
 					LOGGER.debug("Teleporting player " + player.getName() + " to new location: " + list.getLocX() + ":" + list.getLocY() + ":" + list.getLocZ());
 				}
-				final L2BossZone zone = GrandBossManager.getInstance().getZone(list.getLocX(), list.getLocY(), list.getLocZ());
-				zone.allowPlayerEntry(player, 300);
+				final L2BossZone _zone = GrandBossManager.getInstance().getZone(list.getLocX(), list.getLocY(), list.getLocZ());
+				_zone.allowPlayerEntry(player, 300);
 				player.teleToLocation(list.getLocX(), list.getLocY(), list.getLocZ(), true);
 			}
 			else if (!list.getIsForNoble() && (Config.ALT_GAME_FREE_TELEPORT || player.reduceAdena("Teleport", list.getPrice(), this, true)))
@@ -309,25 +384,19 @@ public class L2TeleporterInstance extends L2FolkInstance
 	
 	/**
 	 * Validate condition.
-	 * @param  player the player
-	 * @return        the int
+	 * @param player the player
+	 * @return the int
 	 */
 	private int validateCondition(final L2PcInstance player)
 	{
-		if (CastleManager.getInstance().getCastleIndex(this) < 0)
-		{
+		if (CastleManager.getInstance().getCastleIndex(this) < 0) // Teleporter isn't on castle ground
 			return COND_REGULAR; // Regular access
-		}
-		else if (getCastle().getSiege().getIsInProgress())
-		{
+		else if (getCastle().getSiege().getIsInProgress()) // Teleporter is on castle ground and siege is in progress
 			return COND_BUSY_BECAUSE_OF_SIEGE; // Busy because of siege
-		}
 		else if (player.getClan() != null) // Teleporter is on castle ground and player is in a clan
 		{
-			if (getCastle().getOwnerId() == player.getClanId())
-			{
+			if (getCastle().getOwnerId() == player.getClanId()) // Clan owns castle
 				return COND_OWNER; // Owner
-			}
 		}
 		
 		return COND_ALL_FALSE;

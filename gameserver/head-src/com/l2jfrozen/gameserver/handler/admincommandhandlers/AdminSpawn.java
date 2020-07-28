@@ -1,7 +1,29 @@
+/*
+ * L2jFrozen Project - www.l2jfrozen.com 
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2, or (at your option)
+ * any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
+ * 02111-1307, USA.
+ *
+ * http://www.gnu.org/copyleft/gpl.html
+ */
 package com.l2jfrozen.gameserver.handler.admincommandhandlers;
 
 import java.util.NoSuchElementException;
 import java.util.StringTokenizer;
+
+import javolution.text.TextBuilder;
 
 import org.apache.log4j.Logger;
 
@@ -20,12 +42,9 @@ import com.l2jfrozen.gameserver.model.actor.instance.L2PcInstance;
 import com.l2jfrozen.gameserver.model.entity.sevensigns.SevenSigns;
 import com.l2jfrozen.gameserver.model.spawn.L2Spawn;
 import com.l2jfrozen.gameserver.network.SystemMessageId;
-import com.l2jfrozen.gameserver.network.serverpackets.ActionFailed;
 import com.l2jfrozen.gameserver.network.serverpackets.NpcHtmlMessage;
 import com.l2jfrozen.gameserver.network.serverpackets.SystemMessage;
 import com.l2jfrozen.gameserver.templates.L2NpcTemplate;
-
-import javolution.text.TextBuilder;
 
 /**
  * This class handles following admin commands: - show_spawns = shows menu - spawn_index lvl = shows menu for monsters with respective level - spawn_monster id = spawns monster id on target
@@ -33,7 +52,6 @@ import javolution.text.TextBuilder;
  */
 public class AdminSpawn implements IAdminCommandHandler
 {
-	public static Logger LOGGER = Logger.getLogger(AdminSpawn.class);
 	
 	private static final String[] ADMIN_COMMANDS =
 	{
@@ -52,8 +70,10 @@ public class AdminSpawn implements IAdminCommandHandler
 		"admin_spawnday"
 	};
 	
+	public static Logger LOGGER = Logger.getLogger(AdminSpawn.class);
+	
 	@Override
-	public boolean useAdminCommand(String command, L2PcInstance activeChar)
+	public boolean useAdminCommand(final String command, final L2PcInstance activeChar)
 	{
 		if (command.equals("admin_show_spawns"))
 		{
@@ -67,7 +87,7 @@ public class AdminSpawn implements IAdminCommandHandler
 			{
 				st.nextToken();
 				
-				int level = Integer.parseInt(st.nextToken());
+				final int level = Integer.parseInt(st.nextToken());
 				int from = 0;
 				
 				try
@@ -77,9 +97,7 @@ public class AdminSpawn implements IAdminCommandHandler
 				catch (final NoSuchElementException nsee)
 				{
 					if (Config.ENABLE_ALL_EXCEPTIONS)
-					{
 						nsee.printStackTrace();
-					}
 				}
 				
 				showMonsters(activeChar, level, from);
@@ -87,12 +105,12 @@ public class AdminSpawn implements IAdminCommandHandler
 			catch (final Exception e)
 			{
 				if (Config.ENABLE_ALL_EXCEPTIONS)
-				{
 					e.printStackTrace();
-				}
 				
 				AdminHelpPage.showHelpPage(activeChar, "spawns.htm");
 			}
+			
+			st = null;
 		}
 		else if (command.equals("admin_show_npcs"))
 		{
@@ -113,25 +131,25 @@ public class AdminSpawn implements IAdminCommandHandler
 				{
 					from = Integer.parseInt(st.nextToken());
 				}
-				catch (NoSuchElementException nsee)
+				catch (final NoSuchElementException nsee)
 				{
 					if (Config.ENABLE_ALL_EXCEPTIONS)
-					{
 						nsee.printStackTrace();
-					}
 				}
 				
 				showNpcs(activeChar, letter, from);
+				
+				letter = null;
 			}
-			catch (Exception e)
+			catch (final Exception e)
 			{
 				if (Config.ENABLE_ALL_EXCEPTIONS)
-				{
 					e.printStackTrace();
-				}
 				
 				AdminHelpPage.showHelpPage(activeChar, "npcs.htm");
 			}
+			
+			st = null;
 		}
 		// Command spawn '//spawn name numberSpawn respawnTime'.
 		// With command '//spawn name' the respawnTime will be 10 seconds.
@@ -145,43 +163,35 @@ public class AdminSpawn implements IAdminCommandHandler
 				int mobCount = 1;
 				int respawnTime = 10;
 				if (st.hasMoreTokens())
-				{
 					mobCount = Integer.parseInt(st.nextToken());
-				}
 				if (st.hasMoreTokens())
-				{
 					respawnTime = Integer.parseInt(st.nextToken());
-				}
 				
 				if (cmd.equalsIgnoreCase("admin_spawn_once"))
-				{
 					spawnMonster(activeChar, id, respawnTime, mobCount, false);
-				}
 				else
-				{
 					spawnMonster(activeChar, id, respawnTime, mobCount, true);
-				}
 				
 				cmd = null;
 				id = null;
 			}
-			catch (final Exception e) // Case of wrong or missing monster data
-			{
+			catch (final Exception e)
+			{ // Case of wrong or missing monster data
 				if (Config.ENABLE_ALL_EXCEPTIONS)
-				{
 					e.printStackTrace();
-				}
 				
 				AdminHelpPage.showHelpPage(activeChar, "spawns.htm");
 			}
+			
+			st = null;
 		}
-		else if (command.startsWith("admin_unspawnall")) // Command for unspawn all Npcs on Server, use //repsawnall to respawn the npc
+		// Command for unspawn all Npcs on Server, use //repsawnall to respawn the npc
+		else if (command.startsWith("admin_unspawnall"))
 		{
-			for (L2PcInstance player : L2World.getInstance().getAllPlayers())
+			for (final L2PcInstance player : L2World.getInstance().getAllPlayers())
 			{
 				player.sendPacket(new SystemMessage(SystemMessageId.NPC_SERVER_NOT_OPERATING));
 			}
-			
 			RaidBossSpawnManager.getInstance().cleanUp();
 			DayNightSpawnManager.getInstance().cleanUp();
 			L2World.getInstance().deleteVisibleNpcSpawns();
@@ -217,25 +227,25 @@ public class AdminSpawn implements IAdminCommandHandler
 		return true;
 	}
 	
-	private void spawnMonster(L2PcInstance activeChar, String monsterId, int respawnTime, int mobCount, boolean permanent)
+	@Override
+	public String[] getAdminCommandList()
+	{
+		return ADMIN_COMMANDS;
+	}
+	
+	private void spawnMonster(final L2PcInstance activeChar, String monsterId, final int respawnTime, final int mobCount, boolean permanent)
 	{
 		L2Object target = activeChar.getTarget();
-		
 		if (target == null)
-		{
 			target = activeChar;
-		}
 		if (target != activeChar && activeChar.getAccessLevel().isGm())
-		{
 			target = activeChar;
-		}
 		
 		L2NpcTemplate template1;
-		
 		if (monsterId.matches("[0-9]*"))
 		{
 			// First parameter was an ID number
-			int monsterTemplate = Integer.parseInt(monsterId);
+			final int monsterTemplate = Integer.parseInt(monsterId);
 			template1 = NpcTable.getInstance().getTemplate(monsterTemplate);
 		}
 		else
@@ -248,14 +258,14 @@ public class AdminSpawn implements IAdminCommandHandler
 		if (template1 == null)
 		{
 			activeChar.sendMessage("Attention, wrong NPC ID/Name");
-			activeChar.sendPacket(ActionFailed.STATIC_PACKET);
 			return;
 		}
 		
 		try
 		{
 			L2Spawn spawn = new L2Spawn(template1);
-			spawn.setIsCustomSpawn(true);
+			if (Config.SAVE_GMSPAWN_ON_CUSTOM)
+				spawn.setCustom(true);
 			spawn.setLocx(target.getX());
 			spawn.setLocy(target.getY());
 			spawn.setLocz(target.getZ());
@@ -269,10 +279,11 @@ public class AdminSpawn implements IAdminCommandHandler
 				activeChar.sendMessage("It will be spawned but not saved on Database");
 				activeChar.sendMessage("After server restart or raid dead, the spawned npc will desappear");
 				permanent = false;
-				spawn.setIsCustomRaidBoss(true); // for raids, this value is used in order to segnalate to not save respawn time - status for custom instance
+				spawn.set_customBossInstance(true); // for raids, this value is used in order to segnalate to not save respawn time - status for custom instance
 				
 			}
-			
+			// else
+			// {
 			if (RaidBossSpawnManager.getInstance().getValidTemplate(spawn.getNpcid()) != null)
 			{
 				RaidBossSpawnManager.getInstance().addNewSpawn(spawn, 0, template1.getStatsSet().getDouble("baseHpMax"), template1.getStatsSet().getDouble("baseMpMax"), permanent);
@@ -290,12 +301,20 @@ public class AdminSpawn implements IAdminCommandHandler
 			}
 			
 			activeChar.sendMessage("Created " + template1.name + " on " + target.getObjectId());
+			// }
+			
+			spawn = null;
 		}
-		catch (Exception e)
+		catch (final Exception e)
 		{
-			activeChar.sendMessage("Something went wrong, can not init the spawn");
-			LOGGER.error("AdminSpawn.spawnMonster : Something went wrong, can not init the spawn", e);
+			if (Config.ENABLE_ALL_EXCEPTIONS)
+				e.printStackTrace();
+			
+			activeChar.sendPacket(new SystemMessage(SystemMessageId.TARGET_CANT_FOUND));
 		}
+		
+		template1 = null;
+		target = null;
 	}
 	
 	private void showMonsters(final L2PcInstance activeChar, final int level, final int from)
@@ -311,7 +330,6 @@ public class AdminSpawn implements IAdminCommandHandler
 		
 		// Loop
 		boolean ended = true;
-		
 		for (int i = from; i < mobs.length; i++)
 		{
 			String txt = "<a action=\"bypass -h admin_spawn_monster " + mobs[i].npcId + "\">" + mobs[i].name + "</a><br1>";
@@ -325,6 +343,7 @@ public class AdminSpawn implements IAdminCommandHandler
 			}
 			
 			tb.append(txt);
+			txt = null;
 		}
 		
 		// End
@@ -338,9 +357,14 @@ public class AdminSpawn implements IAdminCommandHandler
 		}
 		
 		activeChar.sendPacket(new NpcHtmlMessage(5, tb.toString()));
+		
+		end1 = null;
+		end2 = null;
+		mobs = null;
+		tb = null;
 	}
 	
-	private void showNpcs(L2PcInstance activeChar, String starting, int from)
+	private void showNpcs(final L2PcInstance activeChar, final String starting, final int from)
 	{
 		TextBuilder tb = new TextBuilder();
 		L2NpcTemplate[] mobs = NpcTable.getInstance().getAllNpcStartingWith(starting);
@@ -364,9 +388,9 @@ public class AdminSpawn implements IAdminCommandHandler
 				break;
 			}
 			tb.append(txt);
+			txt = null;
 		}
 		// End
-		
 		if (ended)
 		{
 			tb.append(end2);
@@ -377,11 +401,10 @@ public class AdminSpawn implements IAdminCommandHandler
 		}
 		
 		activeChar.sendPacket(new NpcHtmlMessage(5, tb.toString()));
-	}
-	
-	@Override
-	public String[] getAdminCommandList()
-	{
-		return ADMIN_COMMANDS;
+		
+		tb = null;
+		mobs = null;
+		end1 = null;
+		end2 = null;
 	}
 }

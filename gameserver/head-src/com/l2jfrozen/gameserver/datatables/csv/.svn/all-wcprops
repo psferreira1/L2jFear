@@ -1,0 +1,59 @@
+K 25
+svn:wc:ra_dav:version-url
+V 111
+/svn/L2jFrozenInterlude/!svn/ver/1111/branches/Beta/gameserver/head-src/com/l2jfrozen/gameserver/datatables/csv
+END
+RecipeTable.java
+K 25
+svn:wc:ra_dav:version-url
+V 128
+/svn/L2jFrozenInterlude/!svn/ver/1111/branches/Beta/gameserver/head-src/com/l2jfrozen/gameserver/datatables/csv/RecipeTable.java
+END
+DoorTable.java
+K 25
+svn:wc:ra_dav:version-url
+V 126
+/svn/L2jFrozenInterlude/!svn/ver/1111/branches/Beta/gameserver/head-src/com/l2jfrozen/gameserver/datatables/csv/DoorTable.java
+END
+ExtractableItemsData.java
+K 25
+svn:wc:ra_dav:version-url
+V 137
+/svn/L2jFrozenInterlude/!svn/ver/1111/branches/Beta/gameserver/head-src/com/l2jfrozen/gameserver/datatables/csv/ExtractableItemsData.java
+END
+MapRegionTable.java
+K 25
+svn:wc:ra_dav:version-url
+V 131
+/svn/L2jFrozenInterlude/!svn/ver/1111/branches/Beta/gameserver/head-src/com/l2jfrozen/gameserver/datatables/csv/MapRegionTable.java
+END
+NpcWalkerRoutesTable.java
+K 25
+svn:wc:ra_dav:version-url
+V 137
+/svn/L2jFrozenInterlude/!svn/ver/1111/branches/Beta/gameserver/head-src/com/l2jfrozen/gameserver/datatables/csv/NpcWalkerRoutesTable.java
+END
+HennaTable.java
+K 25
+svn:wc:ra_dav:version-url
+V 127
+/svn/L2jFrozenInterlude/!svn/ver/1111/branches/Beta/gameserver/head-src/com/l2jfrozen/gameserver/datatables/csv/HennaTable.java
+END
+SummonItemsData.java
+K 25
+svn:wc:ra_dav:version-url
+V 132
+/svn/L2jFrozenInterlude/!svn/ver/1111/branches/Beta/gameserver/head-src/com/l2jfrozen/gameserver/datatables/csv/SummonItemsData.java
+END
+FishTable.java
+K 25
+svn:wc:ra_dav:version-url
+V 126
+/svn/L2jFrozenInterlude/!svn/ver/1111/branches/Beta/gameserver/head-src/com/l2jfrozen/gameserver/datatables/csv/FishTable.java
+END
+StaticObjects.java
+K 25
+svn:wc:ra_dav:version-url
+V 130
+/svn/L2jFrozenInterlude/!svn/ver/1111/branches/Beta/gameserver/head-src/com/l2jfrozen/gameserver/datatables/csv/StaticObjects.java
+END

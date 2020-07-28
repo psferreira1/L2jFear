@@ -1,3 +1,33 @@
+/*
+ * $Header: PlayerClass.java, 24/11/2005 12:56:01 luisantonioa Exp $
+ *
+ * $Author: luisantonioa $
+ * $Date: 24/11/2005 12:56:01 $
+ * $Revision: 1 $
+ * $Log: PlayerClass.java,v $
+ * Revision 1  24/11/2005 12:56:01  luisantonioa
+ * Added copyright notice
+ *
+ *
+ * L2jFrozen Project - www.l2jfrozen.com 
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2, or (at your option)
+ * any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
+ * 02111-1307, USA.
+ *
+ * http://www.gnu.org/copyleft/gpl.html
+ */
 package com.l2jfrozen.gameserver.model.base;
 
 import static com.l2jfrozen.gameserver.model.base.ClassLevel.First;
@@ -20,7 +50,9 @@ import java.util.Set;
 import com.l2jfrozen.gameserver.model.actor.instance.L2PcInstance;
 
 /**
- * @author luisantonioa, programmos, l2jfrozen dev
+ * This class ...
+ * @author programmos, l2jfrozen dev
+ * @version $Revision: 1.2.1 $ $Date: 2009/04/13 02:01:21 $
  */
 public enum PlayerClass
 {
@@ -118,7 +150,9 @@ public enum PlayerClass
 	dummyEntry29(null, null, null),
 	dummyEntry30(null, null, null),
 	
-	// (3rd classes)
+	/*
+	 * (3rd classes)
+	 */
 	duelist(Human, Fighter, Fourth),
 	dreadnought(Human, Fighter, Fourth),
 	phoenixKnight(Human, Fighter, Fourth),
@@ -155,9 +189,9 @@ public enum PlayerClass
 	fortuneSeeker(Dwarf, Fighter, Fourth),
 	maestro(Dwarf, Fighter, Fourth);
 	
-	private PlayerRace race;
-	private ClassLevel level;
-	private ClassType type;
+	private PlayerRace _race;
+	private ClassLevel _level;
+	private ClassType _type;
 	
 	private static final Set<PlayerClass> mainSubclassSet;
 	private static final Set<PlayerClass> neverSubclassed = EnumSet.of(Overlord, Warsmith);
@@ -203,31 +237,21 @@ public enum PlayerClass
 	
 	PlayerClass(final PlayerRace pRace, final ClassType pType, final ClassLevel pLevel)
 	{
-		race = pRace;
-		level = pLevel;
-		type = pType;
+		_race = pRace;
+		_level = pLevel;
+		_type = pType;
 	}
 	
 	public final Set<PlayerClass> getAvailableSubclasses(final L2PcInstance player)
 	{
 		Set<PlayerClass> subclasses = null;
 		
-		if (level == Third)
+		if (_level == Third)
 		{
 			subclasses = EnumSet.copyOf(mainSubclassSet);
 			
 			subclasses.removeAll(neverSubclassed);
 			subclasses.remove(this);
-			
-			switch (player.getRace())
-			{
-				case elf:
-					subclasses.removeAll(getSet(DarkElf, Third));
-					break;
-				case darkelf:
-					subclasses.removeAll(getSet(LightElf, Third));
-					break;
-			}
 			
 			Set<PlayerClass> unavailableClasses = subclassSetMap.get(this);
 			
@@ -262,21 +286,44 @@ public enum PlayerClass
 	
 	public final boolean isOfRace(final PlayerRace pRace)
 	{
-		return race == pRace;
+		return _race == pRace;
 	}
 	
 	public final boolean isOfType(final ClassType pType)
 	{
-		return type == pType;
+		return _type == pType;
 	}
 	
 	public final boolean isOfLevel(final ClassLevel pLevel)
 	{
-		return level == pLevel;
+		return _level == pLevel;
 	}
 	
 	public final ClassLevel getLevel()
 	{
-		return level;
+		return _level;
 	}
+		
+		public final PlayerRace getRace()
+		{
+			return _race;
+		}
+		
+		public static PlayerClass getClassById(int pClass)
+		{
+			try
+			{
+				for (PlayerClass cId : PlayerClass.values()) {
+					if (cId.getRace() == null)
+						continue;
+					if (cId.ordinal() == pClass)
+						return cId;
+				}
+			}
+			catch (Exception e)
+			{
+				return null;
+			}
+			return PlayerClass.values()[0];
+		}
 }

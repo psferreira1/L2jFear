@@ -1,16 +1,38 @@
+/*
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2, or (at your option)
+ * any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
+ * 02111-1307, USA.
+ *
+ * http://www.gnu.org/copyleft/gpl.html
+ */
 package com.l2jfrozen.gameserver.communitybbs;
 
-import java.util.HashMap;
 import java.util.Map;
+
+import javolution.util.FastMap;
 
 import com.l2jfrozen.Config;
 import com.l2jfrozen.gameserver.cache.HtmCache;
 import com.l2jfrozen.gameserver.communitybbs.Manager.BaseBBSManager;
 import com.l2jfrozen.gameserver.communitybbs.Manager.ClanBBSManager;
+import com.l2jfrozen.gameserver.communitybbs.Manager.ClassBalanceBBSManager;
 import com.l2jfrozen.gameserver.communitybbs.Manager.PostBBSManager;
 import com.l2jfrozen.gameserver.communitybbs.Manager.RegionBBSManager;
 import com.l2jfrozen.gameserver.communitybbs.Manager.TopBBSManager;
 import com.l2jfrozen.gameserver.communitybbs.Manager.TopicBBSManager;
+import com.l2jfrozen.gameserver.custom.ClassBalanceBBS;
+import com.l2jfrozen.gameserver.custom.SkillsBalanceBBSManager;
 import com.l2jfrozen.gameserver.handler.IBBSHandler;
 import com.l2jfrozen.gameserver.model.actor.instance.L2PcInstance;
 import com.l2jfrozen.gameserver.network.L2GameClient;
@@ -20,33 +42,34 @@ import com.l2jfrozen.gameserver.network.serverpackets.SystemMessage;
 
 public class CommunityBoard
 {
-	private static CommunityBoard instance;
-	private final Map<String, IBBSHandler> handlers;
+	private static CommunityBoard _instance;
+	private Map<String, IBBSHandler> _handlers;
 	
 	public CommunityBoard()
 	{
-		handlers = new HashMap<>();
+		_handlers = new FastMap<String, IBBSHandler>();
+		// null;
 	}
 	
 	public static CommunityBoard getInstance()
 	{
-		if (instance == null)
+		if (_instance == null)
 		{
-			instance = new CommunityBoard();
+			_instance = new CommunityBoard();
 		}
 		
-		return instance;
+		return _instance;
 	}
 	
 	/**
 	 * by Azagthtot
 	 * @param handler as IBBSHandler
 	 */
-	public void registerBBSHandler(final IBBSHandler handler)
+	public void registerBBSHandler(IBBSHandler handler)
 	{
-		for (final String s : handler.getBBSCommands())
+		for (String s : handler.getBBSCommands())
 		{
-			handlers.put(s, handler);
+			_handlers.put(s, handler);
 		}
 	}
 	
@@ -55,27 +78,25 @@ public class CommunityBoard
 	 * @param client
 	 * @param command
 	 */
-	public void handleCommands(final L2GameClient client, final String command)
+	public void handleCommands(L2GameClient client, String command)
 	{
 		L2PcInstance activeChar = client.getActiveChar();
 		
 		if (activeChar == null)
-		{
 			return;
-		}
 		
 		if (Config.COMMUNITY_TYPE.equals("full"))
 		{
 			String cmd = command.substring(4);
 			String params = "";
-			final int iPos = cmd.indexOf(" ");
+			int iPos = cmd.indexOf(" ");
 			if (iPos != -1)
 			{
 				params = cmd.substring(iPos + 1);
 				cmd = cmd.substring(0, iPos);
 				
 			}
-			final IBBSHandler bbsh = handlers.get(cmd);
+			IBBSHandler bbsh = _handlers.get(cmd);
 			if (bbsh != null)
 			{
 				bbsh.handleCommand(cmd, activeChar, params);
@@ -121,13 +142,31 @@ public class CommunityBoard
 				{
 					TopBBSManager.getInstance().parsecmd(command, activeChar);
 				}
+				
+				
+				if (command.startsWith("_bbsskillsbalancer") && activeChar.isGM())
+				{
+				SkillsBalanceBBSManager.getInstance().parseCmd(command, activeChar);
+				return;
+			}
+	
+			if (command.startsWith("_bbsbalancer") && activeChar.isGM())
+			{
+				ClassBalanceBBS.getInstance().parseCmd(command, activeChar);
+				return;
+			}
+					
 				else if (command.startsWith("_bbshome"))
 				{
 					TopBBSManager.getInstance().parsecmd(command, activeChar);
 				}
-				else if (command.startsWith("_bbsloc"))
-				{
-					RegionBBSManager.getInstance().parsecmd(command, activeChar);
+				else if ((command.startsWith("_bbsloc") || command.startsWith("_bbs_remove_classbalance") ||
+						command.startsWith("_bbs_modify_classbalance_menu") || command.startsWith("_bbs_modify_classbalance") ||
+						command.startsWith("_bbs_add_classbalance_menu") ||
+						command.startsWith("_bbs_add_classbalance")) && activeChar.isGM())//thats it :D
+				{//give me one second
+					ClassBalanceBBSManager.getInstance().parsecmd(command, activeChar);
+			//RegionBBSManager.getInstance().parsecmd(command, activeChar);
 				}
 				else
 				{
@@ -136,20 +175,37 @@ public class CommunityBoard
 					sb = null;
 					activeChar.sendPacket(new ShowBoard(null, "102"));
 					activeChar.sendPacket(new ShowBoard(null, "103"));
-					
+
 				}
 			}
-			
+
 		}
-		else if (Config.COMMUNITY_TYPE.equals("old"))
+		else if(Config.COMMUNITY_TYPE.equals("old"))
 		{
-			RegionBBSManager.getInstance().parsecmd(command, activeChar);
+			if ((command.startsWith("_bbsloc") || command.startsWith("_bbs_remove_classbalance") ||
+					command.startsWith("_bbs_modify_classbalance_menu") || command.startsWith("_bbs_modify_classbalance") ||
+					command.startsWith("_bbs_add_classbalance_menu") ||
+					command.startsWith("_bbs_add_classbalance")) && activeChar.isGM())//thats it :D
+			{//give me one second
+				ClassBalanceBBSManager.getInstance().parsecmd(command, activeChar);
+     			//RegionBBSManager.getInstance().parsecmd(command, activeChar);
+			}
+			else
+			{
+				ShowBoard sb = new ShowBoard("<html><body><br><br><center>the command: " + command + " is not implemented yet</center><br><br></body></html>", "101");
+				activeChar.sendPacket(sb);
+				sb = null;
+				activeChar.sendPacket(new ShowBoard(null, "102"));
+				activeChar.sendPacket(new ShowBoard(null, "103"));
+
+			}
+			//RegionBBSManager.getInstance().parsecmd(command, activeChar);
 		}
 		else
 		{
 			activeChar.sendPacket(new SystemMessage(SystemMessageId.CB_OFFLINE));
 		}
-		
+
 		activeChar = null;
 	}
 	
@@ -162,14 +218,12 @@ public class CommunityBoard
 	 * @param arg4
 	 * @param arg5
 	 */
-	public void handleWriteCommands(final L2GameClient client, final String url, final String arg1, final String arg2, final String arg3, final String arg4, final String arg5)
+	public void handleWriteCommands(L2GameClient client, String url, String arg1, String arg2, String arg3, String arg4, String arg5)
 	{
 		L2PcInstance activeChar = client.getActiveChar();
 		
 		if (activeChar == null)
-		{
 			return;
-		}
 		
 		if (Config.COMMUNITY_TYPE.equals("full"))
 		{
@@ -185,10 +239,10 @@ public class CommunityBoard
 			{
 				RegionBBSManager.getInstance().parsewrite(arg1, arg2, arg3, arg4, arg5, activeChar);
 			}
-			else if (url.equals("Notice"))
-			{
-				ClanBBSManager.getInstance().parsewrite(arg1, arg2, arg3, arg4, arg5, activeChar);
-			}
+		//	else if (url.equals("Notice"))
+		//	{
+			//	ClanBBSManager.getInstance().parsewrite(arg1, arg2, arg3, arg4, arg5, activeChar);
+		//	}
 			else
 			{
 				ShowBoard sb = new ShowBoard("<html><body><br><br><center>the command: " + url + " is not implemented yet</center><br><br></body></html>", "101");

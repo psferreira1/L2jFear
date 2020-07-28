@@ -1,0 +1,53 @@
+K 25
+svn:wc:ra_dav:version-url
+V 114
+/svn/L2jFrozenInterlude/!svn/ver/1111/branches/Beta/gameserver/head-src/com/l2jfrozen/gameserver/taskmanager/tasks
+END
+TaskCleanUp.java
+K 25
+svn:wc:ra_dav:version-url
+V 131
+/svn/L2jFrozenInterlude/!svn/ver/1111/branches/Beta/gameserver/head-src/com/l2jfrozen/gameserver/taskmanager/tasks/TaskCleanUp.java
+END
+TaskOlympiadSave.java
+K 25
+svn:wc:ra_dav:version-url
+V 136
+/svn/L2jFrozenInterlude/!svn/ver/1111/branches/Beta/gameserver/head-src/com/l2jfrozen/gameserver/taskmanager/tasks/TaskOlympiadSave.java
+END
+TaskRaidPointsReset.java
+K 25
+svn:wc:ra_dav:version-url
+V 139
+/svn/L2jFrozenInterlude/!svn/ver/1111/branches/Beta/gameserver/head-src/com/l2jfrozen/gameserver/taskmanager/tasks/TaskRaidPointsReset.java
+END
+TaskShutdown.java
+K 25
+svn:wc:ra_dav:version-url
+V 132
+/svn/L2jFrozenInterlude/!svn/ver/1111/branches/Beta/gameserver/head-src/com/l2jfrozen/gameserver/taskmanager/tasks/TaskShutdown.java
+END
+TaskRestart.java
+K 25
+svn:wc:ra_dav:version-url
+V 131
+/svn/L2jFrozenInterlude/!svn/ver/1111/branches/Beta/gameserver/head-src/com/l2jfrozen/gameserver/taskmanager/tasks/TaskRestart.java
+END
+TaskRecom.java
+K 25
+svn:wc:ra_dav:version-url
+V 129
+/svn/L2jFrozenInterlude/!svn/ver/1111/branches/Beta/gameserver/head-src/com/l2jfrozen/gameserver/taskmanager/tasks/TaskRecom.java
+END
+TaskSevenSignsUpdate.java
+K 25
+svn:wc:ra_dav:version-url
+V 140
+/svn/L2jFrozenInterlude/!svn/ver/1111/branches/Beta/gameserver/head-src/com/l2jfrozen/gameserver/taskmanager/tasks/TaskSevenSignsUpdate.java
+END
+TaskJython.java
+K 25
+svn:wc:ra_dav:version-url
+V 130
+/svn/L2jFrozenInterlude/!svn/ver/1111/branches/Beta/gameserver/head-src/com/l2jfrozen/gameserver/taskmanager/tasks/TaskJython.java
+END

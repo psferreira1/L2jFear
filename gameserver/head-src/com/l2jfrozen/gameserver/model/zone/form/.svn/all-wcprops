@@ -1,0 +1,23 @@
+K 25
+svn:wc:ra_dav:version-url
+V 112
+/svn/L2jFrozenInterlude/!svn/ver/1111/branches/Beta/gameserver/head-src/com/l2jfrozen/gameserver/model/zone/form
+END
+ZoneNPoly.java
+K 25
+svn:wc:ra_dav:version-url
+V 127
+/svn/L2jFrozenInterlude/!svn/ver/1111/branches/Beta/gameserver/head-src/com/l2jfrozen/gameserver/model/zone/form/ZoneNPoly.java
+END
+ZoneCuboid.java
+K 25
+svn:wc:ra_dav:version-url
+V 128
+/svn/L2jFrozenInterlude/!svn/ver/1111/branches/Beta/gameserver/head-src/com/l2jfrozen/gameserver/model/zone/form/ZoneCuboid.java
+END
+ZoneCylinder.java
+K 25
+svn:wc:ra_dav:version-url
+V 130
+/svn/L2jFrozenInterlude/!svn/ver/1111/branches/Beta/gameserver/head-src/com/l2jfrozen/gameserver/model/zone/form/ZoneCylinder.java
+END

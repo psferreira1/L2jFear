@@ -1,16 +1,38 @@
+/* L2jFrozen Project - www.l2jfrozen.com 
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2, or (at your option)
+ * any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
+ * 02111-1307, USA.
+ *
+ * http://www.gnu.org/copyleft/gpl.html
+ */
 package com.l2jfrozen.gameserver.network.clientpackets;
+
+import java.util.Collection;
 
 import org.apache.log4j.Logger;
 
 import com.l2jfrozen.Config;
-import com.l2jfrozen.gameserver.datatables.sql.ItemTable;
 import com.l2jfrozen.gameserver.model.Inventory;
+import com.l2jfrozen.gameserver.model.L2Character;
+import com.l2jfrozen.gameserver.model.L2Object;
 import com.l2jfrozen.gameserver.model.L2World;
 import com.l2jfrozen.gameserver.model.actor.instance.L2ItemInstance;
 import com.l2jfrozen.gameserver.model.actor.instance.L2PcInstance;
+import com.l2jfrozen.gameserver.model.actor.instance.L2WarehouseInstance;
 import com.l2jfrozen.gameserver.model.base.Race;
 import com.l2jfrozen.gameserver.network.SystemMessageId;
-import com.l2jfrozen.gameserver.network.serverpackets.ActionFailed;
 import com.l2jfrozen.gameserver.network.serverpackets.EnchantResult;
 import com.l2jfrozen.gameserver.network.serverpackets.InventoryUpdate;
 import com.l2jfrozen.gameserver.network.serverpackets.ItemList;
@@ -20,7 +42,6 @@ import com.l2jfrozen.gameserver.templates.L2Item;
 import com.l2jfrozen.gameserver.templates.L2WeaponType;
 import com.l2jfrozen.gameserver.util.IllegalPlayerAction;
 import com.l2jfrozen.gameserver.util.Util;
-import com.l2jfrozen.logs.Log;
 import com.l2jfrozen.util.random.Rnd;
 
 public final class RequestEnchantItem extends L2GameClientPacket
@@ -94,28 +115,26 @@ public final class RequestEnchantItem extends L2GameClientPacket
 		962
 	};
 	
-	private int objectId;
+	private int _objectId;
 	
 	@Override
 	protected void readImpl()
 	{
-		objectId = readD();
+		_objectId = readD();
 	}
 	
 	@Override
 	protected void runImpl()
 	{
 		final L2PcInstance activeChar = getClient().getActiveChar();
-		if (activeChar == null || objectId == 0)
-		{
+		Collection<L2Character> knowns = activeChar.getKnownList().getKnownCharactersInRadius(400);
+		if (activeChar == null || _objectId == 0)
 			return;
-		}
 		
 		if (activeChar.getActiveTradeList() != null)
 		{
 			activeChar.cancelActiveTrade();
-			activeChar.sendPacket(new SystemMessage(SystemMessageId.THE_ATTEMP_TO_TRADE_HAS_FAILED));
-			activeChar.sendPacket(ActionFailed.STATIC_PACKET);
+			activeChar.sendMessage("Your trade canceled");
 			return;
 		}
 		
@@ -124,32 +143,30 @@ public final class RequestEnchantItem extends L2GameClientPacket
 		{
 			activeChar.sendPacket(new SystemMessage(SystemMessageId.INAPPROPRIATE_ENCHANT_CONDITION));
 			activeChar.setActiveEnchantItem(null);
-			activeChar.sendPacket(ActionFailed.STATIC_PACKET);
 			return;
 		}
+		 for (L2Object wh : knowns)
+			 {
+			 if (wh instanceof L2WarehouseInstance)
+			 {
+			 activeChar.sendMessage("You Cannot enchant near warehouse.");
+			 return;
+			 }
+			 }
 		
-		if (!activeChar.isOnline())
+		if (activeChar.isOnline() == 0)
 		{
 			activeChar.setActiveEnchantItem(null);
 			return;
 		}
 		
-		if (activeChar.getPrivateStoreType() != 0 || activeChar.isInStoreMode())
-		{
-			activeChar.setActiveEnchantItem(null);
-			activeChar.sendPacket(SystemMessageId.YOU_CANNOT_ENCHANT_WHILE_OPERATING_A_PRIVATE_STORE_OR_PRIVATE_WORKSHOP);
-			activeChar.sendPacket(ActionFailed.STATIC_PACKET);
-			return;
-		}
-		
-		final L2ItemInstance item = activeChar.getInventory().getItemByObjectId(objectId);
+		final L2ItemInstance item = activeChar.getInventory().getItemByObjectId(_objectId);
 		L2ItemInstance scroll = activeChar.getActiveEnchantItem();
 		activeChar.setActiveEnchantItem(null);
 		
 		if (item == null || scroll == null)
 		{
 			activeChar.setActiveEnchantItem(null);
-			activeChar.sendPacket(ActionFailed.STATIC_PACKET);
 			return;
 		}
 		
@@ -314,13 +331,11 @@ public final class RequestEnchantItem extends L2GameClientPacket
 		else
 		{
 			for (final int crystalscroll : CRYSTAL_SCROLLS)
-			{
 				if (scroll.getItemId() == crystalscroll)
 				{
 					crystalScroll = true;
 					break;
 				}
-			}
 		}
 		
 		// SystemMessage sm = new SystemMessage(SystemMessageId.ENCHANT_SCROLL_CANCELLED);
@@ -386,7 +401,7 @@ public final class RequestEnchantItem extends L2GameClientPacket
 			}
 			else
 			{ // normal scrolls
-				
+			
 				for (final int normalweaponscroll : NORMAL_WEAPON_SCROLLS)
 				{
 					if (scroll.getItemId() == normalweaponscroll)
@@ -457,7 +472,7 @@ public final class RequestEnchantItem extends L2GameClientPacket
 			}
 			else
 			{ // normal scrolls
-				
+			
 				for (final int normalarmorscroll : NORMAL_ARMOR_SCROLLS)
 				{
 					if (scroll.getItemId() == normalarmorscroll)
@@ -581,12 +596,10 @@ public final class RequestEnchantItem extends L2GameClientPacket
 		int rndValue = Rnd.get(100);
 		
 		if (Config.ENABLE_DWARF_ENCHANT_BONUS && activeChar.getRace() == Race.dwarf)
-		{
 			if (activeChar.getLevel() >= Config.DWARF_ENCHANT_MIN_LEVEL)
 			{
 				rndValue -= Config.DWARF_ENCHANT_BONUS;
 			}
-		}
 		
 		final Object aChance = item.fireEvent("calcEnchantChance", new Object[chance]);
 		if (aChance != null)
@@ -608,12 +621,23 @@ public final class RequestEnchantItem extends L2GameClientPacket
 					activeChar.sendPacket(new SystemMessage(SystemMessageId.INAPPROPRIATE_ENCHANT_CONDITION));
 					return;
 				}
-				
+				if (Config.ENCHANT_SYSTEM)
+				{
 				if (item.getEnchantLevel() == 0)
 				{
 					sm = new SystemMessage(SystemMessageId.S1_SUCCESSFULLY_ENCHANTED);
 					sm.addItemName(item.getItemId());
 					activeChar.sendPacket(sm);
+				{
+											if (item.getEnchantLevel() == 34)
+								    {
+											for(L2PcInstance all : L2World.getInstance().getAllPlayers())
+											{ 
+													all.sendMessage("Congratulations, Player " + activeChar.getName() + " successful enchanted " + item.getItem() + " + 35 ");
+											}
+						
+											 
+									        }}
 				}
 				else
 				{
@@ -621,13 +645,23 @@ public final class RequestEnchantItem extends L2GameClientPacket
 					sm.addNumber(item.getEnchantLevel());
 					sm.addItemName(item.getItemId());
 					activeChar.sendPacket(sm);
+										{
+												if (item.getEnchantLevel() == 34)
+										    {
+													for(L2PcInstance all : L2World.getInstance().getAllPlayers())
+													{ 
+													all.sendMessage("Congratulations, Player " + activeChar.getName() + " successful enchanted " + item.getItem() + " + 35 ");
+													}
+						
+												 
+					 }
+												
+				}
+				}
 				}
 				
 				item.setEnchantLevel(item.getEnchantLevel() + Config.CUSTOM_ENCHANT_VALUE);
 				item.updateDatabase();
-				
-				String message = "Enchant item successful for player " + activeChar.getName() + ", item " + ItemTable.getInstance().getTemplate(item.getItemId()) + "(" + item.getItemId() + ") to +" + item.getEnchantLevel();
-				Log.add(message, "enchant_item");
 			}
 			else
 			{
@@ -700,14 +734,10 @@ public final class RequestEnchantItem extends L2GameClientPacket
 					}
 					
 					if (item.fireEvent("enchantFail", new Object[] {}) != null)
-					{
 						return;
-					}
 					final L2ItemInstance destroyItem = activeChar.getInventory().destroyItem("Enchant", item, activeChar, null);
 					if (destroyItem == null)
-					{
 						return;
-					}
 					
 					final L2ItemInstance crystals = activeChar.getInventory().addItem("Enchant", crystalId, count, activeChar, destroyItem);
 					
@@ -759,9 +789,6 @@ public final class RequestEnchantItem extends L2GameClientPacket
 					}
 					
 				}
-				
-				String message = "Enchant item failed for player " + activeChar.getName() + ", item " + ItemTable.getInstance().getTemplate(item.getItemId()) + "(" + item.getItemId() + ") to +" + (item.getEnchantLevel() + 1);
-				Log.add(message, "enchant_item");
 			}
 		}
 		sm = null;

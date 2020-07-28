@@ -1,0 +1,65 @@
+K 25
+svn:wc:ra_dav:version-url
+V 119
+/svn/L2jFrozenInterlude/!svn/ver/1111/branches/Beta/gameserver/head-src/com/l2jfrozen/loginserver/network/serverpackets
+END
+Init.java
+K 25
+svn:wc:ra_dav:version-url
+V 129
+/svn/L2jFrozenInterlude/!svn/ver/1111/branches/Beta/gameserver/head-src/com/l2jfrozen/loginserver/network/serverpackets/Init.java
+END
+PlayOk.java
+K 25
+svn:wc:ra_dav:version-url
+V 131
+/svn/L2jFrozenInterlude/!svn/ver/1111/branches/Beta/gameserver/head-src/com/l2jfrozen/loginserver/network/serverpackets/PlayOk.java
+END
+L2LoginServerPacket.java
+K 25
+svn:wc:ra_dav:version-url
+V 144
+/svn/L2jFrozenInterlude/!svn/ver/1111/branches/Beta/gameserver/head-src/com/l2jfrozen/loginserver/network/serverpackets/L2LoginServerPacket.java
+END
+ServerBasePacket.java
+K 25
+svn:wc:ra_dav:version-url
+V 141
+/svn/L2jFrozenInterlude/!svn/ver/1111/branches/Beta/gameserver/head-src/com/l2jfrozen/loginserver/network/serverpackets/ServerBasePacket.java
+END
+GGAuth.java
+K 25
+svn:wc:ra_dav:version-url
+V 131
+/svn/L2jFrozenInterlude/!svn/ver/1111/branches/Beta/gameserver/head-src/com/l2jfrozen/loginserver/network/serverpackets/GGAuth.java
+END
+LoginFail.java
+K 25
+svn:wc:ra_dav:version-url
+V 134
+/svn/L2jFrozenInterlude/!svn/ver/1111/branches/Beta/gameserver/head-src/com/l2jfrozen/loginserver/network/serverpackets/LoginFail.java
+END
+LoginOk.java
+K 25
+svn:wc:ra_dav:version-url
+V 132
+/svn/L2jFrozenInterlude/!svn/ver/1111/branches/Beta/gameserver/head-src/com/l2jfrozen/loginserver/network/serverpackets/LoginOk.java
+END
+AccountKicked.java
+K 25
+svn:wc:ra_dav:version-url
+V 138
+/svn/L2jFrozenInterlude/!svn/ver/1111/branches/Beta/gameserver/head-src/com/l2jfrozen/loginserver/network/serverpackets/AccountKicked.java
+END
+PlayFail.java
+K 25
+svn:wc:ra_dav:version-url
+V 133
+/svn/L2jFrozenInterlude/!svn/ver/1111/branches/Beta/gameserver/head-src/com/l2jfrozen/loginserver/network/serverpackets/PlayFail.java
+END
+ServerList.java
+K 25
+svn:wc:ra_dav:version-url
+V 135
+/svn/L2jFrozenInterlude/!svn/ver/1111/branches/Beta/gameserver/head-src/com/l2jfrozen/loginserver/network/serverpackets/ServerList.java
+END

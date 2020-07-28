@@ -1,0 +1,35 @@
+K 25
+svn:wc:ra_dav:version-url
+V 102
+/svn/L2jFrozenInterlude/!svn/ver/1111/branches/Beta/gameserver/head-src/com/l2jfrozen/gameserver/cache
+END
+WarehouseCacheManager.java
+K 25
+svn:wc:ra_dav:version-url
+V 129
+/svn/L2jFrozenInterlude/!svn/ver/1111/branches/Beta/gameserver/head-src/com/l2jfrozen/gameserver/cache/WarehouseCacheManager.java
+END
+FastMRUCache.java
+K 25
+svn:wc:ra_dav:version-url
+V 120
+/svn/L2jFrozenInterlude/!svn/ver/1111/branches/Beta/gameserver/head-src/com/l2jfrozen/gameserver/cache/FastMRUCache.java
+END
+CrestCache.java
+K 25
+svn:wc:ra_dav:version-url
+V 118
+/svn/L2jFrozenInterlude/!svn/ver/1111/branches/Beta/gameserver/head-src/com/l2jfrozen/gameserver/cache/CrestCache.java
+END
+InfoCache.java
+K 25
+svn:wc:ra_dav:version-url
+V 117
+/svn/L2jFrozenInterlude/!svn/ver/1111/branches/Beta/gameserver/head-src/com/l2jfrozen/gameserver/cache/InfoCache.java
+END
+HtmCache.java
+K 25
+svn:wc:ra_dav:version-url
+V 116
+/svn/L2jFrozenInterlude/!svn/ver/1111/branches/Beta/gameserver/head-src/com/l2jfrozen/gameserver/cache/HtmCache.java
+END

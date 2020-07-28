@@ -1,372 +1,314 @@
+/*
+ * L2jFrozen Project - www.l2jfrozen.com 
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2, or (at your option)
+ * any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
+ * 02111-1307, USA.
+ *
+ * http://www.gnu.org/copyleft/gpl.html
+ */
 package com.l2jfrozen.gameserver.handler.admincommandhandlers;
 
-import java.text.NumberFormat;
-import java.util.List;
 import java.util.StringTokenizer;
 
-import org.apache.commons.lang.math.NumberUtils;
+import java.net.InetAddress;
+import javolution.util.FastList;
+
 import org.apache.log4j.Logger;
 
+import com.l2jfrozen.gameserver.datatables.SkillTable;
 import com.l2jfrozen.gameserver.datatables.sql.ItemTable;
 import com.l2jfrozen.gameserver.handler.IAdminCommandHandler;
-import com.l2jfrozen.gameserver.model.L2Object;
 import com.l2jfrozen.gameserver.model.L2World;
 import com.l2jfrozen.gameserver.model.actor.instance.L2ItemInstance;
 import com.l2jfrozen.gameserver.model.actor.instance.L2PcInstance;
+import com.l2jfrozen.gameserver.network.SystemMessageId;
+import com.l2jfrozen.gameserver.network.serverpackets.InventoryUpdate;
 import com.l2jfrozen.gameserver.network.serverpackets.ItemList;
-import com.l2jfrozen.gameserver.network.serverpackets.NpcHtmlMessage;
+import com.l2jfrozen.gameserver.network.serverpackets.SystemMessage;
 import com.l2jfrozen.gameserver.templates.L2Item;
 
 /**
- * @author ReynalDev
+ * This class handles following admin commands: - itemcreate = show menu - create_item <id> [num] = creates num items with respective id, if num is not specified, assumes 1.
+ * @version $Revision: 1.2.2.2.2.3 $ $Date: 2005/04/11 10:06:06 $
  */
 public class AdminCreateItem implements IAdminCommandHandler
 {
 	private static Logger LOGGER = Logger.getLogger(AdminCreateItem.class);
-	private static final NumberFormat NF = NumberFormat.getInstance();
-	private static final int MAX_ITEMS_PER_PAGE = 15;
-	
 	private static final String[] ADMIN_COMMANDS =
 	{
+		"admin_l2jfrozen",
 		"admin_itemcreate",
 		"admin_create_item",
 		"admin_mass_create",
-		"admin_clear_inventory",
-		"admin_searchitem",
-		"admin_createForm"
+		"admin_clear_inventory"
 	};
 	
-	@Override
-	public boolean useAdminCommand(String command, L2PcInstance activeChar)
+	private enum CommandEnum
 	{
-		if (command == null || activeChar == null)
-		{
+		admin_l2jfrozen,
+		admin_itemcreate,
+		admin_create_item,
+		admin_mass_create,
+		admin_clear_inventory
+	}
+	
+	@SuppressWarnings("null")
+	@Override
+	public boolean useAdminCommand(final String command, final L2PcInstance activeChar)
+	{
+		/*
+		 * if(!AdminCommandAccessRights.getInstance().hasAccess(command, activeChar.getAccessLevel())){ return false; } if(Config.GMAUDIT) { Logger _logAudit = Logger.getLogger("gmaudit"); LogRecord record = new LogRecord(Level.INFO, command); record.setParameters(new Object[] { "GM: " +
+		 * activeChar.getName(), " to target [" + activeChar.getTarget() + "] " }); _logAudit.LOGGER(record); }
+		 */
+		
+		final StringTokenizer st = new StringTokenizer(command);
+		
+		final CommandEnum comm = CommandEnum.valueOf(st.nextToken());
+		
+		if (comm == null)
 			return false;
-		}
 		
-		StringTokenizer st = new StringTokenizer(command);
-		String actualCommand = st.nextToken();
+		switch (comm)
+		{
 		
-		if (actualCommand.equals("admin_itemcreate"))
-		{
-			AdminHelpPage.showHelpPage(activeChar, "itemcreation.htm");
-			return true;
-		}
-		else if (actualCommand.equals("admin_create_item"))
-		{
-			if (st.hasMoreTokens())
-			{
-				if (st.countTokens() == 2)
+		/*
+		 * Command //l2jfrozen, it gives useful items to Gm character Crystals, Gemstones, Bss-ss, scrolls, elixirs, etc To be complete...
+		 */
+			case admin_l2jfrozen:
+				
+				// Command usable only by Administrator
+				if (activeChar.getAccessLevel().getLevel() != 1 || !activeChar.isGM())
 				{
-					int itemId = 0;
-					int amount = 0;
-					
-					try
-					{
-						itemId = Integer.parseInt(st.nextToken());
-						amount = Integer.parseInt(st.nextToken());
-					}
-					catch (final NumberFormatException e)
-					{
-						
-						activeChar.sendMessage("Usage: //itemcreate <itemId> (number value > 0) [amount] (number value > 0)");
-						return false;
-					}
-					
-					if (itemId > 0 && amount > 0)
-					{
-						createItem(activeChar, itemId, amount);
-						return true;
-					}
-					
-					activeChar.sendMessage("Usage: //itemcreate <itemId> (number value > 0) [amount] (number value > 0)");
+					activeChar.sendMessage("Only Administrators can use this command!");
 					return false;
 				}
-				else if (st.countTokens() == 1)
+				
+				L2PcInstance Player = null;
+				// Items can be added only to self Gm
+				if (Player == null)
 				{
-					int itemId = 0;
-					
-					try
-					{
-						itemId = Integer.parseInt(st.nextToken());
-					}
-					catch (NumberFormatException e)
-					{
-						activeChar.sendMessage("Usage: //itemcreate <itemId> (number value > 0) [amount] (number value > 0)");
-						return false;
-					}
-					
-					if (itemId > 0)
-					{
-						createItem(activeChar, itemId, 1);
-						return true;
-					}
-					
-					activeChar.sendMessage("Usage: //itemcreate <itemId> (number value > 0) [amount] (number value > 0)");
-					return false;
+					activeChar.setTarget(activeChar);
+					Player = activeChar;
 				}
-			}
-			else
-			{
+				
+				Player.getInventory().addItem("Admin", 1458, 5000, Player, activeChar); // Cry d
+				Player.getInventory().addItem("Admin", 1459, 5000, Player, activeChar); // Cry c
+				Player.getInventory().addItem("Admin", 1460, 5000, Player, activeChar); // Cry b
+				Player.getInventory().addItem("Admin", 1461, 5000, Player, activeChar); // Cry a
+				Player.getInventory().addItem("Admin", 1462, 5000, Player, activeChar); // Cry s
+				
+				Player.getInventory().addItem("Admin", 2130, 200, Player, activeChar); // Gem d
+				Player.getInventory().addItem("Admin", 2131, 200, Player, activeChar); // Gem c
+				Player.getInventory().addItem("Admin", 2132, 200, Player, activeChar); // Gem b
+				Player.getInventory().addItem("Admin", 2133, 200, Player, activeChar); // Gem a
+				Player.getInventory().addItem("Admin", 2134, 200, Player, activeChar); // Gem s
+				
+				Player.getInventory().addItem("Admin", 736, 10, Player, activeChar); // Scroll of Escape
+				Player.getInventory().addItem("Admin", 737, 10, Player, activeChar); // Scroll of Resurrection
+				Player.getInventory().addItem("Admin", 1538, 10, Player, activeChar); // Blessed Scroll of Escape
+				Player.getInventory().addItem("Admin", 1829, 10, Player, activeChar); // Scroll of Escape: Clan Hall
+				Player.getInventory().addItem("Admin", 1830, 10, Player, activeChar); // Scroll of Escape: Castle
+				Player.getInventory().addItem("Admin", 3936, 10, Player, activeChar); // Blessed Scroll of Resurrection
+				Player.getInventory().addItem("Admin", 5858, 10, Player, activeChar); // Blessed Scroll of Escape: Clan Hall
+				Player.getInventory().addItem("Admin", 5859, 10, Player, activeChar); // Blessed Scroll of Escape: Castle
+				
+				Player.getInventory().addItem("Admin", 1467, 1000, Player, activeChar); // Soulshot: S-grade
+				Player.getInventory().addItem("Admin", 2514, 1000, Player, activeChar); // Spiritshot: S-grade
+				Player.getInventory().addItem("Admin", 3952, 1000, Player, activeChar); // Blessed Spiritshot: S Grade
+				
+				Player.getInventory().addItem("Admin", 8627, 10, Player, activeChar); // Elixir of Life (S-Grade)
+				Player.getInventory().addItem("Admin", 8633, 10, Player, activeChar); // Elixir of Mental Strength (S-Grade)
+				Player.getInventory().addItem("Admin", 8639, 10, Player, activeChar); // Elixir of CP (S-Grade)
+				
+				Player.getInventory().addItem("Admin", 8874, 10, Player, activeChar); // Einhasad's Holy Water
+				
+				final ItemList il = new ItemList(Player, true);
+				Player.sendPacket(il);
+				activeChar.sendMessage("Items added successfully!");
+				
+				activeChar.addSkill(SkillTable.getInstance().getInfo(7029, 4), true);
+				activeChar.addSkill(SkillTable.getInstance().getInfo(7041, 1), true);
+				activeChar.addSkill(SkillTable.getInstance().getInfo(7042, 1), true);
+				activeChar.addSkill(SkillTable.getInstance().getInfo(7043, 1), true);
+				activeChar.addSkill(SkillTable.getInstance().getInfo(7044, 1), true);
+				activeChar.addSkill(SkillTable.getInstance().getInfo(7045, 1), true);
+				activeChar.addSkill(SkillTable.getInstance().getInfo(7046, 1), true);
+				activeChar.addSkill(SkillTable.getInstance().getInfo(7047, 1), true);
+				activeChar.addSkill(SkillTable.getInstance().getInfo(7048, 1), true);
+				activeChar.addSkill(SkillTable.getInstance().getInfo(7049, 1), true);
+				activeChar.addSkill(SkillTable.getInstance().getInfo(7050, 1), true);
+				activeChar.addSkill(SkillTable.getInstance().getInfo(7051, 1), true);
+				activeChar.addSkill(SkillTable.getInstance().getInfo(7052, 1), true);
+				activeChar.addSkill(SkillTable.getInstance().getInfo(7053, 1), true);
+				activeChar.addSkill(SkillTable.getInstance().getInfo(7054, 1), true);
+				activeChar.addSkill(SkillTable.getInstance().getInfo(7055, 1), true);
+				activeChar.addSkill(SkillTable.getInstance().getInfo(7056, 1), true);
+				activeChar.addSkill(SkillTable.getInstance().getInfo(7057, 1), true);
+				activeChar.addSkill(SkillTable.getInstance().getInfo(7058, 1), true);
+				activeChar.addSkill(SkillTable.getInstance().getInfo(7059, 1), true);
+				activeChar.addSkill(SkillTable.getInstance().getInfo(7058, 1), true);
+				activeChar.addSkill(SkillTable.getInstance().getInfo(7059, 1), true);
+				activeChar.addSkill(SkillTable.getInstance().getInfo(7060, 1), true);
+				activeChar.addSkill(SkillTable.getInstance().getInfo(7061, 1), true);
+				activeChar.addSkill(SkillTable.getInstance().getInfo(7062, 1), true);
+				activeChar.addSkill(SkillTable.getInstance().getInfo(7063, 1), true);
+				activeChar.addSkill(SkillTable.getInstance().getInfo(7064, 1), true);
+				
+				activeChar.sendSkillList();
+				activeChar.sendMessage("Gm skills added successfully!");
+				
+				return true;
+				
+			case admin_itemcreate:
+				
 				AdminHelpPage.showHelpPage(activeChar, "itemcreation.htm");
 				return true;
-			}
-			
-			return false;
-		}
-		else if (actualCommand.equals("admin_mass_create"))
-		{
-			if (st.hasMoreTokens())
-			{
-				if (st.countTokens() == 2)
-				{
-					int itemId = 0;
-					int amount = 0;
-					
-					try
-					{
-						itemId = Integer.parseInt(st.nextToken());
-						amount = Integer.parseInt(st.nextToken());
-					}
-					catch (NumberFormatException e)
-					{
-						activeChar.sendMessage("Usage: //mass_create <itemId> <amount>");
-						return false;
-					}
-					
-					if (itemId > 0 && amount > 0)
-					{
-						massCreateItem(activeChar, itemId, amount);
-						return true;
-					}
-					
-					activeChar.sendMessage("Usage: //mass_create <itemId> <amount>");
-					return false;
-				}
-				else if (st.countTokens() == 1)
-				{
-					int itemId = 0;
-					
-					try
-					{
-						itemId = Integer.parseInt(st.nextToken());
-					}
-					catch (NumberFormatException e)
-					{
-						activeChar.sendMessage("Usage: //mass_create <itemId> <amount>");
-						return false;
-					}
-					
-					if (itemId > 0)
-					{
-						massCreateItem(activeChar, itemId, 1);
-						return true;
-					}
-					
-					activeChar.sendMessage("Usage: //mass_create <itemId> <amount>");
-					return false;
-				}
-			}
-			
-			return false;
-		}
-		else if (actualCommand.equals("admin_clear_inventory"))
-		{
-			removeAllItems(activeChar);
-			return true;
-		}
-		else if (command.startsWith("admin_searchitem"))
-		{
-			StringTokenizer stItem = new StringTokenizer(command, ";");
-			stItem.nextToken(); // Actual command
-			
-			if (stItem.countTokens() == 2)
-			{
-				NpcHtmlMessage htm = new NpcHtmlMessage(5);
-				htm.setFile("data/html/admin/searchitem.htm");
-				String itemName = stItem.nextToken().trim();
-				StringBuilder sb = new StringBuilder();
 				
-				if (NumberUtils.isNumber(itemName))
+			case admin_create_item:
+				
+				if (st.hasMoreTokens())
 				{
-					int itemId = 0;
-					
-					try
+					if (st.countTokens() == 2)
 					{
-						itemId = Integer.parseInt(itemName);
-					}
-					catch (Exception e)
-					{
-						LOGGER.error("Invalid itemId", e);
+						final String id = st.nextToken();
+						final String num = st.nextToken();
+						
+						int idval = 0;
+						int numval = 0;
+						
+						try
+						{
+							idval = Integer.parseInt(id);
+							numval = Integer.parseInt(num);
+						}
+						catch (final NumberFormatException e)
+						{
+							
+							activeChar.sendMessage("Usage: //itemcreate <itemId> (number value > 0) [amount] (number value > 0)");
+							return false;
+						}
+						
+						if (idval > 0 && numval > 0)
+						{
+							createItem(activeChar, idval, numval);
+							return true;
+						}
+						activeChar.sendMessage("Usage: //itemcreate <itemId> (number value > 0) [amount] (number value > 0)");
 						return false;
 					}
-					
-					L2Item item = ItemTable.getInstance().getTemplate(itemId);
-					
-					sb.append("<table width=\"280\">");
-					sb.append("<tr>");
-					sb.append("<td width=\"250\"><center><font color=\"LEVEL\">Name</font></center></td>");
-					sb.append("<td width=\"30\"><font color=\"LEVEL\">ID</font></td>");
-					sb.append("</tr>");
-					sb.append("<tr><td>");
-					sb.append("<a action=\"bypass -h admin_createForm ");
-					sb.append(item.getItemId());
-					sb.append("\">");
-					sb.append(item.getName());
-					sb.append("</a>");
-					sb.append("</td><td>");
-					sb.append(item.getItemId());
-					sb.append("</td></tr>");
-					sb.append("</table>");
-					htm.replace("%list%", sb.toString());
-					activeChar.sendPacket(htm);
+					else if (st.countTokens() == 1)
+					{
+						final String id = st.nextToken();
+						int idval = 0;
+						
+						try
+						{
+							idval = Integer.parseInt(id);
+							
+						}
+						catch (final NumberFormatException e)
+						{
+							
+							activeChar.sendMessage("Usage: //itemcreate <itemId> (number value > 0) [amount] (number value > 0)");
+							return false;
+						}
+						
+						if (idval > 0)
+						{
+							createItem(activeChar, idval, 1);
+							return true;
+						}
+						activeChar.sendMessage("Usage: //itemcreate <itemId> (number value > 0) [amount] (number value > 0)");
+						return false;
+					}
+				}
+				else
+				{
+					AdminHelpPage.showHelpPage(activeChar, "itemcreation.htm");
+					// activeChar.sendMessage("Usage: //itemcreate <itemId> [amount]");
 					return true;
 				}
+				return false;
 				
-				int page = 0;
+			case admin_mass_create:
 				
-				try
+				if (st.hasMoreTokens())
 				{
-					page = Integer.parseInt(stItem.nextToken());
+					if (st.countTokens() == 2)
+					{
+						final String id = st.nextToken();
+						final String num = st.nextToken();
+						
+						int idval = 0;
+						int numval = 0;
+						
+						try
+						{
+							idval = Integer.parseInt(id);
+							numval = Integer.parseInt(num);
+						}
+						catch (final NumberFormatException e)
+						{
+							activeChar.sendMessage("Usage: //mass_create <itemId> <amount>");
+							return false;
+						}
+						
+						if (idval > 0 && numval > 0)
+						{
+							massCreateItem(activeChar, idval, numval);
+							return true;
+						}
+						activeChar.sendMessage("Usage: //mass_create <itemId> <amount>");
+						return false;
+					}
+					else if (st.countTokens() == 1)
+					{
+						final String id = st.nextToken();
+						int idval = 0;
+						
+						try
+						{
+							idval = Integer.parseInt(id);
+							
+						}
+						catch (final NumberFormatException e)
+						{
+							activeChar.sendMessage("Usage: //mass_create <itemId> <amount>");
+							return false;
+						}
+						
+						if (idval > 0)
+						{
+							massCreateItem(activeChar, idval, 1);
+							return true;
+						}
+						activeChar.sendMessage("Usage: //mass_create <itemId> <amount>");
+						return false;
+					}
 				}
-				catch (Exception e)
-				{
-					LOGGER.error("Invalid number", e);
-				}
+				return false;
 				
-				List<L2Item> list = ItemTable.getInstance().getAllTemplatesByText(itemName);
+			case admin_clear_inventory:
 				
-				int maxPages = list.size() / MAX_ITEMS_PER_PAGE;
-				
-				if (list.size() > MAX_ITEMS_PER_PAGE * maxPages)
-				{
-					maxPages++;
-				}
-				
-				if (page > maxPages)
-				{
-					page = maxPages;
-				}
-				
-				int start = MAX_ITEMS_PER_PAGE * page;
-				int end = list.size();
-				
-				if (end - start > MAX_ITEMS_PER_PAGE)
-				{
-					end = start + MAX_ITEMS_PER_PAGE;
-				}
-				
-				// Paginator
-				sb.append("<table width=240><tr>");
-				
-				int previousPage = page - 1;
-				
-				if (previousPage >= 0)
-				{
-					sb.append("<td width=\"80\"><a action=\"bypass -h admin_searchitem ;");
-					sb.append(itemName);
-					sb.append(";");
-					sb.append(previousPage);
-					sb.append("\">");
-					sb.append("Previous page");
-					sb.append("</a>");
-					sb.append("</td>");
-				}
-				else
-				{
-					sb.append("<td width=\"80\"></td>");
-				}
-				
-				if (page >= 1) // La pagina inicial es 0
-				{
-					sb.append("<td width=\"80\">");
-					sb.append("Page ");
-					sb.append(page);
-					sb.append("</td>");
-				}
-				
-				int nextPage = page + 1;
-				
-				if (nextPage < maxPages)
-				{
-					sb.append("<td width=\"80\"><a action=\"bypass -h admin_searchitem ;");
-					sb.append(itemName);
-					sb.append(";");
-					sb.append(nextPage);
-					sb.append("\">");
-					sb.append("Next page");
-					sb.append("</a>");
-					sb.append("</td>");
-				}
-				else
-				{
-					sb.append("<td width=\"80\"></td>");
-				}
-				
-				sb.append("</tr></table>");
-				// End paginator
-				
-				sb.append("<table width=\"280\">");
-				sb.append("<tr>");
-				sb.append("<td width=\"250\"><center><font color=\"LEVEL\">Name</font></center></td>");
-				sb.append("<td width=\"30\"><font color=\"LEVEL\">ID</font></td>");
-				sb.append("</tr>");
-				
-				for (int i = start; i < end; i++)
-				{
-					L2Item item = list.get(i);
-					sb.append("<tr><td>");
-					sb.append("<a action=\"bypass -h admin_createForm ");
-					sb.append(item.getItemId());
-					sb.append("\">");
-					sb.append(item.getName());
-					sb.append("</a>");
-					sb.append("</td><td>");
-					sb.append(item.getItemId());
-					sb.append("</td></tr>");
-				}
-				
-				sb.append("</table>");
-				
-				htm.replace("%list%", sb.toString());
-				activeChar.sendPacket(htm);
-			}
-			else
-			{
-				NpcHtmlMessage htm = new NpcHtmlMessage(5);
-				htm.setFile("data/html/admin/searchitem.htm");
-				htm.replace("%list%", "");
-				activeChar.sendPacket(htm);
-			}
-			
-			return true;
-		}
-		else if (actualCommand.startsWith("admin_createForm"))
-		{
-			if (st.countTokens() == 1)
-			{
-				try
-				{
-					int itemId = Integer.parseInt(st.nextToken());
-					
-					L2Item item = ItemTable.getInstance().getTemplate(itemId);
-					
-					NpcHtmlMessage htm = new NpcHtmlMessage(5);
-					htm.setFile("data/html/admin/searchitem_createform.htm");
-					htm.replace("%item_name%", item.getName());
-					htm.replace("%item_id%", itemId);
-					activeChar.sendPacket(htm);
-				}
-				catch (Exception e)
-				{
-					LOGGER.error("AdminCreateItem.useAdminCommand: Invalid number format ", e);
-				}
-				
+				removeAllItems(activeChar);
 				return true;
-			}
+				
+			default:
+				return false;
 		}
 		
-		return false;
 	}
 	
 	@Override
@@ -375,57 +317,112 @@ public class AdminCreateItem implements IAdminCommandHandler
 		return ADMIN_COMMANDS;
 	}
 	
-	private void createItem(L2PcInstance activeChar, int id, int num)
+	private void createItem(final L2PcInstance activeChar, final int id, final int num)
 	{
-		L2Object target = activeChar.getTarget();
-		L2PcInstance player = null;
-		
-		if (target == null)
+		if (num > 20)
 		{
-			player = activeChar;
-		}
-		else if (target.isPlayer())
-		{
-			player = (L2PcInstance) target;
-		}
-		else
-		{
-			player = activeChar;
-		}
-		
-		L2Item item = ItemTable.getInstance().getTemplate(id);
-		
-		player.addItem("GM create item", id, num, activeChar, true);
-		
-		if (activeChar.getName().equalsIgnoreCase(player.getName()))
-		{
-			activeChar.sendMessage("You created " + NF.format(num) + " " + item.toString() + " in your inventory.");
-		}
-		else
-		{
-			activeChar.sendMessage("You created " + NF.format(num) + " " + item.toString() + " in " + player.getName() + " inventory.");
-		}
-	}
-	
-	public void massCreateItem(L2PcInstance activeChar, int itemId, int amount)
-	{
-		L2Item item = ItemTable.getInstance().getTemplate(itemId);
-		
-		L2World.getInstance().getAllPlayers().forEach(player -> player.addItem("GM mass create", itemId, amount, activeChar, true));
-		activeChar.sendMessage("You mass created " + NF.format(amount) + " " + item.toString() + " in world players inventory.");
-		LOGGER.info("GM " + activeChar.getName() + " mass created " + amount + "  " + item.toString());
-	}
-	
-	private void removeAllItems(L2PcInstance activeChar)
-	{
-		for (L2ItemInstance item : activeChar.getInventory().getItems())
-		{
-			if (item.getLocation() == L2ItemInstance.ItemLocation.INVENTORY)
+			L2Item template = ItemTable.getInstance().getTemplate(id);
+			
+			if (template != null && !template.isStackable())
 			{
-				activeChar.getInventory().destroyItem("Destroy", item.getObjectId(), item.getCount(), activeChar, null);
+				activeChar.sendMessage("This item does not stack - Creation aborted.");
+				return;
+			}
+			
+			template = null;
+		}
+		
+		L2PcInstance Player = null;
+		
+		if (activeChar.getTarget() != null)
+		{
+			if (activeChar.getTarget() instanceof L2PcInstance)
+			{
+				if (activeChar.getAccessLevel().getLevel() > 0 && activeChar.getAccessLevel().getLevel() < 3)
+				{
+					Player = (L2PcInstance) activeChar.getTarget();
+				}
+				else
+				{
+					activeChar.sendMessage("You have not right to create item on another player");
+					return;
+				}
+			}
+			else
+			{
+				activeChar.sendMessage("You can add an item only to a character.");
+				return;
 			}
 		}
 		
+		if (Player == null)
+		{
+			activeChar.setTarget(activeChar);
+			Player = activeChar;
+		}
+		
+		Player.getInventory().addItem("Admin", id, num, Player, null);
+		ItemList il = new ItemList(Player, true);
+		Player.sendPacket(il);
+		if (activeChar.getName().equalsIgnoreCase(Player.getName()))
+		{
+			activeChar.sendMessage("You have spawned " + num + " item(s) number " + id + " in your inventory.");
+		}
+		else
+		{
+			activeChar.sendMessage("You have spawned " + num + " item(s) number " + id + " in " + Player.getName() + "'s inventory.");
+			Player.sendMessage("Admin has spawned " + num + " item(s) number " + id + " in your inventory.");
+		}
+		
+		Player = null;
+		il = null;
+	}
+	
+	private void massCreateItem(final L2PcInstance activeChar, final int id, final int num)
+	{
+		if (num > 20)
+		{
+			final L2Item template = ItemTable.getInstance().getTemplate(id);
+			if (template != null && !template.isStackable())
+			{
+				activeChar.sendMessage("This item does not stack - Creation aborted.");
+				return;
+			}
+		}
+		
+		int i = 0;
+		L2ItemInstance item = null;
+		FastList<InetAddress> ip = new FastList<>();
+		for (final L2PcInstance player : L2World.getInstance().getAllPlayers())
+		{
+			                       if (player.isInOfflineMode()) return;
+			                       InetAddress ipc = player.getClient().getConnection().getInetAddress();
+			                       if (ip.contains(ipc))
+			                               continue;
+			                      
+			                       ip.add(ipc);
+			player.sendMessage("Admin is rewarding all online players.");
+			item = player.getInventory().addItem("Admin", id, num, null, null);
+			final InventoryUpdate iu = new InventoryUpdate();
+			iu.addItem(item);
+			player.sendPacket(iu);
+			final SystemMessage sm = new SystemMessage(SystemMessageId.YOU_PICKED_UP_S1_S2);
+			sm.addItemName(item.getItemId());
+			sm.addNumber(num);
+			player.sendPacket(sm);
+			i++;
+		}
+		activeChar.sendMessage("Mass-created items in the inventory of " + i + " player(s).");
+		LOGGER.info("GM " + activeChar.getName() + " mass_created item Id: " + id + " (" + num + ")");
+	}
+	
+	private void removeAllItems(final L2PcInstance activeChar)
+	{
+		for (final L2ItemInstance item : activeChar.getInventory().getItems())
+		{
+			if (item.getLocation() == L2ItemInstance.ItemLocation.INVENTORY)
+				activeChar.getInventory().destroyItem("Destroy", item.getObjectId(), item.getCount(), activeChar, null);
+		}
 		activeChar.sendPacket(new ItemList(activeChar, false));
 		activeChar.sendMessage("Your inventory has been cleared.");
 	}

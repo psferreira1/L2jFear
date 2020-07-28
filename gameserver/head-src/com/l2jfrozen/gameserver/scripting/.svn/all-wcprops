@@ -1,0 +1,35 @@
+K 25
+svn:wc:ra_dav:version-url
+V 106
+/svn/L2jFrozenInterlude/!svn/ver/1111/branches/Beta/gameserver/head-src/com/l2jfrozen/gameserver/scripting
+END
+ManagedScript.java
+K 25
+svn:wc:ra_dav:version-url
+V 125
+/svn/L2jFrozenInterlude/!svn/ver/1111/branches/Beta/gameserver/head-src/com/l2jfrozen/gameserver/scripting/ManagedScript.java
+END
+L2ScriptEngineManager.java
+K 25
+svn:wc:ra_dav:version-url
+V 133
+/svn/L2jFrozenInterlude/!svn/ver/1111/branches/Beta/gameserver/head-src/com/l2jfrozen/gameserver/scripting/L2ScriptEngineManager.java
+END
+CompiledScriptHolder.java
+K 25
+svn:wc:ra_dav:version-url
+V 132
+/svn/L2jFrozenInterlude/!svn/ver/1111/branches/Beta/gameserver/head-src/com/l2jfrozen/gameserver/scripting/CompiledScriptHolder.java
+END
+CompiledScriptCache.java
+K 25
+svn:wc:ra_dav:version-url
+V 131
+/svn/L2jFrozenInterlude/!svn/ver/1111/branches/Beta/gameserver/head-src/com/l2jfrozen/gameserver/scripting/CompiledScriptCache.java
+END
+ScriptManager.java
+K 25
+svn:wc:ra_dav:version-url
+V 125
+/svn/L2jFrozenInterlude/!svn/ver/1111/branches/Beta/gameserver/head-src/com/l2jfrozen/gameserver/scripting/ScriptManager.java
+END

@@ -1,0 +1,35 @@
+K 25
+svn:wc:ra_dav:version-url
+V 118
+/svn/L2jFrozenInterlude/!svn/ver/1116/branches/Beta/gameserver/head-src/com/l2jfrozen/gameserver/model/entity/olympiad
+END
+OlympiadStadium.java
+K 25
+svn:wc:ra_dav:version-url
+V 139
+/svn/L2jFrozenInterlude/!svn/ver/1111/branches/Beta/gameserver/head-src/com/l2jfrozen/gameserver/model/entity/olympiad/OlympiadStadium.java
+END
+OlympiadManager.java
+K 25
+svn:wc:ra_dav:version-url
+V 139
+/svn/L2jFrozenInterlude/!svn/ver/1111/branches/Beta/gameserver/head-src/com/l2jfrozen/gameserver/model/entity/olympiad/OlympiadManager.java
+END
+OlympiadGame.java
+K 25
+svn:wc:ra_dav:version-url
+V 136
+/svn/L2jFrozenInterlude/!svn/ver/1116/branches/Beta/gameserver/head-src/com/l2jfrozen/gameserver/model/entity/olympiad/OlympiadGame.java
+END
+OlympiadPeriod.java
+K 25
+svn:wc:ra_dav:version-url
+V 138
+/svn/L2jFrozenInterlude/!svn/ver/1111/branches/Beta/gameserver/head-src/com/l2jfrozen/gameserver/model/entity/olympiad/OlympiadPeriod.java
+END
+Olympiad.java
+K 25
+svn:wc:ra_dav:version-url
+V 132
+/svn/L2jFrozenInterlude/!svn/ver/1110/branches/Beta/gameserver/head-src/com/l2jfrozen/gameserver/model/entity/olympiad/Olympiad.java
+END

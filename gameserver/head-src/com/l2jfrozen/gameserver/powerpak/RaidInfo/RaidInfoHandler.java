@@ -75,8 +75,16 @@ public class RaidInfoHandler implements ICustomByPassHandler
 	private static void sendInfo(final L2PcInstance activeChar)
 	{
 		final TextBuilder tb = new TextBuilder();
-		tb.append("<html><title>Grand Boss Info</title><body><br><center>");
-		tb.append("<img src=\"L2UI_CH3.herotower_deco\" width=256 height=32><br><br>");
+	    tb.append("<html><body><center>");
+	    tb.append("<img src=\"l2cursed.1\" width=300 height=90>");
+	    tb.append("<img src=\"L2UI.SquareGray\" width=300 height=1>");
+	    tb.append("<table bgcolor=000000 width=319>");
+	    tb.append("<tr>");
+	    tb.append("<td><center><font color=\"ae9988\">Hey, Here you can se RB Status</font><center></td>");
+	    tb.append("</tr>");
+	    tb.append("</table>");
+	    tb.append("<img src=\"L2UI.SquareGray\" width=300 height=1>");
+	    tb.append("<br>");
 		
 		for (final int boss : Config.RAID_INFO_IDS_LIST)
 		{
@@ -123,9 +131,11 @@ public class RaidInfoHandler implements ICustomByPassHandler
 				tb.append("<font color=\"00C3FF\">" + name + "</color>" + "<font color=\"FFFFFF\">" + " " + "Respawn in :</color>" + " " + " <font color=\"32C332\">" + hours + " : " + mins + " : " + seconts + "</color><br1>");
 			}
 		}
-		
-		tb.append("<br><img src=\"L2UI_CH3.herotower_deco\" width=256 height=32><br>");
-		tb.append("</center></body></html>");
+
+        tb.append("<img src=\"L2UI.SquareGray\" width=300 height=1>");
+        tb.append("<img src=\"l2cursed.3\" width=300 height=32>");
+        tb.append("<img src=\"L2UI.SquareGray\" width=300 height=1>");
+        tb.append("</body></html>");
 		
 		final NpcHtmlMessage msg = new NpcHtmlMessage(NPC_ID);
 		msg.setHtml(tb.toString());

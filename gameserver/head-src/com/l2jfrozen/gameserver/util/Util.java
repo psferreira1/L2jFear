@@ -1,7 +1,38 @@
+/*
+ * $Header: Util.java, 21/10/2005 23:17:40 luisantonioa Exp $
+ *
+ * $Author: luisantonioa $
+ * $Date: 21/10/2005 23:17:40 $
+ * $Revision: 1 $
+ * $Log: Util.java,v $
+ * Revision 1  21/10/2005 23:17:40  luisantonioa
+ * Added copyright notice
+ *
+ *
+ * L2jFrozen Project - www.l2jfrozen.com 
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2, or (at your option)
+ * any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
+ * 02111-1307, USA.
+ *
+ * http://www.gnu.org/copyleft/gpl.html
+ */
 package com.l2jfrozen.gameserver.util;
 
 import java.io.File;
 import java.util.Collection;
+import java.util.Date;
 
 import com.l2jfrozen.gameserver.model.L2Character;
 import com.l2jfrozen.gameserver.model.L2Object;
@@ -11,7 +42,7 @@ import com.l2jfrozen.gameserver.thread.ThreadPoolManager;
 
 /**
  * General Utility functions related to Gameserver
- * @author luisantonioa
+ * @version $Revision: 1.2 $ $Date: 2004/06/27 08:12:59 $
  */
 public final class Util
 {
@@ -27,9 +58,9 @@ public final class Util
 	}
 	
 	/**
-	 * @param  obj1
-	 * @param  obj2
-	 * @return      degree value of object 2 to the horizontal line with object 1 being the origin
+	 * @param obj1
+	 * @param obj2
+	 * @return degree value of object 2 to the horizontal line with object 1 being the origin
 	 */
 	public static double calculateAngleFrom(final L2Object obj1, final L2Object obj2)
 	{
@@ -37,11 +68,11 @@ public final class Util
 	}
 	
 	/**
-	 * @param  obj1X
-	 * @param  obj1Y
-	 * @param  obj2X
-	 * @param  obj2Y
-	 * @return       degree value of object 2 to the horizontal line with object 1 being the origin
+	 * @param obj1X
+	 * @param obj1Y
+	 * @param obj2X
+	 * @param obj2Y
+	 * @return degree value of object 2 to the horizontal line with object 1 being the origin
 	 */
 	public static double calculateAngleFrom(final int obj1X, final int obj1Y, final int obj2X, final int obj2Y)
 	{
@@ -74,26 +105,22 @@ public final class Util
 	public static double calculateDistance(final L2Object obj1, final L2Object obj2, final boolean includeZAxis)
 	{
 		if (obj1 == null || obj2 == null)
-		{
 			return 1000000;
-		}
 		return calculateDistance(obj1.getPosition().getX(), obj1.getPosition().getY(), obj1.getPosition().getZ(), obj2.getPosition().getX(), obj2.getPosition().getY(), obj2.getPosition().getZ(), includeZAxis);
 	}
 	
 	/**
 	 * Capitalizes the first letter of a string, and returns the result.<BR>
 	 * (Based on ucfirst() function of PHP)
-	 * @param  str
-	 * @return     String containing the modified string.
+	 * @param str
+	 * @return String containing the modified string.
 	 */
 	public static String capitalizeFirst(String str)
 	{
 		str = str.trim();
 		
 		if (str.length() > 0 && Character.isLetter(str.charAt(0)))
-		{
 			return str.substring(0, 1).toUpperCase() + str.substring(1);
-		}
 		
 		return str;
 	}
@@ -101,8 +128,8 @@ public final class Util
 	/**
 	 * Capitalizes the first letter of every "word" in a string.<BR>
 	 * (Based on ucwords() function of PHP)
-	 * @param  str
-	 * @return     String containing the modified string.
+	 * @param str
+	 * @return String containing the modified string.
 	 */
 	public static String capitalizeWords(final String str)
 	{
@@ -127,21 +154,17 @@ public final class Util
 	
 	// Micht: Removed this because UNUSED
 	/*
-	 * public static boolean checkIfInRange(int range, int x1, int y1, int x2, int y2) { return checkIfInRange(range, x1, y1, 0, x2, y2, 0, false); } public static boolean checkIfInRange(int range, int x1, int y1, int z1, int x2, int y2, int z2, boolean includeZAxis) { if (includeZAxis) { return ((x1 -
-	 * x2)*(x1 - x2) + (y1 - y2)*(y1 - y2) + (z1 - z2)*(z1 - z2)) <= range * range; } else { return ((x1 - x2)*(x1 - x2) + (y1 - y2)*(y1 - y2)) <= range * range; } } public static boolean checkIfInRange(int range, L2Object obj1, L2Object obj2, boolean includeZAxis) { if (obj1 == null || obj2 == null)
-	 * return false; return checkIfInRange(range, obj1.getPosition().getX(), obj1.getPosition().getY(), obj1.getPosition().getZ(), obj2.getPosition().getX(), obj2.getPosition().getY(), obj2.getPosition().getZ(), includeZAxis); }
+	 * public static boolean checkIfInRange(int range, int x1, int y1, int x2, int y2) { return checkIfInRange(range, x1, y1, 0, x2, y2, 0, false); } public static boolean checkIfInRange(int range, int x1, int y1, int z1, int x2, int y2, int z2, boolean includeZAxis) { if (includeZAxis) { return
+	 * ((x1 - x2)*(x1 - x2) + (y1 - y2)*(y1 - y2) + (z1 - z2)*(z1 - z2)) <= range * range; } else { return ((x1 - x2)*(x1 - x2) + (y1 - y2)*(y1 - y2)) <= range * range; } } public static boolean checkIfInRange(int range, L2Object obj1, L2Object obj2, boolean includeZAxis) { if (obj1 == null || obj2
+	 * == null) return false; return checkIfInRange(range, obj1.getPosition().getX(), obj1.getPosition().getY(), obj1.getPosition().getZ(), obj2.getPosition().getX(), obj2.getPosition().getY(), obj2.getPosition().getZ(), includeZAxis); }
 	 */
 	public static boolean checkIfInRange(final int range, final L2Object obj1, final L2Object obj2, final boolean includeZAxis)
 	{
 		if (obj1 == null || obj2 == null)
-		{
 			return false;
-		}
 		if (range == -1)
-		{
 			return true; // not limited
-		}
-		
+			
 		int rad = 0;
 		if (obj1 instanceof L2Character)
 		{
@@ -170,16 +193,14 @@ public final class Util
 	public static double convertHeadingToDegree(final int heading)
 	{
 		if (heading == 0)
-		{
 			return 360D;
-		}
 		return 9.0D * heading / 1610.0D; // = 360.0 * (heading / 64400.0)
 	}
 	
 	/**
 	 * Returns the number of "words" in a given string.
-	 * @param  str
-	 * @return     int numWords
+	 * @param str
+	 * @return int numWords
 	 */
 	public static int countWords(final String str)
 	{
@@ -189,9 +210,9 @@ public final class Util
 	/**
 	 * Returns a delimited string for an given array of string elements.<BR>
 	 * (Based on implode() in PHP)
-	 * @param  strArray
-	 * @param  strDelim
-	 * @return          String implodedString
+	 * @param strArray
+	 * @param strDelim
+	 * @return String implodedString
 	 */
 	public static String implodeString(final String[] strArray, final String strDelim)
 	{
@@ -208,9 +229,9 @@ public final class Util
 	/**
 	 * Returns a delimited string for an given collection of string elements.<BR>
 	 * (Based on implode() in PHP)
-	 * @param  strCollection
-	 * @param  strDelim
-	 * @return               String implodedString
+	 * @param strCollection
+	 * @param strDelim
+	 * @return String implodedString
 	 */
 	public static String implodeString(final Collection<String> strCollection, final String strDelim)
 	{
@@ -220,16 +241,14 @@ public final class Util
 	/**
 	 * Returns the rounded value of val to specified number of digits after the decimal point.<BR>
 	 * (Based on round() in PHP)
-	 * @param  val
-	 * @param  numPlaces
-	 * @return           float roundedVal
+	 * @param val
+	 * @param numPlaces
+	 * @return float roundedVal
 	 */
 	public static float roundTo(final float val, final int numPlaces)
 	{
 		if (numPlaces <= 1)
-		{
 			return Math.round(val);
-		}
 		
 		final float exponent = (float) Math.pow(10, numPlaces);
 		
@@ -253,8 +272,8 @@ public final class Util
 	
 	/**
 	 * Return amount of adena formatted with "," delimiter
-	 * @param  amount
-	 * @return        String formatted adena amount
+	 * @param amount
+	 * @return String formatted adena amount
 	 */
 	public static String formatAdena(int amount)
 	{
@@ -294,7 +313,7 @@ public final class Util
 	
 	/**
 	 * converts a given time from minutes -> miliseconds
-	 * @param  minutesToConvert
+	 * @param minutesToConvert
 	 * @return
 	 */
 	public static int convertMinutesToMiliseconds(final int minutesToConvert)
@@ -316,9 +335,7 @@ public final class Util
 	{
 		double angleTarget = Math.toDegrees(Math.atan2(dy, dx));
 		if (angleTarget < 0.0D)
-		{
 			angleTarget = 360.0D + angleTarget;
-		}
 		return (int) (angleTarget * 182.04444444399999D);
 	}
 	
@@ -327,25 +344,17 @@ public final class Util
 		int angle;
 		// int angle;
 		if (heading == 0)
-		{
 			angle = 360;
-		}
 		else
 		{
 			angle = (int) (heading / 182.03999999999999D);
 		}
 		if (angle <= 90)
-		{
 			angle += 90;
-		}
 		else if ((angle > 90) && (angle <= 180))
-		{
 			angle -= 90;
-		}
 		else if ((angle > 180) && (angle <= 270))
-		{
 			angle += 90;
-		}
 		else if ((angle > 270) && (angle <= 360))
 		{
 			angle -= 90;
@@ -368,6 +377,11 @@ public final class Util
 			}
 		}
 		return false;
+	}
+
+	public static String formatDate(Date date, String string) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 	
 }

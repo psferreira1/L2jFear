@@ -1,0 +1,35 @@
+K 25
+svn:wc:ra_dav:version-url
+V 124
+/svn/L2jFrozenInterlude/!svn/ver/1111/branches/Beta/gameserver/head-src/com/l2jfrozen/loginserver/network/loginserverpackets
+END
+LoginServerFail.java
+K 25
+svn:wc:ra_dav:version-url
+V 145
+/svn/L2jFrozenInterlude/!svn/ver/1111/branches/Beta/gameserver/head-src/com/l2jfrozen/loginserver/network/loginserverpackets/LoginServerFail.java
+END
+PlayerAuthResponse.java
+K 25
+svn:wc:ra_dav:version-url
+V 148
+/svn/L2jFrozenInterlude/!svn/ver/1111/branches/Beta/gameserver/head-src/com/l2jfrozen/loginserver/network/loginserverpackets/PlayerAuthResponse.java
+END
+AuthResponse.java
+K 25
+svn:wc:ra_dav:version-url
+V 142
+/svn/L2jFrozenInterlude/!svn/ver/1111/branches/Beta/gameserver/head-src/com/l2jfrozen/loginserver/network/loginserverpackets/AuthResponse.java
+END
+KickPlayer.java
+K 25
+svn:wc:ra_dav:version-url
+V 140
+/svn/L2jFrozenInterlude/!svn/ver/1111/branches/Beta/gameserver/head-src/com/l2jfrozen/loginserver/network/loginserverpackets/KickPlayer.java
+END
+InitLS.java
+K 25
+svn:wc:ra_dav:version-url
+V 136
+/svn/L2jFrozenInterlude/!svn/ver/1111/branches/Beta/gameserver/head-src/com/l2jfrozen/loginserver/network/loginserverpackets/InitLS.java
+END

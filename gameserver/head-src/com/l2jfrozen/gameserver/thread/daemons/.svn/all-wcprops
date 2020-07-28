@@ -1,0 +1,23 @@
+K 25
+svn:wc:ra_dav:version-url
+V 111
+/svn/L2jFrozenInterlude/!svn/ver/1111/branches/Beta/gameserver/head-src/com/l2jfrozen/gameserver/thread/daemons
+END
+PcPoint.java
+K 25
+svn:wc:ra_dav:version-url
+V 124
+/svn/L2jFrozenInterlude/!svn/ver/1084/branches/Beta/gameserver/head-src/com/l2jfrozen/gameserver/thread/daemons/PcPoint.java
+END
+ItemsAutoDestroy.java
+K 25
+svn:wc:ra_dav:version-url
+V 133
+/svn/L2jFrozenInterlude/!svn/ver/1111/branches/Beta/gameserver/head-src/com/l2jfrozen/gameserver/thread/daemons/ItemsAutoDestroy.java
+END
+DeadlockDetector.java
+K 25
+svn:wc:ra_dav:version-url
+V 133
+/svn/L2jFrozenInterlude/!svn/ver/1111/branches/Beta/gameserver/head-src/com/l2jfrozen/gameserver/thread/daemons/DeadlockDetector.java
+END

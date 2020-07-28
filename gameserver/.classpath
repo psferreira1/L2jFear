@@ -47,5 +47,7 @@
 	<classpathentry kind="lib" path="lib/uMad/xalan-2.7.1.jar"/>
 	<classpathentry kind="lib" path="lib/uMad/xercesImpl-2.11.0.jar"/>
 	<classpathentry kind="lib" path="lib/uMad/xml-apis-1.4.01.jar"/>
+	<classpathentry kind="lib" path="build.xml"/>
+	<classpathentry kind="lib" path=".classpath"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

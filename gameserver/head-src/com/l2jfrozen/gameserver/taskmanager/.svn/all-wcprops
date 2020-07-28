@@ -1,0 +1,47 @@
+K 25
+svn:wc:ra_dav:version-url
+V 108
+/svn/L2jFrozenInterlude/!svn/ver/1111/branches/Beta/gameserver/head-src/com/l2jfrozen/gameserver/taskmanager
+END
+AttackStanceTaskManager.java
+K 25
+svn:wc:ra_dav:version-url
+V 137
+/svn/L2jFrozenInterlude/!svn/ver/1111/branches/Beta/gameserver/head-src/com/l2jfrozen/gameserver/taskmanager/AttackStanceTaskManager.java
+END
+KnownListUpdateTaskManager.java
+K 25
+svn:wc:ra_dav:version-url
+V 140
+/svn/L2jFrozenInterlude/!svn/ver/1051/branches/Beta/gameserver/head-src/com/l2jfrozen/gameserver/taskmanager/KnownListUpdateTaskManager.java
+END
+DecayTaskManager.java
+K 25
+svn:wc:ra_dav:version-url
+V 130
+/svn/L2jFrozenInterlude/!svn/ver/1111/branches/Beta/gameserver/head-src/com/l2jfrozen/gameserver/taskmanager/DecayTaskManager.java
+END
+TaskManager.java
+K 25
+svn:wc:ra_dav:version-url
+V 125
+/svn/L2jFrozenInterlude/!svn/ver/1111/branches/Beta/gameserver/head-src/com/l2jfrozen/gameserver/taskmanager/TaskManager.java
+END
+Task.java
+K 25
+svn:wc:ra_dav:version-url
+V 118
+/svn/L2jFrozenInterlude/!svn/ver/1111/branches/Beta/gameserver/head-src/com/l2jfrozen/gameserver/taskmanager/Task.java
+END
+TaskTypes.java
+K 25
+svn:wc:ra_dav:version-url
+V 123
+/svn/L2jFrozenInterlude/!svn/ver/1111/branches/Beta/gameserver/head-src/com/l2jfrozen/gameserver/taskmanager/TaskTypes.java
+END
+ExclusiveTask.java
+K 25
+svn:wc:ra_dav:version-url
+V 127
+/svn/L2jFrozenInterlude/!svn/ver/1111/branches/Beta/gameserver/head-src/com/l2jfrozen/gameserver/taskmanager/ExclusiveTask.java
+END

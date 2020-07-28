@@ -1,11 +1,34 @@
+/*
+ * L2jFrozen Project - www.l2jfrozen.com 
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2, or (at your option)
+ * any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
+ * 02111-1307, USA.
+ *
+ * [URL]http://www.gnu.org/copyleft/gpl.html[/URL]
+ */
 package com.l2jfrozen.gameserver.handler.admincommandhandlers;
 
 import java.io.File;
 import java.util.StringTokenizer;
 
+import Extensions.balancer.BalanceLoad;
+
 import com.l2jfrozen.Config;
 import com.l2jfrozen.gameserver.cache.HtmCache;
 import com.l2jfrozen.gameserver.controllers.TradeController;
+import com.l2jfrozen.gameserver.custom.ClassBalanceManager;
 import com.l2jfrozen.gameserver.datatables.SkillTable;
 import com.l2jfrozen.gameserver.datatables.csv.NpcWalkerRoutesTable;
 import com.l2jfrozen.gameserver.datatables.sql.ItemTable;
@@ -163,6 +186,24 @@ public class AdminReload implements IAdminCommandHandler
 						ioe.printStackTrace();
 					}
 					
+				}
+				else if (type.equals("classbalance"))
+				{
+					ClassBalanceManager.getInstance().load();
+					sendReloadPage(activeChar);
+					activeChar.sendMessage("Class Balance manager reloaded by gevor.");
+				}
+				else if (type.equals("balancer"))
+				{
+					BalanceLoad.LoadEm();
+					sendReloadPage(activeChar);
+					activeChar.sendMessage("Balance stats for classes has been reloaded by gevorakoC.");
+				}
+				else if (type.equals("save_123"))
+				{
+					ClassBalanceManager.getInstance().rewriteToXml();
+					sendReloadPage(activeChar);
+					activeChar.sendMessage("Class Balance manager saved by gevor.");
 				}
 				activeChar.sendMessage("WARNING: There are several known issues regarding this feature. Reloading server data during runtime is STRONGLY NOT RECOMMENDED for live servers, just for developing environments.");
 			}

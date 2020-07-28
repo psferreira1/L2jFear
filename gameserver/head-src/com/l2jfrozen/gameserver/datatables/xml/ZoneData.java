@@ -1,16 +1,32 @@
+/* L2jFrozen Project - www.l2jfrozen.com 
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2, or (at your option)
+ * any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
+ * 02111-1307, USA.
+ *
+ * http://www.gnu.org/copyleft/gpl.html
+ */
 package com.l2jfrozen.gameserver.datatables.xml;
 
 import java.io.File;
-import java.lang.reflect.Constructor;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 import javax.xml.parsers.DocumentBuilderFactory;
+
+import javolution.util.FastList;
 
 import org.apache.log4j.Logger;
 import org.w3c.dom.Document;
@@ -18,74 +34,121 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 
 import com.l2jfrozen.Config;
+import com.l2jfrozen.gameserver.managers.ArenaManager;
 import com.l2jfrozen.gameserver.managers.FishingZoneManager;
+import com.l2jfrozen.gameserver.managers.GrandBossManager;
+import com.l2jfrozen.gameserver.managers.OlympiadStadiaManager;
+import com.l2jfrozen.gameserver.managers.TownManager;
 import com.l2jfrozen.gameserver.model.L2World;
 import com.l2jfrozen.gameserver.model.L2WorldRegion;
 import com.l2jfrozen.gameserver.model.zone.L2ZoneType;
-import com.l2jfrozen.gameserver.model.zone.shape.ZoneCuboid;
-import com.l2jfrozen.gameserver.model.zone.shape.ZoneCylinder;
-import com.l2jfrozen.gameserver.model.zone.shape.ZoneNPoly;
+import com.l2jfrozen.gameserver.model.zone.form.ZoneCuboid;
+import com.l2jfrozen.gameserver.model.zone.form.ZoneCylinder;
+import com.l2jfrozen.gameserver.model.zone.form.ZoneNPoly;
+import com.l2jfrozen.gameserver.model.zone.type.L2ArenaZone;
+import com.l2jfrozen.gameserver.model.zone.type.L2BigheadZone;
+import com.l2jfrozen.gameserver.model.zone.type.L2BossZone;
+import com.l2jfrozen.gameserver.model.zone.type.L2CastleTeleportZone;
+import com.l2jfrozen.gameserver.model.zone.type.L2CastleZone;
+import com.l2jfrozen.gameserver.model.zone.type.L2ClanHallZone;
+import com.l2jfrozen.gameserver.model.zone.type.L2CustomZone;
+import com.l2jfrozen.gameserver.model.zone.type.L2DamageZone;
+import com.l2jfrozen.gameserver.model.zone.type.L2DerbyTrackZone;
+import com.l2jfrozen.gameserver.model.zone.type.L2EffectZone;
 import com.l2jfrozen.gameserver.model.zone.type.L2FishingZone;
+import com.l2jfrozen.gameserver.model.zone.type.L2FlagZone;
+import com.l2jfrozen.gameserver.model.zone.type.L2FortZone;
+import com.l2jfrozen.gameserver.model.zone.type.L2JailZone;
+import com.l2jfrozen.gameserver.model.zone.type.L2MotherTreeZone;
+import com.l2jfrozen.gameserver.model.zone.type.L2PvPZone;
+import com.l2jfrozen.gameserver.model.zone.type.L2NoHqZone;
+import com.l2jfrozen.gameserver.model.zone.type.L2NoLandingZone;
+import com.l2jfrozen.gameserver.model.zone.type.L2NoStoreZone;
+import com.l2jfrozen.gameserver.model.zone.type.L2OlympiadStadiumZone;
+import com.l2jfrozen.gameserver.model.zone.type.L2PeaceZone;
+import com.l2jfrozen.gameserver.model.zone.type.L2PoisonZone;
+import com.l2jfrozen.gameserver.model.zone.type.L2SwampZone;
+import com.l2jfrozen.gameserver.model.zone.type.L2TownZone;
 import com.l2jfrozen.gameserver.model.zone.type.L2WaterZone;
+import com.l2jfrozen.util.CloseUtil;
 import com.l2jfrozen.util.database.DatabaseUtils;
 import com.l2jfrozen.util.database.L2DatabaseFactory;
 
 /**
- * @author programmos
- * @author scoria dev
- * @author ReynalDev
+ * This class manages the augmentation data and can also create new augmentations.
+ * @version $Revision: 1.1 $ $Date: 2009/04/28 13:44:30 $
+ * @author programmos, scoria dev
  */
 public class ZoneData
 {
 	private static final Logger LOGGER = Logger.getLogger(ZoneData.class);
-	private static final String SELECT_X_Y_ZONE_VERTICES_ID = "SELECT x,y FROM zone_vertices WHERE id=? ORDER BY 'order' ASC";
-	private static Map<Integer, L2ZoneType> zones = new HashMap<>();
 	
-	private static ZoneData instance;
+	// =========================================================
+	private static ZoneData _instance;
 	
 	public static final ZoneData getInstance()
 	{
-		if (instance == null)
+		if (_instance == null)
 		{
-			instance = new ZoneData();
+			_instance = new ZoneData();
 		}
 		
-		return instance;
+		return _instance;
 	}
 	
+	// =========================================================
+	// Data Field
+	
+	// =========================================================
+	// Constructor
 	public ZoneData()
 	{
+		LOGGER.info("Loading zones...");
+		
 		load();
 	}
 	
+	// reload
 	public void reload()
 	{
-		synchronized (instance)
+		synchronized (_instance)
 		{
-			instance = null;
-			instance = new ZoneData();
+			_instance = null;
+			_instance = new ZoneData();
 		}
 	}
 	
-	private void load()
+	// =========================================================
+	// Method - Private
+	
+	private final void load()
 	{
+		Connection con = null;
+		int zoneCount = 0;
+		
 		// Get the world regions
 		final L2WorldRegion[][] worldRegions = L2World.getInstance().getAllWorldRegions();
 		
+		boolean done = false;
+		
 		// Load the zone xml
-		try (Connection con = L2DatabaseFactory.getInstance().getConnection())
+		try
 		{
+			// Get a sql connection here
+			con = L2DatabaseFactory.getInstance().getConnection(false);
+			
 			DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 			factory.setValidating(false);
 			factory.setIgnoringComments(true);
 			
-			File file = new File(Config.DATAPACK_ROOT + "/data/xml/zone.xml");
+			File file = new File(Config.DATAPACK_ROOT + "/data/zones/zone.xml");
 			if (!file.exists())
 			{
 				if (Config.DEBUG)
 				{
 					LOGGER.info("The zone.xml file is missing.");
 				}
+				
 			}
 			else
 			{
@@ -94,6 +157,7 @@ public class ZoneData
 				factory = null;
 				file = null;
 				
+				int effect_zone_id = 150000; // FIXME Temporally workaround to avoid zone.xml modification
 				for (Node n = doc.getFirstChild(); n != null; n = n.getNextSibling())
 				{
 					if ("list".equalsIgnoreCase(n.getNodeName()))
@@ -104,40 +168,122 @@ public class ZoneData
 							{
 								NamedNodeMap attrs = d.getAttributes();
 								
-								int zoneId = 0;
-								
-								zoneId = Integer.parseInt(attrs.getNamedItem("id").getNodeValue());
-								
-								String zoneName = "No zone name";
-								if (attrs.getNamedItem("name") != null)
+								int zoneId = -1;
+								if (attrs.getNamedItem("id") != null)
 								{
-									zoneName = attrs.getNamedItem("name").getNodeValue();
+									zoneId = Integer.parseInt(attrs.getNamedItem("id").getNodeValue());
 								}
 								
-								int minZ = Integer.parseInt(attrs.getNamedItem("minZ").getNodeValue());
-								int maxZ = Integer.parseInt(attrs.getNamedItem("maxZ").getNodeValue());
+								final int minZ = Integer.parseInt(attrs.getNamedItem("minZ").getNodeValue());
+								final int maxZ = Integer.parseInt(attrs.getNamedItem("maxZ").getNodeValue());
 								
 								String zoneType = attrs.getNamedItem("type").getNodeValue();
 								String zoneShape = attrs.getNamedItem("shape").getNodeValue();
 								
 								// Create the zone
-								Class<?> newZone = null;
-								Constructor<?> zoneConstructor = null;
 								L2ZoneType temp = null;
 								
-								try
+								switch (zoneType)
 								{
-									newZone = Class.forName("com.l2jfrozen.gameserver.model.zone.type.L2" + zoneType);
-									zoneConstructor = newZone.getConstructor(int.class);
-									temp = (L2ZoneType) zoneConstructor.newInstance(zoneId);
-								}
-								catch (Exception e)
-								{
-									LOGGER.error("ZoneData.load: No such zone type: " + zoneType + " for zone with ID: " + zoneId);
-									continue;
+									case "FishingZone":
+										temp = new L2FishingZone(zoneId);
+										break;
+									case "ClanHallZone":
+										temp = new L2ClanHallZone(zoneId);
+										break;
+									case "PeaceZone":
+										temp = new L2PeaceZone(zoneId);
+										break;
+									case "Town":
+										temp = new L2TownZone(zoneId);
+										break;
+									case "OlympiadStadium":
+										temp = new L2OlympiadStadiumZone(zoneId);
+										break;
+									case "CastleZone":
+										temp = new L2CastleZone(zoneId);
+										break;
+									case "FortZone":
+										temp = new L2FortZone(zoneId);
+										break;
+									case "DamageZone":
+										temp = new L2DamageZone(zoneId);
+										break;
+									case "Arena":
+										temp = new L2ArenaZone(zoneId);
+										break;
+									case "MotherTree":
+										temp = new L2MotherTreeZone(zoneId);
+										break;
+									case "BigheadZone":
+										temp = new L2BigheadZone(zoneId);
+										break;
+									case "NoLandingZone":
+										temp = new L2NoLandingZone(zoneId);
+										break;
+									case "NoStoreZone":
+										temp = new L2NoStoreZone(zoneId);
+										break;
+									case "JailZone":
+										temp = new L2JailZone(zoneId);
+										break;
+									case "DerbyTrackZone":
+										temp = new L2DerbyTrackZone(zoneId);
+										break;
+									case "WaterZone":
+										temp = new L2WaterZone(zoneId);
+										break;
+									case "NoHqZone":
+										temp = new L2NoHqZone(zoneId);
+										break;
+									case "CustomBoss":
+										temp = new L2PvPZone(zoneId);
+										break;
+									case "PvPZoneWB":
+										temp = new L2FlagZone(zoneId);
+										break;
+									case "BossZone":
+										int boss_id = -1;
+										
+										try
+										{
+											boss_id = Integer.parseInt(attrs.getNamedItem("bossId").getNodeValue());
+										}
+										catch (final IllegalArgumentException e)
+										{
+											e.printStackTrace();
+										}
+										
+										temp = new L2BossZone(zoneId, boss_id);
+										break;
+									/*
+									 * else if(zoneType.equals("SkillZone")) { temp = new L2SkillZone(zoneId); }
+									 */
+									case "EffectZone":
+										zoneId = effect_zone_id;
+										effect_zone_id++;
+										temp = new L2EffectZone(zoneId);
+										break;
+									case "PoisonZone":
+										temp = new L2PoisonZone(zoneId);
+										break;
+									case "CastleTeleportZone":
+										temp = new L2CastleTeleportZone(zoneId);
+										break;
+									case "CustomZone":
+										temp = new L2CustomZone(zoneId);
+										break;
+									case "SwampZone":
+										temp = new L2SwampZone(zoneId);
+										break;
 								}
 								
-								temp.setZoneName(zoneName);
+								// Check for unknown type
+								if (temp == null)
+								{
+									LOGGER.warn("ZoneData: No such zone type: " + zoneType);
+									continue;
+								}
 								
 								zoneType = null;
 								
@@ -145,30 +291,39 @@ public class ZoneData
 								
 								int[][] coords = null;
 								int[] point;
-								List<int[]> rs = new ArrayList<>();
-								
-								// loading from XML first
-								for (Node cd = d.getFirstChild(); cd != null; cd = cd.getNextSibling())
+								final FastList<int[]> rs = FastList.newInstance();
+								try
 								{
-									if ("node".equalsIgnoreCase(cd.getNodeName()))
+									// loading from XML first
+									for (Node cd = d.getFirstChild(); cd != null; cd = cd.getNextSibling())
 									{
-										attrs = cd.getAttributes();
-										point = new int[2];
-										point[0] = Integer.parseInt(attrs.getNamedItem("X").getNodeValue());
-										point[1] = Integer.parseInt(attrs.getNamedItem("Y").getNodeValue());
-										rs.add(point);
+										if ("node".equalsIgnoreCase(cd.getNodeName()))
+										{
+											attrs = cd.getAttributes();
+											point = new int[2];
+											point[0] = Integer.parseInt(attrs.getNamedItem("X").getNodeValue());
+											point[1] = Integer.parseInt(attrs.getNamedItem("Y").getNodeValue());
+											rs.add(point);
+										}
 									}
+									
+									coords = rs.toArray(new int[rs.size()][]);
 								}
-								
-								coords = rs.toArray(new int[rs.size()][]);
+								finally
+								{
+									FastList.recycle(rs);
+								}
 								
 								if (coords == null || coords.length == 0) // check on database
 								{
+									
 									// Get the zone shape from sql or from file if not defined into sql
 									try
 									{
+										PreparedStatement statement = null;
+										
 										// Set the correct query
-										PreparedStatement statement = con.prepareStatement(SELECT_X_Y_ZONE_VERTICES_ID);
+										statement = con.prepareStatement("SELECT x,y FROM zone_vertices WHERE id=? ORDER BY 'order' ASC ");
 										
 										statement.setInt(1, zoneId);
 										ResultSet rset = statement.executeQuery();
@@ -209,7 +364,7 @@ public class ZoneData
 												
 												if (successfulLoad)
 												{
-													temp.setZoneShape(new ZoneCuboid(x[0], x[1], y[0], y[1], minZ, maxZ));
+													temp.setZone(new ZoneCuboid(x[0], x[1], y[0], y[1], minZ, maxZ));
 												}
 												else
 												{
@@ -217,8 +372,8 @@ public class ZoneData
 												}
 												break;
 											case "NPoly":
-												List<Integer> fl_x = new ArrayList<>();
-												List<Integer> fl_y = new ArrayList<>();
+												FastList<Integer> fl_x = new FastList<>();
+												final FastList<Integer> fl_y = new FastList<>();
 												
 												// Load the rest
 												while (rset.next())
@@ -242,7 +397,7 @@ public class ZoneData
 													}
 													
 													// Create the zone
-													temp.setZoneShape(new ZoneNPoly(aX, aY, minZ, maxZ));
+													temp.setZone(new ZoneNPoly(aX, aY, minZ, maxZ));
 												}
 												else
 												{
@@ -269,9 +424,7 @@ public class ZoneData
 									catch (final Exception e)
 									{
 										if (Config.ENABLE_ALL_EXCEPTIONS)
-										{
 											e.printStackTrace();
-										}
 										
 										LOGGER.warn("ZoneData: Failed to load zone coordinates: " + e);
 									}
@@ -279,7 +432,7 @@ public class ZoneData
 								}
 								else
 								{ // use file one
-									
+								
 									// Create this zone. Parsing for cuboids is a
 									// bit different than for other polygons
 									// cuboids need exactly 2 points to be defined.
@@ -288,9 +441,7 @@ public class ZoneData
 									if (zoneShape.equalsIgnoreCase("Cuboid"))
 									{
 										if (coords.length == 2)
-										{
-											temp.setZoneShape(new ZoneCuboid(coords[0][0], coords[1][0], coords[0][1], coords[1][1], minZ, maxZ));
-										}
+											temp.setZone(new ZoneCuboid(coords[0][0], coords[1][0], coords[0][1], coords[1][1], minZ, maxZ));
 										else
 										{
 											LOGGER.warn("ZoneData: Missing cuboid vertex in sql data for zone: " + zoneId);
@@ -309,7 +460,7 @@ public class ZoneData
 												aX[i] = coords[i][0];
 												aY[i] = coords[i][1];
 											}
-											temp.setZoneShape(new ZoneNPoly(aX, aY, minZ, maxZ));
+											temp.setZone(new ZoneNPoly(aX, aY, minZ, maxZ));
 										}
 										else
 										{
@@ -324,9 +475,7 @@ public class ZoneData
 										attrs = d.getAttributes();
 										final int zoneRad = Integer.parseInt(attrs.getNamedItem("rad").getNodeValue());
 										if (coords.length == 1 && zoneRad > 0)
-										{
-											temp.setZoneShape(new ZoneCylinder(coords[0][0], coords[0][1], minZ, maxZ, zoneRad));
-										}
+											temp.setZone(new ZoneCylinder(coords[0][0], coords[0][1], minZ, maxZ, zoneRad));
 										else
 										{
 											LOGGER.warn("ZoneData: Bad data for zone: " + zoneId);
@@ -351,8 +500,11 @@ public class ZoneData
 										attrs = cd.getAttributes();
 										String name = attrs.getNamedItem("name").getNodeValue();
 										String val = attrs.getNamedItem("val").getNodeValue();
+										attrs = null;
 										
 										temp.setParameter(name, val);
+										name = null;
+										val = null;
 									}
 									if ("spawn".equalsIgnoreCase(cd.getNodeName()))
 									{
@@ -385,7 +537,7 @@ public class ZoneData
 										ay = y - L2World.OFFSET_Y << L2World.SHIFT_BY;
 										by = y + 1 - L2World.OFFSET_Y << L2World.SHIFT_BY;
 										
-										if (temp.getZoneShape().intersectsRectangle(ax, bx, ay, by))
+										if (temp.getZone().intersectsRectangle(ax, bx, ay, by))
 										{
 											if (Config.DEBUG)
 											{
@@ -396,48 +548,57 @@ public class ZoneData
 									}
 								}
 								
-								// check if ID already exist in the map
-								
-								if (zones.containsKey(zoneId))
+								// Special managers for arenas, towns...
+								if (temp instanceof L2ArenaZone)
 								{
-									LOGGER.warn("Zone ID " + zoneId + " already exists and was replaced");
+									ArenaManager.getInstance().addArena((L2ArenaZone) temp);
+								}
+								else if (temp instanceof L2TownZone)
+								{
+									TownManager.getInstance().addTown((L2TownZone) temp);
+								}
+								else if (temp instanceof L2OlympiadStadiumZone)
+								{
+									OlympiadStadiaManager.getInstance().addStadium((L2OlympiadStadiumZone) temp);
+								}
+								else if (temp instanceof L2BossZone)
+								{
+									GrandBossManager.getInstance().addZone((L2BossZone) temp);
 								}
 								
-								zones.put(zoneId, temp);
+								// Increase the counter
+								zoneCount++;
+								
+								temp = null;
+								attrs = null;
+								
 							}
 						}
 					}
 				}
+				
+				done = true;
+				doc = null;
 			}
+			
 		}
-		catch (Exception e)
+		catch (final Exception e)
 		{
-			LOGGER.error("ZoneData.load: Error while loading zones ", e);
+			if (Config.ENABLE_ALL_EXCEPTIONS)
+				e.printStackTrace();
+			
+			LOGGER.error("Error while loading zones.", e);
+			
+		}
+		finally
+		{
+			CloseUtil.close(con);
+			
 		}
 		
-		LOGGER.info("ZoneData: loaded " + zones.size() + " zones.");
-	}
-	
-	public L2ZoneType getZoneById(int zoneId)
-	{
-		return zones.get(zoneId);
-	}
-	
-	public Map<Integer, L2ZoneType> getAllZones()
-	{
-		return zones;
-	}
-	
-	public L2ZoneType getZoneByCoordinates(int x, int y, int z)
-	{
-		for (L2ZoneType zone : zones.values())
-		{
-			if (zone.isInsideZone(x, y, z))
-			{
-				return zone;
-			}
-		}
+		if (done)
+			GrandBossManager.getInstance().initZones();
 		
-		return null;
+		LOGGER.info("Done: loaded " + zoneCount + " zones.");
 	}
 }

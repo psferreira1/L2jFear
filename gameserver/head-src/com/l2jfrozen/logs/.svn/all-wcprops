@@ -1,0 +1,89 @@
+K 25
+svn:wc:ra_dav:version-url
+V 90
+/svn/L2jFrozenInterlude/!svn/ver/1111/branches/Beta/gameserver/head-src/com/l2jfrozen/logs
+END
+ErrorFilter.java
+K 25
+svn:wc:ra_dav:version-url
+V 107
+/svn/L2jFrozenInterlude/!svn/ver/1111/branches/Beta/gameserver/head-src/com/l2jfrozen/logs/ErrorFilter.java
+END
+ChatFilter.java
+K 25
+svn:wc:ra_dav:version-url
+V 106
+/svn/L2jFrozenInterlude/!svn/ver/1111/branches/Beta/gameserver/head-src/com/l2jfrozen/logs/ChatFilter.java
+END
+AuditFormatter.java
+K 25
+svn:wc:ra_dav:version-url
+V 110
+/svn/L2jFrozenInterlude/!svn/ver/1111/branches/Beta/gameserver/head-src/com/l2jfrozen/logs/AuditFormatter.java
+END
+ChatLogHandler.java
+K 25
+svn:wc:ra_dav:version-url
+V 110
+/svn/L2jFrozenInterlude/!svn/ver/1111/branches/Beta/gameserver/head-src/com/l2jfrozen/logs/ChatLogHandler.java
+END
+ChatLogFormatter.java
+K 25
+svn:wc:ra_dav:version-url
+V 112
+/svn/L2jFrozenInterlude/!svn/ver/1111/branches/Beta/gameserver/head-src/com/l2jfrozen/logs/ChatLogFormatter.java
+END
+ErrorLogHandler.java
+K 25
+svn:wc:ra_dav:version-url
+V 111
+/svn/L2jFrozenInterlude/!svn/ver/1111/branches/Beta/gameserver/head-src/com/l2jfrozen/logs/ErrorLogHandler.java
+END
+ConsoleLogFormatter.java
+K 25
+svn:wc:ra_dav:version-url
+V 115
+/svn/L2jFrozenInterlude/!svn/ver/1111/branches/Beta/gameserver/head-src/com/l2jfrozen/logs/ConsoleLogFormatter.java
+END
+ItemFilter.java
+K 25
+svn:wc:ra_dav:version-url
+V 106
+/svn/L2jFrozenInterlude/!svn/ver/1111/branches/Beta/gameserver/head-src/com/l2jfrozen/logs/ItemFilter.java
+END
+ItemLogFormatter.java
+K 25
+svn:wc:ra_dav:version-url
+V 112
+/svn/L2jFrozenInterlude/!svn/ver/1111/branches/Beta/gameserver/head-src/com/l2jfrozen/logs/ItemLogFormatter.java
+END
+ItemLogHandler.java
+K 25
+svn:wc:ra_dav:version-url
+V 110
+/svn/L2jFrozenInterlude/!svn/ver/1111/branches/Beta/gameserver/head-src/com/l2jfrozen/logs/ItemLogHandler.java
+END
+Log.java
+K 25
+svn:wc:ra_dav:version-url
+V 99
+/svn/L2jFrozenInterlude/!svn/ver/1111/branches/Beta/gameserver/head-src/com/l2jfrozen/logs/Log.java
+END
+AuditFilter.java
+K 25
+svn:wc:ra_dav:version-url
+V 107
+/svn/L2jFrozenInterlude/!svn/ver/1111/branches/Beta/gameserver/head-src/com/l2jfrozen/logs/AuditFilter.java
+END
+FileLogFormatter.java
+K 25
+svn:wc:ra_dav:version-url
+V 112
+/svn/L2jFrozenInterlude/!svn/ver/1111/branches/Beta/gameserver/head-src/com/l2jfrozen/logs/FileLogFormatter.java
+END
+AuditLogHandler.java
+K 25
+svn:wc:ra_dav:version-url
+V 111
+/svn/L2jFrozenInterlude/!svn/ver/1111/branches/Beta/gameserver/head-src/com/l2jfrozen/logs/AuditLogHandler.java
+END

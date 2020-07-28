@@ -1,0 +1,29 @@
+K 25
+svn:wc:ra_dav:version-url
+V 112
+/svn/L2jFrozenInterlude/!svn/ver/1111/branches/Beta/gameserver/head-src/com/l2jfrozen/gameserver/powerpak/xmlrpc
+END
+XMLRPCClient_ManagementTester.java
+K 25
+svn:wc:ra_dav:version-url
+V 147
+/svn/L2jFrozenInterlude/!svn/ver/1096/branches/Beta/gameserver/head-src/com/l2jfrozen/gameserver/powerpak/xmlrpc/XMLRPCClient_ManagementTester.java
+END
+Management.java
+K 25
+svn:wc:ra_dav:version-url
+V 128
+/svn/L2jFrozenInterlude/!svn/ver/1096/branches/Beta/gameserver/head-src/com/l2jfrozen/gameserver/powerpak/xmlrpc/Management.java
+END
+Server.java
+K 25
+svn:wc:ra_dav:version-url
+V 124
+/svn/L2jFrozenInterlude/!svn/ver/1111/branches/Beta/gameserver/head-src/com/l2jfrozen/gameserver/powerpak/xmlrpc/Server.java
+END
+XMLRPCServer.java
+K 25
+svn:wc:ra_dav:version-url
+V 130
+/svn/L2jFrozenInterlude/!svn/ver/1111/branches/Beta/gameserver/head-src/com/l2jfrozen/gameserver/powerpak/xmlrpc/XMLRPCServer.java
+END

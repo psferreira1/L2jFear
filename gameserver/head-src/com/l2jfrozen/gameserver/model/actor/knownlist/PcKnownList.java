@@ -1,3 +1,22 @@
+/* L2jFrozen Project - www.l2jfrozen.com 
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2, or (at your option)
+ * any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
+ * 02111-1307, USA.
+ *
+ * http://www.gnu.org/copyleft/gpl.html
+ */
 package com.l2jfrozen.gameserver.model.actor.knownlist;
 
 import com.l2jfrozen.Config;
@@ -32,13 +51,20 @@ import com.l2jfrozen.gameserver.network.serverpackets.VehicleInfo;
 
 public class PcKnownList extends PlayableKnownList
 {
+	// =========================================================
+	// Data Field
+	
+	// =========================================================
+	// Constructor
 	public PcKnownList(final L2PcInstance activeChar)
 	{
 		super(activeChar);
 	}
 	
+	// =========================================================
+	// Method - Public
 	/**
-	 * Add a visible L2Object to L2PcInstance knownObjects and knownPlayer (if necessary) and send Server-Client Packets needed to inform the L2PcInstance of its state and actions in progress.<BR>
+	 * Add a visible L2Object to L2PcInstance _knownObjects and _knownPlayer (if necessary) and send Server-Client Packets needed to inform the L2PcInstance of its state and actions in progress.<BR>
 	 * <BR>
 	 * <B><U> object is a L2ItemInstance </U> :</B><BR>
 	 * <BR>
@@ -46,26 +72,21 @@ public class PcKnownList extends PlayableKnownList
 	 * <BR>
 	 * <B><U> object is a L2DoorInstance </U> :</B><BR>
 	 * <BR>
-	 * <li>Send Server-Client Packets DoorInfo and DoorStatusUpdate to the L2PcInstance</li>
-	 * <li>Send Server->Client packet MoveToPawn/CharMoveToLocation and AutoAttackStart to the L2PcInstance</li><BR>
+	 * <li>Send Server-Client Packets DoorInfo and DoorStatusUpdate to the L2PcInstance</li> <li>Send Server->Client packet MoveToPawn/CharMoveToLocation and AutoAttackStart to the L2PcInstance</li><BR>
 	 * <BR>
 	 * <B><U> object is a L2NpcInstance </U> :</B><BR>
 	 * <BR>
-	 * <li>Send Server-Client Packet NpcInfo to the L2PcInstance</li>
-	 * <li>Send Server->Client packet MoveToPawn/CharMoveToLocation and AutoAttackStart to the L2PcInstance</li><BR>
+	 * <li>Send Server-Client Packet NpcInfo to the L2PcInstance</li> <li>Send Server->Client packet MoveToPawn/CharMoveToLocation and AutoAttackStart to the L2PcInstance</li><BR>
 	 * <BR>
 	 * <B><U> object is a L2Summon </U> :</B><BR>
 	 * <BR>
-	 * <li>Send Server-Client Packet NpcInfo/PetItemList (if the L2PcInstance is the owner) to the L2PcInstance</li>
-	 * <li>Send Server->Client packet MoveToPawn/CharMoveToLocation and AutoAttackStart to the L2PcInstance</li><BR>
+	 * <li>Send Server-Client Packet NpcInfo/PetItemList (if the L2PcInstance is the owner) to the L2PcInstance</li> <li>Send Server->Client packet MoveToPawn/CharMoveToLocation and AutoAttackStart to the L2PcInstance</li><BR>
 	 * <BR>
 	 * <B><U> object is a L2PcInstance </U> :</B><BR>
 	 * <BR>
-	 * <li>Send Server-Client Packet CharInfo to the L2PcInstance</li>
-	 * <li>If the object has a private store, Send Server-Client Packet PrivateStoreMsgSell to the L2PcInstance</li>
-	 * <li>Send Server->Client packet MoveToPawn/CharMoveToLocation and AutoAttackStart to the L2PcInstance</li><BR>
+	 * <li>Send Server-Client Packet CharInfo to the L2PcInstance</li> <li>If the object has a private store, Send Server-Client Packet PrivateStoreMsgSell to the L2PcInstance</li> <li>Send Server->Client packet MoveToPawn/CharMoveToLocation and AutoAttackStart to the L2PcInstance</li><BR>
 	 * <BR>
-	 * @param object The L2Object to add to knownObjects and knownPlayer
+	 * @param object The L2Object to add to _knownObjects and _knownPlayer
 	 */
 	@Override
 	public boolean addKnownObject(final L2Object object)
@@ -77,9 +98,7 @@ public class PcKnownList extends PlayableKnownList
 	public boolean addKnownObject(final L2Object object, final L2Character dropper)
 	{
 		if (!super.addKnownObject(object, dropper))
-		{
 			return false;
-		}
 		
 		final L2PcInstance active_char = getActiveChar();
 		if (active_char == null)
@@ -109,21 +128,24 @@ public class PcKnownList extends PlayableKnownList
 			}
 			else if (object instanceof L2DoorInstance)
 			{
-				L2DoorInstance door = (L2DoorInstance) object;
-				
-				active_char.sendPacket(new DoorInfo(door));
-				active_char.sendPacket(new DoorStatusUpdate(door));
+				                              if (((L2DoorInstance) object).getCastle() != null)
+					                               {
+					                                   getActiveChar().sendPacket(new DoorInfo((L2DoorInstance) object, true));
+					                               }
+					                               else
+					                               {
+					                                   getActiveChar().sendPacket(new DoorInfo((L2DoorInstance) object, false));
+					                               }
+				active_char.sendPacket(new DoorStatusUpdate((L2DoorInstance) object));
 			}
 			else if (object instanceof L2BoatInstance)
 			{
 				if (!active_char.isInBoat())
-				{
 					if (object != active_char.getBoat())
 					{
 						active_char.sendPacket(new VehicleInfo((L2BoatInstance) object));
 						((L2BoatInstance) object).sendVehicleDeparture(active_char);
 					}
-				}
 			}
 			else if (object instanceof L2StaticObjectInstance)
 			{
@@ -226,17 +248,15 @@ public class PcKnownList extends PlayableKnownList
 	}
 	
 	/**
-	 * Remove a L2Object from L2PcInstance knownObjects and knownPlayer (if necessary) and send Server-Client Packet DeleteObject to the L2PcInstance.<BR>
+	 * Remove a L2Object from L2PcInstance _knownObjects and _knownPlayer (if necessary) and send Server-Client Packet DeleteObject to the L2PcInstance.<BR>
 	 * <BR>
-	 * @param object The L2Object to remove from knownObjects and knownPlayer
+	 * @param object The L2Object to remove from _knownObjects and _knownPlayer
 	 */
 	@Override
 	public boolean removeKnownObject(final L2Object object)
 	{
 		if (!super.removeKnownObject(object))
-		{
 			return false;
-		}
 		
 		final L2PcInstance active_char = getActiveChar();
 		
@@ -251,13 +271,13 @@ public class PcKnownList extends PlayableKnownList
 		 */
 		if (object_char != null && !active_char.isGM())
 		{ // GM has to receive remove however because he can see any invisible or inobservermode player
-			
-			if (!object_char.getAppearance().isInvisible() && !object_char.inObserverMode())
+		
+			if (!object_char.getAppearance().getInvisible() && !object_char.inObserverMode())
 			{
 				// Send Server-Client Packet DeleteObject to the L2PcInstance
 				active_char.sendPacket(new DeleteObject(object));
 			}
-			else if (object_char.isGM() && object_char.getAppearance().isInvisible() && !object_char.isTeleporting())
+			else if (object_char.isGM() && object_char.getAppearance().getInvisible() && !object_char.isTeleporting())
 			{
 				// Send Server-Client Packet DeleteObject to the L2PcInstance
 				active_char.sendPacket(new DeleteObject(object));
@@ -265,7 +285,7 @@ public class PcKnownList extends PlayableKnownList
 		}
 		else
 		{ // All other objects has to be removed
-			
+		
 			// Send Server-Client Packet DeleteObject to the L2PcInstance
 			active_char.sendPacket(new DeleteObject(object));
 		}
@@ -278,6 +298,11 @@ public class PcKnownList extends PlayableKnownList
 		return true;
 	}
 	
+	// =========================================================
+	// Method - Private
+	
+	// =========================================================
+	// Property - Public
 	@Override
 	public final L2PcInstance getActiveChar()
 	{
@@ -293,19 +318,13 @@ public class PcKnownList extends PlayableKnownList
 		final int knownlistSize = getKnownObjects().size();
 		
 		if (knownlistSize <= 25)
-		{
 			return 4200;
-		}
 		
 		if (knownlistSize <= 35)
-		{
 			return 3600;
-		}
 		
 		if (knownlistSize <= 70)
-		{
 			return 2910;
-		}
 		return 2310;
 	}
 	
@@ -315,19 +334,13 @@ public class PcKnownList extends PlayableKnownList
 		final int knownlistSize = getKnownObjects().size();
 		
 		if (knownlistSize <= 25)
-		{
 			return 3500; // empty field
-		}
-		
+			
 		if (knownlistSize <= 35)
-		{
 			return 2900;
-		}
 		
 		if (knownlistSize <= 70)
-		{
 			return 2300;
-		}
 		return 1700; // Siege, TOI, city
 	}
 }
